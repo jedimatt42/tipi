@@ -17,10 +17,3 @@ Initial code will be in gcc for the TI and python for the Raspberry PI.
 
 Whatever else we need to remember, can go here. 
 
-## Cloning this repo
-
-```
-git clone http://cwfk.asuscomm.com:10080/pi-ti/pi-messaging.git
-```
-
-The repo will tell you to use localhost, but you should use the dyndns hostname cwfk.asuscomm.com. This repo is hosted in my home network. 

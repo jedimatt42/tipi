@@ -1,0 +1,34 @@
+Name     5FFE Decoder ;
+PartNo   00 ;
+Date     1/2/2017 ;
+Revision 01 ;
+Designer Engineer ;
+Company  Matthew Splett ;
+Assembly None ;
+Location  ;
+Device   g16v8a ;
+
+/* *************** INPUT PINS *********************/
+PIN 1   = A0                      ; /*                                 */ 
+PIN 2   = A1                      ; /*                                 */ 
+PIN 3   = A2                      ; /*                                 */ 
+PIN 4   = A3                      ; /*                                 */ 
+PIN 5   = A4                      ; /*                                 */ 
+PIN 6   = A5                      ; /*                                 */ 
+PIN 7   = A6                      ; /*                                 */ 
+PIN 8   = A7                      ; /*                                 */ 
+PIN 9   = A8                      ; /*                                 */ 
+
+/* *************** OUTPUT PINS *********************/
+PIN 12  = A9                      ; /*                                 */ 
+PIN 13  = A10                     ; /*                                 */ 
+PIN 14  = A11                     ; /*                                 */ 
+PIN 15  = SEL                     ; /*                                 */ 
+PIN 17  = A12                     ; /*                                 */ 
+PIN 18  = A13                     ; /*                                 */ 
+PIN 19  = A14                     ; /*                                 */ 
+
+/* Decode A0-A14, and output HIGH if word 5FFE is selected */
+SEL = !A0 & A1 & !A2 & A3 & A4 & A5 & A6 & A7 & A8 & A9 & A10 & A11 & A12 & A13 & A14 ;
+
+

@@ -1,0 +1,28 @@
+Name     WriteSelect ;
+PartNo   00 ;
+Date     1/2/2017 ;
+Revision 01 ;
+Designer Engineer ;
+Company  Matthew Splett ;
+Assembly None ;
+Location  ;
+Device   g16v8a ;
+
+/* *************** INPUT PINS *********************/
+PIN 1   = A15                     ; /* LSB of Address bus              */ 
+PIN 2   = MEMEN                   ; /* Active LOW == Memory Operation  */ 
+PIN 3   = WE                      ; /* Active LOW == Write Memory      */ 
+PIN 4   = CS                      ; /* Active HIGH == A0-A14 address 5FFE  */
+PIN 5   = DBIN                    ; /* Active HIGH == read memory      */
+
+/* *************** OUTPUT PINS *********************/
+PIN 12  = SEL                     ; /* Out Active HIGH == Write to Latch */ 
+PIN 13  = !READ                   ; /* Out Active LOW == Read from RPi  */
+
+/* Enable latch chip if CS & A15 indicate 5FFF addressed and we have a memory write operation */
+SEL = CS & A15 & !MEMEN & !WE ;
+/* Enable reading from RPi if CS & A15 indicate 5FFF addressed and we have memory read operation */
+READ = CS & A15 & !MEMEN & DBIN & WE;
+
+
+

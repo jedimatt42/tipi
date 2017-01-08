@@ -17,21 +17,17 @@ BIT5 = 27
 BIT6 = 17
 BIT7 = 4
 
-
+BITS = [BIT0, BIT1, BIT2, BIT3, BIT4, BIT5, BIT6, BIT7]
  
-GPIO.setup(BIT0, GPIO.IN, GPIO.PUD_UP)
-GPIO.setup(BIT1, GPIO.IN, GPIO.PUD_UP)
-GPIO.setup(BIT2, GPIO.IN, GPIO.PUD_UP)
-GPIO.setup(BIT3, GPIO.IN, GPIO.PUD_UP)
-GPIO.setup(BIT4, GPIO.IN, GPIO.PUD_UP)
-GPIO.setup(BIT5, GPIO.IN, GPIO.PUD_UP)
-GPIO.setup(BIT6, GPIO.IN, GPIO.PUD_UP)
-GPIO.setup(BIT7, GPIO.IN, GPIO.PUD_UP)
+GPIO.setup(BITS, GPIO.IN, GPIO.PUD_UP)
  
-while True:
-
+#
+# Read the D0-7 data bus GPIO pins and return as a byte.
+#
+def readTiByte():
     byte = 0
 
+    # GPIO.input returns 1 or 0. so just shift them into place.
     byte += GPIO.input(BIT0) # << 0
     byte += GPIO.input(BIT1) << 1
     byte += GPIO.input(BIT2) << 2
@@ -41,24 +37,29 @@ while True:
     byte += GPIO.input(BIT6) << 6
     byte += GPIO.input(BIT7) << 7
 
-#    print byte
+    return byte
+
+#
+# Send a byte to the tty, handling CR -> CR/LF translation.
+#
+def writeChar(byte):
+    sys.stdout.write(chr(byte))
+    if byte == 13:
+        sys.stdout.write("\n")
+    sys.stdout.flush()
+
+
+# Now loop over input and copy to terminal...
+
+while True:
+    byte = readTiByte()
 
     if byte == 1:
-#        sys.stdout.write(".")
     	state = 1
 	time.sleep(.002)
-#        sys.stdout.write(".")
 
     elif state == 1 and byte != 1:
-#       print chr(byte)
-#       print byte
-       sys.stdout.write(chr(byte)) 
-
-       if byte == 13:
-           sys.stdout.write("\n")
-
-       sys.stdout.flush()
-#       print "dsf"
-       state = 0
+        writeChar(byte)
+        state = 0
 
        

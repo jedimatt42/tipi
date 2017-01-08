@@ -9,28 +9,22 @@ Location  ;
 Device   g16v8a ;
 
 /* *************** INPUT PINS *********************/
-PIN 1   = CLK                     ; /*  CRUCLK - feed DEVCLK to this   */
-PIN 2   = CRUIN                   ; /*  Data in for D Flip Flop        */ 
-PIN 3   = A0 ;
-PIN 4   = A1 ;
-PIN 5   = A2 ;
-PIN 6   = A3 ;
-PIN 7   = A4 ;
-PIN 8   = A5 ;
-PIN 9   = A6 ;
-PIN 11  = OE                     ; /*  Output Enable                  */
-PIN 12  = A7 ;
-PIN 13  = CRUCLK ;
-PIN 18  = ME ;
+PIN 1   = CLK                     ; /*  CRUCLK - feed from DEVCLK     */
+PIN 2   = DATA                    ; /*  Data in for Flip Flop         */
+PIN 3   = A3 ;
+PIN 4   = A4 ;
+PIN 5   = A5 ;
+PIN 6   = A6 ;
+PIN 7   = A7 ;
+PIN 8   = CRUCLK ;
+PIN 11  = OE                      ; /*  Output Enable                  */
 
 /* *************** OUTPUT PINS *********************/
-PIN 14  = Q0                      ; /*  CRU bit 0                      */ 
+PIN 14  = BIT0                    ; /*  CRU bit 0                      */ 
 PIN 15  = DEVCLK                  ; /*  CRUCLK & CRU address 0x1Fxx    */ 
-PIN 16  = ROMEN                  ; /*  address 0x4000 - 0x5FFF        */
 
-Q0.d = CRUIN;
-DEVCLK = !CRUCLK & !A0 & !A1 & !A2 & A3 & A4 & A5 & A6 & A7;
-ROMEN = Q0 & !ME & !A0 & A1 & !A2 ;
+BIT0.d = DATA;
+DEVCLK = !CRUCLK & A3 & A4 & A5 & A6 & A7;
 
 
 

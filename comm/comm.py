@@ -6,8 +6,6 @@ import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BCM) 
 GPIO.setwarnings(False)
  
-state = 0
-
 BIT0 = 19
 BIT1 = 13
 BIT2 = 6
@@ -52,14 +50,15 @@ def writeChar(byte):
 # Now loop over input and copy to terminal...
 
 while True:
+    # wait for TI output to be 0x01
+    while readTiByte() != 1:
+        time.sleep(0.001)
+    
+    # wait for TI output to be the byte we want
+    while readTiByte() == 1:
+        time.sleep(0.002)
+    
+    # capture the real byte, and run it to the terminal.
     byte = readTiByte()
+    writeChar(byte)
 
-    if byte == 1:
-    	state = 1
-	time.sleep(.002)
-
-    elif state == 1 and byte != 1:
-        writeChar(byte)
-        state = 0
-
-       

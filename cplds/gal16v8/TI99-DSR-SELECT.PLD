@@ -16,7 +16,7 @@ PIN 4   = A4 ;
 PIN 5   = A5 ;
 PIN 6   = A6 ;
 PIN 7   = A7 ;
-PIN 8   = CRUCLK ;
+PIN 9   = CRUCLK ;
 PIN 11  = OE                      ; /*  Output Enable                  */
 
 /* *************** OUTPUT PINS *********************/

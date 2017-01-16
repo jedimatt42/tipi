@@ -17,3 +17,8 @@ Initial code will be in gcc for the TI and python for the Raspberry PI.
 
 Whatever else we need to remember, can go here. 
 
+## License 
+
+The designs and software contained in this repository are licenses under the [Creative Commons Attribution-ShareAlike license](https://creativecommons.org/licenses/by-sa/3.0/)
+
+

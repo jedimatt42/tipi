@@ -141,21 +141,21 @@ F 3 "" H 9000 5800 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 Text GLabel 10050 3150 2    60   BiDi ~ 0
-GPIO19
+GPIO14
 Text GLabel 10050 3300 2    60   BiDi ~ 0
-GPI13
+GPIO21
 Text GLabel 10050 3450 2    60   BiDi ~ 0
-GPIO6
-Text GLabel 10050 3600 2    60   BiDi ~ 0
-GPIO5
-Text GLabel 10050 3750 2    60   BiDi ~ 0
 GPIO22
+Text GLabel 10050 3600 2    60   BiDi ~ 0
+GPIO23
+Text GLabel 10050 3750 2    60   BiDi ~ 0
+GPIO24
 Text GLabel 10050 3900 2    60   BiDi ~ 0
-GPIO27
+GPIO25
 Text GLabel 10050 4050 2    60   BiDi ~ 0
-GPIO17
+GPIO29
 Text GLabel 10050 4200 2    60   BiDi ~ 0
-GPIO4
+GPIO28
 $Comp
 L 74LS373 U?
 U 1 1 5872D8A1
@@ -283,21 +283,21 @@ F 3 "" H 7850 3800 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 Text GLabel 10050 5100 2    60   BiDi ~ 0
-GPIO7
+GPIO27
 Text GLabel 10050 5250 2    60   BiDi ~ 0
-GPIO33
+GPIO26
 Text GLabel 10050 5400 2    60   BiDi ~ 0
-GPIO34
+GPIO11
 Text GLabel 10050 5550 2    60   BiDi ~ 0
-GPIO35
+GPIO10
 Text GLabel 10050 5700 2    60   BiDi ~ 0
-GPIO36
+GPIO6
 Text GLabel 10050 5850 2    60   BiDi ~ 0
-GPIO37
+GPIO5
 Text GLabel 10050 6000 2    60   BiDi ~ 0
-GPIO38
+GPIO4
 Text GLabel 10050 6150 2    60   BiDi ~ 0
-GPIO39
+GPIO1
 Entry Wire Line
 	8200 5200 8300 5300
 Entry Wire Line
@@ -326,21 +326,21 @@ F 3 "" H 7100 4300 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 Text GLabel 10050 1450 2    60   BiDi ~ 0
-GPIO19
+GPIO8
 Text GLabel 10050 1600 2    60   BiDi ~ 0
-GPI13
+GPIO9
 Text GLabel 10050 1750 2    60   BiDi ~ 0
-GPIO6
+GPIO7
 Text GLabel 10050 1900 2    60   BiDi ~ 0
-GPIO5
+GPIO0
 Text GLabel 10050 2050 2    60   BiDi ~ 0
-GPIO22
+GPIO2
 Text GLabel 10050 2200 2    60   BiDi ~ 0
-GPIO27
+GPIO3
 Text GLabel 10050 2350 2    60   BiDi ~ 0
-GPIO17
+GPIO12
 Text GLabel 10050 2500 2    60   BiDi ~ 0
-GPIO4
+GPIO13
 $Comp
 L 74LS373 U?
 U 1 1 587ED5C9
@@ -501,13 +501,13 @@ F 3 "" H 9000 7450 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 Text GLabel 10050 6750 2    60   BiDi ~ 0
-GPIO7
+GPIO16
 Text GLabel 10050 6900 2    60   BiDi ~ 0
-GPIO33
+GPIO15
 Text GLabel 10050 7050 2    60   BiDi ~ 0
-GPIO34
+GPIO_30?
 Text GLabel 10050 7200 2    60   BiDi ~ 0
-GPIO35
+GPIO_31?
 $Comp
 L GND #PWR?
 U 1 1 587EF78C

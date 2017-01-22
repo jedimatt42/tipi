@@ -44,44 +44,55 @@ module mojo_top (
     // Mojo noise
     reset_cond.in = ~rst_n; // input raw inverted reset signal
     rst = reset_cond.out;   // conditioned reset
+
+    // Prepare LED debugging, turn them all off by default    
+    led[7:0] = 0;
     
     // Cru Bit Handling
     cruclk = ~ti_reset | ( ~ti_cruclk & ti_a[3] == 1 & ti_a[4] == cru_base[3] & ti_a[5] == cru_base[2] & ti_a[6] == cru_base[1] & ti_a[7] == cru_base[0] );
     cru_bit_0.d = ti_a[15];
+    
+    // Show LED if device enabled through CRU. 
+    led[0] = cru_bit_0.q;
     
     // TI Data Line sources
     tipi_data_out = 1;
     tipi_control_out = 1;
     tipi_dsr_out = 1;
     
+    // If the board is enabled and we are in a memory operation
     if (cru_bit_0.q & ~ti_memen) {
+      // If it is a write operation and one of our latch addresses...
       if (~ti_we) {
         if (ti_a == h5FFF) {
           ti_data_latch.d = ti_data;
           ti_data_clk = 1;
+          led[1] = 1;
         } else if (ti_a == h5FFD) {
           ti_control_latch.d = ti_data[3:0];
           ti_control_clk = 1;
+          led[2] = 1;
         }
-      } else if (ti_dbin) {
+      } else if (ti_dbin) { // if a read, and one of our RPi ports
         if (ti_a == h5FFB) {
           // Data from RPI will flow up to extern HCT245 to goven OE*
           tipi_data_out = 0;
+          led[3] = 1;
         } else if (ti_a == h5FF9) {
+          // Again, controls a different HCT245 to bridge to TI data bus
           tipi_control_out = 0;
-        } else if (ti_a[0:2] == b010) {
+          led[4] = 1;
+        } else if (ti_a[2:0] == b010) {
+          // Otherwise, if it is a read and in our 4000h to 5FF8h rom space
+          // then enable a buffer for the ROM chip to the TI data bus
           tipi_dsr_out = 0;
+          led[5] = 1;
         }
       }
     }
      
+    // Share our latched data with the RPi 
     rpi_d = ti_data_latch.q;
     rpi_s = ti_control_latch.q;
-    
-    // LED Debugging :) 
-    led[0] = cru_bit_0.q;
-    led[7] = cruclk;
-    led[6] = ti_a[15];
-    led[5:1] = 5x{0};
   }
 }

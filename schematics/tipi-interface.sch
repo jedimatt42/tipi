@@ -36,7 +36,7 @@ $Descr USLedger 17000 11000
 encoding utf-8
 Sheet 1 1
 Title "TI Raspberry PI interface"
-Date "2017-01-21"
+Date "2017-01-22"
 Rev "4"
 Comp "ElectricLab & Jedimatt42"
 Comment1 "CRU enable bit w/Jumper Block"
@@ -604,24 +604,13 @@ $EndComp
 $Comp
 L GND #PWR?
 U 1 1 5882E6A1
-P 2000 1150
-F 0 "#PWR?" H 2000 900 50  0001 C CNN
-F 1 "GND" H 2000 1000 50  0000 C CNN
-F 2 "" H 2000 1150 50  0000 C CNN
-F 3 "" H 2000 1150 50  0000 C CNN
-	1    2000 1150
+P 2000 1450
+F 0 "#PWR?" H 2000 1200 50  0001 C CNN
+F 1 "GND" H 2000 1300 50  0000 C CNN
+F 2 "" H 2000 1450 50  0000 C CNN
+F 3 "" H 2000 1450 50  0000 C CNN
+	1    2000 1450
 	0    1    1    0   
-$EndComp
-$Comp
-L CONN_02X04 P?
-U 1 1 5882E705
-P 1250 1750
-F 0 "P?" H 1250 2000 50  0000 C CNN
-F 1 "CONN_02X04" H 1250 1500 50  0000 C CNN
-F 2 "" H 1250 550 50  0000 C CNN
-F 3 "" H 1250 550 50  0000 C CNN
-	1    1250 1750
-	1    0    0    -1  
 $EndComp
 $Comp
 L R R?
@@ -669,24 +658,13 @@ F 3 "" H 1500 2600 50  0000 C CNN
 $EndComp
 $Comp
 L GND #PWR?
-U 1 1 588304B3
-P 900 1900
-F 0 "#PWR?" H 900 1650 50  0001 C CNN
-F 1 "GND" H 900 1750 50  0000 C CNN
-F 2 "" H 900 1900 50  0000 C CNN
-F 3 "" H 900 1900 50  0000 C CNN
-	1    900  1900
-	1    0    0    -1  
-$EndComp
-$Comp
-L GND #PWR?
 U 1 1 5883155D
-P 2050 2000
-F 0 "#PWR?" H 2050 1750 50  0001 C CNN
-F 1 "GND" H 2050 1850 50  0000 C CNN
-F 2 "" H 2050 2000 50  0000 C CNN
-F 3 "" H 2050 2000 50  0000 C CNN
-	1    2050 2000
+P 2050 2300
+F 0 "#PWR?" H 2050 2050 50  0001 C CNN
+F 1 "GND" H 2050 2150 50  0000 C CNN
+F 2 "" H 2050 2300 50  0000 C CNN
+F 3 "" H 2050 2300 50  0000 C CNN
+	1    2050 2300
 	0    1    1    0   
 $EndComp
 $Comp
@@ -1065,18 +1043,6 @@ Wire Wire Line
 Wire Wire Line
 	7650 9100 8250 9100
 Wire Wire Line
-	900  1600 1000 1600
-Wire Wire Line
-	900  1600 900  1900
-Wire Wire Line
-	900  1700 1000 1700
-Wire Wire Line
-	900  1800 1000 1800
-Connection ~ 900  1700
-Wire Wire Line
-	900  1900 1000 1900
-Connection ~ 900  1800
-Wire Wire Line
 	1500 1600 2100 1600
 Wire Wire Line
 	1500 1700 2100 1700
@@ -1085,9 +1051,9 @@ Wire Wire Line
 Wire Wire Line
 	1500 1900 2100 1900
 Wire Wire Line
-	2050 2000 2100 2000
+	1800 2000 2100 2000
 Wire Wire Line
-	2050 2000 2050 2450
+	2050 2100 2050 2450
 Wire Wire Line
 	2050 2300 2100 2300
 Wire Wire Line
@@ -1095,7 +1061,6 @@ Wire Wire Line
 Connection ~ 2050 2200
 Wire Wire Line
 	2100 2100 2050 2100
-Connection ~ 2050 2100
 Wire Wire Line
 	2050 2450 2100 2450
 Connection ~ 2050 2300
@@ -1117,32 +1082,26 @@ Connection ~ 1200 2450
 Wire Wire Line
 	1250 2300 1200 2300
 Connection ~ 1200 2300
-Connection ~ 900  1900
 Wire Wire Line
-	1200 2150 1200 2600
+	1200 2150 1200 2750
 Wire Wire Line
 	1200 2600 1350 2600
 Connection ~ 1200 2600
 Wire Wire Line
-	2100 1150 2000 1150
+	1550 1150 2100 1150
 Wire Wire Line
 	2100 1250 2000 1250
-Wire Wire Line
-	2000 1150 2000 1450
-Wire Wire Line
-	2000 1350 2100 1350
-Connection ~ 2000 1250
 Wire Wire Line
 	2000 1450 2100 1450
 Connection ~ 2000 1350
 Text GLabel 1750 1050 0    60   Input ~ 0
-A3
-Text GLabel 1550 950  0    60   Input ~ 0
 A4
-Text GLabel 1750 850  0    60   Input ~ 0
+Text GLabel 1550 950  0    60   Input ~ 0
 A5
-Text GLabel 1550 750  0    60   Input ~ 0
+Text GLabel 1750 850  0    60   Input ~ 0
 A6
+Text GLabel 1550 750  0    60   Input ~ 0
+A7
 Wire Wire Line
 	1750 1050 2100 1050
 Wire Wire Line
@@ -1263,4 +1222,47 @@ Wire Wire Line
 	2050 7250 2100 7250
 Wire Wire Line
 	2000 6550 2100 6550
+$Comp
+L R R?
+U 1 1 5884EBE6
+P 1800 2150
+F 0 "R?" V 1880 2150 50  0000 C CNN
+F 1 "1k" V 1800 2150 50  0000 C CNN
+F 2 "" V 1730 2150 50  0000 C CNN
+F 3 "" H 1800 2150 50  0000 C CNN
+	1    1800 2150
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	1800 2300 1800 2750
+Wire Wire Line
+	1800 2750 1200 2750
+Wire Wire Line
+	2000 1250 2000 1450
+Text GLabel 1550 1150 0    60   Input ~ 0
+A3
+$Comp
+L Coded_Switch SW?
+U 1 1 5884F44E
+P 900 1650
+F 0 "SW?" H 1000 2000 50  0000 C CNN
+F 1 "Coded_Switch" H 900 1301 50  0000 C CNN
+F 2 "" H 900 1650 50  0000 C CNN
+F 3 "" H 900 1650 50  0000 C CNN
+	1    900  1650
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2000 1350 2100 1350
+$Comp
+L GND #PWR?
+U 1 1 5884F7D2
+P 1500 1400
+F 0 "#PWR?" H 1500 1150 50  0001 C CNN
+F 1 "GND" H 1500 1250 50  0000 C CNN
+F 2 "" H 1500 1400 50  0000 C CNN
+F 3 "" H 1500 1400 50  0000 C CNN
+	1    1500 1400
+	0    -1   -1   0   
+$EndComp
 $EndSCHEMATC

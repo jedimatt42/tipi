@@ -1,0 +1,19 @@
+// Meant to be inputs to the raspberry pi as a data bus
+NET "rpi_d<0>" LOC = P50 | IOSTANDARD = LVTTL;
+NET "rpi_d<1>" LOC = P51 | IOSTANDARD = LVTTL;
+NET "rpi_d<2>" LOC = P40 | IOSTANDARD = LVTTL;
+NET "rpi_d<3>" LOC = P41 | IOSTANDARD = LVTTL;
+NET "rpi_d<4>" LOC = P34 | IOSTANDARD = LVTTL;
+NET "rpi_d<5>" LOC = P35 | IOSTANDARD = LVTTL;
+NET "rpi_d<6>" LOC = P32 | IOSTANDARD = LVTTL;
+NET "rpi_d<7>" LOC = P33 | IOSTANDARD = LVTTL;
+
+// Signal byte from TI to RPi
+NET "rpi_s<0>" LOC = P137 | IOSTANDARD = LVTTL;
+NET "rpi_s<1>" LOC = P138 | IOSTANDARD = LVTTL;
+NET "rpi_s<2>" LOC = P139 | IOSTANDARD = LVTTL;
+NET "rpi_s<3>" LOC = P140 | IOSTANDARD = LVTTL;
+NET "rpi_s<4>" LOC = P141 | IOSTANDARD = LVTTL;
+NET "rpi_s<5>" LOC = P142 | IOSTANDARD = LVTTL;
+NET "rpi_s<6>" LOC = P143 | IOSTANDARD = LVTTL;
+NET "rpi_s<7>" LOC = P144 | IOSTANDARD = LVTTL;

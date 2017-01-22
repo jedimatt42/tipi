@@ -1,0 +1,83 @@
+module mojo_top (
+    input clk,              // 50MHz clock
+    input rst_n,            // reset button (active low)
+    output led [8],         // 8 user controllable LEDs
+    input ti_cruclk,
+    input ti_a[16],
+    input ti_data[8],
+    input ti_reset,
+    input cru_base[4],
+    input ti_memen,
+    input ti_we,
+    input ti_dbin,
+    output rpi_d[8],
+    output rpi_s[8],
+    output tipi_data_out,
+    output tipi_control_out
+  ) {
+   
+  sig rst;                  // reset signal
+  sig cruclk;
+  sig ti_data_clk;
+  sig ti_control_clk;
+   
+  .clk(clk) {
+    // The reset conditioner is used to synchronize the reset signal to the FPGA
+    // clock. This ensures the entire FPGA comes out of reset at the same time.
+    reset_conditioner reset_cond;
+  }
+  
+  .clk(cruclk) {
+    dff cru_bit_0(#INIT(0));
+  }
+ 
+  .clk(ti_data_clk) {
+    dff ti_data_latch[8](#INIT(0));
+  }
+  
+  .clk(ti_control_clk) {
+    dff ti_control_latch[8](#INIT(0));
+  }
+     
+  always {
+    // Mojo noise
+    reset_cond.in = ~rst_n; // input raw inverted reset signal
+    rst = reset_cond.out;   // conditioned reset
+    
+    // Cru Bit Handling
+    cruclk = ~ti_reset | ( ~ti_cruclk & ti_a[3] == 1 & ti_a[4] == cru_base[3] & ti_a[5] == cru_base[2] & ti_a[6] == cru_base[1] & ti_a[7] == cru_base[0] );
+    cru_bit_0.d = ti_a[15];
+    
+    // TI Data output
+    tipi_data_out = 1;
+    tipi_control_out = 1;
+    
+    if (cru_bit_0.q & ~ti_memen) {
+      if (~ti_we) {
+        if (ti_a == h5FFF) {
+          ti_data_latch.d = ti_data;
+          ti_data_clk = 1;
+        } else if (ti_a == h5FFD) {
+          ti_control_latch.d = ti_data[3:0];
+          ti_control_clk = 1;
+        }
+      } else if (ti_dbin) {
+        if (ti_a == h5FFB) {
+          // Data from RPI will flow up to extern HCT245 to goven OE*
+          tipi_data_out = 0;
+        } else if (ti_a == h5FF9) {
+          tipi_control_out = 0;
+        }
+      }
+    }
+     
+    rpi_d = ti_data_latch.q;
+    rpi_s = ti_control_latch.q;
+    
+    // LED Debugging :) 
+    led[0] = cru_bit_0.q;
+    led[7] = cruclk;
+    led[6] = ti_a[15];
+    led[5:1] = 5x{0};
+  }
+}

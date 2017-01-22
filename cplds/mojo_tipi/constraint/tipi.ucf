@@ -1,0 +1,5 @@
+// Free pins - P98, P99, P100
+
+// Transciever enable signal outputs
+NET "tipi_data_out" LOC = P111 | IOSTANDARD = LVTTL;
+NET "tipi_control_out" LOC = P112 | IOSTANDARD = LVTTL;

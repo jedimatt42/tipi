@@ -13,7 +13,8 @@ module mojo_top (
     output rpi_d[8],
     output rpi_s[8],
     output tipi_data_out,
-    output tipi_control_out
+    output tipi_control_out,
+    output tipi_dsr_out
   ) {
    
   sig rst;                  // reset signal
@@ -48,9 +49,10 @@ module mojo_top (
     cruclk = ~ti_reset | ( ~ti_cruclk & ti_a[3] == 1 & ti_a[4] == cru_base[3] & ti_a[5] == cru_base[2] & ti_a[6] == cru_base[1] & ti_a[7] == cru_base[0] );
     cru_bit_0.d = ti_a[15];
     
-    // TI Data output
+    // TI Data Line sources
     tipi_data_out = 1;
     tipi_control_out = 1;
+    tipi_dsr_out = 1;
     
     if (cru_bit_0.q & ~ti_memen) {
       if (~ti_we) {
@@ -67,6 +69,8 @@ module mojo_top (
           tipi_data_out = 0;
         } else if (ti_a == h5FF9) {
           tipi_control_out = 0;
+        } else if (ti_a[0:2] == b010) {
+          tipi_dsr_out = 0;
         }
       }
     }

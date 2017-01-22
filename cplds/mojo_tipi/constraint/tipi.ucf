@@ -3,3 +3,4 @@
 // Transciever enable signal outputs
 NET "tipi_data_out" LOC = P111 | IOSTANDARD = LVTTL;
 NET "tipi_control_out" LOC = P112 | IOSTANDARD = LVTTL;
+NET "tipi_dsr_out" LOC = P100 | IOSTANDARD = LVTTL;

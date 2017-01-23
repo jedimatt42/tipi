@@ -1,5 +1,4 @@
 EESchema Schematic File Version 2
-LIBS:tipi-interface-rescue
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -141,22 +140,22 @@ F 3 "" H 8950 6950 50  0000 C CNN
 	1    8950 6950
 	1    0    0    -1  
 $EndComp
-Text GLabel 10000 4300 2    60   BiDi ~ 0
-GPIO14
-Text GLabel 10000 4450 2    60   BiDi ~ 0
-GPIO21
-Text GLabel 10000 4600 2    60   BiDi ~ 0
-GPIO22
-Text GLabel 10000 4750 2    60   BiDi ~ 0
-GPIO23
-Text GLabel 10000 4900 2    60   BiDi ~ 0
-GPIO24
-Text GLabel 10000 5050 2    60   BiDi ~ 0
-GPIO25
-Text GLabel 10000 5200 2    60   BiDi ~ 0
-GPIO29
-Text GLabel 10000 5350 2    60   BiDi ~ 0
-GPIO28
+Text GLabel 10000 4300 2    60   Output ~ 0
+BCM-14
+Text GLabel 10000 4450 2    60   Output ~ 0
+BCM-15
+Text GLabel 10000 4600 2    60   Output ~ 0
+BCM-18
+Text GLabel 10000 4750 2    60   Output ~ 0
+BCM-23
+Text GLabel 10000 4900 2    60   Output ~ 0
+BCM-24
+Text GLabel 10000 5050 2    60   Output ~ 0
+BCM-25
+Text GLabel 10000 5200 2    60   Output ~ 0
+BCM-8
+Text GLabel 10000 5350 2    60   Output ~ 0
+BCM-7
 $Comp
 L 74LS373 U?
 U 1 1 5872D8A1
@@ -283,22 +282,22 @@ F 3 "" H 7800 4950 50  0000 C CNN
 	1    7800 4950
 	1    0    0    -1  
 $EndComp
-Text GLabel 10000 6250 2    60   BiDi ~ 0
-GPIO27
-Text GLabel 10000 6400 2    60   BiDi ~ 0
-GPIO26
-Text GLabel 10000 6550 2    60   BiDi ~ 0
-GPIO11
-Text GLabel 10000 6700 2    60   BiDi ~ 0
-GPIO10
-Text GLabel 10000 6850 2    60   BiDi ~ 0
-GPIO6
-Text GLabel 10000 7000 2    60   BiDi ~ 0
-GPIO5
-Text GLabel 10000 7150 2    60   BiDi ~ 0
-GPIO4
-Text GLabel 9850 8300 2    60   BiDi ~ 0
-GPIO1
+Text GLabel 10000 6250 2    60   Input ~ 0
+BCM-11
+Text GLabel 10000 6400 2    60   Input ~ 0
+BCM-0
+Text GLabel 10000 6550 2    60   Input ~ 0
+BCM-5
+Text GLabel 10000 6700 2    60   Input ~ 0
+BCM-6
+Text GLabel 10000 6850 2    60   Input ~ 0
+BCM-13
+Text GLabel 10000 7000 2    60   Input ~ 0
+BCM-19
+Text GLabel 10000 7150 2    60   Input ~ 0
+BCM-26
+Text GLabel 10000 8200 2    60   Input ~ 0
+BCM-16
 Entry Wire Line
 	8150 6350 8250 6450
 Entry Wire Line
@@ -326,22 +325,22 @@ F 3 "" H 7050 5450 50  0000 C CNN
 	1    7050 5450
 	1    0    0    -1  
 $EndComp
-Text GLabel 10000 2600 2    60   BiDi ~ 0
-GPIO8
-Text GLabel 10000 2750 2    60   BiDi ~ 0
-GPIO9
-Text GLabel 10000 2900 2    60   BiDi ~ 0
-GPIO7
-Text GLabel 10000 3050 2    60   BiDi ~ 0
-GPIO0
-Text GLabel 10000 3200 2    60   BiDi ~ 0
-GPIO2
-Text GLabel 10000 3350 2    60   BiDi ~ 0
-GPIO3
-Text GLabel 10000 3500 2    60   BiDi ~ 0
-GPIO12
-Text GLabel 10000 3650 2    60   BiDi ~ 0
-GPIO13
+Text GLabel 10000 2600 2    60   Output ~ 0
+BCM-2
+Text GLabel 10000 2750 2    60   Output ~ 0
+BCM-3
+Text GLabel 10000 2900 2    60   Output ~ 0
+BCM-4
+Text GLabel 10000 3050 2    60   Output ~ 0
+BCM-17
+Text GLabel 10000 3200 2    60   Output ~ 0
+BCM-27
+Text GLabel 10000 3350 2    60   Output ~ 0
+BCM-22
+Text GLabel 10000 3500 2    60   Output ~ 0
+BCM-10
+Text GLabel 10000 3650 2    60   Output ~ 0
+BCM-9
 $Comp
 L 74LS373 U?
 U 1 1 587ED5C9
@@ -501,10 +500,10 @@ F 3 "" H 8950 8600 50  0000 C CNN
 	1    8950 8600
 	1    0    0    -1  
 $EndComp
-Text GLabel 10000 7900 2    60   BiDi ~ 0
-GPIO16
-Text GLabel 10000 8050 2    60   BiDi ~ 0
-GPIO15
+Text GLabel 10000 7900 2    60   Input ~ 0
+BCM-1
+Text GLabel 10000 8050 2    60   Input ~ 0
+BCM-26
 $Comp
 L GND #PWR?
 U 1 1 587EF78C
@@ -1250,28 +1249,20 @@ F 3 "" H 1500 1400 50  0000 C CNN
 	1    1500 1400
 	0    -1   -1   0   
 $EndComp
-$Comp
-L GND #PWR?
-U 1 1 58857196
-P 9650 8400
-F 0 "#PWR?" H 9650 8150 50  0001 C CNN
-F 1 "GND" H 9650 8250 50  0000 C CNN
-F 2 "" H 9650 8400 50  0000 C CNN
-F 3 "" H 9650 8400 50  0000 C CNN
-	1    9650 8400
-	0    -1   -1   0   
-$EndComp
-$Comp
-L GND #PWR?
-U 1 1 588571F8
-P 10000 7300
-F 0 "#PWR?" H 10000 7050 50  0001 C CNN
-F 1 "GND" H 10000 7150 50  0000 C CNN
-F 2 "" H 10000 7300 50  0000 C CNN
-F 3 "" H 10000 7300 50  0000 C CNN
-	1    10000 7300
-	0    -1   -1   0   
-$EndComp
 Wire Wire Line
 	9650 8300 9850 8300
+Text GLabel 10000 8350 2    60   Input ~ 0
+BCM-20
+Wire Wire Line
+	9850 8300 9850 8200
+Wire Wire Line
+	9850 8200 10000 8200
+Wire Wire Line
+	9650 8400 9900 8400
+Wire Wire Line
+	9900 8400 9900 8350
+Wire Wire Line
+	9900 8350 10000 8350
+Text GLabel 10000 7300 2    60   Input ~ 0
+BCM-21
 $EndSCHEMATC

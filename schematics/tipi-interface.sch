@@ -1,4 +1,5 @@
 EESchema Schematic File Version 2
+LIBS:tipi-interface-rescue
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -184,7 +185,7 @@ Entry Wire Line
 Entry Wire Line
 	4950 5050 5050 5150
 $Comp
-L 74LS21 U?
+L 74LS21-RESCUE-tipi-interface U?
 U 2 1 5872ED3F
 P 3350 8200
 F 0 "U?" H 3350 8300 50  0000 C CNN
@@ -195,7 +196,7 @@ F 3 "" H 3350 8200 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L 74LS21 U?
+L 74LS21-RESCUE-tipi-interface U?
 U 1 1 5872EDA9
 P 3350 8800
 F 0 "U?" H 3350 8900 50  0000 C CNN
@@ -206,7 +207,7 @@ F 3 "" H 3350 8800 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L 74LS21 U?
+L 74LS21-RESCUE-tipi-interface U?
 U 2 1 5872EDEA
 P 3350 9400
 F 0 "U?" H 3350 9500 50  0000 C CNN
@@ -296,7 +297,7 @@ Text GLabel 10000 7000 2    60   BiDi ~ 0
 GPIO5
 Text GLabel 10000 7150 2    60   BiDi ~ 0
 GPIO4
-Text GLabel 10000 7300 2    60   BiDi ~ 0
+Text GLabel 9850 8300 2    60   BiDi ~ 0
 GPIO1
 Entry Wire Line
 	8150 6350 8250 6450
@@ -479,7 +480,7 @@ F 3 "" H 5050 3750 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L 74LS21 U?
+L 74LS21-RESCUE-tipi-interface U?
 U 1 1 587EEED4
 P 4800 8250
 F 0 "U?" H 4800 8350 50  0000 C CNN
@@ -504,10 +505,6 @@ Text GLabel 10000 7900 2    60   BiDi ~ 0
 GPIO16
 Text GLabel 10000 8050 2    60   BiDi ~ 0
 GPIO15
-Text GLabel 10000 8200 2    60   BiDi ~ 0
-GPIO_30?
-Text GLabel 10000 8350 2    60   BiDi ~ 0
-GPIO_31?
 $Comp
 L GND #PWR?
 U 1 1 587EF78C
@@ -901,18 +898,6 @@ Wire Wire Line
 Wire Wire Line
 	4450 3650 5050 3650
 Wire Wire Line
-	9650 8400 9900 8400
-Wire Wire Line
-	9900 8400 9900 8350
-Wire Wire Line
-	9900 8350 10000 8350
-Wire Wire Line
-	9650 8300 9850 8300
-Wire Wire Line
-	9850 8300 9850 8200
-Wire Wire Line
-	9850 8200 10000 8200
-Wire Wire Line
 	9650 8200 9800 8200
 Wire Wire Line
 	9800 8200 9800 8050
@@ -1265,4 +1250,28 @@ F 3 "" H 1500 1400 50  0000 C CNN
 	1    1500 1400
 	0    -1   -1   0   
 $EndComp
+$Comp
+L GND #PWR?
+U 1 1 58857196
+P 9650 8400
+F 0 "#PWR?" H 9650 8150 50  0001 C CNN
+F 1 "GND" H 9650 8250 50  0000 C CNN
+F 2 "" H 9650 8400 50  0000 C CNN
+F 3 "" H 9650 8400 50  0000 C CNN
+	1    9650 8400
+	0    -1   -1   0   
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 588571F8
+P 10000 7300
+F 0 "#PWR?" H 10000 7050 50  0001 C CNN
+F 1 "GND" H 10000 7150 50  0000 C CNN
+F 2 "" H 10000 7300 50  0000 C CNN
+F 3 "" H 10000 7300 50  0000 C CNN
+	1    10000 7300
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	9650 8300 9850 8300
 $EndSCHEMATC

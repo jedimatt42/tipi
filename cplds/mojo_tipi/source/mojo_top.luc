@@ -49,7 +49,7 @@ module mojo_top (
     led[7:0] = 0;
     
     // Cru Bit Handling
-    cruclk = ~ti_reset | ( ~ti_cruclk & ti_a[3] == 1 & ti_a[4] == cru_base[3] & ti_a[5] == cru_base[2] & ti_a[6] == cru_base[1] & ti_a[7] == cru_base[0] );
+    cruclk = ~ti_reset || ( ~ti_cruclk & ti_a[3] == 1 && ti_a[4] == cru_base[3] && ti_a[5] == cru_base[2] && ti_a[6] == cru_base[1] && ti_a[7] == cru_base[0] );
     cru_bit_0.d = ti_a[15];
     
     // Show LED if device enabled through CRU. 
@@ -61,7 +61,7 @@ module mojo_top (
     tipi_dsr_out = 1;
     
     // If the board is enabled and we are in a memory operation
-    if (cru_bit_0.q & ~ti_memen) {
+    if (cru_bit_0.q && ~ti_memen) {
       // If it is a write operation and one of our latch addresses...
       if (~ti_we) {
         if (ti_a == h5FFF) {

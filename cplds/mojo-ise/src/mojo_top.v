@@ -18,22 +18,36 @@ module mojo_top(
     input avr_tx, // AVR Tx => FPGA Rx
     output avr_rx, // AVR Rx => FPGA Tx
     input avr_rx_busy, // AVR Rx buffer full
-	 
-	 output tipi_data_out,
-	 output tipi_control_out,
-	 output tipi_dsr_out,
-	 
-	 input [0:15]ti_a,
-	 input [7:0]ti_data,
-	 input ti_memen,
-	 input ti_we,
-	 input [3:0]cru_base,
-	 input ti_dbin,
-	 input ti_cruclk,
-	 input ti_reset,
-	 input [7:0]rpi_d,
-	 input [7:0]rpi_s
-    );
+     
+    // Control OE* on a bus transmitter to allow RPi data on TI data bus.
+    output tipi_data_out,
+    // Control OE* on a bus transmitter to allow RPi control signals on TI data bus.
+    output tipi_control_out,
+    // Control OE* on a bus transmitter to allow DSR ROM on TI data bus.
+    output tipi_dsr_out,
+     
+    // TI address bus. bit 0 is MSB per TI numbering.
+    input [0:15]ti_a,
+    // TI data bus inputs. bit 7 is MSB.
+    input [7:0]ti_data,
+    // TI Memory enable (active low)
+    input ti_memen,
+    // TI Write enable (active low)
+    input ti_we,
+    // Device CRU base address nibble 'n' in 0x1n00
+    input [3:0]cru_base,
+    // TI Memory Read (active high)
+    input ti_dbin,
+    // TI CRU Clock (active low)
+    input ti_cruclk,
+    // TI Reset (active low)
+    input ti_reset,
+    
+    // Data output to RPi latched from 0x5fff
+    output [7:0]rpi_d,
+    // Control signal output to RPi latched from 0x5ffd
+    output [7:0]rpi_s
+);
 
 wire rst = ~rst_n; // make reset active high
 reg [7:0] data_q;

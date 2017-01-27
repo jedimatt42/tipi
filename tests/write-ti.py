@@ -6,34 +6,44 @@ import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BCM) 
 GPIO.setwarnings(False)
  
-BIT0 = 19
-BIT1 = 13
-BIT2 = 6
-BIT3 = 5
-BIT4 = 22
-BIT5 = 27
-BIT6 = 17
-BIT7 = 4
+RD0 = 11
+RD1 = 0
+RD2 = 5
+RD3 = 6
+RD4 = 13
+RD5 = 19
+RD6 = 26
+RD7 = 21
+
+RD_BITS = [RD0, RD1, RD2, RD3, RD4, RD5, RD6, RD7]
+
+RC0 = 1
+RC1 = 12
+RC2 = 16
+RC3 = 20
+
+RC_BITS = [RC0, RC1, RC2, RC3]
  
-GPIO.setup(BIT0, GPIO.OUT)
-GPIO.setup(BIT1, GPIO.OUT)
-GPIO.setup(BIT2, GPIO.OUT)
-GPIO.setup(BIT3, GPIO.OUT)
-GPIO.setup(BIT4, GPIO.OUT)
-GPIO.setup(BIT5, GPIO.OUT)
-GPIO.setup(BIT6, GPIO.OUT)
-GPIO.setup(BIT7, GPIO.OUT)
+GPIO.setup(RD_BITS, GPIO.OUT)
+GPIO.setup(RC_BITS, GPIO.OUT)
  
 value = 0x1F
 
-GPIO.output(BIT0, value & 0x01)
-GPIO.output(BIT1, value & 0x02)
-GPIO.output(BIT2, value & 0x04)
-GPIO.output(BIT3, value & 0x08)
-GPIO.output(BIT4, value & 0x10)
-GPIO.output(BIT5, value & 0x20)
-GPIO.output(BIT6, value & 0x40)
-GPIO.output(BIT7, value & 0x80)
+GPIO.output(RD0, value & 0x80)
+GPIO.output(RD1, value & 0x40)
+GPIO.output(RD2, value & 0x20)
+GPIO.output(RD3, value & 0x10)
+GPIO.output(RD4, value & 0x08)
+GPIO.output(RD5, value & 0x04)
+GPIO.output(RD6, value & 0x02)
+GPIO.output(RD7, value & 0x01)
+
+rc_val = 0x0A
+GPIO.output(RC0, rc_val & 0x08)
+GPIO.output(RC1, rc_val & 0x04)
+GPIO.output(RC2, rc_val & 0x02)
+GPIO.output(RC3, rc_val & 0x01)
+
  
 while True:
     True

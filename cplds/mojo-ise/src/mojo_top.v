@@ -50,7 +50,13 @@ module mojo_top(
 );
 
 wire rst = ~rst_n; // make reset active high
+
+// a CRU bit to act as device-enable
+reg cru_bit;
+
+// latched data channel
 reg [7:0] data_q;
+// latched control channel
 reg [7:0] control_q;
 
 // these signals should be high-z when not used
@@ -75,10 +81,19 @@ always @(negedge ti_we or negedge ti_reset) begin
   end
 end
 
-assign led[7:4] = data_q[7:4];
-assign led[3:0] = control_q[3:0];
+always @(negedge ti_cruclk or negedge ti_reset) begin
+  if (~ti_reset) begin
+    cru_bit <= 1'b0;
+  end else
+  if (ti_memen == 1'b1 && ti_a[3] == 1'b1 && ti_a[4:7] == cru_base) begin
+    cru_bit <= ti_a[15];
+  end
+end
 
 assign rpi_d = data_q;
 assign rpi_s = control_q;
+
+assign led[7:1] = control_q[7:1];
+assign led[0] = cru_bit;
 
 endmodule

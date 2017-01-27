@@ -69,10 +69,11 @@ NET "ti_cruclk" LOC = P95 | IOSTANDARD = LVCMOS33;
 NET "ti_reset" LOC = P97 | IOSTANDARD = LVCMOS33;
 
 // USER CRU Nibble
-NET "cru_base<0>" LOC = P101 | IOSTANDARD = LVCMOS33 | PULLUP;
-NET "cru_base<1>" LOC = P102 | IOSTANDARD = LVCMOS33 | PULLUP;
-NET "cru_base<2>" LOC = P104 | IOSTANDARD = LVCMOS33 | PULLUP;
-NET "cru_base<3>" LOC = P105 | IOSTANDARD = LVCMOS33 | PULLUP;
+// It will be easier to ground these on PULLUPs with headers.
+NET "cru_base<0>" LOC = P101 | IOSTANDARD = LVCMOS33 | PULLDOWN;
+NET "cru_base<1>" LOC = P102 | IOSTANDARD = LVCMOS33 | PULLDOWN;
+NET "cru_base<2>" LOC = P104 | IOSTANDARD = LVCMOS33 | PULLDOWN;
+NET "cru_base<3>" LOC = P105 | IOSTANDARD = LVCMOS33 | PULLDOWN;
 
 
 // Transciever enable signal outputs

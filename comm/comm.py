@@ -6,14 +6,14 @@ import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BCM) 
 GPIO.setwarnings(False)
  
-BIT0 = 19
-BIT1 = 13
-BIT2 = 6
-BIT3 = 5
-BIT4 = 22
-BIT5 = 27
-BIT6 = 17
-BIT7 = 4
+BIT0 = 2
+BIT1 = 3
+BIT2 = 4
+BIT3 = 17
+BIT4 = 27
+BIT5 = 22
+BIT6 = 10
+BIT7 = 9
 
 BITS = [BIT0, BIT1, BIT2, BIT3, BIT4, BIT5, BIT6, BIT7]
  

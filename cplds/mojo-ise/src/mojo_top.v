@@ -28,8 +28,8 @@ module mojo_top(
      
     // TI address bus. bit 0 is MSB per TI numbering.
     input [0:15]ti_a,
-    // TI data bus inputs. bit 7 is MSB.
-    input [7:0]ti_data,
+    // TI data bus inputs. bit 0 is MSB.
+    input [0:7]ti_data,
     // TI Memory enable (active low)
     input ti_memen,
     // TI Write enable (active low)

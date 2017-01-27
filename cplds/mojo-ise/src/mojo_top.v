@@ -58,8 +58,8 @@ assign spi_miso = 1'bz;
 assign avr_rx = 1'bz;
 assign spi_channel = 4'bzzzz;
 
-assign tipi_data_out = 1'b1;
-assign tipi_control_out = 1'b1;
+assign tipi_data_out = (~ti_memen && ti_dbin && ti_a == 16'h5ffb) ? 1'b0 : 1'b1;
+assign tipi_control_out = (~ti_memen && ti_dbin && ti_a == 16'h5ff9) ? 1'b0 : 1'b1;
 assign tipi_dsr_out = 1'b1;
 
 always @(negedge ti_we) begin

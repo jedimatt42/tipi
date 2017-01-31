@@ -119,8 +119,12 @@ def writeBuffer(message):
 ## MAIN
 ##
 
-
+# Reset the control signals
 writeTiNibble(RC_BITS,0x00)
+# And wait for the remote to reset as well
+while readTiByte(TC_BITS) != 0:
+    time.sleep(0.001)
+
 while True:
     message = array('B',[0x11, 0x22, 0x33, 0x44, 0x55])
     writeBuffer(message)

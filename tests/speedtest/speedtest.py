@@ -108,37 +108,48 @@ def writeTiNibble(bits, byte):
 #
 def writeBuffer(message):
     for byte in message:
-        print byte
         next_syn = (readTiByte(TC_BITS) + 1) & ACK_MASK | 0x2
-        print next_syn 
         writeTiByte(RD_BITS,byte)
         writeTiNibble(RC_BITS,next_syn)
         while next_syn != (readTiByte(TC_BITS) & ACK_MASK):
             logInputs()
-            time.sleep(0.002)
-        print "received ack"
 
 def logInputs():
     sys.stdout.write( hex(readTiByte(TD_BITS)) + " - " + hex(readTiByte(TC_BITS)) )
     sys.stdout.write( '\r' )
     sys.stdout.flush()
+
+
+def resetProtocol():
+    # Reset the control signals
+    writeTiNibble(RC_BITS,RESET)
+
+    # And wait for the remote to reset as well
+    while readTiByte(TC_BITS) != RESET:
+        logInputs()
+
     
 ## 
 ## MAIN
 ##
 
-# Reset the control signals
-writeTiNibble(RC_BITS,RESET)
-
-# And wait for the remote to reset as well
-while readTiByte(TC_BITS) != RESET:
-    logInputs()
-    time.sleep(0.1)
-
+resetProtocol()
 print "ready"
 
-while True:
-    message = array('B',[0x11, 0x22, 0x33, 0x44, 0x55])
-    writeBuffer(message)
+message = bytearray(8192)
+for i in range(0, 8192):
+    message[i] = i % 256
 
- 
+writeBuffer(message)
+
+# Reset the control signals
+resetProtocol()
+
+prev_syn = RESET
+next_ack = 0
+for i in range(0, 8192):
+    while next_ack == prev_syn:
+        next_ack = readTiByte(TC_BITS) & ACK_MASK
+    value = readTiByte(TD_BITS)
+    writeTiNibble(RC_BITS,next_ack)
+

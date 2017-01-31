@@ -82,6 +82,13 @@ void main()
   writestring(4,4, "8k of data with check sum of:");
   writehex(5,8, chksum);
 
+  // Wait for RPI to reset control signals.
+  TI_CONTROL = RESET;
+  while( RPI_CONTROL != RESET ) {
+    // be busy.
+    debugInputs();
+  }
+
   chksum = 0;
   for(int i = 0; i < 8192; i++) {
     unsigned char value = i % 255;

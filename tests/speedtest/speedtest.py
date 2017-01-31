@@ -5,7 +5,7 @@ import RPi.GPIO as GPIO
 from array import array
  
 GPIO.setmode(GPIO.BCM) 
-GPIO.setwarnings(False)
+GPIO.setwarnings(True)
  
 TD0 = 2
 TD1 = 3
@@ -29,8 +29,8 @@ TC7 = 7
 
 TC_BITS = [TC0, TC1, TC2, TC3, TC4, TC5, TC6, TC7]
  
-GPIO.setup(TD_BITS, GPIO.IN, GPIO.PUD_UP)
-GPIO.setup(TC_BITS, GPIO.IN, GPIO.PUD_UP)
+GPIO.setup(TD_BITS, GPIO.IN)
+GPIO.setup(TC_BITS, GPIO.IN)
 
 RD0 = 11
 RD1 = 0
@@ -54,6 +54,8 @@ GPIO.setup(RD_BITS, GPIO.OUT)
 GPIO.setup(RC_BITS, GPIO.OUT)
 
 ACK_MASK = 0x03
+
+RESET = 0x01
  
 #
 # Return byte as string of bits: 0x40 => 01000000
@@ -112,18 +114,28 @@ def writeBuffer(message):
         writeTiByte(RD_BITS,byte)
         writeTiNibble(RC_BITS,next_syn)
         while next_syn != (readTiByte(TC_BITS) & ACK_MASK):
+            logInputs()
             time.sleep(0.002)
         print "received ack"
+
+def logInputs():
+    sys.stdout.write( hex(readTiByte(TD_BITS)) + " - " + hex(readTiByte(TC_BITS)) )
+    sys.stdout.write( '\r' )
+    sys.stdout.flush()
     
 ## 
 ## MAIN
 ##
 
 # Reset the control signals
-writeTiNibble(RC_BITS,0x00)
+writeTiNibble(RC_BITS,RESET)
+
 # And wait for the remote to reset as well
-while readTiByte(TC_BITS) != 0:
-    time.sleep(0.001)
+while readTiByte(TC_BITS) != RESET:
+    logInputs()
+    time.sleep(0.1)
+
+print "ready"
 
 while True:
     message = array('B',[0x11, 0x22, 0x33, 0x44, 0x55])

@@ -6,10 +6,10 @@
 #define ERROR_COLOR (COLOR_BLACK << 4) + COLOR_MEDRED
 #define SUCCESS_COLOR (COLOR_BLACK << 4) + COLOR_LTGREEN
 
-volatile unsigned char* ti_data = (char*) 0x5fff;
-volatile unsigned char* ti_control = (char*) 0x5ffd;
-volatile unsigned char* rpi_data = (char*) 0x5ffb;
-volatile unsigned char* rpi_control = (char*) 0x5ff9;
+#define TI_DATA *((volatile unsigned char*)0x5fff) 
+#define TI_CONTROL *((volatile unsigned char*)0x5ffd) 
+#define RPI_DATA *((volatile unsigned char*)0x5ffb) 
+#define RPI_CONTROL *((volatile unsigned char*)0x5ff9) 
 
 #define ACK_MASK 0x03
 #define SYN_BIT 0x02
@@ -25,28 +25,29 @@ void writehex(unsigned int row, unsigned int col, const unsigned int value) {
 }
 
 void debugInputs() {
-  writehex(0, 20, (*rpi_data << 8) + *rpi_control);
+  writehex(0, 18, RPI_DATA);
+  writehex(0, 24, RPI_CONTROL);
 }
 
 void sendByte(unsigned char value) {
   // read last ack to get counter and inc for next syn.
-  unsigned char next_syn = ((*rpi_control + 1) & ACK_MASK) | SYN_BIT;
-  *ti_data = value;
-  *ti_control = next_syn;
-  while ( (*rpi_control & ACK_MASK) != next_syn ) {
+  unsigned char next_syn = ((RPI_CONTROL + 1) & ACK_MASK) | SYN_BIT;
+  TI_DATA = value;
+  TI_CONTROL = next_syn;
+  while ( (RPI_CONTROL & ACK_MASK) != next_syn ) {
     // wait until ack.
     debugInputs();
   }
 }
 
-char readByte(char* prev_rpi_syn) {
-  char next_ack = 0;
+unsigned char readByte(unsigned char* prev_rpi_syn) {
+  unsigned char next_ack = 0;
   do {
     debugInputs();
-    next_ack = *rpi_control & ACK_MASK;
+    next_ack = RPI_CONTROL & ACK_MASK;
   } while ( *prev_rpi_syn == next_ack );
-  char some_data = *rpi_data;
-  *ti_control = next_ack;
+  unsigned char some_data = RPI_DATA;
+  TI_CONTROL = next_ack;
   *prev_rpi_syn = next_ack;
   return some_data;
 }
@@ -63,11 +64,11 @@ void main()
 
   writestring(3, 0, "start python speedtest.py...");
 
-  char prev_rpi_syn = RESET;
+  unsigned char prev_rpi_syn = RESET;
 
   // Wait for RPI to reset control signals.
-  *ti_control = RESET;
-  while( *rpi_control != RESET ) {
+  TI_CONTROL = RESET;
+  while( RPI_CONTROL != RESET ) {
     // be busy.
     debugInputs();
   }
@@ -76,15 +77,15 @@ void main()
 
   unsigned int chksum = 0;
   for(int i = 0; i < 8192; i++) {
-    chksum += (unsigned char) readByte(&prev_rpi_syn);
+    chksum += readByte(&prev_rpi_syn);
   }
   writestring(4,4, "8k of data with check sum of:");
   writehex(5,8, chksum);
 
   chksum = 0;
   for(int i = 0; i < 8192; i++) {
-    char value = i % 255;
-    chksum += (unsigned char) value;
+    unsigned char value = i % 255;
+    chksum += value;
     sendByte(value);
   }
 

@@ -6,13 +6,14 @@
 #define ERROR_COLOR (COLOR_BLACK << 4) + COLOR_MEDRED
 #define SUCCESS_COLOR (COLOR_BLACK << 4) + COLOR_LTGREEN
 
-unsigned char* ti_data = (char*) 0x5fff;
-unsigned char* ti_control = (char*) 0x5ffd;
+volatile unsigned char* ti_data = (char*) 0x5fff;
+volatile unsigned char* ti_control = (char*) 0x5ffd;
 volatile unsigned char* rpi_data = (char*) 0x5ffb;
 volatile unsigned char* rpi_control = (char*) 0x5ff9;
 
 #define ACK_MASK 0x03
 #define SYN_BIT 0x02
+#define RESET 0x01
 
 
 void writehex(unsigned int row, unsigned int col, const unsigned int value) {
@@ -23,6 +24,10 @@ void writehex(unsigned int row, unsigned int col, const unsigned int value) {
   writestring(row, col + 2, buf);
 }
 
+void debugInputs() {
+  writehex(0, 20, (*rpi_data << 8) + *rpi_control);
+}
+
 void sendByte(unsigned char value) {
   // read last ack to get counter and inc for next syn.
   unsigned char next_syn = ((*rpi_control + 1) & ACK_MASK) | SYN_BIT;
@@ -30,12 +35,14 @@ void sendByte(unsigned char value) {
   *ti_control = next_syn;
   while ( (*rpi_control & ACK_MASK) != next_syn ) {
     // wait until ack.
+    debugInputs();
   }
 }
 
 char readByte(char* prev_rpi_syn) {
   char next_ack = 0;
   do {
+    debugInputs();
     next_ack = *rpi_control & ACK_MASK;
   } while ( *prev_rpi_syn == next_ack );
   char some_data = *rpi_data;
@@ -56,12 +63,13 @@ void main()
 
   writestring(3, 0, "start python speedtest.py...");
 
-  char prev_rpi_syn = 0;
+  char prev_rpi_syn = RESET;
 
   // Wait for RPI to reset control signals.
-  *ti_control = 0;
-  while( *rpi_control != 0 ) {
+  *ti_control = RESET;
+  while( *rpi_control != RESET ) {
     // be busy.
+    debugInputs();
   }
 
   writestring(3, 0, "Testing.....................");

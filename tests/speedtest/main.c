@@ -54,9 +54,17 @@ void main()
 
   writestring(1, 0, "TIPI Speedtest");
 
+  writestring(3, 0, "start python speedtest.py...");
+
   char prev_rpi_syn = 0;
 
-  writestring(3, 0, "start python speedtest.py...");
+  // Wait for RPI to reset control signals.
+  *ti_control = 0;
+  while( *rpi_control != 0 ) {
+    // be busy.
+  }
+
+  writestring(3, 0, "Testing.....................");
 
   unsigned int chksum = 0;
   for(int i = 0; i < 8192; i++) {

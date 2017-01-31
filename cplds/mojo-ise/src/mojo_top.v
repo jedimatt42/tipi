@@ -62,11 +62,7 @@ assign tipi_data_out = (~ti_memen && ti_dbin && ti_a == 16'h5ffb) ? 1'b0 : 1'b1;
 assign tipi_control_out = (~ti_memen && ti_dbin && ti_a == 16'h5ff9) ? 1'b0 : 1'b1;
 assign tipi_dsr_out = 1'b1;
 
-always @(negedge ti_we or negedge ti_reset) begin
-  if (~ti_reset) begin
-    data_q <= 8'b0;
-	 control_q <= 8'b0;
-  end else
+always @(negedge ti_we) begin
   if (~ti_memen && ti_a == 16'h5fff) begin
     data_q <= ti_data;
   end else 

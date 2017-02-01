@@ -37,7 +37,7 @@ void sendByte(unsigned char value) {
   TI_CONTROL = next_syn;
   while ( (RPI_CONTROL & ACK_MASK) != next_syn ) {
     // wait until ack.
-    debugInputs();
+    // debugInputs();
   }
 }
 
@@ -46,7 +46,7 @@ unsigned char readByte(unsigned char* prev_syn) {
   *prev_syn = ((*prev_syn) + 1) & ACK_MASK | SYN_BIT | DIR_REQUEST_BYTE;
   TI_CONTROL = *prev_syn;
   while( (RPI_CONTROL & ACK_MASK) != (*prev_syn & ACK_MASK) ) {
-    debugInputs();
+    // debugInputs();
   }
   return RPI_DATA;
 }
@@ -56,7 +56,7 @@ void resetProtocol() {
   TI_CONTROL = RESET;
   while( RPI_CONTROL != RESET ) {
     // be busy.
-    debugInputs();
+    // debugInputs();
   }
 }
 

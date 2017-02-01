@@ -6,7 +6,7 @@ from array import array
  
 GPIO.setmode(GPIO.BCM) 
 GPIO.setwarnings(True)
- 
+
 TD0 = 2
 TD1 = 3
 TD2 = 4
@@ -103,53 +103,90 @@ def writeTiNibble(bits, byte):
     GPIO.output(bits[2], byte & 0x02)
     GPIO.output(bits[3], byte & 0x01)
 
-#
-# Write an array of bytes to TI
-#
-def writeBuffer(message):
-    for byte in message:
-        next_syn = (readTiByte(TC_BITS) + 1) & ACK_MASK | 0x2
-        writeTiByte(RD_BITS,byte)
-        writeTiNibble(RC_BITS,next_syn)
-        while next_syn != (readTiByte(TC_BITS) & ACK_MASK):
-            logInputs()
+# Read TI_DATA
+def getTD():
+    return readTiByte(TD_BITS)
 
+# Read TI_CONTROL
+def getTC():
+    return readTiByte(TC_BITS)
+
+# Write RPI_DATA
+def setRD(value):
+    writeTiByte(RD_BITS, value)
+
+# Write RPI_CONTROL
+def setRC(value):
+    writeTiNibble(RC_BITS, value)
+
+#
+# Debugging output, to show currently available bits
+#
 def logInputs():
     sys.stdout.write( hex(readTiByte(TD_BITS)) + " - " + hex(readTiByte(TC_BITS)) )
     sys.stdout.write( '\r' )
     sys.stdout.flush()
 
-
+#
+# Block until both sides show control bits reset
+# The TI resets first, and then RPi responds
+#
 def resetProtocol():
-    # Reset the control signals
-    writeTiNibble(RC_BITS,RESET)
-
     # And wait for the remote to reset as well
-    while readTiByte(TC_BITS) != RESET:
+    while getTC() != RESET:
         logInputs()
-
+    # Reset the control signals
+    setRC(RESET)
+    print "reset complete"
     
 ## 
 ## MAIN
 ##
 
 resetProtocol()
-print "ready"
 
 message = bytearray(8192)
 for i in range(0, 8192):
     message[i] = i % 256
 
-writeBuffer(message)
+## TEST: Respond to 8k of byte requests
+## TI will ask for data, we will respond with it
+##
+next_ack = RESET
 
-# Reset the control signals
+start = time.time()
+chksum = 0
+
+for i in range(0, 8192):
+    prev_syn = getTC()
+    while prev_syn == next_ack:
+        prev_syn = getTC()
+    next_ack = prev_syn
+    setRD(message[i])
+    setRC(next_ack & ACK_MASK)
+    chksum += message[i]
+
+print "Sent 8k in " + str(time.time() - start) + " seconds"
+print "check sum " + hex(chksum)
+
 resetProtocol()
 
-prev_syn = RESET
-next_ack = 0
+## TEST: Respond to 8k of byte sends
+## TI will submit data, we will acknowledge it.
+##
+start = time.time()
+chksum = 0
+next_ack = RESET
 for i in range(0, 8192):
-    while next_ack == prev_syn:
-        next_ack = readTiByte(TC_BITS) & ACK_MASK
-    value = readTiByte(TD_BITS)
-    writeTiNibble(RC_BITS,next_ack)
+    prev_syn = getTC()
+    while prev_syn == next_ack:
+        prev_syn = getTC()
+    next_ack = prev_syn
+    val = getTD()
+    setRC(next_ack & ACK_MASK)
+    chksum += val
+    
+print "Received 8k in " + str(time.time() - start) + " seconds"
+print "check sum " + hex(chksum)
+
 

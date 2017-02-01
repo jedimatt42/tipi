@@ -14,6 +14,7 @@
 #define ACK_MASK 0x03
 #define SYN_BIT 0x02
 #define RESET 0x01
+#define DIR_REQUEST_BYTE 0x04
 
 
 void writehex(unsigned int row, unsigned int col, const unsigned int value) {
@@ -40,16 +41,23 @@ void sendByte(unsigned char value) {
   }
 }
 
-unsigned char readByte(unsigned char* prev_rpi_syn) {
-  unsigned char next_ack = 0;
-  do {
+unsigned char readByte(unsigned char* prev_syn) {
+  unsigned char value = 0;
+  *prev_syn = ((*prev_syn) + 1) & ACK_MASK | SYN_BIT | DIR_REQUEST_BYTE;
+  TI_CONTROL = *prev_syn;
+  while( (RPI_CONTROL & ACK_MASK) != (*prev_syn & ACK_MASK) ) {
     debugInputs();
-    next_ack = RPI_CONTROL & ACK_MASK;
-  } while ( *prev_rpi_syn == next_ack );
-  unsigned char some_data = RPI_DATA;
-  TI_CONTROL = next_ack;
-  *prev_rpi_syn = next_ack;
-  return some_data;
+  }
+  return RPI_DATA;
+}
+
+void resetProtocol() {
+  // Wait for RPI to reset control signals.
+  TI_CONTROL = RESET;
+  while( RPI_CONTROL != RESET ) {
+    // be busy.
+    debugInputs();
+  }
 }
 
 void main()
@@ -64,39 +72,32 @@ void main()
 
   writestring(3, 0, "start python speedtest.py...");
 
-  unsigned char prev_rpi_syn = RESET;
+  unsigned char prev_syn = RESET;
 
-  // Wait for RPI to reset control signals.
-  TI_CONTROL = RESET;
-  while( RPI_CONTROL != RESET ) {
-    // be busy.
-    debugInputs();
-  }
+  resetProtocol();
 
-  writestring(3, 0, "Testing.....................");
+  writestring(3, 0, "Receiving...                ");
 
   unsigned int chksum = 0;
   for(int i = 0; i < 8192; i++) {
-    chksum += readByte(&prev_rpi_syn);
+    chksum += readByte(&prev_syn);
   }
-  writestring(4,4, "8k of data with check sum of:");
+
+  writestring(4,4, "8k received with check sum of:");
   writehex(5,8, chksum);
 
-  // Wait for RPI to reset control signals.
-  TI_CONTROL = RESET;
-  while( RPI_CONTROL != RESET ) {
-    // be busy.
-    debugInputs();
-  }
+  resetProtocol();
+
+  writestring(3, 0, "Sending...                  ");
 
   chksum = 0;
   for(int i = 0; i < 8192; i++) {
-    unsigned char value = i % 255;
-    chksum += value;
-    sendByte(value);
+    unsigned char val = i % 256;
+    sendByte(val);
+    chksum += val;
   }
 
-  writestring(7,4, "8k of data sent with check sum of:");
+  writestring(7,4, "8k sent with check sum of:");
   writehex(8,8, chksum);
 
   // Reset some state the vdp interrupt expects

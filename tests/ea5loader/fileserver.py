@@ -135,6 +135,7 @@ prev_syn = RESET
 # The TI resets first, and then RPi responds
 #
 def resetProtocol():
+    global prev_syn
     # And wait for the remote to reset as well
     while getTC() != RESET:
         logInputs()
@@ -146,6 +147,8 @@ def resetProtocol():
 #
 # transmit a byte when TI requests it
 def sendByte(byte):
+    global prev_syn
+    next_ack = prev_syn
     while prev_syn == next_ack:
         prev_syn = getTC()
     next_ack = prev_syn
@@ -155,6 +158,8 @@ def sendByte(byte):
 #
 # block until byte is received.
 def receiveByte():
+    global prev_syn
+    next_ack = prev_syn
     while prev_syn == next_ack:
         prev_syn = getTC()
     next_ack = prev_syn
@@ -169,14 +174,24 @@ def receiveByte():
 
 resetProtocol()
 
-filename = bytearray(50);
-idx = 0
+filename = ""
 val = receiveByte()
 while val != 0:
-    filename[idx] = val
-    idx += 1
+    filename = filename + chr(val)
     val = receiveByte()
 
-print filename
+if filename.startswith("EA5."):
+    unix_name = filename[4:].strip().lower() + ".ea5"
+    print "loading: " + unix_name
+    fh = open(unix_name, 'rb')
+    try:
+        bytes = bytearray(fh.read())
+        for byte in bytes:
+            sendByte(byte)
+    finally:
+        fh.close()
+else:
+    print "bad file request: " + filename
+
 
 

@@ -18,16 +18,13 @@
 unsigned char prev_syn = RESET;
 
 void writehex(unsigned int row, unsigned int col, const unsigned int value) {
-  unsigned char buf[3] = { 0, 0, 0 };
+  unsigned char buf[] = { 0, 0, 0 };
   *((unsigned int*)buf) = byte2hex[value >> 8];
+  buf[2] = 0;
   writestring(row, col, buf);
   *((unsigned int*)buf) = byte2hex[0xFF & value];
+  buf[2] = 0;
   writestring(row, col + 2, buf);
-}
-
-void debugInputs() {
-  writehex(0, 18, RPI_DATA);
-  writehex(0, 24, RPI_CONTROL);
 }
 
 void sendByte(unsigned char value) {
@@ -37,7 +34,6 @@ void sendByte(unsigned char value) {
   TI_CONTROL = prev_syn;
   while ( (RPI_CONTROL & ACK_MASK) != prev_syn ) {
     // wait until ack.
-    // debugInputs();
   }
 }
 
@@ -46,9 +42,12 @@ unsigned char readByte() {
   prev_syn = (prev_syn + 1) & ACK_MASK | SYN_BIT | DIR_REQUEST_BYTE;
   TI_CONTROL = prev_syn;
   while( (RPI_CONTROL & ACK_MASK) != (prev_syn & ACK_MASK) ) {
-    // debugInputs();
   }
   return RPI_DATA;
+}
+
+unsigned int readWord() {
+  return (((unsigned int) readByte()) << 8) + readByte();
 }
 
 void resetProtocol() {
@@ -56,7 +55,6 @@ void resetProtocol() {
   TI_CONTROL = RESET;
   while( RPI_CONTROL != RESET ) {
     // be busy.
-    // debugInputs();
   }
 }
 
@@ -72,17 +70,13 @@ void requestFile(unsigned char* filename) {
 }
 
 void launch(int address) {
-  int* code = (int*)0x8300;
-  *code++ = 0x020C;   // li r12,>1000
-  *code++ = 0x1000;   //
-  *code++ = 0x1E00;   // sbz 0
-  *code++ = 0x045B;   // b *r1
-  __asm__("li r11,0\n\ta %0,r11\n\tb *%1" : : "r"(address), "r"(0x8300) );
+  __asm__("b *%0" : : "r"(address) );
 }
 
 void main()
 {
-  unsigned char filename[] = "AMBULANCE           ";
+  int filename_size = 20;
+  unsigned char filename[] = "                    ";
   int unblank = set_graphics(0);
   vdpmemset(0x0000,' ',nTextEnd);
   VDP_SET_REGISTER(VDP_REG_MODE1, unblank);
@@ -92,7 +86,7 @@ void main()
   writestring(3, 0, "FILE: ");
   writestring(3, 6, filename );
   
-  int idx = 3;
+  int idx = 0;
   unsigned char key = kscan(KSCAN_MODE_BASIC);
   while( 1 ) {
     if (KSCAN_STATUS == KSCAN_MASK && idx < 20) {
@@ -109,34 +103,48 @@ void main()
     key = kscan(KSCAN_MODE_BASIC);
   }
 
-  writestring(4, 0, "LOADING...");
-
-  resetProtocol();
-
-  // Send request to load file
-  requestFile(filename);
-
-  // No error checking :) 
-  int ea5header = (((int) readByte()) << 8) + readByte();
-  int size = (((int) readByte()) << 8) + readByte();
-  int addr = (((int) readByte()) << 8) + readByte();
-  // should be 0000
-  writehex(0,10, ea5header);
-  writehex(0,15, size);
-  writehex(0,20, addr);
-
-  // hack... all of my ea5 files are short 6 bytes...  so don't believe the size.
-  unsigned char* copyaddr = (unsigned char*)addr;
-  for( int i = 0; i < (size - 6); i++ ) {
-    *copyaddr = readByte();
-    copyaddr++;
-    writehex(0,25, (int)copyaddr);
+  int name_end = 19;
+  while( filename[name_end] == 0x20 ) {
+    name_end--;
   }
 
-  launch(addr);
+  writestring(4, 0, "LOADING...");
 
-  // Reset some state the vdp interrupt expects
-  VDP_INT_CTRL=VDP_INT_CTRL_DISABLE_SPRITES|VDP_INT_CTRL_DISABLE_SOUND;
-  VDP_SCREEN_TIMEOUT=1;
-  halt();
+  unsigned int launchAddr = 0x0000;
+  unsigned int ea5header = 0xFFFF;
+
+  while ( ea5header == 0xFFFF ) {
+    resetProtocol();
+    writestring(3, 6, filename);
+
+    // Send request to load file
+    requestFile(filename);
+
+    // No error checking :)
+    ea5header = readWord();
+    unsigned int size = readWord();
+    unsigned int addr = readWord();
+
+    writehex(0,10, ea5header);
+    writehex(0,15, size);
+    writehex(0,20, addr);
+
+    // size is file size, not data size. so filesize - 6 bytes of header == data size.
+    size -= 6;
+
+    // stash addr away the first time.
+    if (launchAddr == 0x0000) {
+      launchAddr = addr;
+    }
+
+    unsigned char* copyaddr = (unsigned char*)addr;
+    for( int i = 0; i < size; i++ ) {
+      *copyaddr++ = readByte();
+    }
+
+    // increment file name to load next segment if necessary.
+    filename[name_end]++;
+  }
+
+  launch(launchAddr);
 }

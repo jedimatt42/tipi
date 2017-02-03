@@ -136,9 +136,10 @@ prev_syn = RESET
 #
 def resetProtocol():
     global prev_syn
-    # And wait for the remote to reset as well
+    print "waiting for reset..."
+    # And wait for the TI to signal RESET
     while getTC() != RESET:
-        logInputs()
+        pass
     # Reset the control signals
     setRC(RESET)
     prev_syn = RESET
@@ -171,27 +172,28 @@ def receiveByte():
 ## 
 ## MAIN
 ##
-
-resetProtocol()
-
-filename = ""
-val = receiveByte()
-while val != 0:
-    filename = filename + chr(val)
+while True:
+    resetProtocol()
+    filename = ""
     val = receiveByte()
+    while val != 0:
+        filename = filename + chr(val)
+        val = receiveByte()
+    print "File request: " + filename
 
-if filename.startswith("EA5."):
-    unix_name = filename[4:].strip().lower() + ".ea5"
-    print "loading: " + unix_name
-    fh = open(unix_name, 'rb')
-    try:
-        bytes = bytearray(fh.read())
-        for byte in bytes:
-            sendByte(byte)
-    finally:
-        fh.close()
-else:
-    print "bad file request: " + filename
+    if filename.startswith("EA5."):
+	unix_name = filename[4:].strip().lower() + ".ea5"
+	print "loading: " + unix_name
+	fh = open(unix_name, 'rb')
+	try:
+	    bytes = bytearray(fh.read())
+	    for byte in bytes:
+		sendByte(byte)
+	finally:
+	    fh.close()
+            print "transmission complete."
+    else:
+	print "bad file request: " + filename
 
 
 

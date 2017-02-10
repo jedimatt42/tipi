@@ -1,0 +1,8 @@
+; DSR ROM header
+	AORG >4000
+
+	DATA >0000
+        DATA >FFFF
+        DATA >AA01
+
+

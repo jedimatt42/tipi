@@ -1,0 +1,13 @@
+; Power up header list.
+powerup
+	DATA	>0000		; terminate powerup list.
+	DATA	onreset		; actual power up routine
+
+; Power UP routine to reset TIPI latches.
+onreset				; 
+	LI	R1,>5FFD	; Address of TIPI control signal outputs
+	CLR	*R1+		; Clear control output and inc to TIPI data output
+	CLR	*R1		; Clear TIPI data output
+	B	*R11		; return to console
+
+

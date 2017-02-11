@@ -12,8 +12,8 @@ clean:
 	rm tipi.bin
 	rm tipi.hex
 
-tipi.bin: header.a99
-	xas99.py -R -b -L tipi.list -o $@ $<
+tipi.bin: rom.a99 header.a99 powerup.a99
+	xas99.py -R -b -L tipi.list -o $@ rom.a99
 	mv $@_4000 $@
 
 tipi.hex: tipi.bin

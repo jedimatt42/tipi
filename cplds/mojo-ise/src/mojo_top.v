@@ -52,7 +52,7 @@ module mojo_top(
 wire rst = ~rst_n; // make reset active high
 
 // a CRU bit to act as device-enable
-reg cru_bit;
+reg crubit_q;
 
 // latched data channel
 reg [7:0] data_q;
@@ -69,27 +69,27 @@ assign tipi_control_out = (~ti_memen && ti_dbin && ti_a == 16'h5ff9) ? 1'b0 : 1'
 assign tipi_dsr_out = 1'b1;
 
 always @(negedge ti_we) begin
-  if (~ti_memen && ti_a == 16'h5fff) begin
-    data_q <= ti_data;
-  end else 
-  if (~ti_memen && ti_a == 16'h5ffd) begin
-    control_q <= ti_data;
+  if (crubit_q && ~ti_memen) begin
+    if (ti_a == 16'h5fff) begin
+      data_q <= ti_data;
+    end else 
+    if (ti_a == 16'h5ffd) begin
+      control_q <= ti_data;
+    end
   end
 end
 
-always @(negedge ti_cruclk or negedge ti_reset) begin
-  if (~ti_reset) begin
-    cru_bit <= 1'b0;
-  end else
-  if (ti_memen == 1'b1 && ti_a[3] == 1'b1 && ti_a[4:7] == cru_base) begin
-    cru_bit <= ti_a[15];
+always @(negedge ti_cruclk) begin
+  if (ti_a[3] && (ti_a[4:7] == cru_base)) begin
+    crubit_q <= ti_a[15];
   end
 end
 
 assign rpi_d = data_q;
 assign rpi_s = control_q;
 
-assign led[7:1] = control_q[7:1];
-assign led[0] = cru_bit;
+assign led[7:4] = data_q[3:0];
+assign led[3:1] = control_q[2:0];
+assign led[0] = crubit_q;
 
 endmodule

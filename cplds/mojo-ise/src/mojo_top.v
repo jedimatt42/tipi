@@ -51,7 +51,13 @@ module mojo_top(
 	 output [0:7]dsr_d
 );
 
+reg [0:7] dsr_data_rom [0:8191];
+initial begin 
+  $readmemh("../../../dsr/tipi.hex", dsr_data_rom);
+end
 
+reg [0:7] dsr_q;
+wire a15;
 
 wire rst = ~rst_n; // make reset active high
 wire dsr_oe;
@@ -68,6 +74,7 @@ reg [7:0] control_q;
 assign spi_miso = 1'bz;
 assign avr_rx = 1'bz;
 assign spi_channel = 4'bzzzz;
+assign a15 = ti_a[15];
 
 // need to consider crubit_q also... 
 assign tipi_data_out = (crubit_q && ~ti_memen && ti_dbin && ti_a == 16'h5ffb) ? 1'b0 : 1'b1;
@@ -92,12 +99,16 @@ always @(negedge ti_cruclk) begin
   end
 end
 
-assign dsr_d = ti_a[8:15];
+always @(a15) begin
+  dsr_q = dsr_data_rom[ti_a[3:15]];
+end
+
+assign dsr_d = dsr_q;
 
 assign rpi_d = data_q;
 assign rpi_s = control_q;
 
-assign led[7:1] = 7'h00;
+assign led[7:1] = control_q[6:0];
 assign led[0] = crubit_q;
 
 endmodule

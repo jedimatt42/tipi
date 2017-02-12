@@ -16,6 +16,6 @@ tipi.bin: rom.a99 header.a99 powerup.a99
 	xas99.py -R -b -L tipi.list -o $@ rom.a99
 	mv $@_4000 $@
 
-tipi.hex: tipi.bin
+tipi.hex: tipi.bin bin2hex.py
 	./bin2hex.py >$@
 

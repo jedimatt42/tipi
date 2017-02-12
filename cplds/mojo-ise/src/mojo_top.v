@@ -100,7 +100,7 @@ always @(negedge ti_cruclk) begin
 end
 
 always @(a15) begin
-  dsr_q = dsr_data_rom[ti_a[3:15]];
+  dsr_q = dsr_data_rom[ti_a[7:15]];
 end
 
 assign dsr_d = dsr_q;

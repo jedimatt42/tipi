@@ -46,10 +46,15 @@ module mojo_top(
     // Data output to RPi latched from 0x5fff
     output [7:0]rpi_d,
     // Control signal output to RPi latched from 0x5ffd
-    output [7:0]rpi_s
+    output [7:0]rpi_s,
+	 // DSR ROM Data output from 0x4000 to 0x5ff8
+	 output [0:7]dsr_d
 );
 
+
+
 wire rst = ~rst_n; // make reset active high
+wire dsr_oe;
 
 // a CRU bit to act as device-enable
 reg crubit_q;
@@ -64,9 +69,11 @@ assign spi_miso = 1'bz;
 assign avr_rx = 1'bz;
 assign spi_channel = 4'bzzzz;
 
-assign tipi_data_out = (~ti_memen && ti_dbin && ti_a == 16'h5ffb) ? 1'b0 : 1'b1;
-assign tipi_control_out = (~ti_memen && ti_dbin && ti_a == 16'h5ff9) ? 1'b0 : 1'b1;
-assign tipi_dsr_out = 1'b1;
+// need to consider crubit_q also... 
+assign tipi_data_out = (crubit_q && ~ti_memen && ti_dbin && ti_a == 16'h5ffb) ? 1'b0 : 1'b1;
+assign tipi_control_out = (crubit_q && ~ti_memen && ti_dbin && ti_a == 16'h5ff9) ? 1'b0 : 1'b1;
+assign dsr_oe = (crubit_q && ~ti_memen && ti_dbin && ti_a > 16'h3fff && ti_a < 16'h5ff8) ? 1'b0 : 1'b1;
+assign tipi_dsr_out = dsr_oe;
 
 always @(negedge ti_we) begin
   if (crubit_q && ~ti_memen) begin
@@ -80,16 +87,17 @@ always @(negedge ti_we) begin
 end
 
 always @(negedge ti_cruclk) begin
-  if (ti_a[3] && (ti_a[4:7] == cru_base)) begin
+  if (ti_a[0:3] == 4'b0001 && (ti_a[4:7] == cru_base && ti_a[8:14] == 7'h00)) begin
     crubit_q <= ti_a[15];
   end
 end
 
+assign dsr_d = ti_a[8:15];
+
 assign rpi_d = data_q;
 assign rpi_s = control_q;
 
-assign led[7:4] = data_q[3:0];
-assign led[3:1] = control_q[2:0];
+assign led[7:1] = 7'h00;
 assign led[0] = crubit_q;
 
 endmodule

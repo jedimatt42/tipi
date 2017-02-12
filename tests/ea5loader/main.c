@@ -110,6 +110,8 @@ void main()
 
   writestring(4, 0, "LOADING...");
 
+  __asm__("LI r12, >1000\n\tsbo 0");
+
   unsigned int launchAddr = 0x0000;
   unsigned int ea5header = 0xFFFF;
 
@@ -145,6 +147,8 @@ void main()
     // increment file name to load next segment if necessary.
     filename[name_end]++;
   }
+
+  __asm__("LI r12, >1000\n\tsbz 0");
 
   launch(launchAddr);
 }

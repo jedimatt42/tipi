@@ -15,7 +15,7 @@ onreset				;
 	
 ; Write TIPI in the upper right corner of the title screen
 	LI	R1,>8C02	; port to tell vdp where to write
-	LI	R2,>1B00	; 4 characters from upper right
+	LI	R2,>9B00	; 4 characters from upper right, 5th line down
 	MOVB	R2,*R1		; set LSB of VDP address
 	SLA	R2,8		; slide the MSB up
 	MOVB	R2,*R1		; set MSB of VDP address

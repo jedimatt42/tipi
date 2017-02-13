@@ -22,7 +22,8 @@ tipidsr
 	CLR	R0
 	A	*R4,R0
 	S	@PABNLE,R0	;   rewind to beginning of device name
-	S	>0A,R0		;   rewind over PAB header
+	LI	R2,>0A
+	S	R2,R0		;   rewind over PAB header
 	LI	R1,VDPWA	; Fetch PAB opcode
 	SWPB	R0		;   have to write LSB first
 	MOVB	R0,*R1		;   store

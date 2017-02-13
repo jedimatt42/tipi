@@ -8,19 +8,28 @@
 ; This will be all about interacting with PABs in VDP and IO to the Raspberry PI
 
 ; So, PAB: Appears to be handed off in a fixed address in scratchpad. The DSR must work backwards from the end.
-PABNAME	EQU	>8356		; Address in VDP of Device Name
-PABNLEN	EQU	>8354		; Length of name (?only trust the LSB?)
-PABCOUNT EQU	>000A		; PAB begins 10 bytes before the name length
+PABNAM	EQU	>8356		; Address in VDP of Device Name
+PABNLE	EQU	>8354		; Length of name (?only trust the LSB?)
+PABCNT	EQU	>000A		; PAB begins 10 bytes before the name length
+; PAB begins at VDP address pointed to by: @>8356 - @>8354 - >0A
 
 
 ; Handle requests to TIPI device
 tipidsr
 	CLR	@TCOUT		; Clear control output 
 	CLR	@TDOUT		; Clear TIPI data output
-; # debug #
-lockup
-	JMP	lockup		; lock up the TI so I can debug
-	
+	LI	R4,PABNAM	; Begin computing beginning of PAB
+	CLR	R0
+	A	*R4,R0
+	S	@PABNLE,R0	;   rewind to beginning of device name
+	S	>0A,R0		;   rewind over PAB header
+	LI	R1,VDPWA	; Fetch PAB opcode
+	SWPB	R0		;   have to write LSB first
+	MOVB	R0,*R1		;   store
+	SWPB	R0		;   next up MSB
+	MOVB	R0,*R1		;   store
+	MOVB	@VDPRD,R3	;   opcode loaded!
+	JMP	lockup
 
 ; Return with error
 tipierr
@@ -33,4 +42,7 @@ tipiok
 tipipass
 	RT			; return to console
 
+; freeze here for debugging.
+lockup
+	JMP	lockup
 

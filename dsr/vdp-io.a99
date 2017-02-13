@@ -1,0 +1,7 @@
+
+; VDP IO Ports
+VDPRD	EQU	>8800		; VDP Read Data
+VDPST	EQU	>8802		; VDP Read Status
+VDPWA	EQU	>8C02		; VDP Write Address/Register
+VDPWD	EQU	>8C00		; VDP Write Data
+

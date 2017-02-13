@@ -1,0 +1,7 @@
+
+; TIPI IO ports
+TDOUT	EQU	>5FFF		; TIPI Data output
+TCOUT	EQU	>5FFD		; TIPI Control Signal output
+RDIN	EQU	>5FFB		; TIPI Control Signal output
+RCIN	EQU	>5FF9		; TIPI Control Signal output
+

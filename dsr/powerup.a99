@@ -1,17 +1,11 @@
-; Power up header list.
-powerup
-	DATA	>0000		; terminate powerup list.
-	DATA	onreset		; actual power up routine
-
 ; Data used by routines in powerup
 badge
 	TEXT	"TIPI"		; Our title screen badge
 
 ; Power UP routine to reset TIPI latches.
 onreset				; 
-	LI	R1,>5FFD	; Address of TIPI control signal outputs
-	CLR	*R1+		; Clear control output and inc to TIPI data output
-	CLR	*R1		; Clear TIPI data output
+	CLR	@TCOUT		; Clear control output
+	CLR	@TDOUT		; Clear TIPI data output
 	
 ; Write TIPI in the upper right corner of the title screen
 	LI	R1,>8C02	; port to tell vdp where to write
@@ -27,6 +21,6 @@ onreset				;
 	MOVB	*R2+,*R1	; write byte to vdp
 
 ; Return to TI startup
-	B	*R11		; return to console
+	RT			; return to console
 
 

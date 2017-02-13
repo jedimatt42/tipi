@@ -1,0 +1,36 @@
+; DSR Notes:
+; --
+; Available WP Registers: R0-R10
+;  R11 == Return address
+;  R12 == CRUBASE of current device
+; Available Scratchpad: >834A - >836D (inclusive) (except?? >8356 will receive address of PABDEV name in VDP)
+
+; This will be all about interacting with PABs in VDP and IO to the Raspberry PI
+
+; So, PAB: Appears to be handed off in a fixed address in scratchpad. The DSR must work backwards from the end.
+PABNAME	EQU	>8356		; Address in VDP of Device Name
+PABNLEN	EQU	>8354		; Length of name (?only trust the LSB?)
+PABCOUNT EQU	>000A		; PAB begins 10 bytes before the name length
+
+
+; Handle requests to TIPI device
+tipidsr
+	CLR	@TCOUT		; Clear control output 
+	CLR	@TDOUT		; Clear TIPI data output
+; # debug #
+lockup
+	JMP	lockup		; lock up the TI so I can debug
+	
+
+; Return with error
+tipierr
+	RT			; Should set error in pab first
+
+; Return success with PAB updated
+tipiok
+	INCT	R11		; increment 2, and then fall through
+; Return without handling device
+tipipass
+	RT			; return to console
+
+

@@ -4,9 +4,22 @@
 	BYTE	>AA		; Standard Header
         BYTE	>01		; version
         DATA	>0000		; cart program list - must be none.
-        DATA	powerup		; power up list
-	DATA	>0000		; program list
-	DATA	>0000		; sub-program list
-	DATA	>0000		; DSR list
+        DATA	pwrlnk		; power up list
+	DATA	>0000		; user-program list
+	DATA	tipilnk		; DSR list
 	DATA	>0000		; ISR list
+	DATA	>0000		; BASIC subprograms
+
+; Power up header list.
+pwrlnk
+	DATA	>0000		; terminate powerup list.
+	DATA	onreset		; actual power up routine
+
+; Power up header list.
+tipilnk
+	DATA	>0000		; terminate dsr list.
+	DATA	tipidsr		; tipi dsr routine pointer
+	BYTE	4		; TIPI Drive name length
+	TEXT	"TIPI"		; name of tipi drive
+	EVEN
 

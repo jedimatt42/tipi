@@ -13,9 +13,24 @@ PABNLE	EQU	>8354		; Length of name (?only trust the LSB?)
 PABCNT	EQU	>000A		; PAB begins 10 bytes before the name length
 ; PAB begins at VDP address pointed to by: @>8356 - @>8354 - >0A
 
+; There is room in PAD for the 10 byte header at FAC
+PAD	EQU	->E0		; Beginning of scratchpad ram
+FAC	EQU	PAD+>4A		; 36 bytes available to DSR We'll copy the PAB header here.
+OPCODE	EQU	FAC+>0		; PAB - location of opcode after copied
+FLGSTS	EQU	FAC+>1		; PAB - [blah][blah]
+BUFADR	EQU	FAC+>2		; PAB - address of read or write buffer
+LRECLN	EQU	FAC+>4		; PAB - logical record length
+CHRCNT	EQU	FAC+>5		; PAB - character count
+RECNUM	EQU	FAC+>6		; PAB - record number
+SCNOFF	EQU	FAC+>8		; PAB - screen offset
+OPTLEN	EQU	FAC+>9		; PAB - option length
+DEVLEN	EQU	FAC+>10		; PAB - device length
+;  I doubt I should use this- PABVDP	EQU	FAC+>12		; PAB - Pointer to PAB in VDP RAM
+
 
 ; Handle requests to TIPI device
 tipidsr
+	STWP	R10		; PAB equates are relative to R10, don't mess with R10
 	CLR	@TCOUT		; Clear control output 
 	CLR	@TDOUT		; Clear TIPI data output
 	LI	R4,PABNAM	; Begin computing beginning of PAB
@@ -24,13 +39,27 @@ tipidsr
 	S	@PABNLE,R0	;   rewind to beginning of device name
 	LI	R2,>0A
 	S	R2,R0		;   rewind over PAB header
-	LI	R1,VDPWA	; Fetch PAB opcode
+
+; Set VDP to read from beginning of PAB that is now in R0 and copy to FAC
 	SWPB	R0		;   have to write LSB first
-	MOVB	R0,*R1		;   store
+	MOVB	R0,*R15		;   store
 	SWPB	R0		;   next up MSB
-	MOVB	R0,*R1		;   store
-	MOVB	@VDPRD,R3	;   opcode loaded!
-	JMP	lockup
+	MOVB	R0,*R15		;   store
+	LI	R0,>0A		; while r0 ne 0; do
+	MOV	R10,R1		;   R1 will be index relative to FAC
+	CLR	R2
+copypab	
+	MOVB	@VDPRD,@OPCODE(R1)	;   opcode loaded!
+	INC	R1		;   inc index... 
+	DEC	R0		;   r0 is our loop counter
+	C	R0,R2
+	JNE	copypab		;   copy more bytes if R0 is not 0
+
+; check for opcodes we handle
+	LI	R2,>0500	; check for LOAD	
+	CB	@OPCODE(R10),R2	;   compare opcode in FAC
+	JEQ	ocload
+
 
 ; Return with error
 tipierr
@@ -46,4 +75,8 @@ tipipass
 ; freeze here for debugging.
 lockup
 	JMP	lockup
+
+; Handle LOAD opcode >05
+ocload
+	RT
 

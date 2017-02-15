@@ -11,8 +11,8 @@ onreset				;
 ; Write TIPI in the upper right corner of the title screen
 	LI	R1,VDPWA	; port to tell vdp where to write
 	LI	R2,>009C	; 4 characters from upper right, 5th line down
-	MOVB	@R2LB(R5),*R1	; set LSB of VDP address
 	ORI	R2,VDWRITE	; flag for setting write address
+	MOVB	@R2LB(R5),*R1	; set LSB of VDP address
 	MOVB	R2,*R1		; set MSB of VDP address
 	LI	R2,badge	; point to badge text
 	LI	R1,VDPWD	; port to write data into vdp

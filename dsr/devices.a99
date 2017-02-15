@@ -25,35 +25,47 @@ RECNUM	EQU	FAC+>6		; PAB - record number
 SCNOFF	EQU	FAC+>8		; PAB - screen offset
 OPTLEN	EQU	FAC+>9		; PAB - option length
 DEVLEN	EQU	FAC+>10		; PAB - device length
-;  I doubt I should use this- PABVDP	EQU	FAC+>12		; PAB - Pointer to PAB in VDP RAM
+;  I doubt I should use this- 
+PABVDP	EQU	FAC+>12		; PAB - Pointer to PAB in VDP RAM
 
+
+; Error codes
+EDVNAME	EQU	>00		; Bad device name
+EWPROT	EQU	>01		; Device write protected
+EOPATTR	EQU	>02		; Bad open attribute
+EILLOP	EQU	>03		; Illegal Operation
+ENOSPAC	EQU	>04		; Out of table/buffer space
+EEOF	EQU	>05		; Attempt to read past eof
+EDEVERR	EQU	>06		; Any device failure
+EFILERR	EQU	>07		; Any file failure
 
 ; Handle requests to TIPI device
 tipidsr
+	LIMI	0		; Disable interrupts
 	STWP	R10		; PAB equates are relative to R10, don't mess with R10
 	CLR	@TCOUT		; Clear control output 
 	CLR	@TDOUT		; Clear TIPI data output
 	LI	R4,PABNAM	; Begin computing beginning of PAB
-	CLR	R0
-	A	*R4,R0
-	S	@PABNLE,R0	;   rewind to beginning of device name
+	CLR	R9
+	A	*R4,R9
+	S	@PABNLE,R9	;   rewind to beginning of device name
 	LI	R2,>0A
-	S	R2,R0		;   rewind over PAB header
+	S	R2,R9		;   rewind over PAB header
+; NOW R9 == V@PAB - beginning of VDP PAB, we will preserve that.
+
 
 ; Set VDP to read from beginning of PAB that is now in R0 and copy to FAC
-	SWPB	R0		;   have to write LSB first
-	MOVB	R0,*R15		;   store
-	SWPB	R0		;   next up MSB
-	MOVB	R0,*R15		;   store
-	LI	R0,>0A		; while r0 ne 0; do
-	MOV	R10,R1		;   R1 will be index relative to FAC
-	CLR	R2
+	SWPB	R9		;   have to write LSB first
+	MOVB	R9,*R15		;   store
+	SWPB	R9		;   next up MSB
+	MOVB	R9,*R15		;   store
+	LI	R1,>0A		; while r1 ne 0; do
+	MOV	R10,R2		;   R2 will be index relative to FAC
 copypab	
-	MOVB	@VDPRD,@OPCODE(R1)	;   opcode loaded!
-	INC	R1		;   inc index... 
-	DEC	R0		;   r0 is our loop counter
-	C	R0,R2
-	JNE	copypab		;   copy more bytes if R0 is not 0
+	MOVB	@VDPRD,@OPCODE(R2)	;   opcode loaded!
+	INC	R2		;   inc index... 
+	DEC	R1		;   r1 is our loop counter
+	JNE	copypab		;   copy more bytes if R1 is not 0
 
 ; check for opcodes we handle
 	LI	R2,>0500	; check for LOAD	
@@ -61,15 +73,26 @@ copypab
 	JEQ	ocload
 
 
-; Return with error
-tipierr
-	RT			; Should set error in pab first
+; Return with unsupported error
+nosup
+	LI R1,EILLOP		; We will return with illegal operation by default
+	SRC R1,3		;   move status to top 3 bits.
+; TODO: mask in the 3 PAB status bits - not supposed to change those.
+	MOV R9,R3		;   compose the address of status byte
+	INC R3			;   second byte in PAB
+	SWPB	R3		; set vdp write address
+	MOVB	R3,*R15
+	SWPB	R3
+	ORI	R3,VDWRITE	; set write address flag to avoid extra increment.
+	MOVB	R3,*R15
+	MOVB	R1,@VDPWD	;   write the status byte
 
-; Return success with PAB updated
+; Return handled status with PAB updated
 tipiok
 	INCT	R11		; increment 2, and then fall through
 ; Return without handling device
 tipipass
+	LIMI	2		; re-enable interrupts
 	RT			; return to console
 
 ; freeze here for debugging.
@@ -78,5 +101,5 @@ lockup
 
 ; Handle LOAD opcode >05
 ocload
-	RT
+	JMP	tipipass
 

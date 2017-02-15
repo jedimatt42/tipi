@@ -5,3 +5,6 @@ VDPST	EQU	>8802		; VDP Read Status
 VDPWA	EQU	>8C02		; VDP Write Address/Register
 VDPWD	EQU	>8C00		; VDP Write Data
 
+; VDP Flag for setting Write address
+VDWRITE	EQU	>4000		; ORI w/register holder target vdp write address.
+

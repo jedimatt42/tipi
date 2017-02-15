@@ -75,11 +75,11 @@ copypab
 
 ; Return with unsupported error
 nosup
-	LI R1,EILLOP		; We will return with illegal operation by default
-	SRC R1,3		;   move status to top 3 bits.
-; TODO: mask in the 3 PAB status bits - not supposed to change those.
-	MOV R9,R3		;   compose the address of status byte
-	INC R3			;   second byte in PAB
+	LI	R1,EILLOP	; We will return with illegal operation by default
+	SRC	R1,3		;   move status to top 3 bits.
+	SOCB	@FLGSTS(R10),R1	;   merge with file flags so we don't overwrite them
+	MOV	R9,R3		;   compose the address of status byte
+	INC	R3		;   second byte in PAB
 	SWPB	R3		; set vdp write address
 	MOVB	R3,*R15
 	SWPB	R3

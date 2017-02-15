@@ -4,14 +4,15 @@ badge
 
 ; Power UP routine to reset TIPI latches.
 onreset				; 
+	STWP	R5		; Hold WP for EQU based offsets.
 	CLR	@TCOUT		; Clear control output
 	CLR	@TDOUT		; Clear TIPI data output
 	
 ; Write TIPI in the upper right corner of the title screen
 	LI	R1,VDPWA	; port to tell vdp where to write
-	LI	R2,>9B00	; 4 characters from upper right, 5th line down
-	MOVB	R2,*R1		; set LSB of VDP address
-	SLA	R2,8		; slide the MSB up
+	LI	R2,>009C	; 4 characters from upper right, 5th line down
+	MOVB	@R2LB(R5),*R1	; set LSB of VDP address
+	ORI	R2,VDWRITE	; flag for setting write address
 	MOVB	R2,*R1		; set MSB of VDP address
 	LI	R2,badge	; point to badge text
 	LI	R1,VDPWD	; port to write data into vdp

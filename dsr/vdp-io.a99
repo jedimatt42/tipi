@@ -8,3 +8,21 @@ VDPWD	EQU	>8C00		; VDP Write Data
 ; VDP Flag for setting Write address
 VDWRITE	EQU	>4000		; ORI w/register holder target vdp write address.
 
+; Useful values if you have the WP in a resgister since VDP requires byte addressing
+R0LB	EQU	>01
+R1LB	EQU	>03
+R2LB	EQU	>05
+R3LB	EQU	>07
+R4LB	EQU	>09
+R5LB	EQU	>0B
+R6LB	EQU	>0D
+R7LB	EQU	>0F
+R8LB	EQU	>11
+R9LB	EQU	>13
+R10LB	EQU	>15
+; R11 is return usually
+; R12 is crubase usually
+; R13 is rtwp
+; R14 is ???
+; R15 is VDPWA
+

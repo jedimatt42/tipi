@@ -3,7 +3,7 @@
 ; Available WP Registers: R0-R10
 ;  R11 == Return address
 ;  R12 == CRUBASE of current device
-; Available Scratchpad: >834A - >836D (inclusive) (except?? >8356 will receive address of PABDEV name in VDP)
+; Available Scratchpad: >834A - >836D (inclusive) (except?? >8354 and >8356 are preset to locate PAB in VDP)
 
 ; This will be all about interacting with PABs in VDP and IO to the Raspberry PI
 
@@ -39,12 +39,95 @@ EEOF	EQU	>05		; Attempt to read past eof
 EDEVERR	EQU	>06		; Any device failure
 EFILERR	EQU	>07		; Any file failure
 
+; Macros
+; Function calling support, such as a alt return address
+RET	EQU	>836D		; stash place for previous R11:  MOV R11,@RET   BL tipirst  MOV @RET,R11
+
+; Pattern of Register Usage - 
+;  R15 - VDPWA
+;  R10 - Base address of Workspace, many EQUs are relative to R10
+;  R0  - used in local subroutines
+
+; store R11, and restore it around BL instruction 
+	.defm callsub
+	LI	R0,#1
+	MOV	R11,@RET
+	BL	*R0
+	MOV	@RET,R11
+	.endm
+
+
+; TIPI Routine Constants
+TCRSET	EQU	>0100		; Reset SYN value
+TCWB	EQU	>0200		; Write Byte SYN value
+TCRB	EQU	>0400		; Read Byte SYN value
+TCACKM	EQU	>0300		; ACK Mask
+
+; TIPI Reset
+tipirst
+	LI	R0,TCRSET
+	MOVB	R0,@TCOUT	; send reset signal
+!	CB	@RCIN,R0	; wait for ack
+	JNE	-!
+	RT
+	
+; TIPI Send PAB
+tipispab
+	LI	R0,TCWB		; R0 will be SYN and expected ACK for writing
+	LI	R1,>0A		; PAB is 10 bytes
+	MOV	R10,R2		; R@ is index into PAB in scratchpad
+!	MOVB	@OPCODE(R2),@TDOUT	; set data 
+	MOVB	R0,@TCOUT	; signal data available
+!	CB	@RCIN,R0	; check for ack
+	JNE	-!
+	AI	R0,>0100
+	ANDI	R0,TCACKM	; rotate alternate syn bit.
+	INC	R2		; idx++
+	DEC	R1		; count--
+	JNE	-!!
+	RT
+
+; TIPI Send device/filename
+tipisdev
+	LI	R0,TCWB		; R0 will be SYN and expected ACK for writing
+	LI	R4,PABNAM	; Begin computing beginning of PAB device name
+	MOV	*R4,R9
+	S	@PABNLE,R9	;   rewind to beginning of device name
+	SWPB	R9
+	MOVB	R9,@VDPWA
+	SWPB	R9
+	MOVB	R9,@VDPWA
+
+!       MOVB    @VDPRD,@TDOUT	; send byte from vdp
+	MOVB	R0,@TCOUT	; singal data available
+!	CB	@RCIN,R0	; check for ack
+	JNE	-!
+	AI	R0,>0100	; rotate alternate syn bit.
+	ANDI	R0,TCACKM
+	INC	R2		; idx++
+	DEC	R1		; count--
+	JNE	-!!
+	RT
+
+; TIPI Check a response code from the PI 
+tipichk 			; R1 will be check code
+	LI	R0,TCRB		; SYN setup for read byte
+	MOVB	R0,@TCOUT	; Signal ready to read
+	ANDI	R0,TCACKM
+!	CB	@RCIN,R0	; wait for ack.
+	JNE	-!
+	CLR	R1
+	MOVB	@RDIN,R1	; Fetch data
+	RT
+
+
 ; Handle requests to TIPI device
 tipidsr
 	LIMI	0		; Disable interrupts
 	STWP	R10		; PAB equates are relative to R10, don't mess with R10
-	CLR	@TCOUT		; Clear control output 
-	CLR	@TDOUT		; Clear TIPI data output
+
+	.callsub tipirst	; a base level handshake to get on the same page as the RPi.
+
 	LI	R4,PABNAM	; Begin computing beginning of PAB
 	CLR	R9
 	A	*R4,R9
@@ -76,6 +159,7 @@ copypab
 ; Return with unsupported error
 nosup
 	LI	R1,EILLOP	; We will return with illegal operation by default
+reterr
 	SRC	R1,3		;   move status to top 3 bits.
 	SOCB	@FLGSTS(R10),R1	;   merge with file flags so we don't overwrite them
 	MOV	R9,R3		;   compose the address of status byte
@@ -92,6 +176,9 @@ tipiok
 	INCT	R11		; increment 2, and then fall through
 ; Return without handling device
 tipipass
+	CLR	R0		; clean up output latches before we go.
+	MOVB	R0,@TDOUT
+	MOVB	R0,@TCOUT
 	LIMI	2		; re-enable interrupts
 	RT			; return to console
 
@@ -101,5 +188,14 @@ lockup
 
 ; Handle LOAD opcode >05
 ocload
-	JMP	tipipass
+	.callsub tipispab
+	.callsub tipirst
+	.callsub tipisdev
+	.callsub tipirst
+;	.callsub tipichk
+;	CI	R1,>0100
+;	JEQ	nosup
+	LI	R1,EDEVERR
+	JMP	reterr
+;	JMP	tipipass
 

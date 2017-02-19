@@ -17,5 +17,6 @@ tipi.bin: rom.a99 header.a99 vdp-io.a99 tipi-io.a99 powerup.a99 devices.a99
 	mv $@_4000 $@
 
 tipi.hex: tipi.bin bin2hex.py
+	@ls -l tipi.bin
 	./bin2hex.py >$@
 

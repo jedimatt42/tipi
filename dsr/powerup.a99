@@ -5,8 +5,8 @@ badge
 ; Power UP routine to reset TIPI latches.
 onreset				; 
 	STWP	R5		; Hold WP for EQU based offsets.
-	CLR	@TCOUT		; Clear control output
 	CLR	@TDOUT		; Clear TIPI data output
+	CLR	@TCOUT		; Clear control output
 	
 ; Write TIPI in the upper right corner of the title screen
 	LI	R1,VDPWA	; port to tell vdp where to write

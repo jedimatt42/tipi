@@ -52,15 +52,21 @@ module mojo_top(
 );
 
 reg [0:7] dsr_data_rom [0:8191];
-initial begin 
+
+integer i;
+initial begin
   $readmemh("../../../dsr/tipi.hex", dsr_data_rom);
+
+  $display("dsr_data_rom:");
+  for (i=0; i < 600; i=i+1)
+     $display("%d:%h",i,dsr_data_rom[i]);
+
 end
 
 reg [0:7] dsr_q;
 wire a15;
 
 wire rst = ~rst_n; // make reset active high
-wire dsr_oe;
 
 // a CRU bit to act as device-enable
 reg crubit_q;
@@ -74,13 +80,11 @@ reg [7:0] control_q;
 assign spi_miso = 1'bz;
 assign avr_rx = 1'bz;
 assign spi_channel = 4'bzzzz;
-assign a15 = ti_a[15];
 
 // need to consider crubit_q also... 
 assign tipi_data_out = (crubit_q && ~ti_memen && ti_dbin && ti_a == 16'h5ffb) ? 1'b0 : 1'b1;
 assign tipi_control_out = (crubit_q && ~ti_memen && ti_dbin && ti_a == 16'h5ff9) ? 1'b0 : 1'b1;
-assign dsr_oe = (crubit_q && ~ti_memen && ti_dbin && ti_a > 16'h3fff && ti_a < 16'h5ff8) ? 1'b0 : 1'b1;
-assign tipi_dsr_out = dsr_oe;
+assign tipi_dsr_out = (crubit_q && ~ti_memen && ti_dbin && ti_a > 16'h3fff && ti_a < 16'h5ff8) ? 1'b0 : 1'b1;
 
 always @(negedge ti_we) begin
   if (crubit_q && ~ti_memen) begin
@@ -99,8 +103,12 @@ always @(negedge ti_cruclk) begin
   end
 end
 
-always @(a15) begin
-  dsr_q <= dsr_data_rom[ti_a[7:15]];
+integer rom_idx;
+
+// Use block ram, for the DSR ROM. Seems to require the clock for input.
+always @(posedge clk) begin
+  rom_idx <= ti_a[3:15];
+  dsr_q <= dsr_data_rom[rom_idx];
 end
 
 assign dsr_d = dsr_q;

@@ -57,31 +57,36 @@ RET	EQU	>836D		; stash place for previous R11:  MOV R11,@RET   BL tipirst  MOV @
 	.endm
 
 
-; TIPI Routine Constants
-TCRSET	EQU	>0100		; Reset SYN value
-TCWB	EQU	>0200		; Write Byte SYN value
-TCRB	EQU	>0400		; Read Byte SYN value
-TCACKM	EQU	>0300		; ACK Mask
+; TIPI Signal Constants
+TSRSET	EQU	>0100		; Reset SYN value
+TSWB	EQU	>0200		; Write Byte SYN value
+TSRB	EQU	>0600		; Read Byte SYN value
+TSACKM	EQU	>0300		; ACK Mask
 
 ; TIPI Reset
 tipirst
-	LI	R0,TCRSET
+	LI	R0,TSRSET
 	MOVB	R0,@TCOUT	; send reset signal
 !	CB	@RCIN,R0	; wait for ack
+	.ifndef emulation
 	JNE	-!
+	.endif
 	RT
 	
 ; TIPI Send PAB
 tipispab
-	LI	R0,TCWB		; R0 will be SYN and expected ACK for writing
+	LI	R0,TSWB		; R0 will be SYN and expected ACK for writing
 	LI	R1,>0A		; PAB is 10 bytes
 	MOV	R10,R2		; R@ is index into PAB in scratchpad
 !	MOVB	@OPCODE(R2),@TDOUT	; set data 
 	MOVB	R0,@TCOUT	; signal data available
 !	CB	@RCIN,R0	; check for ack
+	.ifndef emulation
 	JNE	-!
+	.endif
 	AI	R0,>0100
-	ANDI	R0,TCACKM	; rotate alternate syn bit.
+	ANDI	R0,TSACKM	; rotate alternate syn bit.
+	ORI	R0,TSWB
 	INC	R2		; idx++
 	DEC	R1		; count--
 	JNE	-!!
@@ -89,37 +94,29 @@ tipispab
 
 ; TIPI Send device/filename
 tipisdev
-	LI	R0,TCWB		; R0 will be SYN and expected ACK for writing
-	LI	R4,PABNAM	; Begin computing beginning of PAB device name
-	MOV	*R4,R9
-	S	@PABNLE,R9	;   rewind to beginning of device name
+	LI	R0,TSWB		; R0 will be SYN and expected ACK for writing
+	MOV	@PABNAM,R9	; Begin computing beginning of PAB device name
+	S	@PABNLE,R9	;   rewind to beginning of device name (might need to only consume the LSB of PABNLE
+	DEC	R9		;   and back one more to get full device name length
 	SWPB	R9
 	MOVB	R9,@VDPWA
 	SWPB	R9
 	MOVB	R9,@VDPWA
+	MOVB	@VDPRD,R1	; Initialize character counter
+	SRL	R1,8		;   just a byte
 
 !       MOVB    @VDPRD,@TDOUT	; send byte from vdp
 	MOVB	R0,@TCOUT	; singal data available
 !	CB	@RCIN,R0	; check for ack
+	.ifndef emulation
 	JNE	-!
+	.endif
 	AI	R0,>0100	; rotate alternate syn bit.
-	ANDI	R0,TCACKM
-	INC	R2		; idx++
+	ANDI	R0,TSACKM
+	ORI	R0,TSWB
 	DEC	R1		; count--
 	JNE	-!!
 	RT
-
-; TIPI Check a response code from the PI 
-tipichk 			; R1 will be check code
-	LI	R0,TCRB		; SYN setup for read byte
-	MOVB	R0,@TCOUT	; Signal ready to read
-	ANDI	R0,TCACKM
-!	CB	@RCIN,R0	; wait for ack.
-	JNE	-!
-	CLR	R1
-	MOVB	@RDIN,R1	; Fetch data
-	RT
-
 
 ; Handle requests to TIPI device
 tipidsr
@@ -191,11 +188,7 @@ ocload
 	.callsub tipispab
 	.callsub tipirst
 	.callsub tipisdev
-	.callsub tipirst
-;	.callsub tipichk
-;	CI	R1,>0100
-;	JEQ	nosup
-	LI	R1,EDEVERR
-	JMP	reterr
-;	JMP	tipipass
+;	LI	R1,EDEVERR
+;	JMP	reterr
+	JMP	tipipass
 

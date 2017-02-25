@@ -53,9 +53,10 @@ RC_BITS = [RC0, RC1, RC2, RC3]
 GPIO.setup(RD_BITS, GPIO.OUT)
 GPIO.setup(RC_BITS, GPIO.OUT)
 
-ACK_MASK = 0x03
-
 RESET = 0x01
+TSWB = 0x02
+TSRB = 0x06
+ACK_MASK = 0x03
  
 #
 # Return byte as string of bits: 0x40 => 01000000
@@ -155,7 +156,7 @@ def sendByte(byte):
     while prev_syn == next_ack:
         logInputs()
         prev_syn = getTC()
-        # TODO: should be validating that it was a read request from the TI.
+    # TODO: should be validating that it was a read request from the TI.
     next_ack = prev_syn
     setRD(byte)
     setRC(next_ack & ACK_MASK)
@@ -224,13 +225,16 @@ while True:
     print "Ready for request..."
     resetProtocol()
 
+    print "waiting for PAB..."
     pab = bytearray(10)
     for i in range(0,10):
         pab[i] = receiveByte()
 	print "PAB[" + str(i) + "]: " + hex(pab[i])
 
+    print "PAB received."
     resetProtocol()
 
+    print "waiting for devicename..."
     devicename = bytearray(pab[9])
     for i in range(0,pab[9]):
         devicename[i] = receiveByte()

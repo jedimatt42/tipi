@@ -29,7 +29,7 @@ DEVLEN	EQU	FAC+>10		; PAB - device length
 PABVDP	EQU	FAC+>12		; PAB - Pointer to PAB in VDP RAM
 
 
-; Error codes
+; Error codes - RPi will return one of these or SUCCESS after evaluating PAB and device name.
 EDVNAME	EQU	>00		; Bad device name
 EWPROT	EQU	>01		; Device write protected
 EOPATTR	EQU	>02		; Bad open attribute
@@ -39,6 +39,9 @@ EEOF	EQU	>05		; Attempt to read past eof
 EDEVERR	EQU	>06		; Any device failure
 EFILERR	EQU	>07		; Any file failure
 
+; Success code
+SUCCESS	EQU	>FF		; Returned from RPi if PAB will be handled.
+
 ; Macros
 ; Function calling support, such as a alt return address
 RET	EQU	>836D		; stash place for previous R11:  MOV R11,@RET   BL tipirst  MOV @RET,R11
@@ -46,9 +49,8 @@ RET	EQU	>836D		; stash place for previous R11:  MOV R11,@RET   BL tipirst  MOV @
 ; Pattern of Register Usage - 
 ;  R15 - VDPWA
 ;  R10 - Base address of Workspace, many EQUs are relative to R10
-;  R0  - used in local subroutines
 
-; store R11, and restore it around BL instruction 
+; store R11, and restore it around BL instruction , clobbers R0
 	.defm callsub
 	LI	R0,#1
 	MOV	R11,@RET
@@ -57,31 +59,49 @@ RET	EQU	>836D		; stash place for previous R11:  MOV R11,@RET   BL tipirst  MOV @
 	.endm
 
 
-; TIPI Routine Constants
-TCRSET	EQU	>0100		; Reset SYN value
-TCWB	EQU	>0200		; Write Byte SYN value
-TCRB	EQU	>0400		; Read Byte SYN value
-TCACKM	EQU	>0300		; ACK Mask
+; TIPI Signal Constants
+TSRSET	EQU	>0100		; Reset SYN value
+TSWB	EQU	>0200		; Write Byte SYN value
+TSRB	EQU	>0600		; Read Byte SYN value
+TSACKM	EQU	>0300		; ACK Mask
+
+; TIPI Read Byte - value returned in R1 LSB, not really designed for looping...
+readbyte
+	LI	R0,TSRB
+	MOVB	R0,@TCOUT	; request a byte
+	ANDI	R0,TSACKM
+!	CB	@RCIN,R0	; wait for ack
+	.ifndef	emulation
+	JNE	-!
+	.endif
+	MOVB	@RDIN,R1	; read the data
+	SRL	R1,8
+	RT
 
 ; TIPI Reset
 tipirst
-	LI	R0,TCRSET
+	LI	R0,TSRSET
 	MOVB	R0,@TCOUT	; send reset signal
 !	CB	@RCIN,R0	; wait for ack
+	.ifndef emulation
 	JNE	-!
+	.endif
 	RT
 	
 ; TIPI Send PAB
 tipispab
-	LI	R0,TCWB		; R0 will be SYN and expected ACK for writing
+	LI	R0,TSWB		; R0 will be SYN and expected ACK for writing
 	LI	R1,>0A		; PAB is 10 bytes
 	MOV	R10,R2		; R@ is index into PAB in scratchpad
 !	MOVB	@OPCODE(R2),@TDOUT	; set data 
 	MOVB	R0,@TCOUT	; signal data available
 !	CB	@RCIN,R0	; check for ack
+	.ifndef emulation
 	JNE	-!
+	.endif
 	AI	R0,>0100
-	ANDI	R0,TCACKM	; rotate alternate syn bit.
+	ANDI	R0,TSACKM	; rotate alternate syn bit.
+	ORI	R0,TSWB
 	INC	R2		; idx++
 	DEC	R1		; count--
 	JNE	-!!
@@ -89,37 +109,29 @@ tipispab
 
 ; TIPI Send device/filename
 tipisdev
-	LI	R0,TCWB		; R0 will be SYN and expected ACK for writing
-	LI	R4,PABNAM	; Begin computing beginning of PAB device name
-	MOV	*R4,R9
-	S	@PABNLE,R9	;   rewind to beginning of device name
+	LI	R0,TSWB		; R0 will be SYN and expected ACK for writing
+	MOV	@PABNAM,R9	; Begin computing beginning of PAB device name
+	S	@PABNLE,R9	;   rewind to beginning of device name (might need to only consume the LSB of PABNLE
+	DEC	R9		;   and back one more to get full device name length
 	SWPB	R9
 	MOVB	R9,@VDPWA
 	SWPB	R9
 	MOVB	R9,@VDPWA
+	MOVB	@VDPRD,R1	; Initialize character counter
+	SRL	R1,8		;   just a byte
 
 !       MOVB    @VDPRD,@TDOUT	; send byte from vdp
 	MOVB	R0,@TCOUT	; singal data available
 !	CB	@RCIN,R0	; check for ack
+	.ifndef emulation
 	JNE	-!
+	.endif
 	AI	R0,>0100	; rotate alternate syn bit.
-	ANDI	R0,TCACKM
-	INC	R2		; idx++
+	ANDI	R0,TSACKM
+	ORI	R0,TSWB
 	DEC	R1		; count--
 	JNE	-!!
 	RT
-
-; TIPI Check a response code from the PI 
-tipichk 			; R1 will be check code
-	LI	R0,TCRB		; SYN setup for read byte
-	MOVB	R0,@TCOUT	; Signal ready to read
-	ANDI	R0,TCACKM
-!	CB	@RCIN,R0	; wait for ack.
-	JNE	-!
-	CLR	R1
-	MOVB	@RDIN,R1	; Fetch data
-	RT
-
 
 ; Handle requests to TIPI device
 tipidsr
@@ -150,15 +162,24 @@ copypab
 	DEC	R1		;   r1 is our loop counter
 	JNE	copypab		;   copy more bytes if R1 is not 0
 
-; check for opcodes we handle
-	LI	R2,>0500	; check for LOAD	
-	CB	@OPCODE(R10),R2	;   compare opcode in FAC
-	JEQ	ocload
+; Send request to RPi
+	.callsub tipispab
+	.callsub tipirst
+	.callsub tipisdev
+        
+; Handle result
+	.callsub tipirst
+	.callsub readbyte	; Get initial response from RPi (code will be in R1)
+	CI	R1,EDVNAME	; If device name error ( such as we don't handle it )
+	JEQ	tipipass
+	CI	R1,SUCCESS	; If not success, we'll pass the code back to the PAB
+	JNE	reterr
+
+; RPi thinks it can handle this request :) Good news!
+	LI	R1,EEOF		; Lets just fall through with an EOF error for now...
 
 
-; Return with unsupported error
-nosup
-	LI	R1,EILLOP	; We will return with illegal operation by default
+; Exit and return an error status back to OS, status expected in R1
 reterr
 	SRC	R1,3		;   move status to top 3 bits.
 	SOCB	@FLGSTS(R10),R1	;   merge with file flags so we don't overwrite them
@@ -185,17 +206,4 @@ tipipass
 ; freeze here for debugging.
 lockup
 	JMP	lockup
-
-; Handle LOAD opcode >05
-ocload
-	.callsub tipispab
-	.callsub tipirst
-	.callsub tipisdev
-	.callsub tipirst
-;	.callsub tipichk
-;	CI	R1,>0100
-;	JEQ	nosup
-	LI	R1,EDEVERR
-	JMP	reterr
-;	JMP	tipipass
 

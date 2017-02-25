@@ -123,9 +123,10 @@ def setRC(value):
 # Debugging output, to show currently available bits
 #
 def logInputs():
-    sys.stdout.write( hex(readTiByte(TD_BITS)) + " - " + hex(readTiByte(TC_BITS)) )
-    sys.stdout.write( '\r' )
-    sys.stdout.flush()
+    # sys.stdout.write( hex(readTiByte(TD_BITS)) + " - " + hex(readTiByte(TC_BITS)) )
+    # sys.stdout.write( '\r' )
+    # sys.stdout.flush()
+    pass
 
 #
 # Block until both sides show control bits reset
@@ -161,6 +162,7 @@ for i in range(0, 8192):
     prev_syn = getTC()
     while prev_syn == next_ack:
         prev_syn = getTC()
+        logInputs()
     next_ack = prev_syn
     setRD(message[i])
     setRC(next_ack & ACK_MASK)
@@ -181,6 +183,7 @@ for i in range(0, 8192):
     prev_syn = getTC()
     while prev_syn == next_ack:
         prev_syn = getTC()
+        logInputs()
     next_ack = prev_syn
     val = getTD()
     setRC(next_ack & ACK_MASK)

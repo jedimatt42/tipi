@@ -149,8 +149,12 @@ def resetProtocol():
 # transmit a byte when TI requests it
 def sendByte(byte):
     global prev_syn
+    timeout = 1000000
     next_ack = prev_syn
     while prev_syn == next_ack:
+        timeout -= 1
+        if timeout == 0:
+            raise Exception("timeout sending byte")
         prev_syn = getTC()
     next_ack = prev_syn
     setRD(byte)
@@ -182,13 +186,15 @@ while True:
     print "File request: " + filename
 
     if filename.startswith("EA5."):
-	unix_name = filename[4:].strip().lower() + ".ea5"
+	unix_name = "/tipi_disk/" + filename[4:].strip()
 	print "loading: " + unix_name
 	fh = open(unix_name, 'rb')
 	try:
 	    bytes = bytearray(fh.read())
-	    for byte in bytes:
+	    for byte in bytes[128:]:
 		sendByte(byte)
+        except Exception as e:
+            print e
 	finally:
 	    fh.close()
             print "transmission complete."

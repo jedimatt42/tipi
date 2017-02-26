@@ -53,9 +53,7 @@ RET	EQU	>836D		; stash place for previous R11:  MOV R11,@RET   BL tipirst  MOV @
 ; store R11, and restore it around BL instruction , clobbers R0
 	.defm callsub
 	LI	R0,#1
-	MOV	R11,@RET
 	BL	*R0
-	MOV	@RET,R11
 	.endm
 
 ; Set VDP read address
@@ -140,6 +138,7 @@ tipisdev
 ; Handle requests to TIPI device
 tipidsr
 	LIMI	0		; Disable interrupts
+	MOV	R11,@RET	; Stash the dsrlnk Return address
 	STWP	R10		; PAB equates are relative to R10, don't mess with R10
 
 	.callsub tipirst	; a base level handshake to get on the same page as the RPi.
@@ -176,7 +175,7 @@ tipidsr
 	JNE	reterr
 
 ; RPi thinks it can handle this request :) Good news!
-	LI	R1,EEOF		; Lets just fall through with an EOF error for now...
+	JMP	tipiok
 
 
 ; Exit and return an error status back to OS, status expected in R1
@@ -194,16 +193,19 @@ reterr
 
 ; Return handled status with PAB updated
 tipiok
+	MOV	@RET,R11
 	INCT	R11		; increment 2, and then fall through
+	JMP	cleanexit
+
 ; Return without handling device
 tipipass
+	MOV	@RET,R11
+
+cleanexit
 	CLR	R0		; clean up output latches before we go.
 	MOVB	R0,@TDOUT
 	MOVB	R0,@TCOUT
 	LIMI	2		; re-enable interrupts
 	RT			; return to console
 
-; freeze here for debugging.
-lockup
-	JMP	lockup
 

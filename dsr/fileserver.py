@@ -240,15 +240,33 @@ while True:
         devicename[i] = receiveByte()
         print "devname[" + str(i) + "]: " + chr(devicename[i])
 
-    switcher = {
-	5: handleLoad
-    }
-
     # every path from here is a response back, so switching flags requires a reset in-between
     resetProtocol()
 
-    handler = switcher.get(opcode(pab), handleNotSupported)
-    handler(pab, devicename)
+    # Special file name requests to force different errors
+    filename = str(devicename)
+    if filename == "TIPI.EDVNAME":
+        sendErrorCode(EDVNAME)
+    elif filename == "TIPI.EWPROT":
+        sendErrorCode(EWPROT)
+    elif filename == "TIPI.EOPATTR":
+        sendErrorCode(EOPATTR)
+    elif filename == "TIPI.EILLOP":
+        sendErrorCode(EILLOP)
+    elif filename == "TIPI.ENOSPAC":
+        sendErrorCode(ENOSPAC)
+    elif filename == "TIPI.EEOF":
+        sendErrorCode(EEOF)
+    elif filename == "TIPI.EDEVERR":
+        sendErrorCode(EDEVERR)
+    elif filename == "TIPI.EFILERR":
+        sendErrorCode(EFILERR)
+    else:
+        switcher = {
+            5: handleLoad
+        }
+        handler = switcher.get(opcode(pab), handleNotSupported)
+        handler(pab, devicename)
 
     print "Request completed."
 

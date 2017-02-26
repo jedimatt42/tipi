@@ -93,7 +93,7 @@ tipispab
 	LI	R0,TSWB		; R0 will be SYN and expected ACK for writing
 	LI	R1,>0A		; PAB is 10 bytes
 	MOV	R10,R2		; R@ is index into PAB in scratchpad
-!	MOVB	@OPCODE(R2),@TDOUT	; set data 
+!	MOVB	@FAC(R2),@TDOUT	; set data 
 	MOVB	R0,@TCOUT	; signal data available
 !	CB	@RCIN,R0	; check for ack
 	.ifndef emulation
@@ -156,11 +156,10 @@ tipidsr
 	MOVB	R9,*R15		;   store
 	LI	R1,>0A		; while r1 ne 0; do
 	MOV	R10,R2		;   R2 will be index relative to FAC
-copypab	
-	MOVB	@VDPRD,@OPCODE(R2)	;   opcode loaded!
+!	MOVB	@VDPRD,@FAC(R2)	;   load FAC from PAB in vdp
 	INC	R2		;   inc index... 
 	DEC	R1		;   r1 is our loop counter
-	JNE	copypab		;   copy more bytes if R1 is not 0
+	JNE	-!		;   copy more bytes if R1 is not 0
 
 ; Send request to RPi
 	.callsub tipispab

@@ -58,6 +58,13 @@ RET	EQU	>836D		; stash place for previous R11:  MOV R11,@RET   BL tipirst  MOV @
 	MOV	@RET,R11
 	.endm
 
+; Set VDP read address
+	.defm setvdpra
+	SWPB	#1
+	MOVB	#1,@VDPWA
+	SWPB	#1
+	MOVB	#1,@VDPWA
+	.endm
 
 ; TIPI Signal Constants
 TSRSET	EQU	>0100		; Reset SYN value
@@ -113,10 +120,7 @@ tipisdev
 	MOV	@PABNAM,R9	; Begin computing beginning of PAB device name
 	S	@PABNLE,R9	;   rewind to beginning of device name (might need to only consume the LSB of PABNLE
 	DEC	R9		;   and back one more to get full device name length
-	SWPB	R9
-	MOVB	R9,@VDPWA
-	SWPB	R9
-	MOVB	R9,@VDPWA
+	.setvdpra R9
 	MOVB	@VDPRD,R1	; Initialize character counter
 	SRL	R1,8		;   just a byte
 
@@ -150,10 +154,7 @@ tipidsr
 
 
 ; Set VDP to read from beginning of PAB that is now in R0 and copy to FAC
-	SWPB	R9		;   have to write LSB first
-	MOVB	R9,*R15		;   store
-	SWPB	R9		;   next up MSB
-	MOVB	R9,*R15		;   store
+	.setvdpra R9
 	LI	R1,>0A		; while r1 ne 0; do
 	MOV	R10,R2		;   R2 will be index relative to FAC
 !	MOVB	@VDPRD,@FAC(R2)	;   load FAC from PAB in vdp

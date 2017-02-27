@@ -42,6 +42,19 @@ EFILERR	EQU	>07		; Any file failure
 ; Success code
 SUCCESS	EQU	>FF		; Returned from RPi if PAB will be handled.
 
+; Opcodes
+OPOPEN	EQU	>0000		; Open file
+OPCLOSE	EQU	>0100		; Close file
+OPREAD	EQU	>0200		; Read file
+OPWRITE	EQU	>0300		; Write file
+OPREST	EQU	>0400		; Restore/rewind record
+OPLOAD	EQU	>0500		; Load program image file
+OPSAVE	EQU	>0600		; Save program image file
+OPDEL	EQU	>0700		; Delete file
+OPSCRAT	EQU	>0800		; Scratch Record
+OPSTAT	EQU	>0900		; Status (varies if file is open or not, RPi should keep state)
+
+
 ; Macros
 ; Function calling support, such as a alt return address
 RET	EQU	>836D		; stash place for previous R11:  MOV R11,@RET   BL tipirst  MOV @RET,R11
@@ -64,11 +77,28 @@ RET	EQU	>836D		; stash place for previous R11:  MOV R11,@RET   BL tipirst  MOV @
 	MOVB	#1,@VDPWA
 	.endm
 
+; Set VDP write address
+	.defm setvdpwa
+	ORI	#1,VDWRITE
+	SWPB	#1
+	MOVB	#1,@VDPWA
+	SWPB	#1
+	MOVB	#1,@VDPWA
+	.endm
+
 ; TIPI Signal Constants
 TSRSET	EQU	>0100		; Reset SYN value
 TSWB	EQU	>0200		; Write Byte SYN value
 TSRB	EQU	>0600		; Read Byte SYN value
 TSACKM	EQU	>0300		; ACK Mask
+
+; TIPI Cleanup - used before exit
+cleanup
+	CLR	R0		; clean up output latches before we go.
+	MOVB	R0,@TDOUT
+	MOVB	R0,@TCOUT
+	LIMI	2		; re-enable interrupts
+	RT
 
 ; TIPI Read Byte - value returned in R1 LSB, not really designed for looping...
 readbyte
@@ -135,6 +165,51 @@ tipisdev
 	JNE	-!!
 	RT
 
+; TIPI read word from RPi, ends up in R2
+tipirwd
+	LI	R0,TSRB		; SYN(0) read byte request
+	MOVB	R0,@TCOUT	; send read request
+	MOV	R0,R1		; prepare expected ack
+	ANDI	R1,TSACKM
+!	CB	@RCIN,R1	; wait for ack
+	.ifndef emulation
+	JNE	-!
+	.endif
+	MOVB	@RDIN,R2
+	AI	R0,>0100	; SYN(1) increment MSB for next request
+	ANDI	R0,TSACKM
+	ORI	R0,TSRB
+	MOVB	R0,@TCOUT
+	ANDI	R0,TSACKM	; prepare expected ack
+!	CB	@RCIN,R0	; wait for ack
+	.ifndef emulation
+	JNE	-!
+	.endif
+	SWPB	R2
+	MOVB	@RDIN,R2
+	SWPB	R2		; swizzle bytes so sending is in MSB, LSB order.
+	RT	
+	
+; TIPI write to vdp buffer, R2 must contain length to write
+tipiwbuf
+	MOV	@BUFADR(R10),R1	; get vdp address to write to
+	.setvdpwa R1		; set vdp write address register
+	LI	R0,TSRB		; SYN starts with b110
+!	MOVB	R0,@TCOUT	; Send read request
+	MOV	R0,R1		; set up expected ack
+	ANDI	R1,TSACKM
+!	CB	@RCIN,R1	; wait for ack
+	.ifndef emulation
+	JNE	-!
+	.endif
+	MOVB	@RDIN,@VDPWD	; copy data from RPI to VDP
+	AI	R0,>0100	; increment SYN
+	ANDI	R0,TSACKM
+	ORI	R0,TSRB
+	DEC	R2
+	JNE	-!!
+	RT
+
 ; Handle requests to TIPI device
 tipidsr
 	LIMI	0		; Disable interrupts
@@ -175,8 +250,37 @@ tipidsr
 	JNE	reterr
 
 ; RPi thinks it can handle this request :) Good news!
-	JMP	tipiok
+	CLR	R1		; switch on opcode in R1
+	MOVB	@OPCODE(R10),R1
 
+	CI	R1,OPLOAD	;   case OPSAVE: goto hload
+	JEQ	hload
+
+	LI	R1,EDEVERR	;   default: return device error
+	JMP	reterr
+
+; Handle response for OPCODE 5 - LOAD
+hload
+	.callsub tipirst
+	.callsub tipirwd	; now R2 should hold length of bytes to write to VDP.
+
+	.callsub tipirst
+	.callsub tipiwbuf 	; copy from @RDIN to @VDPWD after setting vdpwa, R2 - length to copy
+	JMP	retdone
+
+; 
+; Support 3 possible exit modes:
+;   tipi skips the device request
+;   tipi experiences an error
+;   tipi completes the request
+
+
+; Exit request complete
+retdone
+	.callsub cleanup
+	MOV	@RET,R11
+	INCT	R11
+	RT
 
 ; Exit and return an error status back to OS, status expected in R1
 reterr
@@ -190,22 +294,11 @@ reterr
 	ORI	R3,VDWRITE	; set write address flag to avoid extra increment.
 	MOVB	R3,*R15
 	MOVB	R1,@VDPWD	;   write the status byte
-
-; Return handled status with PAB updated
-tipiok
-	MOV	@RET,R11
-	INCT	R11		; increment 2, and then fall through
-	JMP	cleanexit
+	JMP	retdone
 
 ; Return without handling device
 tipipass
+	.callsub cleanup
 	MOV	@RET,R11
-
-cleanexit
-	CLR	R0		; clean up output latches before we go.
-	MOVB	R0,@TDOUT
-	MOVB	R0,@TCOUT
-	LIMI	2		; re-enable interrupts
-	RT			; return to console
-
+	RT
 

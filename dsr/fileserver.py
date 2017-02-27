@@ -3,6 +3,7 @@ import sys
 import time
 import RPi.GPIO as GPIO 
 from array import array
+import re
  
 GPIO.setmode(GPIO.BCM) 
 GPIO.setwarnings(True)
@@ -59,15 +60,9 @@ TSRB = 0x06
 ACK_MASK = 0x03
  
 #
-# Return byte as string of bits: 0x40 => 01000000
-#
-def toBitString(byte):
-    return bin(byte)[2:].zfill(8)
-
-#
 # Read a byte of input from a set of 8 input pins
 #
-def readTiByte(bits):
+def readBitsToByte(bits):
     byte = 0
 
     # GPIO.input returns 1 or 0. so just shift them into place.
@@ -85,7 +80,7 @@ def readTiByte(bits):
 #
 # Write a byte of to a set of 8 output pins
 #
-def writeTiByte(bits, byte):
+def writeByteToBits(byte, bits):
     GPIO.output(bits[0], byte & 0x80)
     GPIO.output(bits[1], byte & 0x40)
     GPIO.output(bits[2], byte & 0x20)
@@ -96,37 +91,38 @@ def writeTiByte(bits, byte):
     GPIO.output(bits[7], byte & 0x01)
 
 #
-# Write a byte of to a set of 8 output pins
+# Write a least significant 4 bits of a byte to a set of 4 output pins
 #
-def writeTiNibble(bits, byte):
-    GPIO.output(bits[0], byte & 0x08)
-    GPIO.output(bits[1], byte & 0x04)
-    GPIO.output(bits[2], byte & 0x02)
+def writeNibbleToBits(byte, bits):
     GPIO.output(bits[3], byte & 0x01)
+    GPIO.output(bits[2], byte & 0x02)
+    GPIO.output(bits[1], byte & 0x04)
+    GPIO.output(bits[0], byte & 0x08)
 
 # Read TI_DATA
 def getTD():
-    return readTiByte(TD_BITS)
+    return readBitsToByte(TD_BITS)
 
 # Read TI_CONTROL
 def getTC():
-    return readTiByte(TC_BITS)
+    return readBitsToByte(TC_BITS)
 
 # Write RPI_DATA
 def setRD(value):
-    writeTiByte(RD_BITS, value)
+    writeByteToBits(value, RD_BITS)
 
 # Write RPI_CONTROL
 def setRC(value):
-    writeTiNibble(RC_BITS, value)
+    writeNibbleToBits(value, RC_BITS)
 
 #
 # Debugging output, to show currently available bits
 #
-def logInputs():
-    sys.stdout.write( hex(readTiByte(TD_BITS))[2:].zfill(2) + " - " + hex(readTiByte(TC_BITS))[2:].zfill(2) )
+def logInputs(expected):
+    sys.stdout.write( hex(getTD())[2:].zfill(2) + " - " + hex(getTC())[2:].zfill(2) + " - exp: " + hex(expected)[2:].zfill(2) )
     sys.stdout.write( '\r' )
     sys.stdout.flush()
+    time.sleep(0.1)
 
 
 prev_syn = RESET
@@ -140,7 +136,7 @@ def resetProtocol():
     print "waiting for reset..."
     # And wait for the TI to signal RESET
     while getTC() != RESET:
-        logInputs()
+        logInputs(RESET)
         pass
     # Reset the control signals
     setRD(0x00)
@@ -149,29 +145,42 @@ def resetProtocol():
     print "reset complete"
 
 #
+# change mode to sending bytes
+def modeSend():
+    global prev_syn
+    # actual send calls will always pre-increment this, so we start a series by making sure the low bit will increment to zero.
+    prev_syn = TSRB + 1
+
+#
 # transmit a byte when TI requests it
 def sendByte(byte):
     global prev_syn
-    next_ack = prev_syn
-    while prev_syn == next_ack:
-        logInputs()
+    next_syn = ((prev_syn + 1) & ACK_MASK) | TSRB
+    while prev_syn != next_syn:
+        logInputs(next_syn)
         prev_syn = getTC()
-    # TODO: should be validating that it was a read request from the TI.
-    next_ack = prev_syn
     setRD(byte)
-    setRC(next_ack & ACK_MASK)
+    setRC(prev_syn & ACK_MASK)
+    print "sent byte: " + hex(byte)[2:].zfill(2)
+
+#
+# change mode to sending bytes
+def modeRead():
+    global prev_syn
+    # actual send calls will always pre-increment this, so we start a series by making sure the low bit will increment to zero.
+    prev_syn = TSWB + 1
 
 #
 # block until byte is received.
-def receiveByte():
+def readByte():
     global prev_syn
-    next_ack = prev_syn
-    while prev_syn == next_ack:
-        logInputs()
+    next_syn = ((prev_syn + 1) & ACK_MASK) | TSWB
+    while prev_syn != next_syn:
+        logInputs(next_syn)
         prev_syn = getTC()
     next_ack = prev_syn
     val = getTD()
-    setRC(next_ack & ACK_MASK)
+    setRC(prev_syn & ACK_MASK)
     return val
 
 #
@@ -181,12 +190,12 @@ def receiveByte():
 #
 # Return the TI DSR Opcode
 def opcode(pab):
-    return pab[0]
+    return int(pab[0])
 
 #
 # Return byte count from PAB / or byte count in LOAD/SAVE operations
 def recordNumber(pab):
-    return pab[6] << 8 + pab[7];
+    return (pab[6] << 8) + pab[7];
 
 #
 # Opcode Handling
@@ -201,6 +210,8 @@ EEOF=0x05
 EDEVERR=0x06
 EFILERR=0x07
 
+SUCCESS=0xFF
+
 def handleNotSupported(pab, devname):
     print "Opcode not supported: " + str(opcode(pab))
     sendErrorCode(EILLOP)
@@ -209,9 +220,48 @@ def sendErrorCode(code):
     print "responding with error: " + str(code)
     sendByte(code)
 
+def deviceToFilename(devname):
+    pattern = re.compile('[^\.]+')
+    tokens = pattern.findall(str(devname))
+    # cheating
+    return "/tipi_disk/" + tokens[1]
+
 def handleLoad(pab, devname):
-    print "LOADing " + str(devname)
-    sendErrorCode(EFILERR)
+    print "Opcode 5 LOAD - " + str(devname)
+    maxsize = recordNumber(pab)
+    print "\tmax bytes: " + str(maxsize)
+    unix_name = deviceToFilename(devname)
+    print "\tunix_name: " + unix_name
+    fh = open(unix_name, 'rb')
+    try:
+        bytes = bytearray(fh.read())
+        # TODO: check that it fits in maxsize
+        # filesize = len(bytes) - 128
+        filesize = 79
+        modeSend()
+        sendByte(SUCCESS)
+        print "sent SUCCESS, meaning ready to send stream"
+        # Just cause DSR doesn't have a global SYN for reading.
+        resetProtocol()
+	print "Length of file is: " + str(filesize)
+        filesizemsb = (filesize & 0xFF00) >> 8
+        filesizelsb = (filesize & 0xFF)
+        modeSend()
+        sendByte(filesizemsb)
+        print "set size msb: " + hex(filesizemsb)[2:].zfill(2)
+        sendByte(filesizelsb)
+        print "set size lsb: " + str(filesizelsb)[2:].zfill(2)
+	resetProtocol()
+	modeSend()
+        for byte in (bytes[128:])[:79]:
+            sendByte(byte)
+        print "finished sending all the bytes."
+    except Exception as e:
+        print e
+        # I don't think this will work. we need to check for as many errors as possible up front.
+        sendErrorCode(EFILERR)
+    finally:
+        fh.close()
     
 ## 
 ## MAIN
@@ -226,18 +276,20 @@ while True:
     resetProtocol()
 
     print "waiting for PAB..."
+    modeRead()
     pab = bytearray(10)
     for i in range(0,10):
-        pab[i] = receiveByte()
-	print "PAB[" + str(i) + "]: " + hex(pab[i])
+        pab[i] = readByte()
+	print "PAB[" + str(i) + "]: " + hex(pab[i])[2:].zfill(2)
 
     print "PAB received."
     resetProtocol()
 
+    modeRead()
     print "waiting for devicename..."
     devicename = bytearray(pab[9])
     for i in range(0,pab[9]):
-        devicename[i] = receiveByte()
+        devicename[i] = readByte()
         print "devname[" + str(i) + "]: " + chr(devicename[i])
 
     # every path from here is a response back, so switching flags requires a reset in-between

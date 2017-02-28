@@ -106,7 +106,7 @@ readbyte
 	MOVB	R0,@TCOUT	; request a byte
 	ANDI	R0,TSACKM
 !	CB	@RCIN,R0	; wait for ack
-	.ifndef	emulation
+	.ifndef	nowaitread
 	JNE	-!
 	.endif
 	MOVB	@RDIN,R1	; read the data
@@ -118,7 +118,7 @@ tipirst
 	LI	R0,TSRSET
 	MOVB	R0,@TCOUT	; send reset signal
 !	CB	@RCIN,R0	; wait for ack
-	.ifndef emulation
+	.ifndef nowaitwrite
 	JNE	-!
 	.endif
 	RT
@@ -131,7 +131,7 @@ tipispab
 !	MOVB	@FAC(R2),@TDOUT	; set data 
 	MOVB	R0,@TCOUT	; signal data available
 !	CB	@RCIN,R0	; check for ack
-	.ifndef emulation
+	.ifndef nowaitwrite
 	JNE	-!
 	.endif
 	AI	R0,>0100
@@ -155,7 +155,7 @@ tipisdev
 !       MOVB    @VDPRD,@TDOUT	; send byte from vdp
 	MOVB	R0,@TCOUT	; singal data available
 !	CB	@RCIN,R0	; check for ack
-	.ifndef emulation
+	.ifndef nowaitwrite
 	JNE	-!
 	.endif
 	AI	R0,>0100	; rotate alternate syn bit.
@@ -172,7 +172,7 @@ tipirwd
 	MOV	R0,R1		; prepare expected ack
 	ANDI	R1,TSACKM
 !	CB	@RCIN,R1	; wait for ack
-	.ifndef emulation
+	.ifndef nowaitread
 	JNE	-!
 	.endif
 	MOVB	@RDIN,R2
@@ -182,7 +182,7 @@ tipirwd
 	MOVB	R0,@TCOUT
 	ANDI	R0,TSACKM	; prepare expected ack
 !	CB	@RCIN,R0	; wait for ack
-	.ifndef emulation
+	.ifndef nowaitread
 	JNE	-!
 	.endif
 	SWPB	R2
@@ -199,7 +199,7 @@ tipiwbuf
 	MOV	R0,R1		; set up expected ack
 	ANDI	R1,TSACKM
 !	CB	@RCIN,R1	; wait for ack
-	.ifndef emulation
+	.ifndef nowaitread
 	JNE	-!
 	.endif
 	MOVB	@RDIN,@VDPWD	; copy data from RPI to VDP

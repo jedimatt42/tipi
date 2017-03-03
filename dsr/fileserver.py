@@ -94,10 +94,10 @@ def writeByteToBits(byte, bits):
 # Write a least significant 4 bits of a byte to a set of 4 output pins
 #
 def writeNibbleToBits(byte, bits):
-    GPIO.output(bits[3], byte & 0x01)
-    GPIO.output(bits[2], byte & 0x02)
-    GPIO.output(bits[1], byte & 0x04)
     GPIO.output(bits[0], byte & 0x08)
+    GPIO.output(bits[1], byte & 0x04)
+    GPIO.output(bits[2], byte & 0x02)
+    GPIO.output(bits[3], byte & 0x01)
 
 # Read TI_DATA
 def getTD():
@@ -119,13 +119,13 @@ def setRC(value):
 # Debugging output, to show currently available bits
 #
 def logInputs(expected):
-    sys.stdout.write( hex(getTD())[2:].zfill(2) + " - " + hex(getTC())[2:].zfill(2) + " - exp: " + hex(expected)[2:].zfill(2) )
+    sys.stdout.write( "\t\t\t" + hex(getTD())[2:].zfill(2) + " - " + hex(getTC())[2:].zfill(2) + " - exp: " + hex(expected)[2:].zfill(2) )
     sys.stdout.write( '\r' )
     sys.stdout.flush()
-    time.sleep(0.1)
+    time.sleep(0.2)
 
 
-prev_syn = RESET
+prev_syn = 0
 
 #
 # Block until both sides show control bits reset
@@ -135,13 +135,12 @@ def resetProtocol():
     global prev_syn
     print "waiting for reset..."
     # And wait for the TI to signal RESET
-    while getTC() != RESET:
+    prev_syn = 0
+    while prev_syn != RESET:
         logInputs(RESET)
-        pass
+        prev_syn = getTC()
     # Reset the control signals
-    setRD(0x00)
     setRC(RESET)
-    prev_syn = RESET
     print "reset complete"
 
 #
@@ -270,6 +269,14 @@ def handleLoad(pab, devname):
 # Initial device state.
 setRD(0x00)
 setRC(0x00)
+
+for i in [ 1, 2, 4, 8, 16, 32, 64, 128, 64, 32, 16, 8, 4, 2, 1, 0 ]:
+    setRD(i)
+    time.sleep(0.05)
+
+for i in [ 8, 4, 2, 1, 2, 4, 8, 0 ]:
+    setRC(i)
+    time.sleep(0.05)
 
 while True:
     print "Ready for request..."

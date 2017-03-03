@@ -63,12 +63,6 @@ RET	EQU	>836D		; stash place for previous R11:  MOV R11,@RET   BL tipirst  MOV @
 ;  R15 - VDPWA
 ;  R10 - Base address of Workspace, many EQUs are relative to R10
 
-; store R11, and restore it around BL instruction , clobbers R0
-	.defm callsub
-	LI	R0,#1
-	BL	*R0
-	.endm
-
 ; Set VDP read address
 	.defm setvdpra
 	SWPB	#1
@@ -117,7 +111,9 @@ readbyte
 tipirst
 	LI	R0,TSRSET
 	MOVB	R0,@TCOUT	; send reset signal
-!	CB	@RCIN,R0	; wait for ack
+!	MOVB	@RCIN,R1	; read ack port
+	ANDI	R1,TSACKM	; mask ack bits
+	CI	R1,TSRSET	; wait for ack
 	.ifndef nowaitwrite
 	JNE	-!
 	.endif
@@ -216,8 +212,6 @@ tipidsr
 	MOV	R11,@RET	; Stash the dsrlnk Return address
 	STWP	R10		; PAB equates are relative to R10, don't mess with R10
 
-	.callsub tipirst	; a base level handshake to get on the same page as the RPi.
-
 	LI	R4,PABNAM	; Begin computing beginning of PAB
 	CLR	R9
 	A	*R4,R9
@@ -237,13 +231,14 @@ tipidsr
 	JNE	-!		;   copy more bytes if R1 is not 0
 
 ; Send request to RPi
-	.callsub tipispab
-	.callsub tipirst
-	.callsub tipisdev
+	BL	@tipirst	; a base level handshake to get on the same page as the RPi.
+	BL	@tipispab	; send the PAB for the PI to handle.
+	BL	@tipirst	; a noop to reset counters in handshake.
+	BL	@tipisdev	; send the full devicename
         
 ; Handle result
-	.callsub tipirst
-	.callsub readbyte	; Get initial response from RPi (code will be in R1)
+	BL	@tipirst
+	BL	@readbyte	; Get initial response from RPi (code will be in R1)
 	CI	R1,EDVNAME	; If device name error ( such as we don't handle it )
 	JEQ	tipipass
 	CI	R1,SUCCESS	; If not success, we'll pass the code back to the PAB
@@ -261,11 +256,11 @@ tipidsr
 
 ; Handle response for OPCODE 5 - LOAD
 hload
-	.callsub tipirst
-	.callsub tipirwd	; now R2 should hold length of bytes to write to VDP.
+	BL	@tipirst
+	BL	@tipirwd	; now R2 should hold length of bytes to write to VDP.
 
-	.callsub tipirst
-	.callsub tipiwbuf 	; copy from @RDIN to @VDPWD after setting vdpwa, R2 - length to copy
+	BL	@tipirst
+	BL	@tipiwbuf 	; copy from @RDIN to @VDPWD after setting vdpwa, R2 - length to copy
 	JMP	retdone
 
 ; 
@@ -277,7 +272,7 @@ hload
 
 ; Exit request complete
 retdone
-	.callsub cleanup
+	BL	@cleanup
 	MOV	@RET,R11
 	INCT	R11
 	RT
@@ -298,7 +293,7 @@ reterr
 
 ; Return without handling device
 tipipass
-	.callsub cleanup
+	BL	@cleanup
 	MOV	@RET,R11
 	RT
 

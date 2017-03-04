@@ -12,11 +12,11 @@ clean:
 	rm tipi*.bin
 	rm tipi.hex
 
-tipi.bin: rom.a99 header.a99 vdp-io.a99 tipi-io.a99 powerup.a99 devices.a99
+tipi.bin: rom.a99 header.a99 vdp-io.a99 tipi-io.a99 powerup.a99 devices.a99 basic.a99
 	xas99.py -R -b -L tipi.list -o $@ rom.a99
 	mv $@_4000 $@
 
-tipi_emu.bin: rom.a99 header.a99 vdp-io.a99 tipi-io.a99 powerup.a99 devices.a99
+tipi_emu.bin: rom.a99 header.a99 vdp-io.a99 tipi-io.a99 powerup.a99 devices.a99 basic.a99
 	xas99.py -R -b -L tipi_emu.list -o $@ rom.a99 -D emulation nowaitwrite 
 	mv $@_4000 $@
 

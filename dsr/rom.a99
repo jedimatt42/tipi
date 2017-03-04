@@ -4,4 +4,6 @@
 	COPY	'tipi-io.a99'
 	COPY	'powerup.a99'
 	COPY	'devices.a99'
+	COPY	'basic.a99'
 
+	END

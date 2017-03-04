@@ -3,12 +3,13 @@
 
 	BYTE	>AA		; Standard Header
         BYTE	>01		; version
-        DATA	>0000		; cart program list - must be none.
+        DATA	>0000		; # of application programs / reserved
         DATA	pwrlnk		; power up list
-	DATA	>0000		; user-program list
+	DATA	>0000		; user-program list (grom only)
 	DATA	tipilnk		; DSR list
-	DATA	>0000		; ISR list
-	DATA	>0000		; BASIC subprograms
+	DATA	basiclnk	; BASIC CALL subroutine list
+	DATA	>0000		; interrupt list
+	DATA	>0000		; subprograms only in grom 
 
 ; Power up header list.
 pwrlnk
@@ -21,5 +22,20 @@ tipilnk
 	DATA	tipidsr		; tipi dsr routine pointer
 	BYTE	4		; TIPI Drive name length
 	TEXT	"TIPI"		; name of tipi drive
+	EVEN
+
+; Basic routine list.
+basiclnk
+	DATA	blink2		; terminate dsr list.
+	DATA	tipion
+	BYTE	6
+	TEXT	"TIPION"
+	EVEN
+
+blink2
+	DATA	>0000		; terminate dsr list.
+	DATA	tipioff
+	BYTE	7
+	TEXT	"TIPIOFF"
 	EVEN
 

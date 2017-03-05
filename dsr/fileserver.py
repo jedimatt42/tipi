@@ -122,7 +122,7 @@ def logInputs(expected):
     sys.stdout.write( "\t\t\t" + hex(getTD())[2:].zfill(2) + " - " + hex(getTC())[2:].zfill(2) + " - exp: " + hex(expected)[2:].zfill(2) )
     sys.stdout.write( '\r' )
     sys.stdout.flush()
-    time.sleep(0.2)
+    time.sleep(0.1)
 
 
 prev_syn = 0
@@ -231,8 +231,9 @@ def handleLoad(pab, devname):
     print "\tmax bytes: " + str(maxsize)
     unix_name = deviceToFilename(devname)
     print "\tunix_name: " + unix_name
-    fh = open(unix_name, 'rb')
+    fh = None
     try:
+        fh = open(unix_name, 'rb')
         bytes = bytearray(fh.read())
         # TODO: check that it fits in maxsize
         # filesize = len(bytes) - 128
@@ -255,12 +256,14 @@ def handleLoad(pab, devname):
         for byte in (bytes[128:])[:79]:
             sendByte(byte)
         print "finished sending all the bytes."
-    except Exception as e:
+    except IOError as e:
         print e
         # I don't think this will work. we need to check for as many errors as possible up front.
+	modeSend()
         sendErrorCode(EFILERR)
     finally:
-        fh.close()
+        if fh != None:
+            fh.close()
     
 ## 
 ## MAIN

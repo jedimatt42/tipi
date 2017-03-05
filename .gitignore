@@ -2,3 +2,5 @@ build
 work
 *-rescue.lib
 *.bak
+*.pyc
+

@@ -81,14 +81,14 @@ assign tipi_data_out = (crubit_q && ~ti_memen && ti_dbin && ti_a == 16'h5ffb) ? 
 assign tipi_control_out = (crubit_q && ~ti_memen && ti_dbin && ti_a == 16'h5ff9) ? 1'b0 : 1'b1;
 assign tipi_dsr_out = (crubit_q && ~ti_memen && ti_dbin && ti_a > 16'h3fff && ti_a < 16'h5ff8) ? 1'b0 : 1'b1;
 
-always @(posedge clk) begin
-  if (crubit_q && ~ti_memen && ~ti_we && ti_a == 16'h5fff) begin
+always @(negedge ti_we) begin
+  if (crubit_q && ~ti_memen && ti_a == 16'h5fff) begin
     data_q <= ti_data;
   end
 end
 
-always @(posedge clk) begin
-  if (crubit_q && ~ti_memen && ~ti_we && ti_a == 16'h5ffd) begin
+always @(negedge ti_we) begin
+  if (crubit_q && ~ti_memen && ti_a == 16'h5ffd) begin
     control_q <= ti_data;
   end
 end

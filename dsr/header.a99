@@ -18,10 +18,17 @@ pwrlnk
 
 ; Power up header list.
 tipilnk
-	DATA	>0000		; terminate dsr list.
+	DATA	tipi2		; terminate dsr list.
 	DATA	tipidsr		; tipi dsr routine pointer
 	BYTE	4		; TIPI Drive name length
 	TEXT	"TIPI"		; name of tipi drive
+	EVEN
+
+tipi2
+	DATA	>0000		; terminate dsr list.
+	DATA	tipidsr		; tipi dsr routine pointer
+	BYTE	4		; TIPI Drive name length
+	TEXT	"DSK1"		; name of tipi drive
 	EVEN
 
 ; Basic routine list.

@@ -56,11 +56,6 @@ reg [0:7] dsr_data_rom [0:8191];
 integer i;
 initial begin
   $readmemh("../../../dsr/tipi.hex", dsr_data_rom);
-
-  $display("dsr_data_rom:");
-  for (i=0; i < 600; i=i+1)
-     $display("%d:%h",i,dsr_data_rom[i]);
-
 end
 
 reg [0:7] dsr_q;
@@ -86,14 +81,15 @@ assign tipi_data_out = (crubit_q && ~ti_memen && ti_dbin && ti_a == 16'h5ffb) ? 
 assign tipi_control_out = (crubit_q && ~ti_memen && ti_dbin && ti_a == 16'h5ff9) ? 1'b0 : 1'b1;
 assign tipi_dsr_out = (crubit_q && ~ti_memen && ti_dbin && ti_a > 16'h3fff && ti_a < 16'h5ff8) ? 1'b0 : 1'b1;
 
-always @(negedge ti_we) begin
-  if (crubit_q && ~ti_memen) begin
-    if (ti_a == 16'h5fff) begin
-      data_q <= ti_data;
-    end else 
-    if (ti_a == 16'h5ffd) begin
-      control_q <= ti_data;
-    end
+always @(posedge clk) begin
+  if (crubit_q && ~ti_memen && ~ti_we && ti_a == 16'h5fff) begin
+    data_q <= ti_data;
+  end
+end
+
+always @(posedge clk) begin
+  if (crubit_q && ~ti_memen && ~ti_we && ti_a == 16'h5ffd) begin
+    control_q <= ti_data;
   end
 end
 
@@ -105,7 +101,7 @@ end
 
 integer rom_idx;
 
-// Use block ram, for the DSR ROM. Seems to require the clock for input.
+// Use block ram, for the DSR ROM. Requires the clock for input.
 always @(posedge clk) begin
   rom_idx <= ti_a[3:15];
   dsr_q <= dsr_data_rom[rom_idx];

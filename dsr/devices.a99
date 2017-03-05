@@ -91,7 +91,6 @@ cleanup
 	CLR	R0		; clean up output latches before we go.
 	MOVB	R0,@TDOUT
 	MOVB	R0,@TCOUT
-	LIMI	2		; re-enable interrupts
 	RT
 
 ; TIPI Read Byte - value returned in R1 LSB, not really designed for looping...
@@ -103,6 +102,7 @@ readbyte
 	.ifndef	nowaitread
 	JNE	-!
 	.endif
+	CLR	R1
 	MOVB	@RDIN,R1	; read the data
 	SRL	R1,8
 	RT
@@ -110,6 +110,7 @@ readbyte
 ; TIPI Reset
 tipirst
 	LI	R0,TSRSET
+	MOVB	R0,@TDOUT	; shouldn't matter, but hey why not?
 	MOVB	R0,@TCOUT	; send reset signal
 !	MOVB	@RCIN,R1	; read ack port
 	ANDI	R1,TSACKM	; mask ack bits
@@ -118,7 +119,7 @@ tipirst
 	JNE	-!
 	.endif
 	RT
-	
+
 ; TIPI Send PAB
 tipispab
 	LI	R0,TSWB		; R0 will be SYN and expected ACK for writing
@@ -162,7 +163,7 @@ tipisdev
 	RT
 
 ; TIPI read word from RPi, ends up in R2
-tipirwd
+readword
 	LI	R0,TSRB		; SYN(0) read byte request
 	MOVB	R0,@TCOUT	; send read request
 	MOV	R0,R1		; prepare expected ack
@@ -208,7 +209,6 @@ tipiwbuf
 
 ; Handle requests to TIPI device
 tipidsr
-	LIMI	0		; Disable interrupts
 	MOV	R11,@RET	; Stash the dsrlnk Return address
 	STWP	R10		; PAB equates are relative to R10, don't mess with R10
 
@@ -257,7 +257,7 @@ tipidsr
 ; Handle response for OPCODE 5 - LOAD
 hload
 	BL	@tipirst
-	BL	@tipirwd	; now R2 should hold length of bytes to write to VDP.
+	BL	@readword	; now R2 should hold length of bytes to write to VDP.
 
 	BL	@tipirst
 	BL	@tipiwbuf 	; copy from @RDIN to @VDPWD after setting vdpwa, R2 - length to copy

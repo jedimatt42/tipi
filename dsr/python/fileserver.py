@@ -4,7 +4,8 @@ import time
 import RPi.GPIO as GPIO 
 from array import array
 import re
- 
+from ti_files import ti_files
+
 GPIO.setmode(GPIO.BCM) 
 GPIO.setwarnings(True)
 
@@ -119,10 +120,11 @@ def setRC(value):
 # Debugging output, to show currently available bits
 #
 def logInputs(expected):
-    sys.stdout.write( "\t\t\t" + hex(getTD())[2:].zfill(2) + " - " + hex(getTC())[2:].zfill(2) + " - exp: " + hex(expected)[2:].zfill(2) )
-    sys.stdout.write( '\r' )
-    sys.stdout.flush()
-    time.sleep(0.1)
+    #sys.stdout.write( "\t\t\t" + hex(getTD())[2:].zfill(2) + " - " + hex(getTC())[2:].zfill(2) + " - exp: " + hex(expected)[2:].zfill(2) )
+    #sys.stdout.write( '\r' )
+    #sys.stdout.flush()
+    #time.sleep(0.1)
+    pass
 
 
 prev_syn = 0
@@ -236,27 +238,31 @@ def handleLoad(pab, devname):
         fh = open(unix_name, 'rb')
         bytes = bytearray(fh.read())
         # TODO: check that it fits in maxsize
-        # filesize = len(bytes) - 128
-        filesize = 79
+        ti_files.showHeader(bytes)
+        if not ti_files.isValid(bytes):
+            raise Exception("not tifiles format")
+        if not ti_files.isProgram(bytes):
+            raise Exception("not PROGRAM image file")
+        filesize = ti_files.byteLength(bytes)
         modeSend()
         sendByte(SUCCESS)
         print "sent SUCCESS, meaning ready to send stream"
         # Just cause DSR doesn't have a global SYN for reading.
-        resetProtocol()
 	print "Length of file is: " + str(filesize)
         filesizemsb = (filesize & 0xFF00) >> 8
+        print "set size msb: " + hex(filesizemsb)[2:].zfill(2)
         filesizelsb = (filesize & 0xFF)
+        print "set size lsb: " + hex(filesizelsb)[2:].zfill(2)
+        resetProtocol()
         modeSend()
         sendByte(filesizemsb)
-        print "set size msb: " + hex(filesizemsb)[2:].zfill(2)
         sendByte(filesizelsb)
-        print "set size lsb: " + str(filesizelsb)[2:].zfill(2)
 	resetProtocol()
 	modeSend()
-        for byte in (bytes[128:])[:79]:
+        for byte in (bytes[128:])[:filesize]:
             sendByte(byte)
         print "finished sending all the bytes."
-    except IOError as e:
+    except Exception as e:
         print e
         # I don't think this will work. we need to check for as many errors as possible up front.
 	modeSend()

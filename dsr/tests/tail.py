@@ -123,9 +123,11 @@ def setRC(value):
 # Debugging output, to show currently available bits
 #
 def logInputs():
-    sys.stdout.write( hex(readTiByte(TD_BITS))[2:].zfill(2) + " - " + hex(readTiByte(TC_BITS))[2:].zfill(2) )
-    sys.stdout.write( '\r' )
-    sys.stdout.flush()
+    #sys.stdout.write( "                              " + hex(readTiByte(TD_BITS))[2:].zfill(2) + " - " + hex(readTiByte(TC_BITS))[2:].zfill(2) )
+    #sys.stdout.write( '\r' )
+    #sys.stdout.flush()
+    #time.sleep(0.01)
+    pass
 
 
 prev_syn = 0x00
@@ -165,7 +167,7 @@ def receiveByte():
     global prev_syn
     next_ack = prev_syn
     while prev_syn == next_ack:
-        # logInputs()
+        logInputs()
         prev_syn = getTC()
     next_ack = prev_syn
     val = getTD()
@@ -205,6 +207,23 @@ setRC(0x00)
 while True:
     resetProtocol()
 
-    while True:
-        print "data: " + hex(receiveByte()) + " syn: " + hex(prev_syn)
+    errors = 0
+    total = 0x7FFF
+    expect = total
+
+    begin = time.time()
+
+    while expect > 0:
+        val = receiveByte()
+        print "data: " + hex(val) + " syn: " + hex(prev_syn)
+	if val != (expect % 256):
+            errors += 1
+        expect -= 1
+
+    end = time.time()
+    print "received " + str(total) + " bytes in " + str(end - begin) + " seconds."
+    print "errors: " + str(errors)
+   
+    if errors:
+        raise Exception("crap")
 

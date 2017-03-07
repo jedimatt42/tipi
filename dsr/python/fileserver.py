@@ -162,7 +162,7 @@ def sendByte(byte):
         prev_syn = getTC()
     setRD(byte)
     setRC(prev_syn & ACK_MASK)
-    print "sent byte: " + hex(byte)[2:].zfill(2)
+    # print "sent byte: " + hex(byte)[2:].zfill(2)
 
 #
 # change mode to sending bytes

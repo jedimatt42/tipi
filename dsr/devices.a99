@@ -57,7 +57,7 @@ OPSTAT	EQU	>0900		; Status (varies if file is open or not, RPi should keep state
 
 ; Macros
 ; Function calling support, such as a alt return address
-RET	EQU	>836D		; stash place for previous R11:  MOV R11,@RET   BL tipirst  MOV @RET,R11
+RET	EQU	>836C		; stash place for previous R11:  MOV R11,@RET   BL tipirst  MOV @RET,R11
 
 ; Pattern of Register Usage - 
 ;  R15 - VDPWA

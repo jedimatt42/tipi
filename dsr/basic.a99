@@ -38,7 +38,7 @@ brecvtst
 	; do some data receiving.
 
 	BL	@tipirst
-	LI	R3,512
+	LI	R3,>7FFF	; request 32k bytes ( via looping )
 	
 	LI	R1,TSRB		; request a byte
 !	MOVB	R1,@TCOUT

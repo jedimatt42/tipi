@@ -16,7 +16,7 @@ pwrlnk
 	DATA	>0000		; terminate powerup list.
 	DATA	onreset		; actual power up routine
 
-; Power up header list.
+; Device name/main DSR link entries ( name must be no more than 7 characters )
 tipilnk
 	DATA	tipi2		; terminate dsr list.
 	DATA	tipidsr		; tipi dsr routine pointer
@@ -31,18 +31,32 @@ tipi2
 	TEXT	"DSK1"		; name of tipi drive
 	EVEN
 
-; Basic routine list.
+; Basic routine list ( name must be no more than 7 characters )
 basiclnk
-	DATA	blink2		; terminate dsr list.
-	DATA	tipion
+	DATA	blink2		; next list item.
+	DATA	btipion
 	BYTE	6
 	TEXT	"TIPION"
 	EVEN
 
 blink2
-	DATA	>0000		; terminate dsr list.
-	DATA	tipioff
+	DATA	blink3		; next list item.
+	DATA	btipioff
 	BYTE	7
 	TEXT	"TIPIOFF"
+	EVEN
+
+blink3
+	DATA	blink4		; next list item.
+	DATA	bsendtst
+	BYTE	7
+	TEXT	"SENDTST"
+	EVEN
+
+blink4
+	DATA	>0000		; next list item.
+	DATA	brecvtst
+	BYTE	7
+	TEXT	"RECVTST"
 	EVEN
 

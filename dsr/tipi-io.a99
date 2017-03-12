@@ -13,4 +13,80 @@ RDIN	EQU	>5FFB		; TIPI Control Signal output
 RCIN	EQU	>5FF9		; TIPI Control Signal output
 	.endif
 
+; TIPI Signal Constants
+TSRSET	EQU	>0100		; Reset SYN value
+TSWB	EQU	>0200		; Write Byte SYN value
+TSRB	EQU	>0600		; Read Byte SYN value
+TSACKM	EQU	>0300		; ACK Mask
+
+
+DSRBUF	EQU	>8358		; Can use this upto but not including 836C... so 
+DSRBLN	EQU	14		; length of buffer.
+
+;;; Macro: handshake TSWB or handshake TSRB to signal and increment syn/ack in R2, also destroys R3.
+	.defm transmit
+	MOVB	R2,@TCOUT
+	ANDI	R2,TSACKM
+!	MOVB	@RCIN,R3
+	ANDI	R3,TSACKM
+	CB	R2,R3
+	.ifndef emulation
+	JNE	-!
+	.endif
+	AI	R2,>0100
+	ANDI	R2,TSACKM
+	ORI	R2,#1
+	.endm
+
+;;; SEND a message to the RPi - Sends a word containing the length of message, then the bytes of the message.
+; Register usage:
+;   R0 - contains length of message. Result is 0 if all bytes sent.
+;   R1 - address of bytes to send.
+;   Destroys R2, and R3, and potentially the first and last word of bytes to send.
+sendmsg
+	LI	R2,TSRSET
+	.transmit TSRSET
+	LI	R2,TSWB
+	MOVB	R0,@TDOUT
+	.transmit TSWB
+	SWPB	R0
+	MOVB	R0,@TDOUT
+	.transmit TSWB
+	SWPB	R0
+	
+snext	
+	MOVB	*R1,@TDOUT
+	.transmit TSWB
+	DEC	R0
+	JEQ	sendcomp
+	INC	R1
+	JMP	snext
+sendcomp
+	RT
+	
+
+;;; REQUEST a message from the RPi - expects a word containing the length of the message followed by the payload.
+; Register usage:
+;   R0 - receive buffer size. Result is number of bytes loaded into buffer.
+;   R1 - address of buffer
+;   Destroys R2, and R3, R4
+recvmsg
+	LI	R2,TSRSET
+	.transmit TSRSET
+	LI	R2,TSRB
+	.transmit TSRB
+	MOVB	@RDIN,R4
+	SWPB	R4
+	.transmit TSRB
+	MOVB	@RDIN,R4
+	SWPB	R4
+	; should check that it will fit... but I'll come back to that.
+	CLR	R0
+rnext	
+	.transmit TSRB
+	MOVB	@RDIN,*R1+
+	INC	R0
+	C	R0,R4
+	JNE	rnext
+	RT
 

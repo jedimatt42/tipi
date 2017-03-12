@@ -10,24 +10,9 @@ bsendtst
 	MOV	@>832C,R8	; get token pointer to play with
 	; do some useful stuff
 
-	BL	@tipirst
-	LI	R3,>7FFF
-	
-	LI	R1,TSWB
-!	SWPB	R3
-	MOVB	R3,@TDOUT
-	SWPB	R3
-	MOVB	R1,@TCOUT
-	ANDI	R1,TSACKM
-!	MOVB	@RCIN,R2
-	ANDI	R2,TSACKM
-	CB	R1,R2
-	JNE	-!
-	AI	R1,>0100
-	ANDI	R1,TSACKM
-	ORI	R1,TSWB
-	DEC	R3
-	JNE	-!!
+	LI	R0,256
+	LI	R1,>4000
+	BL	@sendmsg
 
 	; and return
 	JMP	bok
@@ -37,29 +22,6 @@ brecvtst
 	MOV	@>832C,R8
 	; do some data receiving.
 
-	BL	@tipirst
-	LI	R3,>7FFF	; request 32k bytes ( via looping )
-	
-	LI	R1,TSRB		; request a byte
-!	MOVB	R1,@TCOUT
-	ANDI	R1,TSACKM
-!	MOVB	@RCIN,R2	; read response
-	ANDI	R2,TSACKM
-	CB	R1,R2
-	JNE	-!		; wait for ack
-
-	MOVB	@RDIN,R2	; capture data
-	; check if the data is what we expect, and return early if it isn't.
-	SWPB	R3
-	CB	R3,R2
-	JNE	berror
-	SWPB	R3
-
-	AI	R1,>0100	; increment syn/ack
-	ANDI	R1,TSACKM
-	ORI	R1,TSRB
-	DEC	R3		; count the loop down
-	JNE	-!!
 
 	; and return
 	JMP	bok

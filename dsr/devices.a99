@@ -80,12 +80,6 @@ RET	EQU	>836C		; stash place for previous R11:  MOV R11,@RET   BL tipirst  MOV @
 	MOVB	#1,@VDPWA
 	.endm
 
-; TIPI Signal Constants
-TSRSET	EQU	>0100		; Reset SYN value
-TSWB	EQU	>0200		; Write Byte SYN value
-TSRB	EQU	>0600		; Read Byte SYN value
-TSACKM	EQU	>0300		; ACK Mask
-
 ; TIPI Cleanup - used before exit
 cleanup
 	CLR	R0		; clean up output latches before we go.

@@ -38,14 +38,23 @@ DSRBLN	EQU	14		; length of buffer.
 	ORI	R2,#1
 	.endm
 
+;;; Macro: reset, super simple handshake with no rolling of bits.
+	.defm reset
+	LI	R2,TSRSET
+	MOVB	R2,@TCOUT
+!	CB	@RCIN,R2
+	.ifndef emulation
+	JNE	-!
+	.endif
+	.endm
+
 ;;; SEND a message to the RPi - Sends a word containing the length of message, then the bytes of the message.
 ; Register usage:
 ;   R0 - contains length of message. Result is 0 if all bytes sent.
 ;   R1 - address of bytes to send.
 ;   Destroys R2, and R3, and potentially the first and last word of bytes to send.
 sendmsg
-	LI	R2,TSRSET
-	.transmit TSRSET
+	.reset
 	LI	R2,TSWB
 	MOVB	R0,@TDOUT
 	.transmit TSWB

@@ -32,6 +32,8 @@ DSRBLN	EQU	14		; length of buffer.
 	CB	R2,R3
 	.ifndef emulation
 	JNE	-!
+	.else
+	NOP
 	.endif
 	AI	R2,>0100
 	ANDI	R2,TSACKM
@@ -45,13 +47,15 @@ DSRBLN	EQU	14		; length of buffer.
 !	CB	@RCIN,R2
 	.ifndef emulation
 	JNE	-!
+	.else
+	NOP
 	.endif
 	.endm
 
 ;;; SEND a message to the RPi - Sends a word containing the length of message, then the bytes of the message.
 ; Register usage:
 ;   R0 - contains length of message. Result is 0 if all bytes sent.
-;   R1 - address of bytes to send.
+;   R1 - cpu address of bytes to send.
 ;   Destroys R2, and R3, and potentially the first and last word of bytes to send.
 sendmsg
 	.reset
@@ -63,25 +67,46 @@ sendmsg
 	.transmit TSWB
 	SWPB	R0
 	
-snext	
+snext
 	MOVB	*R1,@TDOUT
 	.transmit TSWB
-	DEC	R0
-	JEQ	sendcomp
 	INC	R1
-	JMP	snext
-sendcomp
+	DEC	R0
+	JNE	snext
+	RT
+
+
+;;; SEND a message to the RPi - Sends a word containing the length of message, then the bytes of the message.
+; Register usage:
+;   R0 - contains length of message. Result is 0 if all bytes sent.
+;   R1 - vdp address of bytes to send.
+;   Destroys R2, and R3, and potentially the first and last word of bytes to send.
+vsendmsg
+	.reset
+	LI	R2,TSWB
+	MOVB	R0,@TDOUT
+	.transmit TSWB
+	SWPB	R0
+	MOVB	R0,@TDOUT
+	.transmit TSWB
+	SWPB	R0
+
+	.setvdpra R1
+vsnext
+	MOVB	@VDPRD,@TDOUT
+	.transmit TSWB
+	DEC	R0
+	JNE	vsnext
 	RT
 	
 
 ;;; REQUEST a message from the RPi - expects a word containing the length of the message followed by the payload.
 ; Register usage:
 ;   R0 - receive buffer size. Result is number of bytes loaded into buffer.
-;   R1 - address of buffer
+;   R1 - cpu address of buffer
 ;   Destroys R2, and R3, R4
 recvmsg
-	LI	R2,TSRSET
-	.transmit TSRSET
+	.reset
 	LI	R2,TSRB
 	.transmit TSRB
 	MOVB	@RDIN,R4
@@ -91,11 +116,37 @@ recvmsg
 	SWPB	R4
 	; should check that it will fit... but I'll come back to that.
 	CLR	R0
-rnext	
+rnext
 	.transmit TSRB
 	MOVB	@RDIN,*R1+
 	INC	R0
 	C	R0,R4
 	JNE	rnext
+	RT
+
+
+;;; REQUEST a message from the RPi - expects a word containing the length of the message followed by the payload.
+; Register usage:
+;   R0 - receive buffer size. Result is number of bytes loaded into buffer.
+;   R1 - vdp address of buffer
+;   Destroys R2, and R3, R4
+vrecvmsg
+	.reset
+	LI	R2,TSRB
+	.transmit TSRB
+	MOVB	@RDIN,R4
+	SWPB	R4
+	.transmit TSRB
+	MOVB	@RDIN,R4
+	SWPB	R4
+	; should check that it will fit... but I'll come back to that.
+	CLR	R0
+	.setvdpwa R1
+vrnext
+	.transmit TSRB
+	MOVB	@RDIN,@VDPWD
+	INC	R0
+	C	R0,R4
+	JNE	vrnext
 	RT
 

@@ -22,6 +22,9 @@ brecvtst
 	MOV	@>832C,R8
 	; do some data receiving.
 
+	LI	R0,256
+	LI	R1,>2000
+	BL	@recvmsg
 
 	; and return
 	JMP	bok

@@ -26,3 +26,23 @@ R10LB	EQU	>15
 ; R14 is ???
 ; R15 is VDPWA
 
+
+
+; Macro - Set VDP read address
+        .defm setvdpra
+        SWPB    #1
+        MOVB    #1,@VDPWA
+        SWPB    #1
+        MOVB    #1,@VDPWA
+        .endm
+
+; Macro - Set VDP write address
+        .defm setvdpwa
+        ORI     #1,VDWRITE
+        SWPB    #1
+        MOVB    #1,@VDPWA
+        SWPB    #1
+        MOVB    #1,@VDPWA
+        .endm
+
+

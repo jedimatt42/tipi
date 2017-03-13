@@ -13,7 +13,7 @@ PABNLE	EQU	>8354		; Length of name (?only trust the LSB?)
 PABCNT	EQU	>000A		; PAB begins 10 bytes before the name length
 ; PAB begins at VDP address pointed to by: @>8356 - @>8354 - >0A
 
-; There is room in PAD for the 10 byte header at FAC
+; There is room in PAD for the 10 byte header at FAC (floating point accumulator)
 PAD	EQU	->E0		; Beginning of scratchpad ram
 FAC	EQU	PAD+>4A		; 36 bytes available to DSR We'll copy the PAB header here.
 OPCODE	EQU	FAC+>0		; PAB - location of opcode after copied
@@ -57,148 +57,17 @@ OPSTAT	EQU	>0900		; Status (varies if file is open or not, RPi should keep state
 
 ; Macros
 ; Function calling support, such as a alt return address
-RET	EQU	>836C		; stash place for previous R11:  MOV R11,@RET   BL tipirst  MOV @RET,R11
+RET	EQU	>836C		; stash place for previous R11:  MOV R11,@RET   BL sendmsg  MOV @RET,R11
 
 ; Pattern of Register Usage - 
 ;  R15 - VDPWA
 ;  R10 - Base address of Workspace, many EQUs are relative to R10
-
-; Set VDP read address
-	.defm setvdpra
-	SWPB	#1
-	MOVB	#1,@VDPWA
-	SWPB	#1
-	MOVB	#1,@VDPWA
-	.endm
-
-; Set VDP write address
-	.defm setvdpwa
-	ORI	#1,VDWRITE
-	SWPB	#1
-	MOVB	#1,@VDPWA
-	SWPB	#1
-	MOVB	#1,@VDPWA
-	.endm
 
 ; TIPI Cleanup - used before exit
 cleanup
 	CLR	R0		; clean up output latches before we go.
 	MOVB	R0,@TDOUT
 	MOVB	R0,@TCOUT
-	RT
-
-; TIPI Read Byte - value returned in R1 LSB, not really designed for looping...
-readbyte
-	LI	R0,TSRB
-	MOVB	R0,@TCOUT	; request a byte
-	ANDI	R0,TSACKM
-!	CB	@RCIN,R0	; wait for ack
-	.ifndef	nowaitread
-	JNE	-!
-	.endif
-	CLR	R1
-	MOVB	@RDIN,R1	; read the data
-	SRL	R1,8
-	RT
-
-; TIPI Reset
-tipirst
-	LI	R0,TSRSET
-	MOVB	R0,@TDOUT	; shouldn't matter, but hey why not?
-	MOVB	R0,@TCOUT	; send reset signal
-!	MOVB	@RCIN,R1	; read ack port
-	ANDI	R1,TSACKM	; mask ack bits
-	CI	R1,TSRSET	; wait for ack
-	.ifndef nowaitwrite
-	JNE	-!
-	.endif
-	RT
-
-; TIPI Send PAB
-tipispab
-	LI	R0,TSWB		; R0 will be SYN and expected ACK for writing
-	LI	R1,>0A		; PAB is 10 bytes
-	MOV	R10,R2		; R@ is index into PAB in scratchpad
-!	MOVB	@FAC(R2),@TDOUT	; set data 
-	MOVB	R0,@TCOUT	; signal data available
-!	CB	@RCIN,R0	; check for ack
-	.ifndef nowaitwrite
-	JNE	-!
-	.endif
-	AI	R0,>0100
-	ANDI	R0,TSACKM	; rotate alternate syn bit.
-	ORI	R0,TSWB
-	INC	R2		; idx++
-	DEC	R1		; count--
-	JNE	-!!
-	RT
-
-; TIPI Send device/filename
-tipisdev
-	LI	R0,TSWB		; R0 will be SYN and expected ACK for writing
-	MOV	@PABNAM,R9	; Begin computing beginning of PAB device name
-	S	@PABNLE,R9	;   rewind to beginning of device name (might need to only consume the LSB of PABNLE
-	DEC	R9		;   and back one more to get full device name length
-	.setvdpra R9
-	MOVB	@VDPRD,R1	; Initialize character counter
-	SRL	R1,8		;   just a byte
-
-!       MOVB    @VDPRD,@TDOUT	; send byte from vdp
-	MOVB	R0,@TCOUT	; singal data available
-!	CB	@RCIN,R0	; check for ack
-	.ifndef nowaitwrite
-	JNE	-!
-	.endif
-	AI	R0,>0100	; rotate alternate syn bit.
-	ANDI	R0,TSACKM
-	ORI	R0,TSWB
-	DEC	R1		; count--
-	JNE	-!!
-	RT
-
-; TIPI read word from RPi, ends up in R2
-readword
-	LI	R0,TSRB		; SYN(0) read byte request
-	MOVB	R0,@TCOUT	; send read request
-	MOV	R0,R1		; prepare expected ack
-	ANDI	R1,TSACKM
-!	CB	@RCIN,R1	; wait for ack
-	.ifndef nowaitread
-	JNE	-!
-	.endif
-	MOVB	@RDIN,R2
-	AI	R0,>0100	; SYN(1) increment MSB for next request
-	ANDI	R0,TSACKM
-	ORI	R0,TSRB
-	MOVB	R0,@TCOUT
-	ANDI	R0,TSACKM	; prepare expected ack
-!	CB	@RCIN,R0	; wait for ack
-	.ifndef nowaitread
-	JNE	-!
-	.endif
-	SWPB	R2
-	MOVB	@RDIN,R2
-	SWPB	R2		; swizzle bytes so sending is in MSB, LSB order.
-	RT	
-	
-; TIPI write to vdp buffer, R2 must contain length to write
-tipiwbuf
-	MOV	@BUFADR(R10),R1	; get vdp address to write to
-	.setvdpwa R1		; set vdp write address register
-	LI	R0,TSRB		; SYN starts with b110
-!	MOVB	R0,@TCOUT	; Send read request
-	MOV	R0,R1		; set up expected ack
-	ANDI	R1,TSACKM
-!	CB	@RCIN,R1	; wait for ack
-	.ifndef nowaitread
-	JNE	-!
-	.endif
-	MOVB	@RDIN,@VDPWD	; copy data from RPI to VDP
-	AI	R0,>0100	; increment SYN
-	ANDI	R0,TSACKM
-	ORI	R0,TSRB
-	DEC	R2
-	JNE	-!!
 	RT
 
 ; Handle requests to TIPI device
@@ -215,27 +84,39 @@ tipidsr
 ; NOW R9 == V@PAB - beginning of VDP PAB, we will preserve that.
 
 
-; Set VDP to read from beginning of PAB that is now in R0 and copy to FAC
+; Set VDP to read from beginning of PAB that is now in R0 and copy to scratchpad
 	.setvdpra R9
 	LI	R1,>0A		; while r1 ne 0; do
-	MOV	R10,R2		;   R2 will be index relative to FAC
-!	MOVB	@VDPRD,@FAC(R2)	;   load FAC from PAB in vdp
+	MOV	R10,R2		;   R2 will be index relative to scratchpad
+!	MOVB	@VDPRD,@OPCODE(R2)	;   load from PAB in vdp
 	INC	R2		;   inc index... 
 	DEC	R1		;   r1 is our loop counter
 	JNE	-!		;   copy more bytes if R1 is not 0
 
 ; Send request to RPi
-	BL	@tipirst	; a base level handshake to get on the same page as the RPi.
-	BL	@tipispab	; send the PAB for the PI to handle.
-	BL	@tipirst	; a noop to reset counters in handshake.
-	BL	@tipisdev	; send the full devicename
+	LI	R0,>0A		; PAB is 10 bytes
+	MOV	R2,R1
+	AI	R1,OPCODE
+	BL	@sendmsg	; send the 10 byte PAB from scratchpad
+
+	MOV	@PABNAM,R1	; Begin computing beginning of PAB device name
+	S	@PABNLE,R1	;   rewind to beginning of device name (might need to only consume the LSB of PABNLE
+	DEC	R1		;   and back one more to get full device name length
+	.setvdpra R1
+	MOVB	@VDPRD,R0	; Initialize character counter
+	SRL	R0,8		;   just a byte
+	INC	R1		; Set address of beginning device name data.
+	BL	@vsendmsg	; send the full devicename
         
 ; Handle result
-	BL	@tipirst
-	BL	@readbyte	; Get initial response from RPi (code will be in R1)
-	CI	R1,EDVNAME	; If device name error ( such as we don't handle it )
+	LI	R0,1		; Get initial response from RPi (code will be in R9)
+	MOV	R10,R1
+	AI	R1,R9LB		; load single byte message into R9, the response code
+	BL	@recvmsg
+
+	CI	R9,EDVNAME	; If device name error ( such as we don't handle it )
 	JEQ	tipipass
-	CI	R1,SUCCESS	; If not success, we'll pass the code back to the PAB
+	CI	R9,SUCCESS	; If not success, we'll pass the code back to the PAB
 	JNE	reterr
 
 ; RPi thinks it can handle this request :) Good news!
@@ -250,11 +131,9 @@ tipidsr
 
 ; Handle response for OPCODE 5 - LOAD
 hload
-	BL	@tipirst
-	BL	@readword	; now R2 should hold length of bytes to write to VDP.
-
-	BL	@tipirst
-	BL	@tipiwbuf 	; copy from @RDIN to @VDPWD after setting vdpwa, R2 - length to copy
+	MOV	@RECNUM(R10),R0	; VPD space left is limited
+	MOV	@BUFADR(R10),R1	; Set VDP location to load in to.
+	BL	@vrecvmsg 	; Load image data
 	JMP	retdone
 
 ; 

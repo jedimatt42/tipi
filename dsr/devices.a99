@@ -95,7 +95,7 @@ tipidsr
 
 ; Send request to RPi
 	LI	R0,>0A		; PAB is 10 bytes
-	MOV	R2,R1
+	MOV	R10,R1
 	AI	R1,OPCODE
 	BL	@sendmsg	; send the 10 byte PAB from scratchpad
 
@@ -111,6 +111,7 @@ tipidsr
 ; Handle result
 	LI	R0,1		; Get initial response from RPi (code will be in R9)
 	MOV	R10,R1
+	CLR	R9		; setup R9 LSB as our receive buffer ( yep 1 byte )
 	AI	R1,R9LB		; load single byte message into R9, the response code
 	BL	@recvmsg
 

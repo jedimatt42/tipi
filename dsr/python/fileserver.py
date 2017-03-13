@@ -5,7 +5,7 @@ import RPi.GPIO as GPIO
 from array import array
 import re
 from ti_files import ti_files
-from tipi import TipiMessage
+from tipi.TipiMessage import TipiMessage
 
 
 #

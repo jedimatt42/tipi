@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 import sys
 import time
+import os.path
 import RPi.GPIO as GPIO 
 from array import array
 import re
 from ti_files import ti_files
 from tipi.TipiMessage import TipiMessage
+from tifloat import tifloat
+from tinames import tinames
 
 #
 # Utils
@@ -116,17 +119,31 @@ def deviceToFilename(devname):
 def handleOpen(pab, devname):
     print "Opcode 0 Open - " + str(devname)
     printPab(pab)
-    sendErrorCode(EDEVERR)
+    localPath = tinames.devnameToLocal(devname)
+    if os.path.isdir(localPath) and mode(pab) == INPUT and dataType(pab) == INTERNAL and recordType(pab) == FIXED:
+        print "  local file: " + localPath
+        sendErrorCode(SUCCESS)
+    else:
+        sendErrorCode(EFILERR)
 
 def handleClose(pab, devname):
     print "Opcode 1 Close - " + str(devname)
     printPab(pab)
-    sendErrorCode(EDEVERR)
+    sendErrorCode(SUCCESS)
 
 def handleRead(pab, devname):
     print "Opcode 2 Read - " + str(devname)
     printPab(pab)
-    sendErrorCode(EDEVERR)
+    localPath = tinames.devnameToLocal(devname)
+    if os.path.isdir(localPath) and mode(pab) == INPUT and dataType(pab) == INTERNAL and recordType(pab) == FIXED:
+        print "  local file: " + localPath
+        if recordNumber(pab) == 0:
+            sendErrorCode(SUCCESS)
+            vdata = createVolumeData(localPath)
+            tipi_io.send(vdata)
+            return
+
+    sendErrorCode(EFILERR)
 
 def handleWrite(pab, devname):
     print "Opcode 3 Write - " + str(devname)
@@ -196,6 +213,31 @@ def handleStatus(pab, devname):
     print "Opcode 9 Status - " + str(devname)
     printPab(pab)
     sendErrorCode(EDEVERR)
+
+def createVolumeData(path):
+    bytes = bytearray(38)
+    bytes[0] = 4
+    bytes[1] = 'T'
+    bytes[2] = 'I'
+    bytes[3] = 'P'
+    bytes[4] = 'I'
+    for i in range(5,11):
+        bytes[i] = ' '
+    zero = tifloat.asFloat(0)
+    i = 11
+    for b in zero:
+        bytes[i] = b
+        i += 1
+    size = tifloat.asFloat(1440)
+    for b in size:
+        bytes[i] = b
+        i += 1
+    free = tifloat.asFloat(1438)
+    for b in free:
+        bytes[i] = b
+        i += 1
+
+    return bytes
 
 ## 
 ## MAIN

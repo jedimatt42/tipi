@@ -25,10 +25,17 @@ tipilnk
 	EVEN
 
 tipi2
-	DATA	>0000		; terminate dsr list.
+	DATA	tipi3		; terminate dsr list.
 	DATA	tipidsr		; tipi dsr routine pointer
 	BYTE	4		; TIPI Drive name length
 	TEXT	"DSK1"		; name of tipi drive
+	EVEN
+
+tipi3
+	DATA	>0000		; terminate dsr list.
+	DATA	tipidsr		; tipi dsr routine pointer
+	BYTE	3		; TIPI Drive name length
+	TEXT	"DSK"		; name of tipi drive
 	EVEN
 
 ; Basic routine list ( name must be no more than 7 characters )

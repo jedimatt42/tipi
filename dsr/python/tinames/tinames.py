@@ -15,7 +15,7 @@ def devnameToLocal(devname):
         if part != "":
             path += "/" + findpath(path, part)
 
-    return path
+    return str(path)
 
 # Use the context of actual files to transform TI file names to possibly long TI names
 def findpath(path, part):

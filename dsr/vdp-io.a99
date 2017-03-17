@@ -10,17 +10,27 @@ VDWRITE	EQU	>4000		; ORI w/register holder target vdp write address.
 
 ; Useful values if you have the WP in a register since VDP requires byte addressing
 ; these can be used with offset addressing, like @R9LB(R10) after preparing R10 with STWP R10
+R0MB	EQU	>00
 R0LB	EQU	>01
+R1MB	EQU	>02
 R1LB	EQU	>03
+R2MB	EQU	>04
 R2LB	EQU	>05
+R3MB	EQU	>06
 R3LB	EQU	>07
+R4MB	EQU	>08
 R4LB	EQU	>09
+R5MB	EQU	>0A
 R5LB	EQU	>0B
+R6MB	EQU	>0C
 R6LB	EQU	>0D
+R7MB	EQU	>0E
 R7LB	EQU	>0F
+R8MB	EQU	>10
 R8LB	EQU	>11
+R9MB	EQU	>12
 R9LB	EQU	>13
-R10LB	EQU	>15
+; R10 is where I store current WP
 ; R11 is return usually
 ; R12 is crubase usually
 ; R13 is rtwp

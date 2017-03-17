@@ -129,8 +129,8 @@ def handleOpen(pab, devname):
     print "Opcode 0 Open - " + str(devname)
     printPab(pab)
     localPath = tinames.devnameToLocal(devname)
+    print "  local file: " + localPath
     if os.path.isdir(localPath) and mode(pab) == INPUT and dataType(pab) == INTERNAL and recordType(pab) == FIXED:
-        print "  local file: " + localPath
         sendSuccess()
         # since it is a directory the recordlength is 38, often it is opened with no value.
         tipi_io.send([38])
@@ -237,17 +237,18 @@ def createVolumeData(path):
     return encodeDirRecord("TIPI", 0, 1440, 1438)
 
 def createFileData(path,recordNumber):
-    files = os.listdir(path)
+    files = sorted(os.listdir(path))
     fh = None
     try:
         f = files[recordNumber - 1]
-        fh = open(os.path.join(path, f), 'rb')
-        header = bytearray(fh.read()[:128])
 
         if os.path.isdir(os.path.join(path,f)):
             print "found dir: " + f
             return encodeDirRecord(f, 6, 1, 38)
       
+        fh = open(os.path.join(path, f), 'rb')
+        header = bytearray(fh.read()[:128])
+
         ft = ti_files.dsrFileType(header)
         sectors = ti_files.getSectors(header) + 1
         recordlen = ti_files.recordLength(header)

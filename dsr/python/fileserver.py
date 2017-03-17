@@ -125,7 +125,10 @@ def deviceToFilename(devname):
     # cheating
     return "/tipi_disk/" + tokens[1]
 
+openRecord = { }
+
 def handleOpen(pab, devname):
+    global openRecord
     print "Opcode 0 Open - " + str(devname)
     printPab(pab)
     localPath = tinames.devnameToLocal(devname)
@@ -134,6 +137,7 @@ def handleOpen(pab, devname):
         sendSuccess()
         # since it is a directory the recordlength is 38, often it is opened with no value.
         tipi_io.send([38])
+        openRecord[localPath] = 0
     else:
         sendErrorCode(EFILERR)
 
@@ -141,6 +145,7 @@ def handleClose(pab, devname):
     print "Opcode 1 Close - " + str(devname)
     printPab(pab)
     sendErrorCode(SUCCESS)
+    del openRecord[tinames.devnameToLocal(devname)]
 
 def handleRead(pab, devname):
     print "Opcode 2 Read - " + str(devname)
@@ -148,19 +153,28 @@ def handleRead(pab, devname):
     localPath = tinames.devnameToLocal(devname)
     if os.path.isdir(localPath) and mode(pab) == INPUT and dataType(pab) == INTERNAL and recordType(pab) == FIXED:
         print "  local file: " + localPath
-        if recordNumber(pab) == 0:
+        recNum = recordNumber(pab)
+        if recNum == 0:
+            recNum = openRecord[localPath]
+
+    try:
+        if recNum == 0:
             sendSuccess()
             vdata = createVolumeData(localPath)
             tipi_io.send(vdata)
             return
         else:
-            fdata = createFileData(localPath,recordNumber(pab))
+            fdata = createFileData(localPath,recNum)
             if len(fdata) == 0:
                 sendErrorCode(EEOF)
             else:
                 sendSuccess()
                 tipi_io.send(fdata)
             return
+    except:
+        pass
+    finally:
+        openRecord[localPath] += 1
 
     sendErrorCode(EFILERR)
 
@@ -244,7 +258,7 @@ def createFileData(path,recordNumber):
 
         if os.path.isdir(os.path.join(path,f)):
             print "found dir: " + f
-            return encodeDirRecord(f, 6, 1, 38)
+            return encodeDirRecord(f, 6, 2, 0)
       
         fh = open(os.path.join(path, f), 'rb')
         header = bytearray(fh.read()[:128])

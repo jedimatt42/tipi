@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import sys
+import traceback
 import time
-import os.path
+import os
 import RPi.GPIO as GPIO 
 from array import array
 import re
@@ -106,8 +107,16 @@ def handleNotSupported(pab, devname):
 def sendErrorCode(code):
     global tipi_io
     print "responding with error: " + str(code)
+    sendSingleByte(code)
+
+def sendSuccess():
+    print "responding with success!"
+    sendSingleByte(SUCCESS)
+
+def sendSingleByte(byte):
+    global tipi_io
     msg = bytearray(1)
-    msg[0] = code
+    msg[0] = byte
     tipi_io.send(msg)
 
 def deviceToFilename(devname):
@@ -122,7 +131,9 @@ def handleOpen(pab, devname):
     localPath = tinames.devnameToLocal(devname)
     if os.path.isdir(localPath) and mode(pab) == INPUT and dataType(pab) == INTERNAL and recordType(pab) == FIXED:
         print "  local file: " + localPath
-        sendErrorCode(SUCCESS)
+        sendSuccess()
+        # since it is a directory the recordlength is 38, often it is opened with no value.
+        tipi_io.send([38])
     else:
         sendErrorCode(EFILERR)
 
@@ -138,9 +149,17 @@ def handleRead(pab, devname):
     if os.path.isdir(localPath) and mode(pab) == INPUT and dataType(pab) == INTERNAL and recordType(pab) == FIXED:
         print "  local file: " + localPath
         if recordNumber(pab) == 0:
-            sendErrorCode(SUCCESS)
+            sendSuccess()
             vdata = createVolumeData(localPath)
             tipi_io.send(vdata)
+            return
+        else:
+            fdata = createFileData(localPath,recordNumber(pab))
+            if len(fdata) == 0:
+                sendErrorCode(EEOF)
+            else:
+                sendSuccess()
+                tipi_io.send(fdata)
             return
 
     sendErrorCode(EFILERR)
@@ -215,27 +234,57 @@ def handleStatus(pab, devname):
     sendErrorCode(EDEVERR)
 
 def createVolumeData(path):
+    return encodeDirRecord("TIPI", 0, 1440, 1438)
+
+def createFileData(path,recordNumber):
+    files = os.listdir(path)
+    fh = None
+    try:
+        f = files[recordNumber - 1]
+        fh = open(os.path.join(path, f), 'rb')
+        header = bytearray(fh.read()[:128])
+
+        if os.path.isdir(os.path.join(path,f)):
+            print "found dir: " + f
+            return encodeDirRecord(f, 6, 1, 38)
+      
+        ft = ti_files.dsrFileType(header)
+        sectors = ti_files.getSectors(header) + 1
+        recordlen = ti_files.recordLength(header)
+        return encodeDirRecord(f, ft, sectors, recordlen)
+
+
+    except Exception as e:
+        traceback.print_exc()
+        return encodeDirRecord("",0,0,0)
+        
+    finally:
+        if fh != None:
+            fh.close()
+
+def encodeDirRecord(name, ftype, sectors, recordLength):
+    print "dir record: {}, {}, {}, {}".format(name, ftype, sectors, recordLength)
     bytes = bytearray(38)
-    bytes[0] = 4
-    bytes[1] = 'T'
-    bytes[2] = 'I'
-    bytes[3] = 'P'
-    bytes[4] = 'I'
-    for i in range(5,11):
-        bytes[i] = ' '
-    zero = tifloat.asFloat(0)
-    i = 11
-    for b in zero:
+
+    bytes[0] = len(name)
+    i = 1
+    for c in name:
+        bytes[i] = c
+        i += 1
+    ft = tifloat.asFloat(ftype)
+    for b in ft:
         bytes[i] = b
         i += 1
-    size = tifloat.asFloat(1440)
-    for b in size:
+    sc = tifloat.asFloat(sectors)
+    for b in sc:
         bytes[i] = b
         i += 1
-    free = tifloat.asFloat(1438)
-    for b in free:
+    rl = tifloat.asFloat(recordLength)
+    for b in rl:
         bytes[i] = b
         i += 1
+    for i in range(i,38):
+        bytes[i] = 0
 
     return bytes
 

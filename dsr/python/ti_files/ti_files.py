@@ -55,6 +55,9 @@ class ti_files(object):
 
     @staticmethod
     def dsrFileType(bytes):
+        if ti_files.isProgram(bytes):
+            return 5
+
         if ti_files.isInternal(bytes):
             if ti_files.isVariable(bytes):
                  return 4
@@ -65,9 +68,6 @@ class ti_files(object):
                  return 2
             else:
                  return 1
-
-        if ti_files.isProgram(bytes):
-            return 5
 
         return 0
            

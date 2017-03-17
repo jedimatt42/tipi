@@ -19,7 +19,7 @@ FAC	EQU	PAD+>4A		; 36 bytes available to DSR We'll copy the PAB header here.
 OPCODE	EQU	FAC+>0		; PAB - location of opcode after copied
 FLGSTS	EQU	FAC+>1		; PAB - [blah][blah]
 BUFADR	EQU	FAC+>2		; PAB - address of read or write buffer
-LRECLN	EQU	FAC+>4		; PAB - logical record length
+RECLEN	EQU	FAC+>4		; PAB - logical record length
 CHRCNT	EQU	FAC+>5		; PAB - character count
 RECNUM	EQU	FAC+>6		; PAB - record number
 SCNOFF	EQU	FAC+>8		; PAB - screen offset
@@ -58,6 +58,7 @@ OPSTAT	EQU	>0900		; Status (varies if file is open or not, RPi should keep state
 ; Macros
 ; Function calling support, such as a alt return address
 RET	EQU	>836C		; stash place for previous R11:  MOV R11,@RET   BL sendmsg  MOV @RET,R11
+VPAB	EQU	>836A		; once we compute the beginning of PAB in VDP we'll reuse this value.
 
 ; Pattern of Register Usage - 
 ;  R15 - VDPWA
@@ -82,6 +83,7 @@ tipidsr
 	LI	R2,>0A
 	S	R2,R9		;   rewind over PAB header
 ; NOW R9 == V@PAB - beginning of VDP PAB, we will preserve that.
+	MOV	R9,@VPAB
 
 
 ; Set VDP to read from beginning of PAB that is now in R0 and copy to scratchpad
@@ -118,17 +120,65 @@ tipidsr
 	CI	R9,EDVNAME	; If device name error ( such as we don't handle it )
 	JEQ	tipipass
 	CI	R9,SUCCESS	; If not success, we'll pass the code back to the PAB
+	JEQ	hresponse
+
+	MOV	R9,R1
 	JNE	reterr
 
 ; RPi thinks it can handle this request :) Good news!
+hresponse
 	CLR	R1		; switch on opcode in R1
 	MOVB	@OPCODE(R10),R1
 
-	CI	R1,OPLOAD	;   case OPSAVE: goto hload
+	CI	R1,OPOPEN
+	JEQ	hopen
+
+	CI	R1,OPCLOSE
+	JEQ	hclose
+
+	CI	R1,OPREAD
+	JEQ	hread
+
+	CI	R1,OPLOAD
 	JEQ	hload
 
 	LI	R1,EDEVERR	;   default: return device error
 	JMP	reterr
+
+; Handle OPCODE 0 - OPEN
+hopen
+	; quick hack, supposed to return record length if it is zero...
+	LI	R0,1
+	MOV	R10,R1
+	AI	R1,R9MB
+	BL	@recvmsg	; R9 MSB now has record length of open file.
+	MOV	@VPAB,R3
+	AI	R3,RECLEN-OPCODE
+	.setvdpwa R3
+	MOVB	R9,@VDPWD
+	JMP	retdone
+
+; Handle OPCODE 1 - CLOSE
+hclose
+	JMP	retdone
+
+; Handle OPCODE 2 - READ
+hread
+	MOV	@RECNUM(R10),R0
+	MOV	@BUFADR(R10),R1
+	BL	@vrecvmsg	; R0 is now number of bytes read in record
+	SWPB	R0
+	MOV	@VPAB,R3
+	AI	R3,CHRCNT-OPCODE
+	.setvdpwa R3
+	MOVB	R0,@VDPWD
+	MOV 	@RECNUM(R10),R1	; increment the VDP PAB record number
+	INC	R1
+	MOV	@VPAB,R3
+	AI	R3,RECNUM-OPCODE
+	.setvdpwa R3
+	MOVB	R1,@VDPWD
+	JMP	retdone
 
 ; Handle response for OPCODE 5 - LOAD
 hload
@@ -136,6 +186,7 @@ hload
 	MOV	@BUFADR(R10),R1	; Set VDP location to load in to.
 	BL	@vrecvmsg 	; Load image data
 	JMP	retdone
+
 
 ; 
 ; Support 3 possible exit modes:
@@ -155,13 +206,9 @@ retdone
 reterr
 	SRC	R1,3		;   move status to top 3 bits.
 	SOCB	@FLGSTS(R10),R1	;   merge with file flags so we don't overwrite them
-	MOV	R9,R3		;   compose the address of status byte
+	MOV	@VPAB,R3	;   compose the address of status byte 
 	INC	R3		;   second byte in PAB
-	SWPB	R3		; set vdp write address
-	MOVB	R3,*R15
-	SWPB	R3
-	ORI	R3,VDWRITE	; set write address flag to avoid extra increment.
-	MOVB	R3,*R15
+	.setvdpwa R3
 	MOVB	R1,@VDPWD	;   write the status byte
 	JMP	retdone
 

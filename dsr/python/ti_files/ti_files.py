@@ -54,6 +54,25 @@ class ti_files(object):
         return ((ti_files.getSectors(bytes)-1) * 256) + ti_files.eofOffset(bytes)
 
     @staticmethod
+    def dsrFileType(bytes):
+        if ti_files.isInternal(bytes):
+            if ti_files.isVariable(bytes):
+                 return 4
+            else:
+                 return 3
+        else:
+            if ti_files.isVariable(bytes):
+                 return 2
+            else:
+                 return 1
+
+        if ti_files.isProgram(bytes):
+            return 5
+
+        return 0
+           
+
+    @staticmethod
     def flagsToString(bytes):
         if ti_files.isInternal(bytes):
             type = "INT/"

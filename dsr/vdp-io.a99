@@ -8,7 +8,8 @@ VDPWD	EQU	>8C00		; VDP Write Data
 ; VDP Flag for setting Write address
 VDWRITE	EQU	>4000		; ORI w/register holder target vdp write address.
 
-; Useful values if you have the WP in a resgister since VDP requires byte addressing
+; Useful values if you have the WP in a register since VDP requires byte addressing
+; these can be used with offset addressing, like @R9LB(R10) after preparing R10 with STWP R10
 R0LB	EQU	>01
 R1LB	EQU	>03
 R2LB	EQU	>05

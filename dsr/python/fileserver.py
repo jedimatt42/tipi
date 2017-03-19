@@ -251,7 +251,7 @@ def createVolumeData(path):
     return encodeDirRecord("TIPI", 0, 1440, 1438)
 
 def createFileData(path,recordNumber):
-    files = sorted(os.listdir(path))
+    files = sorted(list(filter(lambda x : os.path.isdir(os.path.join(path,x)) or ti_files.isTiFile(str(os.path.join(path,x))), os.listdir(path))))
     fh = None
     try:
         f = files[recordNumber - 1]
@@ -261,6 +261,7 @@ def createFileData(path,recordNumber):
             return encodeDirRecord(f, 6, 2, 0)
       
         fh = open(os.path.join(path, f), 'rb')
+
         header = bytearray(fh.read()[:128])
 
         ft = ti_files.dsrFileType(header)

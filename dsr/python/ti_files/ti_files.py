@@ -1,5 +1,25 @@
+import os
+import sys
+import traceback
 
 class ti_files(object):
+
+    @staticmethod
+    def isTiFile(filename):
+        fh = None
+        try:
+            if os.stat(filename).st_size > 128:
+                fh = open(filename,'rb')
+                header = bytearray(fh.read()[:9])
+                isGood = ti_files.isValid(header)
+                return isGood
+        except Exception as e:
+            traceback.print_exc()
+            pass
+        finally:
+            if fh != None:
+                fh.close()
+        return False
 
     @staticmethod
     def isProgram(bytes):

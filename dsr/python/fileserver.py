@@ -281,9 +281,11 @@ def encodeDirRecord(name, ftype, sectors, recordLength):
     print "dir record: {}, {}, {}, {}".format(name, ftype, sectors, recordLength)
     bytes = bytearray(38)
 
-    bytes[0] = len(name)
+    shortname = tinames.asTiShortName(name)
+
+    bytes[0] = len(shortname)
     i = 1
-    for c in name:
+    for c in shortname:
         bytes[i] = c
         i += 1
     ft = tifloat.asFloat(ftype)

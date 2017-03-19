@@ -119,12 +119,6 @@ def sendSingleByte(byte):
     msg[0] = byte
     tipi_io.send(msg)
 
-def deviceToFilename(devname):
-    pattern = re.compile('[^\.]+')
-    tokens = pattern.findall(str(devname))
-    # cheating
-    return "/tipi_disk/" + tokens[1]
-
 openRecord = { }
 
 def handleOpen(pab, devname):
@@ -193,7 +187,7 @@ def handleLoad(pab, devname):
     printPab(pab)
     maxsize = recordNumber(pab)
     print "\tmax bytes: " + str(maxsize)
-    unix_name = deviceToFilename(devname)
+    unix_name = tinames.devnameToLocal(devname)
     print "\tunix_name: " + unix_name
     fh = None
     try:

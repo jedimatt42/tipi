@@ -5,7 +5,7 @@ from crccheck.crc import Crc15
 
 # Transform a name supplied by the 4A into our storage path
 def devnameToLocal(devname):
-    parts = devname.split('.')
+    parts = str(devname).split('.')
     path = ""
     if parts[0] == "TIPI":
         path = "/tipi_disk"

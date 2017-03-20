@@ -139,7 +139,11 @@ def handleClose(pab, devname):
     print "Opcode 1 Close - " + str(devname)
     printPab(pab)
     sendErrorCode(SUCCESS)
-    del openRecord[tinames.devnameToLocal(devname)]
+    try:
+        del openRecord[tinames.devnameToLocal(devname)]
+    except Exception as e:
+        # don't care if close is called while file is not open
+        pass
 
 def handleRead(pab, devname):
     print "Opcode 2 Read - " + str(devname)

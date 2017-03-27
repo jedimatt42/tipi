@@ -1,5 +1,25 @@
+import os
+import sys
+import traceback
 
 class ti_files(object):
+
+    @staticmethod
+    def isTiFile(filename):
+        fh = None
+        try:
+            if os.stat(filename).st_size > 128:
+                fh = open(filename,'rb')
+                header = bytearray(fh.read()[:9])
+                isGood = ti_files.isValid(header)
+                return isGood
+        except Exception as e:
+            traceback.print_exc()
+            pass
+        finally:
+            if fh != None:
+                fh.close()
+        return False
 
     @staticmethod
     def isProgram(bytes):
@@ -52,6 +72,25 @@ class ti_files(object):
     @staticmethod
     def byteLength(bytes):
         return ((ti_files.getSectors(bytes)-1) * 256) + ti_files.eofOffset(bytes)
+
+    @staticmethod
+    def dsrFileType(bytes):
+        if ti_files.isProgram(bytes):
+            return 5
+
+        if ti_files.isInternal(bytes):
+            if ti_files.isVariable(bytes):
+                 return 4
+            else:
+                 return 3
+        else:
+            if ti_files.isVariable(bytes):
+                 return 2
+            else:
+                 return 1
+
+        return 0
+           
 
     @staticmethod
     def flagsToString(bytes):

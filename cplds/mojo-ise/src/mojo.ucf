@@ -77,7 +77,7 @@ NET "cru_base<3>" LOC = P105 | IOSTANDARD = LVCMOS33 | PULLDOWN;
 
 
 // Transciever enable signal outputs
-NET "tipi_dsr_out" LOC = P100 | IOSTANDARD = LVCMOS33;
+NET "tipi_dbus_oe" LOC = P100 | IOSTANDARD = LVCMOS33;
 
 // Meant to be inputs to the raspberry pi as a data bus
 NET "rpi_d<0>" LOC = P50 | IOSTANDARD = LVCMOS33;

@@ -67,7 +67,7 @@ class TipiPorts(object):
     # Write a byte of to an 8 bit output register selected by clk
     #
     def __writeByteToRegister(self, byte, clk):
-        for i in range(0,8):
+        for i in reversed(range(0,8)):
             GPIO.output(clk, 0)
             GPIO.output(self.__R_SDATA, (byte >> i) & 0x01)
             GPIO.output(clk, 1)

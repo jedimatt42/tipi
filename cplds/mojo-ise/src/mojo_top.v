@@ -19,13 +19,6 @@ module mojo_top(
     output avr_rx, // AVR Rx => FPGA Tx
     input avr_rx_busy, // AVR Rx buffer full
      
-    // Control OE* on a bus transmitter to allow RPi data on TI data bus.
-    output tipi_data_out,
-    // Control OE* on a bus transmitter to allow RPi control signals on TI data bus.
-    output tipi_control_out,
-    // Control OE* on a bus transmitter to allow DSR ROM on TI data bus.
-    output tipi_dsr_out,
-     
     // TI address bus. bit 0 is MSB per TI numbering.
     input [0:15]ti_a,
     // TI data bus inputs. bit 0 is MSB.
@@ -43,12 +36,21 @@ module mojo_top(
     // TI Reset (active low)
     input ti_reset,
     
+	 // Inputs for data and control registers from RPi
+	 input rpi_cclk,
+	 input rpi_dclk,
+	 input rpi_sdata,
+	 input rpi_le,
+	 
     // Data output to RPi latched from 0x5fff
     output [7:0]rpi_d,
     // Control signal output to RPi latched from 0x5ffd
     output [7:0]rpi_s,
-	 // DSR ROM Data output from 0x4000 to 0x5ff8
-	 output [0:7]dsr_d
+	 // DSR ROM Data output from 0x4000 to 0x5ff8, or RPi registers at 0x5ff9 & 0x5ffb
+	 output [0:7]dsr_d,
+
+    // Control OE* on a bus transmitter to allow DSR ROM or RPi registers on TI data bus.
+    output tipi_dbus_oe
 );
 
 reg [0:7] dsr_data_rom [0:8191];
@@ -63,6 +65,10 @@ wire a15;
 
 wire rst = ~rst_n; // make reset active high
 
+wire tipi_data_out;
+wire tipi_control_out;
+wire tipi_dsr_out;
+
 // a CRU bit to act as device-enable
 reg crubit_q;
 
@@ -70,6 +76,13 @@ reg crubit_q;
 reg [7:0] data_q;
 // latched control channel
 reg [7:0] control_q;
+
+// shift register signals from RPi
+reg [7:0] rdata_q;
+reg [7:0] rdata_latch;
+reg [7:0] rcontrol_q;
+reg [7:0] rcontrol_latch;
+reg [7:0] dbus_q; // internal register so we can choose which other register goes to data output bus.
 
 // these signals should be high-z when not used
 assign spi_miso = 1'bz;
@@ -79,7 +92,7 @@ assign spi_channel = 4'bzzzz;
 // need to consider crubit_q also... 
 assign tipi_data_out = (crubit_q && ~ti_memen && ti_dbin && ti_a == 16'h5ffb) ? 1'b0 : 1'b1;
 assign tipi_control_out = (crubit_q && ~ti_memen && ti_dbin && ti_a == 16'h5ff9) ? 1'b0 : 1'b1;
-assign tipi_dsr_out = (crubit_q && ~ti_memen && ti_dbin && ti_a > 16'h3fff && ti_a < 16'h5ff8) ? 1'b0 : 1'b1;
+assign tipi_dsr_out = (crubit_q && ~ti_memen && ti_dbin && ti_a >= 16'h4000 && ti_a < 16'h5ff8) ? 1'b0 : 1'b1;
 
 always @(negedge ti_we) begin
   if (crubit_q && ~ti_memen && ti_a == 16'h5fff) begin
@@ -107,12 +120,31 @@ always @(posedge clk) begin
   dsr_q <= dsr_data_rom[rom_idx];
 end
 
-assign dsr_d = dsr_q;
+always @(posedge rpi_cclk) begin
+  if (rpi_le) rcontrol_latch <= rcontrol_q;
+  else rcontrol_q <= { rcontrol_q[6:0], rpi_sdata };
+end
+
+always @(posedge rpi_dclk) begin
+  if (rpi_le) rdata_latch <= rdata_q;
+  else rdata_q <= { rdata_q[6:0], rpi_sdata };
+end
+
+always @(posedge clk) begin
+  if (ti_a[3:15] == 13'h1ff9) dbus_q <= rcontrol_q;
+  else if (ti_a[3:15] == 13'h1ffb) dbus_q <= rdata_q;
+  else if (ti_a[3:15] >= 13'h0000 && ti_a[3:15] < 13'h1ff9) dbus_q <= dsr_q;
+  else dbus_q <= 8'h00;
+end
+
+assign dsr_d = dbus_q;
+assign tipi_dbus_oe = (crubit_q && ~ti_memen && ti_dbin && ti_a >= 16'h4000 && ti_a < 16'h5ffd) ? 1'b0 : 1'b1;
 
 assign rpi_d = data_q;
 assign rpi_s = control_q;
 
-assign led[7:1] = control_q[6:0];
 assign led[0] = crubit_q;
+assign led[3:1] = control_q[2:0];
+assign led[7:4] = rcontrol_q[3:0];
 
 endmodule

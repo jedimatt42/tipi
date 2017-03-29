@@ -25,24 +25,11 @@ class TipiPorts(object):
         self.__TC7 = 7
 
         self.__TC_BITS = [self.__TC0, self.__TC1, self.__TC2, self.__TC3, self.__TC4, self.__TC5, self.__TC6, self.__TC7]
- 
-        self.__RD0 = 11
-        self.__RD1 = 0
-        self.__RD2 = 5
-        self.__RD3 = 6
-        self.__RD4 = 13
-        self.__RD5 = 19
-        self.__RD6 = 26
-        self.__RD7 = 21
 
-        self.__RD_BITS = [self.__RD0, self.__RD1, self.__RD2, self.__RD3, self.__RD4, self.__RD5, self.__RD6, self.__RD7]
-
-        self.__RC0 = 1
-        self.__RC1 = 12
-        self.__RC2 = 16
-        self.__RC3 = 20
-
-        self.__RC_BITS = [self.__RC0, self.__RC1, self.__RC2, self.__RC3]
+        self.__R_CCLK = 19
+        self.__R_DCLK = 26
+        self.__R_SDATA = 13
+        self.__R_LE = 6
  
         GPIO.setmode(GPIO.BCM) 
         GPIO.setwarnings(True)
@@ -50,8 +37,10 @@ class TipiPorts(object):
         GPIO.setup(self.__TD_BITS, GPIO.IN)
         GPIO.setup(self.__TC_BITS, GPIO.IN)
 
-        GPIO.setup(self.__RD_BITS, GPIO.OUT)
-        GPIO.setup(self.__RC_BITS, GPIO.OUT)
+        GPIO.setup(self.__R_CCLK, GPIO.OUT)
+        GPIO.setup(self.__R_DCLK, GPIO.OUT)
+        GPIO.setup(self.__R_SDATA, GPIO.OUT)
+        GPIO.setup(self.__R_LE, GPIO.OUT)
 
 	self.setRD(0)
 	self.setRC(0)
@@ -75,26 +64,19 @@ class TipiPorts(object):
         return byte
 
     #
-    # Write a byte of to a set of 8 output pins
+    # Write a byte of to an 8 bit output register selected by clk
     #
-    def __writeByteToBits(self, byte, bits):
-        GPIO.output(bits[0], byte & 0x80)
-        GPIO.output(bits[1], byte & 0x40)
-        GPIO.output(bits[2], byte & 0x20)
-        GPIO.output(bits[3], byte & 0x10)
-        GPIO.output(bits[4], byte & 0x08)
-        GPIO.output(bits[5], byte & 0x04)
-        GPIO.output(bits[6], byte & 0x02)
-        GPIO.output(bits[7], byte & 0x01)
-
-    #
-    # Write a least significant 4 bits of a byte to a set of 4 output pins
-    #
-    def __writeNibbleToBits(self, byte, bits):
-        GPIO.output(bits[0], byte & 0x08)
-        GPIO.output(bits[1], byte & 0x04)
-        GPIO.output(bits[2], byte & 0x02)
-        GPIO.output(bits[3], byte & 0x01)
+    def __writeByteToRegister(self, byte, clk):
+        for i in reversed(range(0,8)):
+            GPIO.output(clk, 0)
+            GPIO.output(self.__R_SDATA, (byte >> i) & 0x01)
+            GPIO.output(clk, 1)
+        
+        GPIO.output(clk, 0)
+        GPIO.output(self.__R_LE, 1)
+        GPIO.output(clk, 1)
+        GPIO.output(self.__R_LE, 0)
+        GPIO.output(clk, 0)
 
     # Read TI_DATA
     def getTD(self):
@@ -106,9 +88,9 @@ class TipiPorts(object):
 
     # Write RPI_DATA
     def setRD(self, value):
-        self.__writeByteToBits(value, self.__RD_BITS)
+        self.__writeByteToRegister(value, self.__R_DCLK)
 
     # Write RPI_CONTROL
     def setRC(self, value):
-        self.__writeNibbleToBits(value, self.__RC_BITS)
+        self.__writeByteToRegister(value, self.__R_CCLK)
 

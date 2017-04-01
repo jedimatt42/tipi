@@ -1,17 +1,22 @@
 #!/usr/bin/env python
 
 from TipiPorts import TipiPorts
+from Phash import Phash
 
 RESET = 0x01
 TSWB = 0x02
 TSRB = 0x06
 ACK_MASK = 0x03
 
+HASHOK = 0x5A
+HASHERR = 0xA5
+
 class TipiMessage(object):
 
     def __init__(self):
         self.prev_syn = 0
         self.ports = TipiPorts()
+        self.phash = Phash()
 
     #
     # Block until both sides show control bits reset
@@ -62,6 +67,26 @@ class TipiMessage(object):
         return val
 
     #
+    # exchange and check hash
+    def __checkHash(self, bytes):
+        hash = phash.digest(0, bytes)
+        self.__sendByte(hash)
+        self.__modeRead()
+        return self.__readByte() == HASHOK
+
+    #
+    # Return an array of arrays
+    def __splitMessage(self, bytes):
+        l = len(bytes)
+        chunks = [ ]
+        bc = (l / 64) + 1
+        for i in range(bc):
+            chunk = bytes[i*64:(i+1)*64]
+            chunks += [ chunk ]
+        return chunks
+
+        
+    #
     # Receive a message, returned as a byte array
     def receive(self):
         self.__resetProtocol()
@@ -73,7 +98,7 @@ class TipiMessage(object):
 	return message
 
     #
-    # Send a message
+    # Send a message, retrying each block if there is a transmission error.
     def send(self, bytes):
         self.__resetProtocol()
         self.__modeSend()
@@ -82,7 +107,10 @@ class TipiMessage(object):
         lsb = msglen & 0xFF
         self.__sendByte(msb)
         self.__sendByte(lsb)
-        for byte in bytes:
-            self.__sendByte(byte)
-
-
+        for chunk in self.__splitMessage(bytes):
+            clean = False
+            while clean != True:
+                for byte in chunk:
+                    self.__sendByte(byte)
+                clean = self.__checkHash(chunk)
+                

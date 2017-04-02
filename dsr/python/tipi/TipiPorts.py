@@ -44,6 +44,10 @@ class TipiPorts(object):
 
 	self.setRD(0)
 	self.setRC(0)
+        GPIO.output(self.__R_CCLK, 0)
+        GPIO.output(self.__R_DCLK, 0)
+        GPIO.output(self.__R_SDATA, 0)
+        GPIO.output(self.__R_LE, 0)
 
     #
     # Read a byte of input from a set of 8 input pins

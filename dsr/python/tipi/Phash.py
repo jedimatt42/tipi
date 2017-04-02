@@ -2,7 +2,7 @@
 import random
 import Ptable
 
-class PHash:
+class Phash:
 
     def __init__(self):
         self.table = Ptable.table

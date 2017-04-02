@@ -11,6 +11,8 @@ ACK_MASK = 0x03
 HASHOK = 0x5A
 HASHERR = 0xA5
 
+CHUNKSIZE = 64
+
 class TipiMessage(object):
 
     def __init__(self):
@@ -69,20 +71,25 @@ class TipiMessage(object):
     #
     # exchange and check hash
     def __checkHash(self, bytes):
-        hash = phash.digest(0, bytes)
+        hash = self.phash.digestAll(0, bytes)
         self.__sendByte(hash)
         self.__modeRead()
-        return self.__readByte() == HASHOK
+        print "waiting for hash check"
+        check = self.__readByte()
+        self.__modeRead()
+        print "check = {}".format(check)
+        return check == HASHOK
 
     #
     # Return an array of arrays
     def __splitMessage(self, bytes):
         l = len(bytes)
         chunks = [ ]
-        bc = (l / 64) + 1
+        bc = (l / CHUNKSIZE) + 1
         for i in range(bc):
-            chunk = bytes[i*64:(i+1)*64]
-            chunks += [ chunk ]
+            chunk = bytes[i*CHUNKSIZE:(i+1)*CHUNKSIZE]
+            if len(chunk):
+                chunks += [ chunk ]
         return chunks
 
         
@@ -107,10 +114,15 @@ class TipiMessage(object):
         lsb = msglen & 0xFF
         self.__sendByte(msb)
         self.__sendByte(lsb)
+        cidx = 0
         for chunk in self.__splitMessage(bytes):
+            print "sending chunk {}, size {}".format(cidx, len(chunk))
             clean = False
             while clean != True:
                 for byte in chunk:
                     self.__sendByte(byte)
                 clean = self.__checkHash(chunk)
-                
+                if not clean:
+                    print "retrying..."
+            cidx += 1    
+

@@ -218,6 +218,7 @@ def handleLoad(pab, devname):
         print "finished sending all the bytes."
 
     except Exception as e:
+	traceback.print_exc()
         print e
         # I don't think this will work. we need to check for as many errors as possible up front.
         sendErrorCode(EFILERR)

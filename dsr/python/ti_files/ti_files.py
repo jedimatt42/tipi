@@ -71,7 +71,10 @@ class ti_files(object):
 
     @staticmethod
     def byteLength(bytes):
-        return ((ti_files.getSectors(bytes)-1) * 256) + ti_files.eofOffset(bytes)
+        eofsize = ti_files.eofOffset(bytes)
+        if eofsize == 0:
+            eofsize = 256
+        return ((ti_files.getSectors(bytes)-1) * 256) + eofsize
 
     @staticmethod
     def dsrFileType(bytes):

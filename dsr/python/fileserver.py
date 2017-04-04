@@ -127,13 +127,56 @@ def handleOpen(pab, devname):
     printPab(pab)
     localPath = tinames.devnameToLocal(devname)
     print "  local file: " + localPath
+    if mode(pab) == INPUT and not os.path.exists(localPath):
+        sendErrorCode(EFILERR)
+        return
+
     if os.path.isdir(localPath) and mode(pab) == INPUT and dataType(pab) == INTERNAL and recordType(pab) == FIXED:
         sendSuccess()
         # since it is a directory the recordlength is 38, often it is opened with no value.
+        # TODO: if they specify the longer filename record length, and recordType, then this will be different
+        #       for implementation of long file name handling
         tipi_io.send([38])
         openRecord[localPath] = 0
+        return
+
+    if os.path.exists(localPath):
+        fh = None
+        try:
+            fh = open(localPath, 'rb')
+            bytes = bytearray(fh.read())
+            if not ti_files.isValid(bytes):
+                raise Exception("not tifiles format")
+            if dataType(pab) == DISPLAY and ti_files.isInternal(bytes):
+                raise Exception("cannot open as DISPLAY")
+            if dataType(pab) == INTERNAL and not ti_files.isInternal(bytes):
+                raise Exception("cannot open as INTERNAL")
+            if recordType(pab) == FIXED and ti_files.isVariable(bytes):
+                raise Exception("cannot open as FIXED")
+            if recordType(pab) == VARIABLE and not ti_files.isVariable(bytes):
+                raise Exception("cannot open as VARIABLE")
+            if recordLength(pab) != 0 and (ti_files.recordLength(bytes) != recordLength(pab)):
+                raise Exception("record length mismatch")
+            fillInRecordLen = ti_files.recordLength(bytes)
+
+            sendSuccess()
+            tipi_io.send([fillInRecordLen])
+            openRecord[localPath] = 0
+            return
+
+        except Exception as e:
+            print e
+            sendErrorCode(EOPATTR)
+            return
+        finally:
+            if fh != None:
+                fh.close()
+
     else:
-        sendErrorCode(EFILERR)
+        pass
+        # TODO: check that any parent directory specified does exist. 
+
+    sendErrorCode(EFILERR)
 
 def handleClose(pab, devname):
     print "Opcode 1 Close - " + str(devname)
@@ -142,37 +185,51 @@ def handleClose(pab, devname):
     try:
         del openRecord[tinames.devnameToLocal(devname)]
     except Exception as e:
-        # don't care if close is called while file is not open
+        # I don't care if close is called while file is not open
         pass
 
 def handleRead(pab, devname):
     print "Opcode 2 Read - " + str(devname)
     printPab(pab)
     localPath = tinames.devnameToLocal(devname)
+
+    recNum = recordNumber(pab)
+    # UNSPEC'ED
+    # TI software is too lazy to increment record number because TIFDC didn't require it.
+    if recNum == 0:
+	recNum = openRecord[localPath]
+
     if os.path.isdir(localPath) and mode(pab) == INPUT and dataType(pab) == INTERNAL and recordType(pab) == FIXED:
         print "  local file: " + localPath
-        recNum = recordNumber(pab)
-        if recNum == 0:
-            recNum = openRecord[localPath]
 
-    try:
-        if recNum == 0:
-            sendSuccess()
-            vdata = createVolumeData(localPath)
-            tipi_io.send(vdata)
-            return
+	try:
+	    if recNum == 0:
+		sendSuccess()
+		vdata = createVolumeData(localPath)
+		tipi_io.send(vdata)
+		return
+	    else:
+		fdata = createFileCatRecord(localPath,recNum)
+		if len(fdata) == 0:
+		    sendErrorCode(EEOF)
+		else:
+		    sendSuccess()
+		    tipi_io.send(fdata)
+		return
+	except:
+	    pass
+	finally:
+	    openRecord[localPath] += 1
+
+    if os.path.exists(localPath):
+        fdata = createFileReadRecord(localPath,recNum)
+        if fdata == None:
+            sendErrorCode(EEOF)
         else:
-            fdata = createFileData(localPath,recNum)
-            if len(fdata) == 0:
-                sendErrorCode(EEOF)
-            else:
-                sendSuccess()
-                tipi_io.send(fdata)
-            return
-    except:
-        pass
-    finally:
-        openRecord[localPath] += 1
+            sendSuccess()
+            tipi_io.send(fdata)
+	openRecord[localPath] += 1
+        return
 
     sendErrorCode(EFILERR)
 
@@ -249,7 +306,7 @@ def handleStatus(pab, devname):
 def createVolumeData(path):
     return encodeDirRecord("TIPI", 0, 1440, 1438)
 
-def createFileData(path,recordNumber):
+def createFileCatRecord(path,recordNumber):
     files = sorted(list(filter(lambda x : os.path.isdir(os.path.join(path,x)) or ti_files.isTiFile(str(os.path.join(path,x))), os.listdir(path))))
     fh = None
     try:
@@ -304,6 +361,21 @@ def encodeDirRecord(name, ftype, sectors, recordLength):
         bytes[i] = 0
 
     return bytes
+
+def createFileReadRecord(path,recordNumber):
+    fh = None
+    try:
+        fh = open(path, 'rb')
+        bytes = bytearray(fh.read())
+        if ti_files.isVariable(bytes):
+            return ti_files.readVariableRecord(bytes, recordNumber)
+    except:
+        raise
+    finally:
+        if fh != None:
+            fh.close()
+    return None
+        
 
 ## 
 ## MAIN

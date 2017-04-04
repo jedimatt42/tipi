@@ -1,6 +1,7 @@
 import os
 import sys
 import traceback
+import math
 
 class ti_files(object):
 
@@ -125,4 +126,25 @@ class ti_files(object):
         print "  record length: " + str(ti_files.recordLength(bytes))
         print "  record count: " + str(ti_files.recordCount(bytes))
 
-
+    @staticmethod
+    def readVariableRecord(bytes, recNumber):
+        print "read var record {}".format(recNumber)
+        data = bytes[128:]
+        sec = 0
+        rIdx = 0
+        offset = 0
+        nextoff = offset + data[offset] + 1
+        try:
+	    while rIdx < recNumber:
+		offset = nextoff
+		if data[offset] == 0xff:
+		    # we need to move to the next sector
+		    offset = int((offset / 256) + 1) * 256
+		    nextoff = offset + data[offset] + 1
+		else:
+		    nextoff += data[offset] + 1
+		rIdx += 1
+	    return bytearray(data[offset+1:nextoff])
+        except:
+            return None
+        

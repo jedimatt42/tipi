@@ -10,10 +10,10 @@
 ; So, PAB: Appears to be handed off in a fixed address in scratchpad. The DSR must work backwards from the end.
 PABNAM	EQU	>8356		; Address in VDP of Device Name
 PABNLE	EQU	>8354		; Length of name (?only trust the LSB?)
-PABCNT	EQU	>000A		; PAB begins 10 bytes before the name length
 ; PAB begins at VDP address pointed to by: @>8356 - @>8354 - >0A
 
 ; There is room in PAD for the 10 byte header at FAC (floating point accumulator)
+;   These equates are relative to WP at DSR entry. (We store that in R10)
 PAD	EQU	->E0		; Beginning of scratchpad ram
 FAC	EQU	PAD+>4A		; 36 bytes available to DSR We'll copy the PAB header here.
 OPCODE	EQU	FAC+>0		; PAB - location of opcode after copied
@@ -24,10 +24,6 @@ CHRCNT	EQU	FAC+>5		; PAB - character count
 RECNUM	EQU	FAC+>6		; PAB - record number
 SCNOFF	EQU	FAC+>8		; PAB - screen offset
 OPTLEN	EQU	FAC+>9		; PAB - option length
-DEVLEN	EQU	FAC+>10		; PAB - device length
-;  I doubt I should use this- 
-PABVDP	EQU	FAC+>12		; PAB - Pointer to PAB in VDP RAM
-
 
 ; Error codes - RPi will return one of these or SUCCESS after evaluating PAB and device name.
 EDVNAME	EQU	>00		; Bad device name
@@ -57,8 +53,8 @@ OPSTAT	EQU	>0900		; Status (varies if file is open or not, RPi should keep state
 
 ; Macros
 ; Function calling support, such as a alt return address
-RET	EQU	>836C		; stash place for previous R11:  MOV R11,@RET   BL sendmsg  MOV @RET,R11
-VPAB	EQU	>836A		; once we compute the beginning of PAB in VDP we'll reuse this value.
+RET	EQU	>835C		; stash place for previous R11:  MOV R11,@RET   BL sendmsg  MOV @RET,R11
+VPAB	EQU	>835A		; once we compute the beginning of PAB in VDP we'll reuse this value.
 
 ; Pattern of Register Usage - 
 ;  R15 - VDPWA

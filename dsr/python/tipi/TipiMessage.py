@@ -48,7 +48,7 @@ class TipiMessage(object):
             self.prev_syn = self.ports.getTC()
         self.ports.setRD(byte)
         self.ports.setRC(self.prev_syn & ACK_MASK)
-        print "Sent byte: >{0:x}".format(byte)
+        # print "Sent byte: >{0:x}".format(byte)
 
     #
     # change mode to sending bytes

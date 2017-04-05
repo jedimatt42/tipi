@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 import sys
 import traceback
 import time
@@ -367,8 +367,7 @@ def createFileReadRecord(path,recordNumber):
     try:
         fh = open(path, 'rb')
         bytes = bytearray(fh.read())
-        if ti_files.isVariable(bytes):
-            return ti_files.readVariableRecord(bytes, recordNumber)
+        return ti_files.readRecord(bytes, recordNumber)
     except:
         raise
     finally:

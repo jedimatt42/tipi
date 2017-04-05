@@ -127,6 +127,13 @@ class ti_files(object):
         print "  record count: " + str(ti_files.recordCount(bytes))
 
     @staticmethod
+    def readRecord(bytes, recNumber):
+        if ti_files.isVariable(bytes):
+            return ti_files.readVariableRecord(bytes, recNumber)
+        else:
+            return ti_files.readFixedRecord(bytes, recNumber)
+
+    @staticmethod
     def readVariableRecord(bytes, recNumber):
         print "read var record {}".format(recNumber)
         data = bytes[128:]
@@ -148,3 +155,15 @@ class ti_files(object):
         except:
             return None
         
+    @staticmethod
+    def readFixedRecord(bytes, recNumber):
+        print "read fix record {}".format(recNumber)
+        data = bytes[128:]
+        reclen = ti_files.recordLength(bytes)
+        offset = reclen * recNumber
+        try:
+            return bytearray(data[offset:offset+reclen])
+        except:
+            return None
+
+

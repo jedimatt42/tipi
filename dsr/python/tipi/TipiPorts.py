@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 import RPi.GPIO as GPIO 
+import sys
 
 class TipiPorts(object):
 
     def __init__(self):
+        self.__RESET = 5
+
         self.__TD0 = 2
         self.__TD1 = 3
         self.__TD2 = 4
@@ -32,7 +35,10 @@ class TipiPorts(object):
         self.__R_LE = 6
  
         GPIO.setmode(GPIO.BCM) 
-        GPIO.setwarnings(True)
+        GPIO.setwarnings(False)
+
+        GPIO.setup(self.__RESET, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.add_event_detect(self.__RESET, GPIO.FALLING, callback=onReset, bouncetime=100)
 
         GPIO.setup(self.__TD_BITS, GPIO.IN)
         GPIO.setup(self.__TC_BITS, GPIO.IN)
@@ -97,4 +103,9 @@ class TipiPorts(object):
     # Write RPI_CONTROL
     def setRC(self, value):
         self.__writeByteToRegister(value, self.__R_CCLK)
+
+def onReset(channel):
+    print "responding to reset interrupt"
+    sys.exit(0)
+
 

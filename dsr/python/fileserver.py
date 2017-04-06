@@ -10,6 +10,8 @@ from ti_files import ti_files
 from tipi.TipiMessage import TipiMessage
 from tifloat import tifloat
 from tinames import tinames
+from SpecialFiles import SpecialFiles
+from Pab import *
 
 #
 # Utils
@@ -19,93 +21,11 @@ def hexdump(bytes):
     for byte in bytes:
         print "{0:x}".format(byte),
 
-#
-# PAB routines...
-#
-
-#
-# Return the TI DSR Opcode
-def opcode(pab):
-    return int(pab[0])
-
-# Constants for fileType
-SEQUENTIAL = 0x00
-RELATIVE = 0x01
-
-def fileType(pab):
-    return (pab[1] & 0x01) 
-
-# Constants for modes
-UPDATE = 0x00
-OUTPUT = 0x01
-INPUT = 0x02
-APPEND = 0x03
-
-def mode(pab):
-    return (pab[1] & 0x06) >> 1
-
-# Data types
-DISPLAY = 0x00
-INTERNAL = 0x01
-
-def dataType(pab):
-    return (pab[1] & 0x08) >> 3
-
-# Record types
-FIXED = 0x00
-VARIABLE = 0x01
-
-def recordType(pab):
-    return (pab[1] & 0x10) >> 4
-
-# Length of file records
-def recordLength(pab):
-    return pab[4]
-
-#
-# Return byte count from PAB / or byte count in LOAD/SAVE operations
-def recordNumber(pab):
-    return (pab[6] << 8) + pab[7];
-
-#
-# pretty pab string
-def printPab(pab):
-    opcodes = { 0 : "Open", 1 : "Close", 2 : "Read", 3 : "Write", 4 : "Restore", 5 : "Load", 6 : "Save", 7 : "Delete", 8 : "Scratch", 9 : "Status" }
-    fileTypes = { SEQUENTIAL : "Sequential", RELATIVE : "Relative" }
-    modes = { UPDATE : "Update", OUTPUT : "Output", INPUT : "Input", APPEND : "Append" }
-    dataTypes = { DISPLAY : "Display", INTERNAL : "Internal" }
-    recordTypes = { FIXED : "Fixed", VARIABLE : "Variable" }
-    print "opcode: {}, fileType: {}, mode: {}, dataType: {}, recordType: {}, recordLength: {}, recordNumber: {}".format(
-      opcodes[opcode(pab)], 
-      fileTypes[fileType(pab)], 
-      modes[mode(pab)], 
-      dataTypes[dataType(pab)], 
-      recordTypes[recordType(pab)], 
-      recordLength(pab), 
-      recordNumber(pab) 
-    )
-
-#
-# Opcode Handling
-#
-
-EDVNAME=0x00
-EWPROT=0x01
-EOPATTR=0x02
-EILLOP=0x03
-ENOSPAC=0x04
-EEOF=0x05
-EDEVERR=0x06
-EFILERR=0x07
-
-SUCCESS=0xFF
-
 def handleNotSupported(pab, devname):
     print "Opcode not supported: " + str(opcode(pab))
     sendErrorCode(EILLOP)
 
 def sendErrorCode(code):
-    global tipi_io
     print "responding with error: " + str(code)
     sendSingleByte(code)
 
@@ -114,7 +34,6 @@ def sendSuccess():
     sendSingleByte(SUCCESS)
 
 def sendSingleByte(byte):
-    global tipi_io
     msg = bytearray(1)
     msg[0] = byte
     tipi_io.send(msg)
@@ -125,6 +44,8 @@ def handleOpen(pab, devname):
     global openRecord
     print "Opcode 0 Open - " + str(devname)
     printPab(pab)
+    if specialFiles.open(pab, devname):
+        return
     localPath = tinames.devnameToLocal(devname)
     print "  local file: " + localPath
     if mode(pab) == INPUT and not os.path.exists(localPath):
@@ -191,6 +112,8 @@ def handleClose(pab, devname):
 def handleRead(pab, devname):
     print "Opcode 2 Read - " + str(devname)
     printPab(pab)
+    if specialFiles.read(pab, devname):
+        return
     localPath = tinames.devnameToLocal(devname)
 
     recNum = recordNumber(pab)
@@ -381,6 +304,7 @@ def createFileReadRecord(path,recordNumber):
 ##
 
 tipi_io = TipiMessage()
+specialFiles = SpecialFiles(tipi_io)
 
 while True:
     print "waiting for PAB..."

@@ -37,9 +37,6 @@ class TipiPorts(object):
         GPIO.setmode(GPIO.BCM) 
         GPIO.setwarnings(False)
 
-        GPIO.setup(self.__RESET, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.add_event_detect(self.__RESET, GPIO.FALLING, callback=onReset, bouncetime=100)
-
         GPIO.setup(self.__TD_BITS, GPIO.IN)
         GPIO.setup(self.__TC_BITS, GPIO.IN)
 
@@ -54,6 +51,14 @@ class TipiPorts(object):
         GPIO.output(self.__R_DCLK, 0)
         GPIO.output(self.__R_SDATA, 0)
         GPIO.output(self.__R_LE, 0)
+
+        GPIO.setup(self.__RESET, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        # Do not proceed unless the reset signal has turned off
+        # attempt to prevent restart storm in systemd
+        while GPIO.input(self.__RESET) != 1:
+            pass
+        GPIO.add_event_detect(self.__RESET, GPIO.FALLING, callback=onReset, bouncetime=100)
+
 
     #
     # Read a byte of input from a set of 8 input pins

@@ -1,6 +1,7 @@
 
 import time
 from Pab import *
+from Status import Status
 import socket
 
 class SpecialFiles(object):
@@ -45,7 +46,7 @@ class SpecialFiles(object):
                 if recordLength(pab) == 0 or recordLength(pab) == 80:
                     self.tipi_io.send([SUCCESS])
                     self.tipi_io.send([80])
-                    self.tipiStatus = self.loadStatus()
+                    self.tipiStatus = Status()
                     self.recordNo = 0
                     return True
                 else:
@@ -68,11 +69,11 @@ class SpecialFiles(object):
                 else:
                     self.recordNo = readRec
 
-                if readRec >= len(self.tipiStatus):
+                if readRec >= self.tipiStatus.len():
                     self.tipi_io.send([EEOF])
                     return True
                 else:
-		    fdata = bytearray(self.tipiStatus[readRec])
+		    fdata = bytearray(self.tipiStatus.record(readRec))
 		    self.tipi_io.send([SUCCESS])
 		    self.tipi_io.send(fdata)
 		    self.recordNo += 1

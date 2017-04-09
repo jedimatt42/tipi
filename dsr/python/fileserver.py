@@ -12,6 +12,7 @@ from tifloat import tifloat
 from tinames import tinames
 from SpecialFiles import SpecialFiles
 from Pab import *
+from RawExtensions import RawExtensions
 
 #
 # Utils
@@ -305,11 +306,14 @@ def createFileReadRecord(path,recordNumber):
 
 tipi_io = TipiMessage()
 specialFiles = SpecialFiles(tipi_io)
+rawExtensions = RawExtensions(tipi_io)
 
 while True:
     print "waiting for PAB..."
 
     pab = tipi_io.receive()
+    if rawExtensions.handle(pab):
+        continue
 
     print "PAB received."
 

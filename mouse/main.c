@@ -52,8 +52,21 @@ void main() {
 
     tipiMouseRead();
 
-    pointerx += mousex;
-    pointery += mousey;
+    if (mousex < 0 && ((pointerx + mousex) < 1)) {
+      pointerx = 0;
+    } else if (mousex > 0 && ((pointerx + mousex) > 254)) {
+      pointerx = 255;
+    } else {
+      pointerx += (3 * mousex) / 2;
+    }
+
+    if (mousey < 0 && ((pointery + mousey) < 1)) {
+      pointery = 0;
+    } else if (mousey > 0 && ((pointery + mousey) > 189)) {
+      pointery = 190;
+    } else {
+      pointery += (3 * mousey) / 2;
+    }
 
     sprite_pos(SPR_MOUSE0, pointery, pointerx);
     sprite_pos(SPR_MOUSE1, pointery, pointerx);

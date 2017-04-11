@@ -57,7 +57,7 @@ void main() {
     } else if (mousex > 0 && ((pointerx + mousex) > 254)) {
       pointerx = 255;
     } else {
-      pointerx += (3 * mousex) / 2;
+      pointerx += (2 * mousex) / 3;
     }
 
     if (mousey < 0 && ((pointery + mousey) < 1)) {
@@ -65,7 +65,7 @@ void main() {
     } else if (mousey > 0 && ((pointery + mousey) > 189)) {
       pointery = 190;
     } else {
-      pointery += (3 * mousey) / 2;
+      pointery += (2 * mousey) / 3;
     }
 
     sprite_pos(SPR_MOUSE0, pointery, pointerx);

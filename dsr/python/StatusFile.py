@@ -3,7 +3,7 @@ import time
 from Pab import *
 from Status import Status
 
-class SpecialFiles(object):
+class StatusFile(object):
 
     @staticmethod
     def filename():
@@ -16,13 +16,13 @@ class SpecialFiles(object):
 
     def handle(self, pab, devname):
         op = opcode(pab)
-        if op) == OPEN:
+        if op == OPEN:
             self.open(pab, devname)
-        else if op == CLOSE:
+        elif op == CLOSE:
             self.close(pab, devname)
-        else if op == READ:
+        elif op == READ:
             self.read(pab, devname)
-        else
+        else:
             self.tipi_io.send([EOPATTR])
 
     def close(self, pab, devname):

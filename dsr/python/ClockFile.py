@@ -13,13 +13,13 @@ class ClockFile(object):
 
     def handle(self, pab, devname):
         op = opcode(pab)
-        if op) == OPEN:
+        if op == OPEN:
             self.open(pab, devname)
-        else if op == CLOSE:
+        elif op == CLOSE:
             self.close(pab, devname)
-        else if op == READ:
+        elif op == READ:
             self.read(pab, devname)
-        else
+        else:
             self.tipi_io.send([EOPATTR])
 
     def close(self, pab, devname):

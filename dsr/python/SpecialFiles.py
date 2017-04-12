@@ -12,7 +12,7 @@ class SpecialFiles(object):
         }
 
     def handle(self, pab, devname):
-        handler = get(self.specreg, None)
+        handler = self.specreg.get(devname, None)
         if handler == None:
             return False
         handler.handle(pab, devname)

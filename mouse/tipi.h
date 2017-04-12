@@ -28,6 +28,10 @@ char mousex;
 char mousey;
 char mouseb;
 
+#define MB_LEFT 0x01
+#define MB_RIGHT 0x02
+#define MB_MID 0x04
+
 void tipiMouseOn() {
   mousex = 0;
   mousey = 0;

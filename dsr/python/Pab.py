@@ -5,6 +5,17 @@ from array import array
 # PAB routines...
 #
 
+OPEN = 0
+CLOSE = 1
+READ = 2
+WRITE = 3
+RESTORE = 4
+LOAD = 5
+SAVE = 6
+DELETE = 7
+SCRATCH = 8
+STATUS = 9
+
 #
 # Return the TI DSR Opcode
 def opcode(pab):

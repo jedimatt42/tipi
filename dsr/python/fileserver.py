@@ -45,8 +45,6 @@ def handleOpen(pab, devname):
     global openRecord
     print "Opcode 0 Open - " + str(devname)
     printPab(pab)
-    if specialFiles.open(pab, devname):
-        return
     localPath = tinames.devnameToLocal(devname)
     print "  local file: " + localPath
     if mode(pab) == INPUT and not os.path.exists(localPath):
@@ -113,8 +111,6 @@ def handleClose(pab, devname):
 def handleRead(pab, devname):
     print "Opcode 2 Read - " + str(devname)
     printPab(pab)
-    if specialFiles.read(pab, devname):
-        return
     localPath = tinames.devnameToLocal(devname)
 
     recNum = recordNumber(pab)
@@ -339,6 +335,9 @@ while True:
     elif filename == "TIPI.EFILERR":
         sendErrorCode(EFILERR)
     else:
+        if specialFiles.handle(pab, filename):
+            continue
+
         switcher = {
             0: handleOpen,
             1: handleClose,
@@ -352,7 +351,7 @@ while True:
             9: handleStatus
         }
         handler = switcher.get(opcode(pab), handleNotSupported)
-        handler(pab, devicename)
+        handler(pab, filename)
 
     print "Request completed."
 

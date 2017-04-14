@@ -12,9 +12,10 @@ class SpecialFiles(object):
         }
 
     def handle(self, pab, devname):
-        handler = self.specreg.get(devname, None)
-        if handler == None:
-            return False
-        handler.handle(pab, devname)
-        return True
+        for prefix in self.specreg.keys():
+            if devname.startswith(prefix):
+                handler = self.specreg.get(devname, None)
+                handler.handle(pab, devname)
+                return True
+        return False
 

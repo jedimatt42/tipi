@@ -16,7 +16,7 @@ class SpecialFiles(object):
     def handle(self, pab, devname):
         for prefix in self.specreg.keys():
             if devname.startswith(prefix):
-                handler = self.specreg.get(devname, None)
+                handler = self.specreg.get(prefix, None)
                 handler.handle(pab, devname)
                 return True
         return False

@@ -33,22 +33,27 @@ class TcpFile(object):
             self.tipi_io.send([EOPATTR])
 
     def close(self, pab, devname):
+        print "close devname: {}".format(devname)
         self.tipi_io.send([SUCCESS])
-        if self.sock[devname]:
-            self.sock[devname].close()
-            del(self.sock[devname])
+        try:
+            if self.sock[devname]:
+                self.sock[devname].close()
+                del(self.sock[devname])
+        except:
+            pass
 
     def open(self, pab, devname):
+        print "open devname: {}".format(devname)
         try:
             server = self.parseDev(devname)
+            print "host {}, port {}".format(server[0], server[1])
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect(server)
             fcntl.fcntl(sock, fcntl.F_SETFL, os.O_NONBLOCK)
             self.sock[devname] = sock
-        except:
+        except socket.error, e:
+            print e
             self.tipi_io.send([EFILERR])
-            if self.sock[devname]:
-                del(self.sock[devname])
             return
 
         recLen = recordLength(pab)
@@ -59,9 +64,11 @@ class TcpFile(object):
         return
 
     def read(self, pab, devname):
+        print "read devname: {}".format(devname)
         try:
             sock = self.sock[devname]
-            fdata = sock.recv(recordLength(pab))
+            fdata = bytearray(sock.recv(recordLength(pab)))
+            print "read from socket: {}".format(str(fdata))
             self.tipi_io.send([SUCCESS])
             self.tipi_io.send(fdata)
             return
@@ -70,12 +77,13 @@ class TcpFile(object):
             if err == errno.EAGAIN or err == errno.EWOULDBLOCK:
                 fdata = bytearray("")
                 self.tipi_io.send([SUCCESS])
-                self.tipi_io.send([fdata])
+                self.tipi_io.send(fdata)
                 return
         self.tipi_io.send([EFILERR])
         return
 
     def write(self, pab, devname):
+        print "write devname: {}".format(devname)
         try:
             sock = self.sock[devname]
             self.tipi_io.send([SUCCESS])
@@ -86,5 +94,6 @@ class TcpFile(object):
             del(self.sock[devname])
 
     def parseDev(self, devname):
-        return str(devname).split("=")[1].split(":")
+        parts = str(devname).split("=")[1].split(":")
+        return (parts[0], int(parts[1]))
 

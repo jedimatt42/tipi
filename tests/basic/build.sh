@@ -17,3 +17,7 @@ xdm99.py -T build/CAT -o build/tifiles/CAT
 xbas99.py -c clock.bas -o build/CLOCK
 xdm99.py -T build/CLOCK -o build/tifiles/CLOCK
 
+# HTTP Request
+xbas99.py -c get.bas -o build/GET
+xdm99.py -T build/GET -o build/tifiles/GET
+

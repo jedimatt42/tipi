@@ -1,20 +1,6 @@
-#!/usr/bin/env python
 
-import sys
-import time
+str = "TIPI.TCP=192.168.1.144:9902"
 
-from tipi.TipiMessage import TipiMessage
-from tipi.TipiPorts import TipiPorts
+print str.split("=")[1].split(":")
 
-tipi_io = TipiMessage()
-tipi_ports = TipiPorts()
-
-start = time.time()
-
-for i in range(0,8192):
-    tipi_ports.setRD(i)
-
-stop = time.time()
-
-print stop - start
 

@@ -1,20 +1,20 @@
-#!/usr/bin/env python
 
-import sys
-import time
+str = "TIPI.TCP=192.168.1.144:9902"
 
-from tipi.TipiMessage import TipiMessage
-from tipi.TipiPorts import TipiPorts
+print str.split("=")[1].split(":")
 
-tipi_io = TipiMessage()
-tipi_ports = TipiPorts()
+CHUNKSIZE = 3
 
-start = time.time()
+def __splitMessage(bytes):
+    l = len(bytes)
+    chunks = [ ]
+    bc = (l / CHUNKSIZE) + 1
+    for i in range(bc):
+	chunk = bytes[i*CHUNKSIZE:(i+1)*CHUNKSIZE]
+	if len(chunk):
+	    chunks += [ chunk ]
+    return chunks
 
-for i in range(0,8192):
-    tipi_ports.setRD(i)
 
-stop = time.time()
-
-print stop - start
+print __splitMessage(bytearray("1234"))
 

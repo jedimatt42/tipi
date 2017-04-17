@@ -2,6 +2,7 @@
 from ClockFile import ClockFile
 from StatusFile import StatusFile
 from TcpFile import TcpFile
+from CurlFile import CurlFile
 
 class SpecialFiles(object):
 
@@ -10,7 +11,8 @@ class SpecialFiles(object):
         self.specreg = { 
             ClockFile.filename(): ClockFile(self.tipi_io),
             StatusFile.filename(): StatusFile(self.tipi_io),
-            TcpFile.filename(): TcpFile(self.tipi_io)
+            TcpFile.filename(): TcpFile(self.tipi_io),
+            CurlFile.filename(): CurlFile(self.tipi_io)
         }
 
     def handle(self, pab, devname):

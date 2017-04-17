@@ -1,4 +1,7 @@
 
+import pycurl
+from StringIO import StringIO
+
 str = "TIPI.TCP=192.168.1.144:9902"
 
 print str.split("=")[1].split(":")
@@ -17,4 +20,17 @@ def __splitMessage(bytes):
 
 
 print __splitMessage(bytearray("1234"))
+
+#
+
+buffer = StringIO()
+c = pycurl.Curl()
+c.setopt(c.URL, 'http://ti994a.cwfk.net/')
+c.setopt(c.WRITEDATA, buffer)
+c.perform()
+c.close()
+
+body = buffer.getvalue()
+
+print(body)
 

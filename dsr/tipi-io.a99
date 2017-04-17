@@ -114,6 +114,8 @@ recvmsg
 	.transmit TSRB
 	MOVB	@RDIN,R4
 	SWPB	R4
+	CI	R4,>0000
+	JEQ	rrt
 	; should check that it will fit... but I'll come back to that.
 	CLR	R0
 rnblock
@@ -153,7 +155,7 @@ rhashpoint
 	
 	C	R0,R4		; check if we are also done with entire message
 	JNE	rnblock
-	
+rrt
 	RT
 
 
@@ -180,6 +182,8 @@ vrecvmsg
 	.transmit TSRB
 	MOVB	@RDIN,R4
 	SWPB	R4
+	CI	R4,>0000
+	JEQ	vrrt
 	; should check that it will fit... but I'll come back to that.
 	CLR	R0
 	.setvdpwa R1
@@ -219,7 +223,7 @@ vrhashpoint
 	
 	C	R0,R4
 	JNE	vrnblock
-
+vrrt
 	RT
 
 vrrewind

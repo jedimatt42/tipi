@@ -135,6 +135,9 @@ hresponse
 	CI	R1,OPREAD
 	JEQ	hread
 
+	CI	R1,OPWRITE
+	JEQ	hwrite
+
 	CI	R1,OPLOAD
 	JEQ	hload
 
@@ -146,7 +149,7 @@ hopen
 	; quick hack, supposed to return record length if it is zero...
 	LI	R0,1
 	MOV	R10,R1
-	AI	R1,R9MB
+	AI	R1,R9MB		; Set recv buffer to address of R9 to read an int.
 	BL	@recvmsg	; R9 MSB now has record length of open file.
 	MOV	@VPAB,R3
 	AI	R3,RECLEN-OPCODE
@@ -174,6 +177,15 @@ hread
 	AI	R3,RECNUM-OPCODE
 	.setvdpwa R3
 	MOVB	R1,@VDPWD
+	JMP	retdone
+
+; Handle OPCODE 3 - WRITE
+hwrite
+	CLR	R0
+	MOVB	@CHRCNT(R10),R0
+	SWPB	R0
+	MOV	@BUFADR(R10),R1
+	BL	@vsendmsg
 	JMP	retdone
 
 ; Handle response for OPCODE 5 - LOAD

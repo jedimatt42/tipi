@@ -3,19 +3,45 @@
 Exploring a generalized mechanism for 8 bit messaging between a TI-99/4A and
 a Raspberry PI 3
 
+What can we do:
+
+DSR for file READ support:
+  INTERNAL/DISPLAY, FIXED/VARIABLE, PROGRAM, DIRECTORY
+
+CATALOG support. 
+Sub-directory support.
+
+Partial long name support
+
+* CATALOG shows shortened names only
+* Long names and short names supported for file access.
+
+DSR devices: 
+
+* TIPI. 
+* DSK1. 
+* DSK.
+
+Special files:
+
+* TIPI.CLOCK - reading a DISPLAY 24 record returns asctime (time & date as string)
+* TIPI.STATUS - virtual D/V 80 file with list of network device info on PI. (mac addresses, and ip addresses for each network device )
+* TIPI.HTTP://... - GETs an HTTP url and let you access it like a normal file.
+* TIPI.TCP=hostname:port - open a socket, write opcode supported to write, read to read... 
+
+Low level support:
+
+* USB Mouse support - client library for GCC.
+* More to come ( TCP, UDP, NETWORK-VARIABLES )
+
 ## Who: 
 
 * ElectricLab
 * Jedimatt42
 
-## File Types
+## Documentation
 
-Schematic files will be in KiKad format.
-Initial code will be in gcc for the TI and python for the Raspberry PI.
-
-## General Info
-
-Whatever else we need to remember, can go here. 
+Please refer to the wiki.
 
 ## License 
 

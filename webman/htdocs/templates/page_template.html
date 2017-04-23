@@ -1,0 +1,53 @@
+<html>
+<head>
+      	<title>TIPI</title>
+
+<style>
+html, body, form, fieldset, table, tr, td, img {
+    font: 100%/150% calibri,helvetica,sans-serif;
+}
+
+
+a {
+    color: blue;
+}
+
+body {
+    font-size: .875em;
+}
+
+</style>
+</head>
+
+
+
+<body>
+    <div class="jumbo">
+        <table align=center>
+        <tr><td><h2> TIPI Administration</h2></td></tr>
+        </table>
+
+        <p align=center>
+        <table>
+        <tr><td> <a href="?">link 1</a> </td>
+            <td> <img src="/images/clearpixel.gif" width=80 height=1> </td>
+            <td> <a href="?">link 2</a> </td>
+            <td> <img src="/images/clearpixel.gif" width=80 height=1> </td>
+            <td> <a href="?">link 3</a> </td>
+            <td> <img src="/images/clearpixel.gif" width=80 height=1> </td>
+            <td> <a href="?">View/Change IP information</a> </td>
+            <td> <img src="/images/clearpixel.gif" width=80 height=1> </td>
+            <td> <a href="?">Wireless Networking</a> </td>
+
+        </tr>
+        </table>
+        </p>
+    </div>
+
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>
+

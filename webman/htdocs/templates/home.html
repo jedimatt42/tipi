@@ -1,0 +1,61 @@
+
+{% extends "page_template.html"%}
+{% block content %}
+
+
+<p align=center> 
+
+<font size=+2>TI Path: {{ webpage_object.current_path }}</font>
+
+</p>
+
+<p align=center> {{ webpage_object.total_files }} files found</p>
+
+
+{% if webpage_object.total_files != 0 %}
+
+    <p align=center>
+    <table cellpadding=4 cellspacing=0 border=1>
+    <tr>
+        <td><b> filename </td>
+        <td><b> type </td>
+        <td><b> size </td>
+        <td><b> date </td>
+        <td><b> full path </td>
+    </tr>
+
+    {% for tipi_file in tipi_files %}
+        <tr>
+             {% if tipi_file.type == "directory" %}
+             <td> <a href="{{ tipi_file.webpath }}">{{ tipi_file.name }}</a> </td>
+             {% else %}
+             <td> {{ tipi_file.name }} </td>
+             {% endif %}
+             <td> {{ tipi_file.type }} </td>
+             <td> {{ tipi_file.size }} </td>
+             <td> {{ tipi_file.date }} </td>
+             <td> {{ tipi_file.full_path }} </td>
+        </tr>
+
+    {% endfor %}
+
+    </table>
+    </p>
+
+    <p align=center>
+    <form>
+
+    <table align=center>
+        <tr><td>Upload File to your TIPI: <input type="file" name="upload_file"> </td>
+            <td><input type=submit value=" Upload to TIPI "> <i>not implemented yet</i></td>
+        </tr>
+    </table>
+    </form>
+
+
+
+
+{% endif %}
+
+{% endblock %}
+

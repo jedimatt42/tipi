@@ -59,6 +59,12 @@ def home(path):
 
     # Produce the TI PATH string (TIPI.DIR1.DIR2.ETC)
     current_path = "TIPI.{}".format('.'.join(path.split('/')))
+    tmpurl = "/"
+    steps = [ { 'name' : "TIPI", 'url' : tmpurl } ]
+    for d in list(filter(lambda x : len(x) > 0, path.split('/'))):
+        tmpurl = "{}{}/".format(tmpurl, d)
+        steps += [ { 'name' : d, 'url' : tmpurl } ]
+    webpage_object['steps'] = steps
 
     # fetch and sort just the directories and the TIFILES
     files = sorted(list(filter(lambda x : os.path.isdir(os.path.join(basepath,x)), os.listdir(basepath))))
@@ -101,3 +107,4 @@ def home(path):
     webpage_object['current_path'] = current_path
 
     return render_template('home.html', webpage_object=webpage_object, tipi_files=tipi_files)
+

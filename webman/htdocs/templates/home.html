@@ -3,7 +3,11 @@
 {% block content %}
 
 
-<h3>TI Path: {{ webpage_object.current_path }}</h3>
+<h3>TI Path: 
+{% for step in webpage_object.steps %}
+  <a href="{{ step.url }}">{{ step.name }}</a>.
+{% endfor %}
+</h3>
 
 </p>
 

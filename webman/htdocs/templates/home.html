@@ -3,25 +3,25 @@
 {% block content %}
 
 
-<p align=center> 
-
-<font size=+2>TI Path: {{ webpage_object.current_path }}</font>
+<h3>TI Path: {{ webpage_object.current_path }}</h3>
 
 </p>
 
-<p align=center> {{ webpage_object.total_files }} files found</p>
-
+<div class="alert alert-info" role="alert">
+    <a href="#" class="alert-link">Total files: {{ webpage_object.total_files }}</a>
+</div>
 
 {% if webpage_object.total_files != 0 %}
 
-    <p align=center>
-    <table cellpadding=4 cellspacing=0 border=1>
+<div class="panel panel-default">
+
+    <table class="table">
     <tr>
         <td><b> filename </td>
         <td><b> type </td>
         <td><b> size </td>
         <td><b> date </td>
-        <td><b> full path </td>
+        <td><b> host path </td>
     </tr>
 
     {% for tipi_file in tipi_files %}
@@ -40,20 +40,18 @@
     {% endfor %}
 
     </table>
-    </p>
+</div>
 
     <p align=center>
     <form>
 
     <table align=center>
-        <tr><td>Upload File to your TIPI: <input type="file" name="upload_file"> </td>
+        <tr>
+            <td>Upload File to your TIPI: <input type="file" name="upload_file"> </td>
             <td><input type=submit value=" Upload to TIPI "> <i>not implemented yet</i></td>
         </tr>
     </table>
     </form>
-
-
-
 
 {% endif %}
 

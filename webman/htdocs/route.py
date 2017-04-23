@@ -32,8 +32,20 @@ app = Flask(__name__)
 webpage_object = {}       # Object we'll be passing to render_template
 
 @app.route('/images/<path:path>')
-def staticFiles(path):
+def staticImages(path):
     return send_from_directory('images', path)
+
+@app.route('/fonts/<path:path>')
+def staticFonts(path):
+    return send_from_directory('fonts', path)
+
+@app.route('/css/<path:path>')
+def staticCss(path):
+    return send_from_directory('css', path)
+
+@app.route('/js/<path:path>')
+def staticJs(path):
+    return send_from_directory('js', path)
 
 
 @app.route('/', defaults={'path': ''})
@@ -42,7 +54,8 @@ def home(path):
 
     tipi_files = []
 
-    basepath = "/home/tipi/tipi_files/{}".format(path)
+    tipi_root = "/home/tipi/tipi_files/"
+    basepath = "{}{}".format(tipi_root,path)
 
     # Produce the TI PATH string (TIPI.DIR1.DIR2.ETC)
     current_path = "TIPI.{}".format('.'.join(path.split('/')))

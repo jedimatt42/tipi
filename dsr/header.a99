@@ -50,6 +50,6 @@ lvl2x8
 	DATA	>0000		; end of list
 	DATA	createdir
 	BYTE	1
-	BYTE	18		; lvl2 create directory	
+	BYTE	>18		; lvl2 create directory	
 	EVEN
 

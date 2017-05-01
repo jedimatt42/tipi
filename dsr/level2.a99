@@ -1,0 +1,4 @@
+
+createdir
+	BLWP	@>0000		; just reboot the TI to see if this gets called
+

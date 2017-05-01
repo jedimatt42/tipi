@@ -7,9 +7,9 @@
         DATA	pwrlnk		; power up list
 	DATA	>0000		; user-program list (grom only)
 	DATA	tipilnk		; DSR list
-	DATA	basiclnk	; BASIC CALL subroutine list
+	DATA	basiclnk	; LVL2 DSRLNK & BASIC CALL subroutine list
 	DATA	>0000		; interrupt list
-	DATA	>0000		; subprograms only in grom 
+	DATA	>0000		; something for groms... can't find docs.
 
 ; Power up header list.
 pwrlnk
@@ -40,30 +40,16 @@ tipi3
 
 ; Basic routine list ( name must be no more than 7 characters )
 basiclnk
-	DATA	blink2		; next list item.
-	DATA	btipion
-	BYTE	6
-	TEXT	"TIPION"
+	DATA	lvl2x8		; next list item.
+	DATA	btipimap
+	BYTE	7
+	TEXT	"TIPIMAP"
 	EVEN
 
-blink2
-	DATA	blink3		; next list item.
-	DATA	btipioff
-	BYTE	7
-	TEXT	"TIPIOFF"
-	EVEN
-
-blink3
-	DATA	blink4		; next list item.
-	DATA	bsendtst
-	BYTE	7
-	TEXT	"SENDTST"
-	EVEN
-
-blink4
-	DATA	>0000		; next list item.
-	DATA	brecvtst
-	BYTE	7
-	TEXT	"RECVTST"
+lvl2x8
+	DATA	>0000		; end of list
+	DATA	createdir
+	BYTE	1
+	BYTE	18		; lvl2 create directory	
 	EVEN
 

@@ -18,20 +18,41 @@ pwrlnk
 
 ; Device name/main DSR link entries ( name must be no more than 7 characters )
 tipilnk
-	DATA	tipi2		; terminate dsr list.
+	DATA	tipi0		; terminate dsr list.
 	DATA	tipidsr		; tipi dsr routine pointer
 	BYTE	4		; TIPI Drive name length
 	TEXT	"TIPI"		; name of tipi drive
+	EVEN
+
+tipi0
+	DATA	tipi1		; terminate dsr list.
+	DATA	tipidsr		; tipi dsr routine pointer
+	BYTE	4		; TIPI Drive name length
+	TEXT	"DSK0"		; name of tipi drive
+	EVEN
+
+tipi1
+	DATA	tipi2		; terminate dsr list.
+	DATA	tipidsr		; tipi dsr routine pointer
+	BYTE	4		; TIPI Drive name length
+	TEXT	"DSK1"		; name of tipi drive
 	EVEN
 
 tipi2
 	DATA	tipi3		; terminate dsr list.
 	DATA	tipidsr		; tipi dsr routine pointer
 	BYTE	4		; TIPI Drive name length
-	TEXT	"DSK1"		; name of tipi drive
+	TEXT	"DSK2"		; name of tipi drive
 	EVEN
 
 tipi3
+	DATA	tipid		; terminate dsr list.
+	DATA	tipidsr		; tipi dsr routine pointer
+	BYTE	4		; TIPI Drive name length
+	TEXT	"DSK3"		; name of tipi drive
+	EVEN
+
+tipid
 	DATA	>0000		; terminate dsr list.
 	DATA	tipidsr		; tipi dsr routine pointer
 	BYTE	3		; TIPI Drive name length
@@ -40,16 +61,75 @@ tipi3
 
 ; Basic routine list ( name must be no more than 7 characters )
 basiclnk
-	DATA	lvl2x8		; next list item.
+	DATA	l2x0		; next list item.
 	DATA	btipimap
 	BYTE	7
 	TEXT	"TIPIMAP"
 	EVEN
 
-lvl2x8
-	DATA	>0000		; end of list
+l2x0
+	DATA	l2x2
+	DATA	sectorrw
+	BYTE	1
+	BYTE	>10		; lvl2 sector read/write
+	EVEN
+
+; Note: TIPI doesn't 'format'
+
+l2x2
+	DATA	l2x3
+	DATA	protect
+	BYTE	1
+	BYTE	>12		; lvl2 modify protection
+	EVEN
+
+l2x3
+	DATA	l2x4
+	DATA	rename
+	BYTE	1
+	BYTE	>13		; lvl2 file rename
+	EVEN
+
+l2x4
+	DATA	l2x5
+	DATA	directrd
+	BYTE	1
+	BYTE	>14		; lvl2 direct file input
+	EVEN
+
+l2x5
+	DATA	l2x7
+	DATA	directwr
+	BYTE	1
+	BYTE	>15		; lvl2 direct file output
+	EVEN
+
+l2x7
+	DATA	l2x8
+	DATA	setpath
+	BYTE	1
+	BYTE	>17		; lvl2 set path
+	EVEN
+
+l2x8
+	DATA	l2x9
 	DATA	createdir
 	BYTE	1
-	BYTE	>18		; lvl2 create directory	
+	BYTE	>18		; lvl2 create directory
 	EVEN
+
+l2x9
+	DATA	l2xA
+	DATA	deldir
+	BYTE	1
+	BYTE	>19		; lvl2 directory delete
+	EVEN
+
+l2xA
+	DATA	>0000		; end of list
+	DATA	rendir
+	BYTE	1
+	BYTE	>1A		; lvl2 directory rename
+	EVEN
+
 

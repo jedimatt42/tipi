@@ -1,4 +1,5 @@
 
+import os
 import pycurl
 from StringIO import StringIO
 
@@ -23,14 +24,18 @@ print __splitMessage(bytearray("1234"))
 
 #
 
-buffer = StringIO()
-c = pycurl.Curl()
-c.setopt(c.URL, 'http://ti994a.cwfk.net/')
-c.setopt(c.WRITEDATA, buffer)
-c.perform()
-c.close()
+if False:
+    buffer = StringIO()
+    c = pycurl.Curl()
+    c.setopt(c.URL, 'http://ti994a.cwfk.net/')
+    c.setopt(c.WRITEDATA, buffer)
+    c.perform()
+    c.close()
 
-body = buffer.getvalue()
+    body = buffer.getvalue()
 
-print(body)
+    print(body)
+
+
+print os.path.basename(os.path.realpath("/tipi_disk/DSK1"))
 

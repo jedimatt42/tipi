@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 import sys
 import traceback
+import logging
 import time
 import os
 import RPi.GPIO as GPIO 
@@ -13,6 +14,17 @@ from tinames import tinames
 from SpecialFiles import SpecialFiles
 from Pab import *
 from RawExtensions import RawExtensions
+
+#
+# Setup logging
+#
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    datefmt='%m-%d %H:%M:%S',
+                    filename='/var/log/tipi/tipi.log',
+                    filemode='w')
+
+logger = logging.getLogger('tipi')
 
 #
 # Utils
@@ -112,6 +124,11 @@ def handleRead(pab, devname):
     print "Opcode 2 Read - " + str(devname)
     printPab(pab)
     localPath = tinames.devnameToLocal(devname)
+
+    if not os.path.exists(localPath):
+       sendErrorCode(EFILERR)
+       return
+
 
     recNum = recordNumber(pab)
     # UNSPEC'ED
@@ -305,7 +322,7 @@ specialFiles = SpecialFiles(tipi_io)
 rawExtensions = RawExtensions(tipi_io)
 
 while True:
-    print "waiting for PAB..."
+    logger.warn("waiting for PAB...")
 
     pab = tipi_io.receive()
     if rawExtensions.handle(pab):

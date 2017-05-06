@@ -21,3 +21,7 @@ xdm99.py -T build/CLOCK -o build/tifiles/CLOCK
 xbas99.py -c get.bas -o build/GET
 xdm99.py -T build/GET -o build/tifiles/GET
 
+# DSK1 Map Tool
+xbas99.py -c dmap.bas -o build/DMAP
+xdm99.py -T build/DMAP -o build/tifiles/DMAP
+

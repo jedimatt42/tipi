@@ -3,30 +3,32 @@
 {% block content %}
 
 
-<h3>TI Path: 
-{% for step in webpage_object.steps %}
-  <a href="{{ step.url }}">{{ step.name }}</a>.
-{% endfor %}
-</h3>
-
-</p>
-
 <div class="alert alert-info" role="alert">
     <a href="#" class="alert-link">Total files: {{ webpage_object.total_files }}</a>
 </div>
 
-{% if webpage_object.total_files != 0 %}
-
 <div class="panel panel-default">
 
-    <table class="table">
-    <tr>
-        <td><b> filename </td>
-        <td><b> type </td>
-        <td><b> size </td>
-        <td><b> date </td>
-        <td><b> host path </td>
-    </tr>
+    <ol class="breadcrumb">
+        {% for step in webpage_object.steps %}
+        {% if step.active %}
+        <li class="breadcrumb-item active"><a href="#">{{ step.name }}</a></li>
+        {% else %}
+        <li class="breadcrumb-item"><a href="{{ step.url }}">{{ step.name }}</a></li>
+        {% endif %}
+        {% endfor %}
+    </ol>
+
+    <table class="table table-responsive table-hover">
+    <thead>
+      <tr>
+        <th>filename</td>
+        <th>type</td>
+        <th>size</td>
+        <th>date</td>
+        <th>host path</td>
+      </tr>
+    </thead>
 
     {% for tipi_file in tipi_files %}
         <tr>
@@ -56,8 +58,6 @@
         </tr>
     </table>
     </form>
-
-{% endif %}
 
 {% endblock %}
 

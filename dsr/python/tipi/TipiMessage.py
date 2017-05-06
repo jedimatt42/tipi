@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import time
+import logging
 from TipiPorts import TipiPorts
 from Phash import Phash
 
@@ -11,7 +13,11 @@ ACK_MASK = 0x03
 HASHOK = 0x5A
 HASHERR = 0xA5
 
-CHUNKSIZE = 64
+CHUNKSIZE = 256
+
+BACKOFF_DELAY = 10000
+
+logger = logging.getLogger("tipi")
 
 class TipiMessage(object):
 
@@ -25,14 +31,18 @@ class TipiMessage(object):
     # The TI resets first, and then RPi responds
     #
     def __resetProtocol(self):
-        print "waiting for reset..."
+        logger.info("waiting for reset...")
         # And wait for the TI to signal RESET
+        backoff = BACKOFF_DELAY
         self.prev_syn = 0
         while self.prev_syn != RESET:
+            backoff -= 1
+            if backoff < 1: 
+                backoff = 1
+                time.sleep(0.01)
             self.prev_syn = self.ports.getTC()
         # Reset the control signals
         self.ports.setRC(RESET)
-        print "reset complete"
 
     #
     # change mode to sending bytes
@@ -74,10 +84,8 @@ class TipiMessage(object):
         hash = self.phash.digestAll(0, bytes)
         self.__sendByte(hash)
         self.__modeRead()
-        print "waiting for hash check"
         check = self.__readByte()
         self.__modeRead()
-        print "check = {}".format(check)
         return check == HASHOK
 
     #
@@ -97,17 +105,21 @@ class TipiMessage(object):
     # Receive a message, returned as a byte array
     def receive(self):
         self.__resetProtocol()
+        startTime = time.time()
         self.__modeRead()
         msglen = (self.__readByte() << 8) + self.__readByte()
         message = bytearray(msglen)
         for i in range(0,msglen):
             message[i] = self.__readByte()
+        elapsed = time.time() - startTime
+        logger.info('received msg len %d, rate %d', len(message), len(message) / elapsed)
 	return message
 
     #
     # Send a message, retrying each block if there is a transmission error.
     def send(self, bytes):
         self.__resetProtocol()
+        startTime = time.time()
         self.__modeSend()
         msglen = len(bytes)
         msb = msglen >> 8
@@ -116,15 +128,16 @@ class TipiMessage(object):
         self.__sendByte(lsb)
         cidx = 0
         for chunk in self.__splitMessage(bytes):
-            print "sending chunk {}, size {}".format(cidx, len(chunk))
             clean = False
             while clean != True:
                 for byte in chunk:
                     self.__sendByte(byte)
                 clean = self.__checkHash(chunk)
                 if not clean:
-                    print "retrying..."
+                    logger.warn('retry')
             cidx += 1    
+        elapsed = time.time() - startTime
+        logger.info('send msg len %d, rate %d', len(bytes), len(bytes) / elapsed)
 
     #
     # Send an array of data as is... no length prefix or hash

@@ -13,7 +13,7 @@ ACK_MASK = 0x03
 HASHOK = 0x5A
 HASHERR = 0xA5
 
-CHUNKSIZE = 256
+CHUNKSIZE = 128
 
 BACKOFF_DELAY = 10000
 
@@ -134,7 +134,7 @@ class TipiMessage(object):
                     self.__sendByte(byte)
                 clean = self.__checkHash(chunk)
                 if not clean:
-                    logger.warn('retry')
+                    logger.error('send retry')
             cidx += 1    
         elapsed = time.time() - startTime
         logger.info('send msg len %d, rate %d', len(bytes), len(bytes) / elapsed)

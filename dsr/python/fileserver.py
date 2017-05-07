@@ -35,15 +35,15 @@ def hexdump(bytes):
         print "{0:x}".format(byte),
 
 def handleNotSupported(pab, devname):
-    print "Opcode not supported: " + str(opcode(pab))
+    logger.warn("Opcode not supported: " + str(opcode(pab)))
     sendErrorCode(EILLOP)
 
 def sendErrorCode(code):
-    print "responding with error: " + str(code)
+    logger.debug("responding with error: " + str(code))
     sendSingleByte(code)
 
 def sendSuccess():
-    print "responding with success!"
+    logger.debug("responding with success!")
     sendSingleByte(SUCCESS)
 
 def sendSingleByte(byte):
@@ -55,10 +55,10 @@ openRecord = { }
 
 def handleOpen(pab, devname):
     global openRecord
-    print "Opcode 0 Open - " + str(devname)
+    logger.debug("Opcode 0 Open - %s", devname)
     printPab(pab)
     localPath = tinames.devnameToLocal(devname)
-    print "  local file: " + localPath
+    logger.debug("  local file: " + localPath)
     if mode(pab) == INPUT and not os.path.exists(localPath):
         sendErrorCode(EFILERR)
         return
@@ -111,7 +111,7 @@ def handleOpen(pab, devname):
     sendErrorCode(EFILERR)
 
 def handleClose(pab, devname):
-    print "Opcode 1 Close - " + str(devname)
+    logger.debug("Opcode 1 Close - %s", devname)
     printPab(pab)
     sendErrorCode(SUCCESS)
     try:
@@ -121,7 +121,7 @@ def handleClose(pab, devname):
         pass
 
 def handleRead(pab, devname):
-    print "Opcode 2 Read - " + str(devname)
+    logger.debug("Opcode 2 Read - %s", devname)
     printPab(pab)
     localPath = tinames.devnameToLocal(devname)
 
@@ -137,7 +137,7 @@ def handleRead(pab, devname):
 	recNum = openRecord[localPath]
 
     if os.path.isdir(localPath) and mode(pab) == INPUT and dataType(pab) == INTERNAL and recordType(pab) == FIXED:
-        print "  local file: " + localPath
+        logger.debug("  local file: %s", localPath)
 
 	try:
 	    if recNum == 0:
@@ -322,15 +322,15 @@ specialFiles = SpecialFiles(tipi_io)
 rawExtensions = RawExtensions(tipi_io)
 
 while True:
-    logger.warn("waiting for PAB...")
+    logger.info("waiting for PAB request...")
 
     pab = tipi_io.receive()
     if rawExtensions.handle(pab):
         continue
 
-    print "PAB received."
+    logger.debug("PAB received.")
 
-    print "waiting for devicename..."
+    logger.debug("waiting for devicename...")
     devicename = tipi_io.receive()
 
     # Special file name requests to force different errors
@@ -370,6 +370,6 @@ while True:
         handler = switcher.get(opcode(pab), handleNotSupported)
         handler(pab, filename)
 
-    print "Request completed."
+    logger.info("Request completed.")
 
 

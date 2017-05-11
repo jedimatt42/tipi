@@ -19,7 +19,7 @@ TSWB	EQU	>0200		; Write Byte SYN value
 TSRB	EQU	>0600		; Read Byte SYN value
 TSACKM	EQU	>0300		; ACK Mask
 
-CHUNKSIZE EQU	256		; size of blocks intervals for hash comparison
+CHUNKSIZE EQU	128		; size of blocks intervals for hash comparison
 
 
 ;;; Macro: handshake TSWB or handshake TSRB to signal and increment syn/ack in R2, also destroys R3.

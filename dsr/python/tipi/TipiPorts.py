@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 import RPi.GPIO as GPIO 
 import sys
+import logging
+
+logger = logging.getLogger("tipi")
 
 class TipiPorts(object):
 
@@ -55,9 +58,13 @@ class TipiPorts(object):
         GPIO.setup(self.__RESET, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         # Do not proceed unless the reset signal has turned off
         # attempt to prevent restart storm in systemd
+        
         while GPIO.input(self.__RESET) != 1:
+            logger.info("waiting for reset to complete.")
             pass
         GPIO.add_event_detect(self.__RESET, GPIO.FALLING, callback=onReset, bouncetime=100)
+
+        logger.info("GPIO initialized.")
 
 
     #

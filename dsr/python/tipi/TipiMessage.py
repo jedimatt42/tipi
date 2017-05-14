@@ -113,7 +113,7 @@ class TipiMessage(object):
             message[i] = self.__readByte()
         elapsed = time.time() - startTime
         logger.info('received msg len %d, rate %d', len(message), len(message) / elapsed)
-	return message
+        return message
 
     #
     # Send a message, retrying each block if there is a transmission error.
@@ -127,6 +127,7 @@ class TipiMessage(object):
         self.__sendByte(msb)
         self.__sendByte(lsb)
         cidx = 0
+        retries = 0
         for chunk in self.__splitMessage(bytes):
             clean = False
             while clean != True:
@@ -134,10 +135,12 @@ class TipiMessage(object):
                     self.__sendByte(byte)
                 clean = self.__checkHash(chunk)
                 if not clean:
-                    logger.error('send retry')
+                    retries += 1
             cidx += 1    
         elapsed = time.time() - startTime
         logger.info('send msg len %d, rate %d', len(bytes), len(bytes) / elapsed)
+        if retries > 0:
+            logger.warn("message required %d retries", retries)
 
     #
     # Send an array of data as is... no length prefix or hash

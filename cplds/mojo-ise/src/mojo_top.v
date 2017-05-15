@@ -48,7 +48,10 @@ module mojo_top(
 	 output [0:7]dsr_d,
 
     // Control OE* on a bus transmitter to allow DSR ROM or RPi registers on TI data bus.
-    output tipi_dbus_oe
+    output tipi_dbus_oe,
+	 
+	 // control reset of RPi service scripts
+	 output rpi_reset
 );
 
 reg [0:7] dsr_data_rom [0:8191];
@@ -69,6 +72,7 @@ wire tipi_dsr_out;
 
 // a CRU bit to act as device-enable
 reg crubit_q;
+reg crupireset_q;
 
 // latched data channel
 reg [7:0] data_q;
@@ -105,8 +109,13 @@ always @(negedge ti_we) begin
 end
 
 always @(negedge ti_cruclk) begin
-  if (ti_a[0:3] == 4'b0001 && (ti_a[4:7] == cru_base && ti_a[8:14] == 7'h00)) begin
-    crubit_q <= ti_a[15];
+  if (ti_a[4:7] == cru_base && ti_a[0:3] == 4'b0001) begin
+    if (ti_a[8:14] == 7'h00) begin
+	   crubit_q <= ti_a[15];
+	 end
+    if (ti_a[8:14] == 7'h01) begin
+	   crupireset_q <= ti_a[15];
+	 end
   end
 end
 
@@ -141,8 +150,11 @@ assign tipi_dbus_oe = (crubit_q && ~ti_memen && ti_dbin && ti_a >= 16'h4000 && t
 assign rpi_d = data_q;
 assign rpi_s = control_q;
 
+assign rpi_reset = !crupireset_q;
+
 assign led[0] = crubit_q;
-assign led[3:1] = control_q[2:0];
+assign led[1] = !crupireset_q;
+assign led[3:2] = control_q[1:0];
 assign led[7:4] = rcontrol_q[3:0];
 
 endmodule

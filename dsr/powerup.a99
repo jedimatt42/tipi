@@ -7,6 +7,9 @@ onreset				;
 	STWP	R5		; Hold WP for EQU based offsets.
 	CLR	@TDOUT		; Clear TIPI data output
 	CLR	@TCOUT		; Clear control output
+
+; trigger reset signal to RPi
+	SBO	1		; turn on the second cru bit
 	
 ; Write TIPI in the upper right corner of the title screen
 	LI	R1,VDPWA	; port to tell vdp where to write
@@ -20,6 +23,9 @@ onreset				;
 	MOVB	*R2+,*R1	; write byte to vdp
 	MOVB	*R2+,*R1	; write byte to vdp
 	MOVB	*R2+,*R1	; write byte to vdp
+
+; turn off the reset signal so RPi service can finish starting
+	SBZ	1
 
 ; Return to TI startup
 	RT			; return to console

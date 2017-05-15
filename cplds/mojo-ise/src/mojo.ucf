@@ -67,6 +67,9 @@ NET "ti_dbin" LOC = P94 | IOSTANDARD = LVCMOS33;
 // TI-99/4A CRU output
 NET "ti_cruclk" LOC = P95 | IOSTANDARD = LVCMOS33;
 
+// TI -> RPi Reset control
+NET "rpi_reset" LOC = P1 | IOSTANDARD = LVCMOS33;
+
 // USER CRU Nibble
 // It will be easier to set these on PULLUPs with headers.
 NET "cru_base<0>" LOC = P101 | IOSTANDARD = LVCMOS33 | PULLDOWN;

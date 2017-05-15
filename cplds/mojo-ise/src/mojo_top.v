@@ -33,8 +33,6 @@ module mojo_top(
     input ti_dbin,
     // TI CRU Clock (active low)
     input ti_cruclk,
-    // TI Reset (active low)
-    input ti_reset,
     
 	 // Inputs for data and control registers from RPi
 	 input rpi_cclk,

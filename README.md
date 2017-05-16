@@ -1,7 +1,10 @@
-# pi-messaging
+# TIPI
 
-Exploring a generalized mechanism for 8 bit messaging between a TI-99/4A and
-a Raspberry PI 3
+(Pronounced tip-ee)
+
+Turn a Raspberry PI and some glue hardware into a TI Disk Drive and Network interface. 
+
+Keep it open for further device extension.
 
 What can we do:
 

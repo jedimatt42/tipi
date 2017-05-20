@@ -14,6 +14,7 @@ from tinames import tinames
 from SpecialFiles import SpecialFiles
 from Pab import *
 from RawExtensions import RawExtensions
+from ResetHandler import createResetListener
 
 #
 # Setup logging
@@ -22,7 +23,7 @@ logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     datefmt='%m-%d %H:%M:%S',
                     filename='/var/log/tipi/tipi.log',
-                    filemode='w')
+                    filemode='a')
 
 logger = logging.getLogger('tipi')
 
@@ -316,6 +317,8 @@ def createFileReadRecord(path,recordNumber):
 ## 
 ## MAIN
 ##
+
+createResetListener()
 
 tipi_io = TipiMessage()
 specialFiles = SpecialFiles(tipi_io)

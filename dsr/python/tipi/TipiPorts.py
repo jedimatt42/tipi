@@ -9,7 +9,9 @@ logger = logging.getLogger("tipi")
 class TipiPorts(object):
 
     def __init__(self):
-        # self.__RESET = 5
+        self.__RESET = 5
+
+        tipiports.initGpio()
 
         # GPIO.setmode(GPIO.BCM) 
         # GPIO.setwarnings(False)
@@ -22,7 +24,6 @@ class TipiPorts(object):
         #     logger.info("waiting for reset to complete.")
         #     pass
         # GPIO.add_event_detect(self.__RESET, GPIO.FALLING, callback=onReset, bouncetime=100)
-        tipiports.initGpio()
         logger.info("GPIO initialized.")
 
 
@@ -43,8 +44,7 @@ class TipiPorts(object):
         tipiports.setRC(value)
 
 def onReset(channel):
-    # print "responding to reset interrupt"
-    # sys.exit(0)
-    pass
+    print "responding to reset interrupt"
+    sys.exit(0)
 
 

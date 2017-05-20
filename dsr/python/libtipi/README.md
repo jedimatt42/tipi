@@ -9,7 +9,7 @@ Using C instead of RPi.GPIO should be able to outpace the TI-99/4A, where the py
 library is relatively slow. Benchmarks from 2015 showed RPi.GPIO operating at 70 Khz, 
 where Native C operated at 22 Mhz. 
 
-With the use of shift registers, we go from 16 IOs per byte to 56 IOs per byte. 
+With the use of shift registers, we go from 8 IOs per byte to 28 IOs per byte. 
 Consequently, the need for performance is real.
 
 # Building

@@ -6,10 +6,17 @@ signal. The systemd script will auto-restart it if it exists due to a reset, or 
 
 # systemd service installation
 
-cp tipi.service to /lib/systemd/system/
+```
+cp tipi.service /lib/systemd/system/
 
 systemctl enable tipi.service
 systemctl start tipi.service
 
-This wraps the fileserver.py script. 
+cp tipiwatchdog.service /lib/systemd/system/
+
+systemctl enable tipiwatchdog.service
+systemctl start tipiwatchdog.service
+```
+
+This wraps the fileserver.py script. And monitors the reset pin to trigger restarting the service.
 

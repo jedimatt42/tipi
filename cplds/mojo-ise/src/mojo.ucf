@@ -81,25 +81,6 @@ NET "cru_base<3>" LOC = P105 | IOSTANDARD = LVCMOS33 | PULLDOWN;
 // Transciever enable signal outputs
 NET "tipi_dbus_oe" LOC = P100 | IOSTANDARD = LVCMOS33;
 
-// Meant to be inputs to the raspberry pi as a data bus
-NET "rpi_d<0>" LOC = P50 | IOSTANDARD = LVCMOS33;
-NET "rpi_d<1>" LOC = P51 | IOSTANDARD = LVCMOS33;
-NET "rpi_d<2>" LOC = P40 | IOSTANDARD = LVCMOS33;
-NET "rpi_d<3>" LOC = P41 | IOSTANDARD = LVCMOS33;
-NET "rpi_d<4>" LOC = P34 | IOSTANDARD = LVCMOS33;
-NET "rpi_d<5>" LOC = P35 | IOSTANDARD = LVCMOS33;
-NET "rpi_d<6>" LOC = P32 | IOSTANDARD = LVCMOS33;
-NET "rpi_d<7>" LOC = P33 | IOSTANDARD = LVCMOS33;
-
-// Signal byte from TI to RPi
-NET "rpi_s<0>" LOC = P137 | IOSTANDARD = LVCMOS33;
-NET "rpi_s<1>" LOC = P138 | IOSTANDARD = LVCMOS33;
-NET "rpi_s<2>" LOC = P139 | IOSTANDARD = LVCMOS33;
-NET "rpi_s<3>" LOC = P140 | IOSTANDARD = LVCMOS33;
-NET "rpi_s<4>" LOC = P141 | IOSTANDARD = LVCMOS33;
-NET "rpi_s<5>" LOC = P142 | IOSTANDARD = LVCMOS33;
-NET "rpi_s<6>" LOC = P143 | IOSTANDARD = LVCMOS33;
-NET "rpi_s<7>" LOC = P144 | IOSTANDARD = LVCMOS33;
 
 // Data output for simulated ROM
 NET "dsr_d<0>" LOC = P16 | IOSTANDARD = LVCMOS33;
@@ -112,7 +93,12 @@ NET "dsr_d<6>" LOC = P9 | IOSTANDARD = LVCMOS33;
 NET "dsr_d<7>" LOC = P10 | IOSTANDARD = LVCMOS33;
 
 // Shift register inputs from RPi
-NET rpi_dclk LOC = P23 | IOSTANDARD = LVCMOS33;
-NET rpi_cclk LOC = P24 | IOSTANDARD = LVCMOS33;
-NET rpi_sdata LOC = P26 | IOSTANDARD = LVCMOS33;
+NET rpi_regsel<0> LOC = P23 | IOSTANDARD = LVCMOS33;
+NET rpi_regsel<1> LOC = P24 | IOSTANDARD = LVCMOS33;
+NET rpi_sdata_out LOC = P26 | IOSTANDARD = LVCMOS33;
+NET rpi_sdata_in LOC = P30 | IOSTANDARD = LVCMOS33; 
+NET rpi_shclk LOC = P50 | IOSTANDARD = LVCMOS33;
 NET rpi_le LOC = P27 | IOSTANDARD = LVCMOS33;
+
+
+

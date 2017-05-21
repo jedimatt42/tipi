@@ -31,10 +31,6 @@ logger = logging.getLogger('tipi')
 # Utils
 #
 
-def hexdump(bytes):
-    for byte in bytes:
-        print "{0:x}".format(byte),
-
 def handleNotSupported(pab, devname):
     logger.warn("Opcode not supported: " + str(opcode(pab)))
     sendErrorCode(EILLOP)
@@ -98,8 +94,8 @@ def handleOpen(pab, devname):
             return
 
         except Exception as e:
-            print e
             sendErrorCode(EOPATTR)
+            logger.exception("failed to open file - %s", devname)
             return
         finally:
             if fh != None:
@@ -172,22 +168,20 @@ def handleRead(pab, devname):
     sendErrorCode(EFILERR)
 
 def handleWrite(pab, devname):
-    print "Opcode 3 Write - " + str(devname)
+    logger.info("Opcode 3 Write - %s", devname)
     printPab(pab)
     sendErrorCode(EDEVERR)
 
 def handleRestore(pab, devname):
-    print "Opcode 4 Restore - " + str(devname)
+    logger.info("Opcode 4 Restore - %s", devname)
     printPab(pab)
     sendErrorCode(EDEVERR)
 
 def handleLoad(pab, devname):
-    print "Opcode 5 LOAD - " + str(devname)
+    logger.info("Opcode 5 LOAD - %s", devname)
     printPab(pab)
     maxsize = recordNumber(pab)
-    print "\tmax bytes: " + str(maxsize)
     unix_name = tinames.devnameToLocal(devname)
-    print "\tunix_name: " + unix_name
     fh = None
     try:
         fh = open(unix_name, 'rb')
@@ -201,43 +195,37 @@ def handleLoad(pab, devname):
         filesize = ti_files.byteLength(bytes)
         sendErrorCode(SUCCESS)
 
-        print "sent SUCCESS, meaning ready to send stream"
         # Just cause DSR doesn't have a global SYN for reading.
-	print "Length of file is: " + str(filesize)
         filesizemsb = (filesize & 0xFF00) >> 8
-        print "set size msb: " + hex(filesizemsb)[2:].zfill(2)
         filesizelsb = (filesize & 0xFF)
-        print "set size lsb: " + hex(filesizelsb)[2:].zfill(2)
 
         tipi_io.send((bytes[128:])[:filesize])
-        print "finished sending all the bytes."
 
     except Exception as e:
-	traceback.print_exc()
-        print e
         # I don't think this will work. we need to check for as many errors as possible up front.
         sendErrorCode(EFILERR)
+        logger.exception("failed to load file - %s", devname)
     finally:
         if fh != None:
             fh.close()
     
 def handleSave(pab, devname):
-    print "Opcode 6 Save - " + str(devname)
+    logger.info("Opcode 6 Save - %s", devname)
     printPab(pab)
     sendErrorCode(EDEVERR)
 
 def handleDelete(pab, devname):
-    print "Opcode 7 Delete - " + str(devname)
+    logger.info("Opcode 7 Delete - %s", devname)
     printPab(pab)
     sendErrorCode(EDEVERR)
 
 def handleScratch(pab, devname):
-    print "Opcode 8 Scratch - " + str(devname)
+    logger.info("Opcode 8 Scratch - %s", devname)
     printPab(pab)
     sendErrorCode(EDEVERR)
 
 def handleStatus(pab, devname):
-    print "Opcode 9 Status - " + str(devname)
+    logger.info("Opcode 9 Status - %s", devname)
     printPab(pab)
     sendErrorCode(EDEVERR)
 
@@ -251,7 +239,6 @@ def createFileCatRecord(path,recordNumber):
         f = files[recordNumber - 1]
 
         if os.path.isdir(os.path.join(path,f)):
-            print "found dir: " + f
             return encodeDirRecord(f, 6, 2, 0)
       
         fh = open(os.path.join(path, f), 'rb')
@@ -265,7 +252,6 @@ def createFileCatRecord(path,recordNumber):
 
 
     except Exception as e:
-        traceback.print_exc()
         return encodeDirRecord("",0,0,0)
         
     finally:
@@ -273,7 +259,6 @@ def createFileCatRecord(path,recordNumber):
             fh.close()
 
 def encodeDirRecord(name, ftype, sectors, recordLength):
-    print "dir record: {}, {}, {}, {}".format(name, ftype, sectors, recordLength)
     bytes = bytearray(38)
 
     shortname = tinames.asTiShortName(name)

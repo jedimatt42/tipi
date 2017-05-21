@@ -1,9 +1,12 @@
 import os
 import traceback
 import pycurl
+import logging
 from io import BytesIO
-
+from ti_files import ti_files
 from Pab import *
+
+logger = logging.getLogger("tipi")
 
 class CurlFile(object):
 
@@ -26,11 +29,13 @@ class CurlFile(object):
             self.close(pab, devname)
         elif op == READ:
             self.read(pab, devname)
+        elif op == LOAD:
+            self.load(pab, devname)
         else:
             self.tipi_io.send([EOPATTR])
 
     def close(self, pab, devname):
-        print "close devname: {}".format(devname)
+        logger.info("close devname - %s", devname)
         self.tipi_io.send([SUCCESS])
         try:
             del(self.bodies[devname])
@@ -39,10 +44,9 @@ class CurlFile(object):
             pass
 
     def open(self, pab, devname):
-        print "open devname: {}".format(devname)
+        logger.info("open devname - %s", devname)
         try:
             url = self.parseDev(devname)
-            print "fetching url: {}".format(url)
             buffer = BytesIO()
             c = pycurl.Curl()
             c.setopt(c.URL, url)
@@ -52,7 +56,6 @@ class CurlFile(object):
             body = bytearray(buffer.getvalue())
             self.bodies[devname] = body
             self.record[devname] = 0
-            print "body type: {}".format(type(body).__name__)
         except:
             self.tipi_io.send([EFILERR])
             return
@@ -65,7 +68,7 @@ class CurlFile(object):
         return
 
     def read(self, pab, devname):
-        print "read devname: {}".format(devname)
+        logger.info("read devname - %s", devname)
         try:
             body = self.bodies[devname]
             recLen = recordLength(pab)
@@ -79,7 +82,6 @@ class CurlFile(object):
             if endOff >= lbody:
                 endOff = lbody
             fdata = body[startOff:endOff]
-            print "sending rec {} - {}".format(record, fdata)
             self.tipi_io.send([SUCCESS])
             self.tipi_io.send(fdata)
             self.record[devname] = record + 1
@@ -88,6 +90,32 @@ class CurlFile(object):
             traceback.print_exc()
         self.tipi_io.send([EEOF])
         return
+
+    def load(self, pab, devname):
+        logger.info("load devname - %s", devname)
+        try:
+            url = self.parseDev(devname)
+            buffer = BytesIO()
+            c = pycurl.Curl()
+            c.setopt(c.URL, url)
+            c.setopt(c.WRITEDATA, buffer)
+            c.perform()
+            c.close()
+            body = bytearray(buffer.getvalue())
+            if not ti_files.isValid(body) or not ti_files.isProgram(body):
+                self.tipi_io.send([EFILERR])
+                return
+            filesize = ti_files.byteLength(body)
+            logger.info("sending program - %d", filesize)
+            self.tipi_io.send([SUCCESS])
+            self.tipi_io.send((body[128:])[:filesize])
+            return
+        except:
+            traceback.print_exc()
+        self.tipi_io.send([EFILERR])
+        return
+
+  
 
     def parseDev(self, devname):
         return str(devname[5:])

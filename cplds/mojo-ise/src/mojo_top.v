@@ -36,10 +36,10 @@ module mojo_top(
     
 	 // Inputs for data and control registers from RPi and TI
 	 input [0:1]rpi_regsel,
-	 input rpi_sdata_in,
+	 input rpi_sdata_out, // RPi's output
 	 input rpi_le,
 	 input rpi_shclk,
-	 output rpi_sdata_out,
+	 output rpi_sdata_in, // RPi's input
 	 
     // Data output to RPi latched from 0x5fff
     output [7:0]rpi_d,
@@ -82,7 +82,7 @@ reg [7:0] tshdata_q;
 reg [7:0] tcontrol_q;
 reg [7:0] tshcontrol_q;
 
-reg sdata_out_q;
+reg sdata_in_q;
 
 // shift register signals from RPi
 reg [7:0] rdata_q;
@@ -136,25 +136,21 @@ end
 always @(posedge rpi_shclk) begin
   if (rpi_regsel == 2'b01) begin
     if (rpi_le) rcontrol_latch <= rcontrol_q;
-	 else rcontrol_q <= { rcontrol_q[6:0], rpi_sdata_in };
+	 else rcontrol_q <= { rcontrol_q[6:0], rpi_sdata_out };
   end
   if (rpi_regsel == 2'b00) begin
     if (rpi_le) rdata_latch <= rdata_q;
-	 else rdata_q <= { rdata_q[6:0], rpi_sdata_in };
+	 else rdata_q <= { rdata_q[6:0], rpi_sdata_out };
   end
   if (rpi_regsel == 2'b11) begin
     if (rpi_le) tshcontrol_q <= tcontrol_q;
-	 else begin
-	   tshcontrol_q <= { tshcontrol_q[6:0], 1'b0 };
-		sdata_out_q <= tshcontrol_q[7];
-	 end
+	 else tshcontrol_q <= { tshcontrol_q[6:0], 1'b0 };
+    sdata_in_q <= tshcontrol_q[7];
   end
   if (rpi_regsel == 2'b10) begin
     if (rpi_le) tshdata_q <= tdata_q;
-    else begin
-	   tshdata_q <= { tshdata_q[6:0], 1'b0 };
-		sdata_out_q <= tshdata_q[7];
-	 end
+    else tshdata_q <= { tshdata_q[6:0], 1'b0 };
+	 sdata_in_q <= tshdata_q[7];
   end
 end
 
@@ -165,14 +161,16 @@ always @(posedge clk) begin
   else dbus_q <= 8'h00;
 end
 
-assign rpi_sdata_out = sdata_out_q;
+assign rpi_sdata_in = sdata_in_q;
 assign dsr_d = dbus_q;
 assign tipi_dbus_oe = (crubit_q && ~ti_memen && ti_dbin && ti_a >= 16'h4000 && ti_a < 16'h5ffd) ? 1'b0 : 1'b1;
 
 assign rpi_reset = !crupireset_q;
 
 assign led[0] = crubit_q;
-assign led[3:1] = tcontrol_q[2:0];
-assign led[7:4] = rcontrol_q[3:0];
+assign led[2:1] = rpi_regsel;
+assign led[3] = rpi_shclk;
+assign led[4] = sdata_in_q;
+assign led[7:5] = tshdata_q[2:0];
 
 endmodule

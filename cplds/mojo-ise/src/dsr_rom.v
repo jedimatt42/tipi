@@ -1,37 +1,31 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date:    18:03:24 02/11/2017 
-// Design Name: 
-// Module Name:    dsr_rom 
-// Project Name: 
-// Target Devices: 
-// Tool versions: 
-// Description: 
-//
-// Dependencies: 
-//
-// Revision: 
-// Revision 0.01 - File Created
-// Additional Comments: 
-//
-//////////////////////////////////////////////////////////////////////////////////
-module dsr_rom(
-    input [12:0] addr,
-    output [0:7] data
-    );
-	 
-reg [7:0] data_ROM [0:27];
+`ifndef _rom_vh_
+`define _rom_vh_
 
-integer i;
+// The ROM, responsible for being an 8k rom with preloaded data.
+module rom(
+    // FPGA primary clock input
+    input clk,
+    // address bus.
+    input [0:12]addr,
+    // DSR ROM Data output
+    output [0:7]data
+);
+
+reg [0:7] rom_data [0:8191];
+
 initial begin
-  $readmemh("../../../dsr/tipi.hex", data_ROM);
-  for (i=0; i<28; i=i+1)
-    $display("%d:%h", i, data_ROM[i]);
+  $readmemh("../../../dsr/tipi.hex", rom_data);
 end
 
-assign data = data_ROM[addr];
+reg [0:7] data_q;
+
+// Use block ram, for the DSR ROM. Requires the clock for input.
+always @(posedge clk) begin
+  data_q <= rom_data[addr];
+end
+
+assign data = data_q;
 
 endmodule
+
+`endif 

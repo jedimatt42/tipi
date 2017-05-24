@@ -1,4 +1,5 @@
 `include "latch_8bit.v"
+`include "crubits.v"
 module mojo_top(
     // 50MHz clock input
     input clk,
@@ -62,22 +63,38 @@ assign spi_miso = 1'bz;
 assign avr_rx = 1'bz;
 assign spi_channel = 4'bzzzz;
 
-// need to consider crubit_q also... 
-wire tipi_data_out = (crubit_q && ~ti_memen && ti_dbin && ti_a == 16'h5ffb) ? 1'b0 : 1'b1;
-wire tipi_control_out = (crubit_q && ~ti_memen && ti_dbin && ti_a == 16'h5ff9) ? 1'b0 : 1'b1;
-wire tipi_dsr_out = (crubit_q && ~ti_memen && ti_dbin && ti_a >= 16'h4000 && ti_a < 16'h5ff8) ? 1'b0 : 1'b1;
+// high-z or static value for unused output signals
+assign tipi_dbus_oe = 1'b1;
+assign dsr_d = 8'bzzzzzzzz;
+assign rpi_s = 8'bzzzzzzzz;
+assign rpi_d = 8'bzzzzzzzz;
+
+// TI CRU state
+wire [0:3]cru_state;
+crubits cru(cru_base, ti_cruclk, ti_a[0:14], ti_a[15], cru_state);
+wire cru_dsr_en = cru_state[0];
+
+// Raspberry PI reset trigger on cru, second bit.
+assign rpi_reset = ~cru_state[1];
+
+// ignore for now... not controling tristate buffers at this time
+wire tipi_data_out = (cru_dsr_en && ~ti_memen && ti_dbin && ti_a == 16'h5ffb) ? 1'b0 : 1'b1;
+wire tipi_control_out = (cru_dsr_en && ~ti_memen && ti_dbin && ti_a == 16'h5ff9) ? 1'b0 : 1'b1;
+wire tipi_dsr_out = (cru_dsr_en && ~ti_memen && ti_dbin && ti_a >= 16'h4000 && ti_a < 16'h5ff8) ? 1'b0 : 1'b1;
 
 // TD output latch
-wire tipi_td_le = (crubit_q && ~ti_memen && ti_a == 16'h5fff);
-wire [0:7] dbus_td;
-latch_8bit td(tipi_td_le, ti_data, dbus_td);
+// -- address and write operation decoding
+wire tipi_td_le = (cru_dsr_en && ~ti_we && ~ti_memen && ti_a == 16'h5fff);
+wire [0:7] rpi_td;
+latch_8bit td(tipi_td_le, ti_data, rpi_td);
 
 // TC output latch
-wire tipi_tc_le = (crubit_q && ~ti_memen && ti_a == 16'h5ffd);
-wire [0:7] dbus_tc;
-latch_8bit tc(tipi_tc_le, ti_data, dbus_tc);
+// -- address and write operation decoding
+wire tipi_tc_le = (cru_dsr_en && ~ti_we && ~ti_memen && ti_a == 16'h5ffd);
+wire [0:7] rpi_tc;
+latch_8bit tc(tipi_tc_le, ti_data, rpi_tc);
 
 
-assign led[0:7] = dbus_td;
+assign led[7:0] = { cru_state[0:1], rpi_td[5:7], rpi_tc[5:7] };
 
 endmodule

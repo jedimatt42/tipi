@@ -1,7 +1,7 @@
 `ifndef _latch_8bit_vh_
 `define _latch_8bit_vh_
 
-Simple 8 bit latch
+// Simple 8 bit latch
 module latch_8bit(
     // FPGA primary clock input
     input clk,

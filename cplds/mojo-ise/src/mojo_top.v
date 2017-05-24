@@ -75,14 +75,6 @@ wire tipi_dsr_out;
 reg crubit_q;
 reg crupireset_q;
 
-// latched data channel
-reg [7:0] tdata_q;
-reg [7:0] tshdata_q;
-// latched control channel
-reg [7:0] tcontrol_q;
-reg [7:0] tshcontrol_q;
-
-reg sdata_in_q;
 
 // shift register signals from RPi
 reg [7:0] rdata_q;
@@ -100,6 +92,9 @@ assign spi_channel = 4'bzzzz;
 assign tipi_data_out = (crubit_q && ~ti_memen && ti_dbin && ti_a == 16'h5ffb) ? 1'b0 : 1'b1;
 assign tipi_control_out = (crubit_q && ~ti_memen && ti_dbin && ti_a == 16'h5ff9) ? 1'b0 : 1'b1;
 assign tipi_dsr_out = (crubit_q && ~ti_memen && ti_dbin && ti_a >= 16'h4000 && ti_a < 16'h5ff8) ? 1'b0 : 1'b1;
+
+reg [7:0] tdata_q;
+reg [7:0] tcontrol_q;
 
 always @(negedge ti_we) begin
   if (crubit_q && ~ti_memen && ti_a == 16'h5fff) begin
@@ -138,21 +133,33 @@ always @(posedge rpi_shclk) begin
     if (rpi_le) rcontrol_latch <= rcontrol_q;
 	 else rcontrol_q <= { rcontrol_q[6:0], rpi_sdata_out };
   end
+end
+
+always @(posedge rpi_shclk) begin
   if (rpi_regsel == 2'b00) begin
     if (rpi_le) rdata_latch <= rdata_q;
 	 else rdata_q <= { rdata_q[6:0], rpi_sdata_out };
   end
-  if (rpi_regsel == 2'b11) begin
-    if (rpi_le) tshcontrol_q <= tcontrol_q;
-	 else tshcontrol_q <= { tshcontrol_q[6:0], 1'b0 };
-    sdata_in_q <= tshcontrol_q[7];
-  end
-  if (rpi_regsel == 2'b10) begin
-    if (rpi_le) tshdata_q <= tdata_q;
-    else tshdata_q <= { tshdata_q[6:0], 1'b0 };
-	 sdata_in_q <= tshdata_q[7];
-  end
 end
+
+// ---- Serial output TC and TD 
+
+wire td_clk = rpi_shclk && (rpi_regsel == 2'b10);
+wire tc_clk = rpi_shclk && (rpi_regsel == 2'b11);
+wire td_le = (rpi_regsel == 2'b10) ? rpi_le : 1'b0;
+wire tc_le = (rpi_regsel == 2'b11) ? rpi_le : 1'b0;
+reg tds_out;
+reg tcs_out;
+
+// latched data channel
+shift_pin_sout tdata_ps(td_clk, td_le, tdata_q, tds_out);
+// latched control channel
+shift_pin_sout tcontrol_ps(tc_clk, td_le, tcontrol_q, tcs_out);
+
+// assign rpi_sdata_in = sdata_in_q;
+assign rpi_sdata_in = (rpi_regsel == 2'b10) ? tds_out : tcs_out;
+
+// ---- Memory Reads for latches and DSR Block Ram
 
 always @(posedge clk) begin
   if (ti_a[3:15] == 13'h1ff9) dbus_q <= rcontrol_q;
@@ -161,16 +168,11 @@ always @(posedge clk) begin
   else dbus_q <= 8'h00;
 end
 
-assign rpi_sdata_in = sdata_in_q;
 assign dsr_d = dbus_q;
 assign tipi_dbus_oe = (crubit_q && ~ti_memen && ti_dbin && ti_a >= 16'h4000 && ti_a < 16'h5ffd) ? 1'b0 : 1'b1;
 
 assign rpi_reset = !crupireset_q;
 
-assign led[0] = crubit_q;
-assign led[2:1] = rpi_regsel;
-assign led[3] = rpi_shclk;
-assign led[4] = sdata_in_q;
-assign led[7:5] = tshdata_q[2:0];
+assign led[7:0] = tdata_q[7:0];
 
 endmodule

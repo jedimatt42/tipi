@@ -6,7 +6,7 @@ module crubits(
     // select
     input [0:3]cru_base,
     // TI clock input
-    input cru_clk,
+    input ti_cru_clk,
     // cru_address
     input [0:14]addr,
     // input
@@ -17,7 +17,7 @@ module crubits(
 
 reg [0:3] bits_q;
 
-always @(negedge cru_clk) begin
+always @(negedge ti_cru_clk) begin
   if ((addr[0:3] == 4'b0001) && (addr[4:7] == cru_base)) begin
     if (addr[8:14] == 7'h00) bits_q[0] <= ti_cru_out;
     else if (addr[8:14] == 7'h01) bits_q[1] <= ti_cru_out;

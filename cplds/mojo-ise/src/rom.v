@@ -5,6 +5,8 @@
 module rom(
     // FPGA primary clock input
     input clk,
+	 // Output Enable
+	 input oe,
     // address bus.
     input [0:12]addr,
     // DSR ROM Data output
@@ -21,7 +23,8 @@ reg [0:7] data_q;
 
 // Use block ram, for the DSR ROM. Requires the clock for input.
 always @(posedge clk) begin
-  data_q <= rom_data[addr];
+  if (oe) data_q <= rom_data[addr];
+  else data_q <= 8'bzzzzzzzz;
 end
 
 assign data = data_q;

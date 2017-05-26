@@ -3,8 +3,10 @@
 
 // Simple 8 bit latch
 module latch_8bit(
-    // FPGA primary clock input
-    input clk,
+    // clock input
+    input le,
+	 // chip select - input ignored unless CS is high
+	 input cs,
     // input
     input [0:7]din,
     // output
@@ -13,8 +15,8 @@ module latch_8bit(
 
 reg [0:7] latch_q;
 
-always @(posedge clk) begin
-  latch_q <= din;
+always @(posedge le) begin
+  if (cs) latch_q <= din;
 end
 
 assign dout = latch_q;

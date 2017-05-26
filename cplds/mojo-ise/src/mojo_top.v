@@ -1,5 +1,6 @@
 `include "crubits.v"
 `include "latch_8bit.v"
+`include "shift_sin_pout.v"
 `include "rom.v"
 module mojo_top(
     // 50MHz clock input
@@ -22,7 +23,7 @@ module mojo_top(
     output avr_rx, // AVR Rx => FPGA Tx
     input avr_rx_busy, // AVR Rx buffer full
 
-    // --------------------------------------------------
+    // -------- i/o to TI-99/4A -------------
      
     // TI address bus. bit 0 is MSB per TI numbering.
     input [0:15]ti_a,
@@ -39,20 +40,24 @@ module mojo_top(
     // TI CRU Clock (active low)
     input ti_cruclk,
     
-    // Inputs for data and control registers from RPi
-    input rpi_cclk,
-    input rpi_dclk,
-    input rpi_sdata,
-    input rpi_le,
-	 
-    // Data output to RPi latched from 0x5fff
-    output [7:0]rpi_d,
-    // Control signal output to RPi latched from 0x5ffd
-    output [7:0]rpi_s,
     // DSR ROM Data output from 0x4000 to 0x5ff8, or RPi registers at 0x5ff9 & 0x5ffb
     output [0:7]dsr_d,
     // Control OE* on a bus transmitter to allow DSR ROM or RPi registers on TI data bus.
     output tipi_dbus_oe,
+
+	 // -------- input from Raspberry Pi ---------
+
+    // RPi shift register clock
+    input rpi_sclk,
+	 // RPi register selection
+	 input [1:0]rpi_regsel,
+	 // RPi data in to register
+	 input rpi_sdata_in,
+    // RPi register latch
+	 input rpi_sle,
+ 
+	 // RPi data output from register
+    output rpi_sdata_out,	 
     // control reset of RPi service scripts
     output rpi_reset
 );
@@ -71,32 +76,52 @@ wire cru_dsr_en = cru_state[0];
 // Raspberry PI reset trigger on cru, second bit.
 assign rpi_reset = ~cru_state[1];
 
-// ignore for now... not controling tristate buffers at this time
-wire tipi_data_out = (cru_dsr_en && ~ti_memen && ti_dbin && ti_a == 16'h5ffb) ? 1'b0 : 1'b1;
-wire tipi_control_out = (cru_dsr_en && ~ti_memen && ti_dbin && ti_a == 16'h5ff9) ? 1'b0 : 1'b1;
-
 // TD output latch
-// -- address and write operation decoding
 wire tipi_td_le = (cru_dsr_en && ~ti_we && ~ti_memen && ti_a == 16'h5fff);
-wire [0:7] rpi_td;
-latch_8bit td(tipi_td_le, ti_data, rpi_td);
+wire [0:7]rpi_td;
+latch_8bit td(~ti_we, tipi_td_le, ti_data, rpi_td);
 
 // TC output latch
-// -- address and write operation decoding
 wire tipi_tc_le = (cru_dsr_en && ~ti_we && ~ti_memen && ti_a == 16'h5ffd);
-wire [0:7] rpi_tc;
-latch_8bit tc(tipi_tc_le, ti_data, rpi_tc);
+wire [0:7]rpi_tc;
+latch_8bit tc(~ti_we, tipi_tc_le, ti_data, rpi_tc);
+
+// RD serial in parallel output latch
+wire tipi_rd_out = (cru_dsr_en && ~ti_memen && ti_dbin && ti_a == 16'h5ffb);
+wire rd_cs = rpi_regsel == 2'b00;
+wire [0:7]ti_dbus_rd;
+shift_sin_pout rd(rpi_sclk, rd_cs, rpi_sle, rpi_sdata_in, ti_dbus_rd);
+
+// RC serial in parallel output latch
+wire tipi_rc_out = (cru_dsr_en && ~ti_memen && ti_dbin && ti_a == 16'h5ff9);
+wire rc_cs = rpi_regsel == 2'b01;
+wire [0:7]ti_dbus_rc;
+shift_sin_pout rc(rpi_sclk, rc_cs, rpi_sle, rpi_sdata_in, ti_dbus_rc);
 
 // TIPI DSR
 wire tipi_dsr_out = (cru_dsr_en && ~ti_memen && ti_dbin && ti_a >= 16'h4000 && ti_a < 16'h5ff8);
-rom dsr(clk, tipi_dsr_out, ti_a[3:15], dsr_d);
+wire [0:7]ti_dbus_dsr;
+rom dsr(clk, tipi_dsr_out, ti_a[3:15], ti_dbus_dsr);
 
 // Invert OE for bus driver chip
-assign tipi_dbus_oe = ~tipi_dsr_out;
+assign tipi_dbus_oe = ~(tipi_dsr_out || tipi_rc_out || tipi_rd_out);
+//reg [0:7]dbus_out;
+// TODO, merge ti_data and dsr_d as single 8 bit bi-directional bus
+//always @(posedge clk) begin
+//    if (tipi_dsr_out) dbus_out = ti_dbus_dsr;
+//	 else if (tipi_rc_out) dbus_out = ti_dbus_rc;
+//	 else if (tipi_rd_out) dbus_out = ti_dbus_rd;
+//	 else dbus_out = 8'bzzzzzzzz;
+//end
+
+assign dsr_d = ti_dbus_dsr;
+
+// Debugging LEDs
 assign led[7:0] = { cru_state[0:1], rpi_td[5:7], rpi_tc[5:7] };
 
 // high-z or static value for unused output signals
 assign rpi_s = 8'bzzzzzzzz;
 assign rpi_d = 8'bzzzzzzzz;
+assign rpi_sdata_out = 1'bz;
 
 endmodule

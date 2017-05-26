@@ -5,6 +5,8 @@
 module shift_sin_pout(
     // clock input
     input clk,
+	 // inputs are ignored unless CS is high
+	 input cs,
     // latch data to expose internal shifter.
     input le,
     // input
@@ -17,8 +19,8 @@ reg [0:7] latch_q;
 reg [0:7] shift_q;
 
 always @(posedge clk) begin
-    if (le) latch_q <= shift_q;
-    else shift_q <= { shift_q[1:7], din };
+    if (cs && le) latch_q <= shift_q;
+    else if (cs) shift_q <= { shift_q[1:7], din };
 end
 
 assign dout = latch_q;

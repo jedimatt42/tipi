@@ -105,16 +105,16 @@ rom dsr(clk, tipi_dsr_out, ti_a[3:15], ti_dbus_dsr);
 
 // Invert OE for bus driver chip
 assign tipi_dbus_oe = ~(tipi_dsr_out || tipi_rc_out || tipi_rd_out);
-//reg [0:7]dbus_out;
+reg [0:7]dbus_out;
 // TODO, merge ti_data and dsr_d as single 8 bit bi-directional bus
-//always @(posedge clk) begin
-//    if (tipi_dsr_out) dbus_out = ti_dbus_dsr;
-//	 else if (tipi_rc_out) dbus_out = ti_dbus_rc;
-//	 else if (tipi_rd_out) dbus_out = ti_dbus_rd;
-//	 else dbus_out = 8'bzzzzzzzz;
-//end
+always @(tipi_dsr_out or tipi_rc_out or tipi_rd_out) begin
+    if (tipi_dsr_out) dbus_out = ti_dbus_dsr;
+	 else if (tipi_rc_out) dbus_out = ti_dbus_rc;
+	 else if (tipi_rd_out) dbus_out = ti_dbus_rd;
+	 else dbus_out = 8'bzzzzzzzz;
+end
 
-assign dsr_d = ti_dbus_dsr;
+assign dsr_d = dbus_out;
 
 // Debugging LEDs
 assign led[7:0] = { cru_state[0:1], rpi_td[5:7], rpi_tc[5:7] };

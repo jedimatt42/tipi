@@ -52,12 +52,12 @@ module mojo_top(
 	 // RPi register selection
 	 input [1:0]rpi_regsel,
 	 // RPi data in to register
-	 input rpi_sdata_in,
+    input rpi_sdata_out,	 
     // RPi register latch
 	 input rpi_sle,
  
 	 // RPi data output from register
-    output rpi_sdata_out,	 
+	 input rpi_sdata_in,
     // control reset of RPi service scripts
     output rpi_reset
 );
@@ -88,15 +88,15 @@ latch_8bit tc(~ti_we, tipi_tc_le, ti_data, rpi_tc);
 
 // RD serial in parallel output latch
 wire tipi_rd_out = (cru_dsr_en && ~ti_memen && ti_dbin && ti_a == 16'h5ffb);
-wire rd_cs = rpi_regsel == 2'b00;
+wire rd_cs = (rpi_regsel == 2'b00);
 wire [0:7]ti_dbus_rd;
-shift_sin_pout rd(rpi_sclk, rd_cs, rpi_sle, rpi_sdata_in, ti_dbus_rd);
+shift_sin_pout rd(rpi_sclk, rd_cs, rpi_sle, rpi_sdata_out, ti_dbus_rd);
 
 // RC serial in parallel output latch
 wire tipi_rc_out = (cru_dsr_en && ~ti_memen && ti_dbin && ti_a == 16'h5ff9);
-wire rc_cs = rpi_regsel == 2'b01;
+wire rc_cs = (rpi_regsel == 2'b01);
 wire [0:7]ti_dbus_rc;
-shift_sin_pout rc(rpi_sclk, rc_cs, rpi_sle, rpi_sdata_in, ti_dbus_rc);
+shift_sin_pout rc(rpi_sclk, rc_cs, rpi_sle, rpi_sdata_out, ti_dbus_rc);
 
 // TIPI DSR
 wire tipi_dsr_out = (cru_dsr_en && ~ti_memen && ti_dbin && ti_a >= 16'h4000 && ti_a < 16'h5ff8);
@@ -117,7 +117,7 @@ end
 assign dsr_d = dbus_out;
 
 // Debugging LEDs
-assign led[7:0] = { cru_state[0:1], rpi_td[5:7], rpi_tc[5:7] };
+assign led[7:0] = { rd_cs, rpi_sle, rpi_sdata_out, rpi_sclk, ti_dbus_rd[4:7] };
 
 // high-z or static value for unused output signals
 assign rpi_s = 8'bzzzzzzzz;

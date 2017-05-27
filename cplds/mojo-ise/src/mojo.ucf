@@ -92,8 +92,8 @@ NET "dsr_d<6>" LOC = P9 | IOSTANDARD = LVCMOS33;
 NET "dsr_d<7>" LOC = P10 | IOSTANDARD = LVCMOS33;
 
 // Shift register inputs from RPi
-NET rpi_regsel<0> LOC = P23 | IOSTANDARD = LVCMOS33;
-NET rpi_regsel<1> LOC = P24 | IOSTANDARD = LVCMOS33;
+NET rpi_regsel<1> LOC = P23 | IOSTANDARD = LVCMOS33;
+NET rpi_regsel<0> LOC = P24 | IOSTANDARD = LVCMOS33;
 NET rpi_sdata_out LOC = P26 | IOSTANDARD = LVCMOS33;
 NET rpi_sdata_in LOC = P30 | IOSTANDARD = LVCMOS33; 
 NET rpi_sclk LOC = P50 | IOSTANDARD = LVCMOS33;

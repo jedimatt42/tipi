@@ -19,8 +19,10 @@ reg [0:7] latch_q;
 reg [0:7] shift_q;
 
 always @(posedge clk) begin
-    if (cs && le) latch_q <= shift_q;
-    else if (cs) shift_q <= { shift_q[1:7], din };
+    if (cs) begin
+        if (le) latch_q <= shift_q;
+        else shift_q <= { shift_q[1:7], din };
+	 end
 end
 
 assign dout = latch_q;

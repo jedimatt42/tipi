@@ -79,12 +79,12 @@ assign rpi_reset = ~cru_state[1];
 // TD output latch
 wire tipi_td_le = (cru_dsr_en && ~ti_we && ~ti_memen && ti_a == 16'h5fff);
 wire [0:7]rpi_td;
-latch_8bit td(~ti_we, tipi_td_le, ti_data, rpi_td);
+latch_8bit td(tipi_td_le, ti_data, rpi_td);
 
 // TC output latch
 wire tipi_tc_le = (cru_dsr_en && ~ti_we && ~ti_memen && ti_a == 16'h5ffd);
 wire [0:7]rpi_tc;
-latch_8bit tc(~ti_we, tipi_tc_le, ti_data, rpi_tc);
+latch_8bit tc(tipi_tc_le, ti_data, rpi_tc);
 
 // RD serial in parallel output latch
 wire tipi_rd_out = (cru_dsr_en && ~ti_memen && ti_dbin && ti_a == 16'h5ffb);
@@ -117,7 +117,7 @@ end
 assign dsr_d = dbus_out;
 
 // Debugging LEDs
-assign led[7:0] = { rd_cs, rpi_sle, rpi_sdata_out, rpi_sclk, ti_dbus_rd[4:7] };
+assign led[7:0] = { rpi_tc[4:7], rpi_td[4:7] };
 
 // high-z or static value for unused output signals
 assign rpi_s = 8'bzzzzzzzz;

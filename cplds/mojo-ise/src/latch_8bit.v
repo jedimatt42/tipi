@@ -5,8 +5,6 @@
 module latch_8bit(
     // clock input
     input le,
-	 // chip select - input ignored unless CS is high
-	 input cs,
     // input
     input [0:7]din,
     // output
@@ -16,7 +14,7 @@ module latch_8bit(
 reg [0:7] latch_q;
 
 always @(posedge le) begin
-  if (cs) latch_q <= din;
+  latch_q <= din;
 end
 
 assign dout = latch_q;

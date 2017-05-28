@@ -1,5 +1,6 @@
 `include "crubits.v"
 `include "latch_8bit.v"
+`include "shift_pload_sout.v"
 `include "shift_sin_pout.v"
 `include "rom.v"
 module mojo_top(
@@ -57,7 +58,7 @@ module mojo_top(
 	 input rpi_sle,
  
 	 // RPi data output from register
-	 input rpi_sdata_in,
+	 output rpi_sdata_in,
     // control reset of RPi service scripts
     output rpi_reset
 );
@@ -76,32 +77,27 @@ wire cru_dsr_en = cru_state[0];
 // Raspberry PI reset trigger on cru, second bit.
 assign rpi_reset = ~cru_state[1];
 
-// TD output latch
-wire tipi_td_le = (cru_dsr_en && ~ti_we && ~ti_memen && ti_a == 16'h5fff);
-wire [0:7]rpi_td;
-latch_8bit td(tipi_td_le, ti_data, rpi_td);
 
-// TC output latch
-wire tipi_tc_le = (cru_dsr_en && ~ti_we && ~ti_memen && ti_a == 16'h5ffd);
-wire [0:7]rpi_tc;
-latch_8bit tc(tipi_tc_le, ti_data, rpi_tc);
+////// From RPi -> TI-99/4A
 
 // RD serial in parallel output latch
 wire tipi_rd_out = (cru_dsr_en && ~ti_memen && ti_dbin && ti_a == 16'h5ffb);
 wire rd_cs = (rpi_regsel == 2'b00);
 wire [0:7]ti_dbus_rd;
-shift_sin_pout rd(rpi_sclk, rd_cs, rpi_sle, rpi_sdata_out, ti_dbus_rd);
+shift_sin_pout shift_rd(rpi_sclk, rd_cs, rpi_sle, rpi_sdata_out, ti_dbus_rd);
 
 // RC serial in parallel output latch
 wire tipi_rc_out = (cru_dsr_en && ~ti_memen && ti_dbin && ti_a == 16'h5ff9);
 wire rc_cs = (rpi_regsel == 2'b01);
 wire [0:7]ti_dbus_rc;
-shift_sin_pout rc(rpi_sclk, rc_cs, rpi_sle, rpi_sdata_out, ti_dbus_rc);
+shift_sin_pout shift_rc(rpi_sclk, rc_cs, rpi_sle, rpi_sdata_out, ti_dbus_rc);
 
 // TIPI DSR
 wire tipi_dsr_out = (cru_dsr_en && ~ti_memen && ti_dbin && ti_a >= 16'h4000 && ti_a < 16'h5ff8);
 wire [0:7]ti_dbus_dsr;
 rom dsr(clk, tipi_dsr_out, ti_a[3:15], ti_dbus_dsr);
+
+////// Wiring up the TI data bus
 
 // Invert OE for bus driver chip
 assign tipi_dbus_oe = ~(tipi_dsr_out || tipi_rc_out || tipi_rd_out);
@@ -116,12 +112,33 @@ end
 
 assign dsr_d = dbus_out;
 
-// Debugging LEDs
-assign led[7:0] = { rpi_tc[4:7], rpi_td[4:7] };
+////// From TI-99/4A to RPi
 
-// high-z or static value for unused output signals
-assign rpi_s = 8'bzzzzzzzz;
-assign rpi_d = 8'bzzzzzzzz;
-assign rpi_sdata_out = 1'bz;
+// TD output latch
+wire tipi_td_le = (cru_dsr_en && ~ti_we && ~ti_memen && ti_a == 16'h5fff);
+wire [0:7]rpi_td;
+latch_8bit td(tipi_td_le, ti_data, rpi_td);
+
+// shift register out to RPi for TD
+wire td_clk = rpi_sclk && (rpi_regsel == 2'b10);
+wire td_out;
+wire [7:0]debug_td_out;
+shift_pload_sout shift_td(td_clk, rpi_sle, rpi_td, td_out, debug_td_out);
+
+// TC output latch
+wire tipi_tc_le = (cru_dsr_en && ~ti_we && ~ti_memen && ti_a == 16'h5ffd);
+wire [0:7]rpi_tc;
+latch_8bit tc(tipi_tc_le, ti_data, rpi_tc);
+
+// shift register out to RPi for TC
+wire tc_clk = rpi_sclk && (rpi_regsel == 2'b11);
+wire tc_out;
+wire [7:0]debug_tc_out;
+shift_pload_sout shift_tc(tc_clk, rpi_sle, rpi_tc, tc_out, debug_tc_out);
+
+assign rpi_sdata_in = (rpi_regsel == 2'b11) ? tc_out : td_out;
+
+// Debugging LEDs
+assign led[7:0] = { tc_clk, tc_out, rpi_sclk, rpi_sle, debug_tc_out[7:4] };
 
 endmodule

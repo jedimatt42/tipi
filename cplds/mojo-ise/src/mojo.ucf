@@ -81,7 +81,6 @@ NET "cru_base<3>" LOC = P105 | IOSTANDARD = LVCMOS33 | PULLDOWN;
 // Transciever enable signal outputs
 NET "tipi_dbus_oe" LOC = P100 | IOSTANDARD = LVCMOS33;
 
-
 // Data output for simulated ROM
 NET "dsr_d<0>" LOC = P16 | IOSTANDARD = LVCMOS33;
 NET "dsr_d<1>" LOC = P17 | IOSTANDARD = LVCMOS33;
@@ -93,12 +92,9 @@ NET "dsr_d<6>" LOC = P9 | IOSTANDARD = LVCMOS33;
 NET "dsr_d<7>" LOC = P10 | IOSTANDARD = LVCMOS33;
 
 // Shift register inputs from RPi
-NET rpi_regsel<0> LOC = P23 | IOSTANDARD = LVCMOS33;
-NET rpi_regsel<1> LOC = P24 | IOSTANDARD = LVCMOS33;
+NET rpi_regsel<1> LOC = P23 | IOSTANDARD = LVCMOS33;
+NET rpi_regsel<0> LOC = P24 | IOSTANDARD = LVCMOS33;
 NET rpi_sdata_out LOC = P26 | IOSTANDARD = LVCMOS33;
 NET rpi_sdata_in LOC = P30 | IOSTANDARD = LVCMOS33; 
-NET rpi_shclk LOC = P50 | IOSTANDARD = LVCMOS33;
-NET rpi_le LOC = P27 | IOSTANDARD = LVCMOS33;
-
-
-
+NET rpi_sclk LOC = P50 | IOSTANDARD = LVCMOS33;
+NET rpi_sle LOC = P27 | IOSTANDARD = LVCMOS33;

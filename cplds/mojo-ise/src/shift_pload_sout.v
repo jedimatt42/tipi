@@ -4,7 +4,7 @@
 module shift_pload_sout (
     // Clock for shifting
     input clk,
-	 // Operations are ignored unless CS is high
+	 // load tmp with data to shift out.
     input aload,
 	 // Data to load from
     input [7:0]data,
@@ -14,15 +14,15 @@ module shift_pload_sout (
 	 output [7:0] dout
 );
 
-reg [7:0]tmp;
+reg [8:0]tmp;
 
 always @(posedge clk) begin
-    if (aload) tmp = data;
-    else tmp = {tmp[6:0], 1'b0};
+    if (aload) tmp = { 1'b0, data };
+    else tmp = {tmp[7:0], 1'b0};
 end
 
-assign sout = tmp[7];
-assign dout = tmp;
+assign sout = tmp[8];
+assign dout = tmp[7:0];
 
 endmodule
 

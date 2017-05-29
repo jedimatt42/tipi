@@ -1,41 +1,15 @@
 
-import os
-import pycurl
-from StringIO import StringIO
+import time
+import tipiports
 
-str = "TIPI.TCP=192.168.1.144:9902"
+tipiports.initGpio()
 
-print str.split("=")[1].split(":")
+tipiports.setRD(255)
+tipiports.setRC(0x55)
 
-CHUNKSIZE = 3
+a = 1
+while (a != 0):
+    print "TC {} - TD {}".format(tipiports.getTC(), tipiports.getTD())
 
-def __splitMessage(bytes):
-    l = len(bytes)
-    chunks = [ ]
-    bc = (l / CHUNKSIZE) + 1
-    for i in range(bc):
-	chunk = bytes[i*CHUNKSIZE:(i+1)*CHUNKSIZE]
-	if len(chunk):
-	    chunks += [ chunk ]
-    return chunks
-
-
-print __splitMessage(bytearray("1234"))
-
-#
-
-if False:
-    buffer = StringIO()
-    c = pycurl.Curl()
-    c.setopt(c.URL, 'http://ti994a.cwfk.net/')
-    c.setopt(c.WRITEDATA, buffer)
-    c.perform()
-    c.close()
-
-    body = buffer.getvalue()
-
-    print(body)
-
-
-print os.path.basename(os.path.realpath("/tipi_disk/DSK1"))
+print a
 

@@ -1,64 +1,61 @@
 
 #include <Python.h>
-#include "gpio.h"
+#include <wiringPi.h>
 
-// Used to recognize a reset request
-#define PIN_RESET 5
-
-// 8 bit bus for TI Data (TD)
-#define PIN_TD0 2
-#define PIN_TD1 3
-#define PIN_TD2 4
-#define PIN_TD3 17
-#define PIN_TD4 27
-#define PIN_TD5 22
-#define PIN_TD6 10
-#define PIN_TD7 9
-
-// 8 bit bus for TI Control (TC)
-#define PIN_TC0 14
-#define PIN_TC1 15
-#define PIN_TC2 18
-#define PIN_TC3 23
-#define PIN_TC4 24
-#define PIN_TC5 25
-#define PIN_TC6 8 
-#define PIN_TC7 7
-
-// Serial output for RD & RC
-#define PIN_CCLK 19
-#define PIN_DCLK 26
-#define PIN_SDATA 13
+// Serial output for RD & RC (BCM pin numbers)
+#define PIN_REG0 26
+#define PIN_REG1 19
+#define PIN_SHCLK 4
+#define PIN_SDATA_OUT 13
+#define PIN_SDATA_IN 17
 #define PIN_LE 6 
 
-void setInput(int pin)
+#define SEL_RD 0
+#define SEL_RC 1
+#define SEL_TD 2
+#define SEL_TC 3
+
+inline void signalDelay(void)
 {
-  INP_GPIO(pin);
+  delayMicroseconds(5L);
 }
 
-void setOutput(int pin)
+inline void setSelect(int reg)
 {
-  INP_GPIO(pin);
-  OUT_GPIO(pin);
+  digitalWrite(PIN_REG0, reg & 0x02);
+  digitalWrite(PIN_REG1, reg & 0x01);
 }
 
-inline unsigned char getBit(int pin)
+inline unsigned char readByte(int reg)
 {
-  return GET_GPIO(pin) ? 1 : 0;
+  unsigned char value = 0;
+
+  setSelect(reg);
+  signalDelay();
+
+  digitalWrite(PIN_LE, 1);
+  digitalWrite(PIN_SHCLK, 1);
+  signalDelay();
+  digitalWrite(PIN_SHCLK, 0);
+  digitalWrite(PIN_LE, 0);
+
+  // Read the first bit then clock in the next.
+  int i;
+  for (i=7; i>=0; i--) {
+    value += digitalRead(PIN_SDATA_IN) << i;
+    digitalWrite(PIN_SHCLK, 1);
+    signalDelay();
+    digitalWrite(PIN_SHCLK, 0);
+    signalDelay();
+  }
+
+  return value;
 }
 
 static PyObject* 
 tipi_getTD(PyObject *self, PyObject *args)
 {
-  unsigned char td_value =
-    getBit(PIN_TD0) +
-    (getBit(PIN_TD1) << 1) +
-    (getBit(PIN_TD2) << 2) +
-    (getBit(PIN_TD3) << 3) +
-    (getBit(PIN_TD4) << 4) +
-    (getBit(PIN_TD5) << 5) +
-    (getBit(PIN_TD6) << 6) +
-    (getBit(PIN_TD7) << 7);
+  unsigned char td_value = readByte(SEL_TD);
 
   return Py_BuildValue("i", td_value);
 }
@@ -66,37 +63,30 @@ tipi_getTD(PyObject *self, PyObject *args)
 static PyObject* 
 tipi_getTC(PyObject *self, PyObject *args)
 {
-  unsigned char tc_value =
-    getBit(PIN_TC0) +
-    (getBit(PIN_TC1) << 1) +
-    (getBit(PIN_TC2) << 2) +
-    (getBit(PIN_TC3) << 3) +
-    (getBit(PIN_TC4) << 4) +
-    (getBit(PIN_TC5) << 5) +
-    (getBit(PIN_TC6) << 6) +
-    (getBit(PIN_TC7) << 7);
+  unsigned char tc_value = readByte(SEL_TC);
 
   return Py_BuildValue("i", tc_value);
 }
 
-inline void setBit(int set, int pin)
+inline void writeByte(unsigned char value, int reg) 
 {
-  *(gpio + (set ? 7 : 10)) = 1<<pin;
-}
+  setSelect(reg);
 
-inline void writeByte(unsigned char value, int clock) 
-{
   int i;
   for (i=7; i>=0; i--) {
-    GPIO_CLR = 1<<clock;
-    setBit((value >> i) & 0x01, PIN_SDATA);
-    GPIO_SET = 1<<clock;
+    digitalWrite(PIN_SDATA_OUT, (value >> i) & 0x01);
+    digitalWrite(PIN_SHCLK, 1);
+    signalDelay();
+    digitalWrite(PIN_SHCLK, 0);
+    signalDelay();
   }
-  GPIO_CLR = 1<<clock;
-  GPIO_SET = 1<<PIN_LE;
-  GPIO_SET = 1<<clock;
-  GPIO_CLR = 1<<PIN_LE;
-  GPIO_CLR = 1<<clock;
+
+  digitalWrite(PIN_LE, 1);
+  digitalWrite(PIN_SHCLK, 1);
+  signalDelay();
+  digitalWrite(PIN_SHCLK, 0);
+  digitalWrite(PIN_LE, 0);
+  signalDelay();
 }
 
 static PyObject* 
@@ -105,7 +95,7 @@ tipi_setRD(PyObject *self, PyObject *args)
   unsigned char rd_value;
   PyArg_ParseTuple(args, "b", &rd_value);
 
-  writeByte(rd_value, PIN_DCLK);
+  writeByte(rd_value, SEL_RD);
 
   Py_INCREF(Py_None);
   return Py_None;
@@ -117,7 +107,7 @@ tipi_setRC(PyObject *self, PyObject *args)
   unsigned char rc_value;
   PyArg_ParseTuple(args, "b", &rc_value);
 
-  writeByte(rc_value, PIN_CCLK);
+  writeByte(rc_value, SEL_RC);
 
   Py_INCREF(Py_None);
   return Py_None;
@@ -126,30 +116,21 @@ tipi_setRC(PyObject *self, PyObject *args)
 static PyObject* 
 tipi_initGpio(PyObject *self, PyObject *args)
 {
-  setup_io();
+  wiringPiSetupGpio();
 
-  setInput(PIN_TD0);
-  setInput(PIN_TD1);
-  setInput(PIN_TD2);
-  setInput(PIN_TD3);
-  setInput(PIN_TD4);
-  setInput(PIN_TD5);
-  setInput(PIN_TD6);
-  setInput(PIN_TD7);
+  pinMode(PIN_REG0, OUTPUT);
+  pinMode(PIN_REG1, OUTPUT);
+  pinMode(PIN_SHCLK, OUTPUT);
+  pinMode(PIN_SDATA_OUT, OUTPUT);
+  pinMode(PIN_LE, OUTPUT);
+  pinMode(PIN_SDATA_IN, INPUT);
+  pullUpDnControl(PIN_SDATA_IN, PUD_OFF);
 
-  setInput(PIN_TC0);
-  setInput(PIN_TC1);
-  setInput(PIN_TC2);
-  setInput(PIN_TC3);
-  setInput(PIN_TC4);
-  setInput(PIN_TC5);
-  setInput(PIN_TC6);
-  setInput(PIN_TC7);
-
-  setOutput(PIN_CCLK);
-  setOutput(PIN_DCLK);
-  setOutput(PIN_SDATA);
-  setOutput(PIN_LE);
+  digitalWrite(PIN_REG0, 0);
+  digitalWrite(PIN_REG1, 0);
+  digitalWrite(PIN_SHCLK, 0);
+  digitalWrite(PIN_SDATA_OUT, 0);
+  digitalWrite(PIN_LE, 0);
 
   Py_INCREF(Py_None);
   return Py_None;

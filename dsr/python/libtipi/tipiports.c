@@ -39,14 +39,13 @@ inline unsigned char readByte(int reg)
   digitalWrite(PIN_SHCLK, 0);
   digitalWrite(PIN_LE, 0);
 
-  // Read the first bit then clock in the next.
   int i;
   for (i=7; i>=0; i--) {
-    value += digitalRead(PIN_SDATA_IN) << i;
     digitalWrite(PIN_SHCLK, 1);
     signalDelay();
     digitalWrite(PIN_SHCLK, 0);
     signalDelay();
+    value += digitalRead(PIN_SDATA_IN) << i;
   }
 
   return value;
@@ -75,6 +74,7 @@ inline void writeByte(unsigned char value, int reg)
   int i;
   for (i=7; i>=0; i--) {
     digitalWrite(PIN_SDATA_OUT, (value >> i) & 0x01);
+    signalDelay();
     digitalWrite(PIN_SHCLK, 1);
     signalDelay();
     digitalWrite(PIN_SHCLK, 0);

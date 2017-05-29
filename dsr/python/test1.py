@@ -4,22 +4,12 @@ import tipiports
 
 tipiports.initGpio()
 
-while True:
-    tipiports.setRC(0x55)
-    time.sleep(0.1)
-    tipiports.setRD(0xAA)
-    time.sleep(0.1)
-    print tipiports.getTC()
-    time.sleep(1)
-    print tipiports.getTD()
-    time.sleep(1)
+tipiports.setRD(255)
+tipiports.setRC(0x55)
 
-# oldtc = -1
+a = 1
+while (a != 0):
+    print "TC {} - TD {}".format(tipiports.getTC(), tipiports.getTD())
 
-# while True:
-#    time.sleep(0.1)
-#    tc = tipiports.getTD()
-#    if tc != oldtc:
-#        print tc
-#        oldtc = tc
+print a
 

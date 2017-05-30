@@ -17,13 +17,14 @@
 
 inline void signalDelay(void)
 {
-  delayMicroseconds(5L);
+  delayMicroseconds(25L);
 }
 
 inline void setSelect(int reg)
 {
   digitalWrite(PIN_REG0, reg & 0x02);
   digitalWrite(PIN_REG1, reg & 0x01);
+  signalDelay();
 }
 
 inline unsigned char readByte(int reg)
@@ -34,10 +35,13 @@ inline unsigned char readByte(int reg)
   signalDelay();
 
   digitalWrite(PIN_LE, 1);
+  signalDelay();
   digitalWrite(PIN_SHCLK, 1);
   signalDelay();
   digitalWrite(PIN_SHCLK, 0);
+  signalDelay();
   digitalWrite(PIN_LE, 0);
+  signalDelay();
 
   int i;
   for (i=7; i>=0; i--) {
@@ -45,7 +49,7 @@ inline unsigned char readByte(int reg)
     signalDelay();
     digitalWrite(PIN_SHCLK, 0);
     signalDelay();
-    value += digitalRead(PIN_SDATA_IN) << i;
+    value |= digitalRead(PIN_SDATA_IN) << i;
   }
 
   return value;
@@ -82,9 +86,11 @@ inline void writeByte(unsigned char value, int reg)
   }
 
   digitalWrite(PIN_LE, 1);
+  signalDelay();
   digitalWrite(PIN_SHCLK, 1);
   signalDelay();
   digitalWrite(PIN_SHCLK, 0);
+  signalDelay();
   digitalWrite(PIN_LE, 0);
   signalDelay();
 }
@@ -124,7 +130,7 @@ tipi_initGpio(PyObject *self, PyObject *args)
   pinMode(PIN_SDATA_OUT, OUTPUT);
   pinMode(PIN_LE, OUTPUT);
   pinMode(PIN_SDATA_IN, INPUT);
-  pullUpDnControl(PIN_SDATA_IN, PUD_OFF);
+  pullUpDnControl(PIN_SDATA_IN, PUD_DOWN);
 
   digitalWrite(PIN_REG0, 0);
   digitalWrite(PIN_REG1, 0);

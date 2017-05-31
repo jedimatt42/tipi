@@ -15,5 +15,5 @@
 program_record:
   data  0x0000    # Next program chain record
   data  _start    # Entry point for program
-  nstring "TIPI SPEEDTEST"  # Name of program
+  nstring "TIPI DEBUG"  # Name of program
   even

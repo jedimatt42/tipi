@@ -5,10 +5,10 @@ LIBTI99?=/home/matthew/dev/ti99/libti99
 
 ELF2CART=elf2cart
 
-FNAME=speedtest
+FNAME=tipidebug
 
 LDFLAGS=\
-  --section-start .text=6000 --section-start .data=8320
+  --section-start .text=6000 --section-start .data=A000
 
 OBJECT_LIST=\
   header.o\

@@ -32,8 +32,13 @@ void main()
 
   __asm__("li r12, >1000\n\tsbo 0");
 
+  TI_CONTROL = 0x55;
+  TI_DATA = 0xAA;
+
   writestring(1, 0, "TIPI Debug");
-  writestring(3, 4, "RC  RD");
+  writestring(3, 4, "RC  RD  TC  TD");
+  writebytehex(4, 12, 0x55);
+  writebytehex(4, 16, 0xAA);
 
   while(1) {
     int i = 4;

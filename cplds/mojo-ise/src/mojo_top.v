@@ -40,11 +40,15 @@ module mojo_top(
     input ti_dbin,
     // TI CRU Clock (active low)
     input ti_cruclk,
+	 // TI Phase 3 clk
+	 input ti_ph3,
     
     // DSR ROM Data output from 0x4000 to 0x5ff8, or RPi registers at 0x5ff9 & 0x5ffb
     output [0:7]dsr_d,
     // Control OE* on a bus transmitter to allow DSR ROM or RPi registers on TI data bus.
     output tipi_dbus_oe,
+    // CRU output
+	 output ti_cruin,
 
 	 // -------- input from Raspberry Pi ---------
 
@@ -70,9 +74,12 @@ assign avr_rx = 1'bz;
 assign spi_channel = 4'bzzzz;
 
 // TI CRU state
+wire ti_cruout = ti_a[15]; // address line 15 is multiplexed with cruout data. 
 wire [0:3]cru_state;
-crubits cru(cru_base, ti_cruclk, ti_a[0:14], ti_a[15], cru_state);
+wire cruregout;
+crubits cru(cru_base, ti_cruclk, ti_memen, ti_ph3, ti_a[0:14], ti_cruout, cruregout, cru_state);
 wire cru_dsr_en = cru_state[0];
+assign ti_cruin = cruregout;
 
 // Raspberry PI reset trigger on cru, second bit.
 assign rpi_reset = ~cru_state[1];
@@ -84,13 +91,13 @@ assign rpi_reset = ~cru_state[1];
 wire tipi_rd_out = (cru_dsr_en && ~ti_memen && ti_dbin && ti_a == 16'h5ffb);
 wire rd_cs = (rpi_regsel == 2'b00);
 wire [0:7]ti_dbus_rd;
-shift_sin_pout shift_rd(rpi_sclk, rd_cs, rpi_sle, rpi_sdata_out, ti_dbus_rd);
+shift_sin_pout shift_rd(rpi_sclk && rd_cs, rpi_sle, rpi_sdata_out, ti_dbus_rd);
 
 // RC serial in parallel output latch
 wire tipi_rc_out = (cru_dsr_en && ~ti_memen && ti_dbin && ti_a == 16'h5ff9);
 wire rc_cs = (rpi_regsel == 2'b01);
 wire [0:7]ti_dbus_rc;
-shift_sin_pout shift_rc(rpi_sclk, rc_cs, rpi_sle, rpi_sdata_out, ti_dbus_rc);
+shift_sin_pout shift_rc(rpi_sclk && rc_cs, rpi_sle, rpi_sdata_out, ti_dbus_rc);
 
 // TIPI DSR
 wire tipi_dsr_out = (cru_dsr_en && ~ti_memen && ti_dbin && ti_a >= 16'h4000 && ti_a < 16'h5ff8);

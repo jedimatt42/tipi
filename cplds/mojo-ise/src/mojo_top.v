@@ -146,6 +146,6 @@ shift_pload_sout shift_tc(tc_clk, rpi_sle, rpi_tc, tc_out, debug_tc_out);
 assign rpi_sdata_in = (rpi_regsel == 2'b11) ? tc_out : td_out;
 
 // Debugging LEDs
-assign led[7:0] = { tc_clk, tc_out, rpi_sclk, rpi_sle, debug_tc_out[7:4] };
+assign led[7:0] = { cru_dsr_en, cru_state[1], rpi_tc[5:7], ti_dbus_rc[5:7] };
 
 endmodule

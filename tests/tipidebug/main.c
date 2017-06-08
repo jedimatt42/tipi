@@ -74,18 +74,33 @@ void main()
 
   writestring(2, 4, "echo TIPI");
 
+  buffer[10] = 'T';
+  buffer[11] = 'I';
+  buffer[12] = 'P';
+  buffer[13] = 'I';
+
+  int inc = 0;
+  int counter = 0;
+
   while(1) {
 
-  VDP_WAIT_VBLANK_CRU
+    VDP_WAIT_VBLANK_CRU;
+    counter++;
+    if (counter % 15 == 0) {
+      sendmsg(4, buffer+10);
+      recvmsg(&count, buffer);
+      buffer[count] = 0;
+      writebytehex(3, 4, buffer[0]);
+      writebytehex(3, 7, buffer[1]);
+      writebytehex(3, 10, buffer[2]);
+      writebytehex(3, 13, buffer[3]);
 
-  sendmsg(4, "TIPI");
-  recvmsg(&count, buffer);
-  buffer[count] = 0;
-  writebytehex(3, 4, buffer[0]);
-  writebytehex(3, 7, buffer[1]);
-  writebytehex(3, 10, buffer[2]);
-  writebytehex(3, 13, buffer[3]);
-
+      inc++;
+      buffer[10] = 'T' + inc & 0xFF;
+      buffer[11] = 'I' + inc & 0xFF;
+      buffer[12] = 'P' + inc & 0xFF;
+      buffer[13] = 'I' + inc & 0xFF;
+    }
   }
 
   __asm__("li r12, >1000\n\tsbz 0");

@@ -16,43 +16,79 @@
 #define RESET 0x01
 #define DIR_REQUEST_BYTE 0x04
 
+#define GPLWS_R0 *((volatile unsigned int*)0x83E0) 
+#define GPLWS_R1 *((volatile unsigned int*)0x83E2) 
+
 void writebytehex(unsigned int row, unsigned int col, const unsigned char value) {
   unsigned char buf[3] = { 0, 0, 0 };
   *((unsigned int*)buf) = byte2hex[value];
   writestring(row, col, buf);
 }
 
+void recvmsg(unsigned int* len, unsigned char* buf)
+{
+  GPLWS_R0 = (unsigned int)len;
+  GPLWS_R1 = (unsigned int)buf;
+  __asm__("blwp @>4010");
+  *len = GPLWS_R0;
+}
+
+void sendmsg(unsigned int len, const unsigned char* buf)
+{
+  GPLWS_R0 = len;
+  GPLWS_R1 = (unsigned int)buf;
+  __asm__("blwp @>4014");
+}
+
+inline void call_clear()
+{
+  vdpmemset(0x0000,' ',nTextEnd);
+}
+
+inline void vdp_lock()
+{
+  __asm__("limi 0");
+}
+
+inline void vdp_release()
+{
+  __asm__("limi 2");
+}
+
 void main()
 {
+  unsigned int count = 0;
+  unsigned int* cptr = (unsigned int*)&count;
+  // I have moved the stack down, and left this 256 byte buffer in low-expmem
+  unsigned char* buffer = (unsigned char*) 0x2000;
+  vdp_lock();
   int unblank = set_text();
   VDP_SET_REGISTER(VDP_REG_COL, SCREEN_COLOR);
-  vdpmemset(0x0000,' ',nTextEnd);
+  call_clear();
   charsetlc();
   VDP_SET_REGISTER(VDP_REG_MODE1, unblank);
+  writestring(1, 0, "TIPI Debug");
 
   __asm__("li r12, >1000\n\tsbo 0");
 
-  TI_CONTROL = 0x55;
-  TI_DATA = 0xAA;
 
-  writestring(1, 0, "TIPI Debug");
-  writestring(3, 4, "RC  RD  TC  TD");
-  writebytehex(4, 12, 0x55);
-  writebytehex(4, 16, 0xAA);
+  writestring(2, 4, "echo TIPI");
 
   while(1) {
-    int i = 4;
-    while(i < 20) {
-      writestring(i, 2, ">");
-      writebytehex(i, 4, RPI_CONTROL);
-      writebytehex(i, 8, RPI_DATA);
-      writestring(i, 2, " ");
-      i++;
-    }
-    __asm__("limi 2\n\tlimi 0");
+
+  VDP_WAIT_VBLANK_CRU
+
+  sendmsg(4, "TIPI");
+  recvmsg(&count, buffer);
+  buffer[count] = 0;
+  writebytehex(3, 4, buffer[0]);
+  writebytehex(3, 7, buffer[1]);
+  writebytehex(3, 10, buffer[2]);
+  writebytehex(3, 13, buffer[3]);
+
   }
 
-  __asm__("limi2");
+  __asm__("li r12, >1000\n\tsbz 0");
 
   halt();
 }

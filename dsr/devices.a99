@@ -69,6 +69,7 @@ cleanup
 
 ; Handle requests to TIPI device
 tipidsr
+        LIMI	0		; I/O plays with VDP registers and relies on them 
 	MOV	R11,@RET	; Stash the dsrlnk Return address
 	STWP	R10		; PAB equates are relative to R10, don't mess with R10
 

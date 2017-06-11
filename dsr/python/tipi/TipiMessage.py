@@ -31,7 +31,7 @@ class TipiMessage(object):
     # The TI resets first, and then RPi responds
     #
     def __resetProtocol(self):
-        logger.info("waiting for reset...")
+        logger.info("waiting for handshake...")
         # And wait for the TI to signal RESET
         backoff = BACKOFF_DELAY
         self.prev_syn = 0
@@ -142,7 +142,7 @@ class TipiMessage(object):
         elapsed = time.time() - startTime
         logger.info('send msg len %d, rate %d', len(bytes), len(bytes) / elapsed)
         if retries > 0:
-            logger.warn("message required %d retries", retries)
+            logger.info("message required %d retries", retries)
 
     #
     # Send an array of data as is... no length prefix or hash

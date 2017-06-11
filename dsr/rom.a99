@@ -3,6 +3,7 @@
 	COPY	'vdp-io.a99'
 	COPY	'phash.a99'
 	COPY	'tipi-io.a99'
+	COPY	'blwpvec.a99'
 	COPY	'powerup.a99'
 	COPY	'devices.a99'
 	COPY	'level2.a99'

@@ -1,0 +1,12 @@
+; BLWP Vectors for utilities
+
+utrcvmsg
+	LIMI	0
+	BL	@recvmsg
+	RTWP	
+
+utsndmsg
+	LIMI	0
+	BL	@sendmsg
+	RTWP
+

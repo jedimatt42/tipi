@@ -7,7 +7,7 @@
 
 all: tipi.hex tipi_emu.bin
 
-sources = rom.a99 header.a99 vdp-io.a99 tipi-io.a99 powerup.a99 devices.a99 basic.a99 level2.a99
+sources = rom.a99 header.a99 vdp-io.a99 tipi-io.a99 powerup.a99 devices.a99 basic.a99 level2.a99 blwpvec.a99
 
 clean:
 	rm *.list

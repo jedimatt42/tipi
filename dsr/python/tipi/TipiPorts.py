@@ -1,5 +1,6 @@
 import sys
 import logging
+import time
 import tipiports
 import RPi.GPIO as GPIO
 
@@ -7,9 +8,9 @@ logger = logging.getLogger("tipi")
 
 PIN_REG0 = 26
 PIN_REG1 = 19
-PIN_SHCLK = 4
+PIN_SHCLK = 20
 PIN_SDATA_OUT = 13
-PIN_SDATA_IN = 17
+PIN_SDATA_IN = 21
 PIN_LE = 6
 
 SEL_RD = 0
@@ -17,7 +18,8 @@ SEL_RC = 1
 SEL_TD = 2
 SEL_TC = 3
 
-native = False
+#native = False
+native = True
 
 def wpi():
     return native
@@ -31,6 +33,8 @@ class TipiPorts(object):
         else:
             logger.info("Using RPi.GPIO")
             tipigpio_init()
+        self.setRD(0)
+        self.setRC(0)
         logger.info("GPIO initialized.")
 
 
@@ -64,7 +68,7 @@ class TipiPorts(object):
         if wpi():
             tipiports.setRC(value)
         else:
-            tipigpio_select(SEL_RD)
+            tipigpio_select(SEL_RC)
             tipigpio_write(value)
 
 def tipigpio_init():

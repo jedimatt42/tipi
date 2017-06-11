@@ -1,3 +1,15 @@
+# License and Attribution
+
+## Thirdparty Attribution
+
+The TrueType font file TI99Basic.ttf is ©2004-2017 Howard Kistler/Dream
+Codex http://www.dreamcodex.com/fonts.php
+
+## TIPI License
+
+The source code, design files, and software are licensed 
+under the following GPL3 license:
+
 ### GNU GENERAL PUBLIC LICENSE
 
 Version 3, 29 June 2007

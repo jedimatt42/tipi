@@ -26,6 +26,7 @@ logging.basicConfig(level=logging.DEBUG,
                     filemode='a')
 
 logger = logging.getLogger('tipi')
+oled = logging.getLogger('oled')
 
 #
 # Utils
@@ -311,6 +312,7 @@ rawExtensions = RawExtensions(tipi_io)
 
 while True:
     logger.info("waiting for PAB request...")
+    oled.info("TIPI Ready")
 
     pab = tipi_io.receive()
     if rawExtensions.handle(pab):

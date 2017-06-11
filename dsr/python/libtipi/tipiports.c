@@ -5,9 +5,9 @@
 // Serial output for RD & RC (BCM pin numbers)
 #define PIN_REG0 26
 #define PIN_REG1 19
-#define PIN_SHCLK 4
+#define PIN_SHCLK 20
 #define PIN_SDATA_OUT 13
-#define PIN_SDATA_IN 17
+#define PIN_SDATA_IN 21
 #define PIN_LE 6 
 
 #define SEL_RD 0
@@ -17,7 +17,7 @@
 
 inline void signalDelay(void)
 {
-  delayMicroseconds(25L);
+  delayMicroseconds(15L);
 }
 
 inline void setSelect(int reg)

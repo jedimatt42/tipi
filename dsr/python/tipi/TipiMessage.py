@@ -43,6 +43,7 @@ class TipiMessage(object):
             self.prev_syn = self.ports.getTC()
         # Reset the control signals
         self.ports.setRC(RESET)
+        print "reset protocol complete."
 
     #
     # change mode to sending bytes
@@ -58,7 +59,7 @@ class TipiMessage(object):
             self.prev_syn = self.ports.getTC()
         self.ports.setRD(byte)
         self.ports.setRC(self.prev_syn & ACK_MASK)
-        #print "Sent byte: >{0:x}".format(byte)
+        print "Sent byte: >{0:2x}".format(byte)
 
     #
     # change mode to sending bytes
@@ -75,7 +76,7 @@ class TipiMessage(object):
         next_ack = self.prev_syn
         val = self.ports.getTD()
         self.ports.setRC(self.prev_syn & ACK_MASK)
-        #print 'received byte: {0:2x}'.format(val)
+        print 'received byte: {0:2x}'.format(val)
         return val
 
     #
@@ -108,6 +109,7 @@ class TipiMessage(object):
         startTime = time.time()
         self.__modeRead()
         msglen = (self.__readByte() << 8) + self.__readByte()
+        print msglen
         message = bytearray(msglen)
         for i in range(0,msglen):
             message[i] = self.__readByte()

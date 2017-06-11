@@ -1,17 +1,12 @@
+#!/usr/bin/env python2
 
 import time
 import tipiports
+from tipi.TipiMessage import TipiMessage
 
-tipiports.initGpio()
+tipi_io = TipiMessage()
 
-tipiports.setRD(255)
-tipiports.setRC(0x55)
-
-a = 1
-while (a != 0):
-    tipiports.setRD(0xAA)
-    tipiports.setRC(0x55)
-    print "TC {} - TD {}".format(tipiports.getTC(), tipiports.getTD())
-
-print a
+while True:
+    buf = tipi_io.receive()
+    tipi_io.send(buf)
 

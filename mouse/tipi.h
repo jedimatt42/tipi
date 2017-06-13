@@ -38,10 +38,6 @@ void tipiMouseOn() {
   mouseb = 0;
 }
 
-void tipiMouseOff() {
-
-}
-
 void tipiMouseRead() {
   tipi_Reset();
   TD = 0x00;

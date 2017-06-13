@@ -1,4 +1,4 @@
- def _start
+  def _start
 
 _start:
   limi 0       # Disable interrupts

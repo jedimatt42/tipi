@@ -10,6 +10,8 @@ from PIL import ImageFont
 
 from pygtail import Pygtail
 
+fontpath = "/home/pi/dev/github/pi-messaging/dsr/python/TI99Basic.ttf"
+
 # 128x32 oledlay with hardware I2C:
 oled = Adafruit_SSD1306.SSD1306_128_32(rst=None)
 
@@ -30,7 +32,7 @@ image = Image.new('1', (width, height))
 draw = ImageDraw.Draw(image)
 
 # Load TI Basic short caps font.
-font = ImageFont.truetype('TI99Basic.ttf', 32)
+font = ImageFont.truetype(fontpath, 32)
 
 def displayLine(line):
     ll = len(line)

@@ -46,8 +46,8 @@ void main() {
   pointerx = 256/2;
   pointery = 192/2;
 
-  sprite(SPR_MOUSE0, 0, COLOR_BLACK, pointery, pointerx);
-  sprite(SPR_MOUSE1, 4, COLOR_WHITE, pointery, pointerx);
+  sprite(SPR_MOUSE0, 0, COLOR_BLACK, pointery - 1, pointerx);
+  sprite(SPR_MOUSE1, 4, COLOR_WHITE, pointery - 1, pointerx);
 
   VDP_SET_REGISTER(VDP_REG_MODE1, unblank);
 
@@ -74,8 +74,8 @@ void main() {
       pointery = 191;
     }
 
-    sprite_pos(SPR_MOUSE0, pointery, pointerx);
-    sprite_pos(SPR_MOUSE1, pointery, pointerx);
+    sprite_pos(SPR_MOUSE0, pointery - 1, pointerx);
+    sprite_pos(SPR_MOUSE1, pointery - 1, pointerx);
 
     if (mouseb & MB_LEFT) {
       plotBit(pointerx,pointery);

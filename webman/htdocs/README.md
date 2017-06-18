@@ -1,5 +1,6 @@
 
-# Prerequisites 
+# TIPI Web Manager 
 
-requires bootstrap available in root path (/css /js /fonts)
+
+
 

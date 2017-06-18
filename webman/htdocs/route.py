@@ -35,18 +35,9 @@ webpage_object = {}       # Object we'll be passing to render_template
 def staticImages(path):
     return send_from_directory('images', path)
 
-@app.route('/fonts/<path:path>')
+@app.route('/twbs/<path:path>')
 def staticFonts(path):
-    return send_from_directory('fonts', path)
-
-@app.route('/css/<path:path>')
-def staticCss(path):
-    return send_from_directory('css', path)
-
-@app.route('/js/<path:path>')
-def staticJs(path):
-    return send_from_directory('js', path)
-
+    return send_from_directory('twbs', path)
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')

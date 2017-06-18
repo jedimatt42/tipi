@@ -1,33 +1,54 @@
 ; Data used by routines in powerup
-badge
-	TEXT	"TIPI"		; Our title screen badge
+
+sndflg
+	BYTE	>01
+	EVEN
+
+upsnd
+	BYTE	>04,>9F,>BF,>DF,>FF,>02		; quiet
+
+	BYTE	>03,>80,>05,>94,>07
+	BYTE	>03,>8B,>06,>94,>07
+	BYTE	>03,>80,>05,>90,>0E
+
+        BYTE	>01,>9F,>00			; terminate
+	EVEN
+
 
 ; Power UP routine to reset TIPI latches.
 onreset				; 
 	STWP	R5		; Hold WP for EQU based offsets.
+	LIMI	0
+
 	CLR	@TDOUT		; Clear TIPI data output
 	CLR	@TCOUT		; Clear control output
 
 ; trigger reset signal to RPi
 	SBO	1		; turn on the second cru bit
 	
-; Write TIPI in the upper right corner of the title screen
+; set a playlist
+	LI	R2,>1700	; vdp create write address
+	ORI	R2,VDWRITE
 	LI	R1,VDPWA	; port to tell vdp where to write
-	LI	R2,>009C	; 4 characters from upper right, 5th line down
-	ORI	R2,VDWRITE	; flag for setting write address
-	MOVB	@R2LB(R5),*R1	; set LSB of VDP address
-	MOVB	R2,*R1		; set MSB of VDP address
-	LI	R2,badge	; point to badge text
+	MOVB	@R2LB(R5),*R1
+	MOVB	R2,*R1
+
 	LI	R1,VDPWD	; port to write data into vdp
-	MOVB	*R2+,*R1	; write byte to vdp
-	MOVB	*R2+,*R1	; write byte to vdp
-	MOVB	*R2+,*R1	; write byte to vdp
-	MOVB	*R2+,*R1	; write byte to vdp
+	CLR	R3
+sndcpy	MOVB	@upsnd(R3),*R1
+	INC	R3
+	CI	R3,24
+	JNE	sndcpy
+
+	LI	R2,>1700
+	MOV	R2,@>83CC	; set sound list address 
+	MOVB	@sndflg,@>83CE	; enable playback
+	SOCB	@sndflg,@>83FD
 
 ; turn off the reset signal so RPi service can finish starting
 	SBZ	1
 
 ; Return to TI startup
+	LIMI	2
 	RT			; return to console
-
 

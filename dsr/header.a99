@@ -29,7 +29,7 @@ pwrlnk
 
 ; Device name/main DSR link entries ( name must be no more than 7 characters )
 tipilnk
-	DATA	tipi0		; terminate dsr list.
+	DATA	>0000		; terminate dsr list.
 	DATA	tipidsr		; tipi dsr routine pointer
 	BYTE	4		; TIPI Drive name length
 	TEXT	"TIPI"		; name of tipi drive
@@ -72,7 +72,7 @@ tipid
 
 ; Basic routine list ( name must be no more than 7 characters )
 basiclnk
-	DATA	l2x0		; next list item.
+	DATA	>0000		; l2x0		; next list item.
 	DATA	btipimap
 	BYTE	7
 	TEXT	"TIPIMAP"

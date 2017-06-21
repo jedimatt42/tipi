@@ -5,11 +5,12 @@ import socket
 import threading
 import logging
 
-logger = logging.getLogger("tipi")
+logger = logging.getLogger(__name__)
 oled = logging.getLogger("oled")
 
 def createResetListener():
     t = threading.Thread(target=waitForReset)
+    t.daemon = True
     t.start()
     logger.info("reset listener started.")
 

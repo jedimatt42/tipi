@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import time
 import logging
 from TipiPorts import TipiPorts
@@ -16,7 +14,7 @@ CHUNKSIZE = 64
 
 BACKOFF_DELAY = 10000
 
-logger = logging.getLogger("tipi")
+logger = logging.getLogger(__name__)
 
 class TipiMessage(object):
 
@@ -40,6 +38,7 @@ class TipiMessage(object):
                 backoff = 1
                 time.sleep(0.01)
             self.prev_syn = self.ports.getTC()
+            print "TC: {}".format(self.prev_syn)
         # Reset the control signals
         self.ports.setRC(RESET)
         print "reset protocol complete."
@@ -139,7 +138,7 @@ class TipiMessage(object):
                     retries += 1
             cidx += 1    
         elapsed = time.time() - startTime
-        logger.info('send msg len %d, rate %d', len(bytes), len(bytes) / elapsed)
+        logger.info('sent msg len %d, rate %d', len(bytes), len(bytes) / elapsed)
         if retries > 0:
             logger.info("message required %d retries", retries)
 

@@ -37,7 +37,7 @@ def handleNotSupported(pab, devname):
     sendErrorCode(EILLOP)
 
 def sendErrorCode(code):
-    logger.debug("responding with error: " + str(code))
+    logger.error("responding with error: " + str(code))
     sendSingleByte(code)
 
 def sendSuccess():
@@ -111,7 +111,7 @@ def handleOpen(pab, devname):
 def handleClose(pab, devname):
     logger.debug("Opcode 1 Close - %s", devname)
     printPab(pab)
-    sendErrorCode(SUCCESS)
+    sendSuccess()
     try:
         del openRecord[tinames.devnameToLocal(devname)]
     except Exception as e:
@@ -194,7 +194,7 @@ def handleLoad(pab, devname):
         if not ti_files.isProgram(bytes):
             raise Exception("not PROGRAM image file")
         filesize = ti_files.byteLength(bytes)
-        sendErrorCode(SUCCESS)
+        sendSuccess()
 
         # Just cause DSR doesn't have a global SYN for reading.
         filesizemsb = (filesize & 0xFF00) >> 8
@@ -310,9 +310,10 @@ tipi_io = TipiMessage()
 specialFiles = SpecialFiles(tipi_io)
 rawExtensions = RawExtensions(tipi_io)
 
+oled.info("TIPI Ready")
+
 while True:
     logger.info("waiting for PAB request...")
-    oled.info("TIPI Ready")
 
     pab = tipi_io.receive()
     if rawExtensions.handle(pab):

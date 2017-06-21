@@ -1,43 +1,16 @@
 
 #include <vdp.h>
 #include <system.h>
+#include "tipi_msg.h"
 
 #define SCREEN_COLOR (COLOR_BLACK << 4) + COLOR_CYAN
 #define ERROR_COLOR (COLOR_BLACK << 4) + COLOR_MEDRED
 #define SUCCESS_COLOR (COLOR_BLACK << 4) + COLOR_LTGREEN
 
-#define TI_DATA *((volatile unsigned char*)0x5fff) 
-#define TI_CONTROL *((volatile unsigned char*)0x5ffd) 
-#define RPI_DATA *((volatile unsigned char*)0x5ffb) 
-#define RPI_CONTROL *((volatile unsigned char*)0x5ff9) 
-
-#define ACK_MASK 0x03
-#define SYN_BIT 0x02
-#define RESET 0x01
-#define DIR_REQUEST_BYTE 0x04
-
-#define GPLWS_R0 *((volatile unsigned int*)0x83E0) 
-#define GPLWS_R1 *((volatile unsigned int*)0x83E2) 
-
 void writebytehex(unsigned int row, unsigned int col, const unsigned char value) {
   unsigned char buf[3] = { 0, 0, 0 };
   *((unsigned int*)buf) = byte2hex[value];
   writestring(row, col, buf);
-}
-
-void recvmsg(unsigned int* len, unsigned char* buf)
-{
-  GPLWS_R0 = (unsigned int)len;
-  GPLWS_R1 = (unsigned int)buf;
-  __asm__("blwp @>4010");
-  *len = GPLWS_R0;
-}
-
-void sendmsg(unsigned int len, const unsigned char* buf)
-{
-  GPLWS_R0 = len;
-  GPLWS_R1 = (unsigned int)buf;
-  __asm__("blwp @>4014");
 }
 
 inline void call_clear()
@@ -47,12 +20,12 @@ inline void call_clear()
 
 inline void vdp_lock()
 {
-  __asm__("limi 0");
+  VDP_INT_DISABLE;
 }
 
 inline void vdp_release()
 {
-  __asm__("limi 2");
+  VDP_INT_ENABLE;
 }
 
 void main()
@@ -69,8 +42,7 @@ void main()
   VDP_SET_REGISTER(VDP_REG_MODE1, unblank);
   writestring(1, 0, "TIPI Debug");
 
-  __asm__("li r12, >1000\n\tsbo 0");
-
+  tipi_on();
 
   writestring(2, 4, "echo TIPI");
 
@@ -87,8 +59,8 @@ void main()
     VDP_WAIT_VBLANK_CRU;
     counter++;
     if (counter % 15 == 0) {
-      sendmsg(4, buffer+10);
-      recvmsg(&count, buffer);
+      tipi_sendmsg(4, buffer+10);
+      tipi_recvmsg(&count, buffer);
       buffer[count] = 0;
       writebytehex(3, 4, buffer[0]);
       writebytehex(3, 7, buffer[1]);
@@ -103,7 +75,7 @@ void main()
     }
   }
 
-  __asm__("li r12, >1000\n\tsbz 0");
+  tipi_off();
 
   halt();
 }

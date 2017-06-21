@@ -10,7 +10,7 @@ from PIL import ImageFont
 
 from pygtail import Pygtail
 
-fontpath = "/home/pi/dev/github/pi-messaging/dsr/python/TI99Basic.ttf"
+fontpath = "/home/pi/dev/github/tipi/dsr/python/TI99Basic.ttf"
 
 # 128x32 oledlay with hardware I2C:
 oled = Adafruit_SSD1306.SSD1306_128_32(rst=None)

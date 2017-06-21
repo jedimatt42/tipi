@@ -5,10 +5,9 @@ import logging
 from TipiPorts import TipiPorts
 from Phash import Phash
 
-RESET = 0x01
+RESET = 0xF1
 TSWB = 0x02
 TSRB = 0x06
-ACK_MASK = 0x03
 
 HASHOK = 0x5A
 HASHERR = 0xA5
@@ -54,11 +53,11 @@ class TipiMessage(object):
     #
     # transmit a byte when TI requests it
     def __sendByte(self, byte):
-        next_syn = ((self.prev_syn + 1) & ACK_MASK) | TSRB
+        next_syn = ((self.prev_syn + 1) & 0x01) | TSRB
         while self.prev_syn != next_syn:
             self.prev_syn = self.ports.getTC()
         self.ports.setRD(byte)
-        self.ports.setRC(self.prev_syn & ACK_MASK)
+        self.ports.setRC(self.prev_syn)
         print "Sent byte: >{0:2x}".format(byte)
 
     #
@@ -70,12 +69,12 @@ class TipiMessage(object):
     #
     # block until byte is received.
     def __readByte(self):
-        next_syn = ((self.prev_syn + 1) & ACK_MASK) | TSWB
+        next_syn = ((self.prev_syn + 1) & 0x01) | TSWB
         while self.prev_syn != next_syn:
             self.prev_syn = self.ports.getTC()
         next_ack = self.prev_syn
         val = self.ports.getTD()
-        self.ports.setRC(self.prev_syn & ACK_MASK)
+        self.ports.setRC(self.prev_syn)
         print 'received byte: {0:2x}'.format(val)
         return val
 

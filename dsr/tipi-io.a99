@@ -14,10 +14,9 @@ RCIN	EQU	>5FF9		; TIPI Control Signal output
 	.endif
 
 ; TIPI Signal Constants
-TSRSET	EQU	>0100		; Reset SYN value
+TSRSET	EQU	>F100		; Reset SYN value
 TSWB	EQU	>0200		; Write Byte SYN value
 TSRB	EQU	>0600		; Read Byte SYN value
-TSACKM	EQU	>0300		; ACK Mask
 
 CHUNKSIZE EQU	64		; size of blocks intervals for hash comparison
 
@@ -25,9 +24,7 @@ CHUNKSIZE EQU	64		; size of blocks intervals for hash comparison
 ;;; Macro: handshake TSWB or handshake TSRB to signal and increment syn/ack in R2, also destroys R3.
 	.defm transmit
 	MOVB	R2,@TCOUT
-	ANDI	R2,TSACKM
 !	MOVB	@RCIN,R3
-	ANDI	R3,TSACKM
 	CB	R2,R3
 	.ifndef emulation
 	JNE	-!
@@ -35,7 +32,7 @@ CHUNKSIZE EQU	64		; size of blocks intervals for hash comparison
 	NOP
 	.endif
 	AI	R2,>0100
-	ANDI	R2,TSACKM
+	ANDI	R2,>0100
 	ORI	R2,#1
 	.endm
 
@@ -209,31 +206,36 @@ vrnext
 	C	R0,R4
 	JNE	vrnext
 
+vrnbljmp
+	JMP	vrnblock
+
 vrhashpoint
 	.transmit TSRB
 	MOVB	@RDIN,R6
-	LI	R2,TSWB
 	CB	R5,R6
 	JNE	vrrewind
 
+	.reset
 	LI	R2,TSWB
 	LI	R5,>5A00
 	MOVB	R5,@TDOUT
 	.transmit TSWB
 	
 	C	R0,R4
-	JNE	vrnblock
+	JNE	vrnbljmp
 vrrt
 	RT
 
 vrrewind
+	.reset
+	LI	R2,TSWB
 	LI	R5,>A500
 	MOVB	R5,@TDOUT
 	.transmit TSWB
 	S	R7,R1		; rewind destination address
 	S	R7,R0		;  and rewind total counter
 	.setvdpwa R1		; and update vdp with new destination address
-	JMP	vrnblock
+	JMP	vrnbljmp
 
 
 

@@ -2,6 +2,9 @@ import os
 import sys
 import traceback
 import math
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ti_files(object):
 
@@ -15,7 +18,7 @@ class ti_files(object):
                 isGood = ti_files.isValid(header)
                 return isGood
         except Exception as e:
-            traceback.print_exc()
+            logger.error(e, exc_info=True)
             pass
         finally:
             if fh != None:
@@ -117,14 +120,14 @@ class ti_files(object):
 
     @staticmethod
     def showHeader(bytes):
-        print "TIFILES Header: "
-        print "  name: " + str(ti_files.tiName(bytes))
-        print "  type: " + str(ti_files.flagsToString(bytes))
-        print "  sectors: " + str(ti_files.getSectors(bytes))
-        print "  records: " + str(ti_files.recordsPerSector(bytes))
-        print "  eof: " + str(ti_files.eofOffset(bytes))
-        print "  record length: " + str(ti_files.recordLength(bytes))
-        print "  record count: " + str(ti_files.recordCount(bytes))
+        logger.debug("TIFILES Header: ")
+        logger.debug("  name: " + str(ti_files.tiName(bytes)))
+        logger.debug("  type: " + str(ti_files.flagsToString(bytes)))
+        logger.debug("  sectors: " + str(ti_files.getSectors(bytes)))
+        logger.debug("  records: " + str(ti_files.recordsPerSector(bytes)))
+        logger.debug("  eof: " + str(ti_files.eofOffset(bytes)))
+        logger.debug("  record length: " + str(ti_files.recordLength(bytes)))
+        logger.debug("  record count: " + str(ti_files.recordCount(bytes)))
 
     @staticmethod
     def readRecord(bytes, recNumber):
@@ -135,7 +138,7 @@ class ti_files(object):
 
     @staticmethod
     def readVariableRecord(bytes, recNumber):
-        print "read var record {}".format(recNumber)
+        logger.debug("read var record %d", recNumber)
         data = bytes[128:]
         sec = 0
         rIdx = 0
@@ -157,7 +160,7 @@ class ti_files(object):
         
     @staticmethod
     def readFixedRecord(bytes, recNumber):
-        print "read fix record {}".format(recNumber)
+        logger.debug("read fix record %d", recNumber)
         data = bytes[128:]
         reclen = ti_files.recordLength(bytes)
         offset = reclen * recNumber

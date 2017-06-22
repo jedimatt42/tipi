@@ -1,11 +1,12 @@
 import os
 import socket
-
 import errno
-
 import fcntl
+import logging
 
 from Pab import *
+
+logger = logging.getLogger(__name__)
 
 class TcpFile(object):
 
@@ -33,7 +34,7 @@ class TcpFile(object):
             self.tipi_io.send([EOPATTR])
 
     def close(self, pab, devname):
-        print "close devname: {}".format(devname)
+        logger.debug("close devname: %s", devname)
         self.tipi_io.send([SUCCESS])
         try:
             if self.sock[devname]:
@@ -43,16 +44,16 @@ class TcpFile(object):
             pass
 
     def open(self, pab, devname):
-        print "open devname: {}".format(devname)
+        logger.debug("open devname: %s", devname)
         try:
             server = self.parseDev(devname)
-            print "host {}, port {}".format(server[0], server[1])
+            logger.debug("host %s, port %s",server[0], server[1])
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect(server)
             fcntl.fcntl(sock, fcntl.F_SETFL, os.O_NONBLOCK)
             self.sock[devname] = sock
         except socket.error, e:
-            print e
+            logger.error(e, exc_info=True)
             self.tipi_io.send([EFILERR])
             return
 
@@ -64,11 +65,11 @@ class TcpFile(object):
         return
 
     def read(self, pab, devname):
-        print "read devname: {}".format(devname)
+        logger.debug("read devname: %s", devname)
         try:
             sock = self.sock[devname]
             fdata = bytearray(sock.recv(recordLength(pab)))
-            print "read from socket: {}".format(str(fdata))
+            logger.debug("read from socket: %s", str(fdata))
             self.tipi_io.send([SUCCESS])
             self.tipi_io.send(fdata)
             return
@@ -83,7 +84,7 @@ class TcpFile(object):
         return
 
     def write(self, pab, devname):
-        print "write devname: {}".format(devname)
+        logger.debug("write devname: %s", devname)
         try:
             sock = self.sock[devname]
             self.tipi_io.send([SUCCESS])

@@ -2,6 +2,7 @@
 import sys
 import traceback
 import logging
+import logging.handlers
 import time
 import os
 import RPi.GPIO as GPIO 
@@ -19,11 +20,13 @@ from ResetHandler import createResetListener
 #
 # Setup logging
 #
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    datefmt='%m-%d %H:%M:%S',
-                    filename='/var/log/tipi/tipi.log',
-                    filemode='a')
+LOG_FILENAME = "/var/log/tipi/tipi.log"
+logging.getLogger('').setLevel(logging.DEBUG)
+loghandler = logging.handlers.RotatingFileHandler(
+                 LOG_FILENAME, maxBytes=(5000 * 1024), backupCount=5)
+logformatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+loghandler.setFormatter(logformatter)
+logging.getLogger('').addHandler(loghandler)
 
 logger = logging.getLogger('tipi')
 oled = logging.getLogger('oled')
@@ -54,7 +57,7 @@ openRecord = { }
 def handleOpen(pab, devname):
     global openRecord
     logger.debug("Opcode 0 Open - %s", devname)
-    printPab(pab)
+    logPab(pab)
     localPath = tinames.devnameToLocal(devname)
     logger.debug("  local file: " + localPath)
     if mode(pab) == INPUT and not os.path.exists(localPath):
@@ -110,7 +113,7 @@ def handleOpen(pab, devname):
 
 def handleClose(pab, devname):
     logger.debug("Opcode 1 Close - %s", devname)
-    printPab(pab)
+    logPab(pab)
     sendSuccess()
     try:
         del openRecord[tinames.devnameToLocal(devname)]
@@ -120,7 +123,7 @@ def handleClose(pab, devname):
 
 def handleRead(pab, devname):
     logger.debug("Opcode 2 Read - %s", devname)
-    printPab(pab)
+    logPab(pab)
     localPath = tinames.devnameToLocal(devname)
 
     if not os.path.exists(localPath):
@@ -170,17 +173,17 @@ def handleRead(pab, devname):
 
 def handleWrite(pab, devname):
     logger.info("Opcode 3 Write - %s", devname)
-    printPab(pab)
+    logPab(pab)
     sendErrorCode(EDEVERR)
 
 def handleRestore(pab, devname):
     logger.info("Opcode 4 Restore - %s", devname)
-    printPab(pab)
+    logPab(pab)
     sendErrorCode(EDEVERR)
 
 def handleLoad(pab, devname):
     logger.info("Opcode 5 LOAD - %s", devname)
-    printPab(pab)
+    logPab(pab)
     maxsize = recordNumber(pab)
     unix_name = tinames.devnameToLocal(devname)
     fh = None
@@ -212,22 +215,22 @@ def handleLoad(pab, devname):
     
 def handleSave(pab, devname):
     logger.info("Opcode 6 Save - %s", devname)
-    printPab(pab)
+    logPab(pab)
     sendErrorCode(EDEVERR)
 
 def handleDelete(pab, devname):
     logger.info("Opcode 7 Delete - %s", devname)
-    printPab(pab)
+    logPab(pab)
     sendErrorCode(EDEVERR)
 
 def handleScratch(pab, devname):
     logger.info("Opcode 8 Scratch - %s", devname)
-    printPab(pab)
+    logPab(pab)
     sendErrorCode(EDEVERR)
 
 def handleStatus(pab, devname):
     logger.info("Opcode 9 Status - %s", devname)
-    printPab(pab)
+    logPab(pab)
     sendErrorCode(EDEVERR)
 
 def createVolumeData(path):

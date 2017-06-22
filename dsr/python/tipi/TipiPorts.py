@@ -4,7 +4,7 @@ import time
 import tipiports
 import RPi.GPIO as GPIO
 
-logger = logging.getLogger("tipi")
+logger = logging.getLogger(__name__)
 
 PIN_REG0 = 26
 PIN_REG1 = 19

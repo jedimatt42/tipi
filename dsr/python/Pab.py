@@ -1,5 +1,8 @@
 #!/usr/bin/env python2
+import logging
 from array import array
+
+logger = logging.getLogger(__name__)
 
 #
 # PAB routines...
@@ -62,13 +65,13 @@ def recordNumber(pab):
 
 #
 # pretty pab string
-def printPab(pab):
+def logPab(pab):
     opcodes = { 0 : "Open", 1 : "Close", 2 : "Read", 3 : "Write", 4 : "Restore", 5 : "Load", 6 : "Save", 7 : "Delete", 8 : "Scratch", 9 : "Status" }
     fileTypes = { SEQUENTIAL : "Sequential", RELATIVE : "Relative" }
     modes = { UPDATE : "Update", OUTPUT : "Output", INPUT : "Input", APPEND : "Append" }
     dataTypes = { DISPLAY : "Display", INTERNAL : "Internal" }
     recordTypes = { FIXED : "Fixed", VARIABLE : "Variable" }
-    print "opcode: {}, fileType: {}, mode: {}, dataType: {}, recordType: {}, recordLength: {}, recordNumber: {}".format(
+    logger.debug("opcode: %s, fileType: %s, mode: %s, dataType: %s, recordType: %s, recordLength: %d, recordNumber: %d",
       opcodes[opcode(pab)], 
       fileTypes[fileType(pab)], 
       modes[mode(pab)], 

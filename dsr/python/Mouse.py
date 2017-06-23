@@ -24,6 +24,6 @@ class Mouse(object):
           return bytearray([0,0,0])
 
     def handle(self, bytes):
-        self.tipi_io.sendRaw(self.getMouseEvent())
+        self.tipi_io.send(self.getMouseEvent())
         return True
 

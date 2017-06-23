@@ -3,7 +3,7 @@
 #include <system.h>
 
 #include "patterns.h"
-#include "tipi.h"
+#include "tipi_mouse.h"
 
 #define SCREEN_COLOR (COLOR_BLACK << 4) + COLOR_CYAN
 
@@ -51,7 +51,6 @@ void main() {
 
   VDP_SET_REGISTER(VDP_REG_MODE1, unblank);
 
-  tipiEnable();
   tipiMouseOn();
 
   while(true) {
@@ -84,6 +83,4 @@ void main() {
       vdpmemset(gPattern,0,768*8);
     }
   }
-
-  tipiDisable();
 }

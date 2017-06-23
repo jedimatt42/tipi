@@ -14,6 +14,8 @@ OBJECT_LIST=\
   header.o\
   crt0.o\
   patterns.o\
+  tipi_msg.o\
+  tipi_mouse.o\
   main.o
 
 all: $(FNAME).bin
@@ -39,6 +41,6 @@ patterns.h: patterns.asm
 %.o: %.asm
 	$(GAS) $< -o $@
 
-%.o: %.c patterns.h tipi.h
+%.o: %.c patterns.h tipi_mouse.h tipi_msg.h
 	$(CC) -c $< -std=c99 -O2 --save-temp -I$(LIBTI99) -o $@
 

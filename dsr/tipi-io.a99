@@ -103,67 +103,26 @@ vsnext
 ;   R1 - cpu address of buffer
 ;   Destroys R0 - R8
 recvmsg
-	.reset
-	LI	R2,TSRB
-	.transmit TSRB
-	MOVB	@RDIN,R4
+	.reset			; conduct the handshake operation
+	LI	R2,TSRB		; set read mode
+	.transmit TSRB		; wait for byte ready
+	MOVB	@RDIN,R4	; read MSB of data size
 	SWPB	R4
-	.transmit TSRB
-	MOVB	@RDIN,R4
+	.transmit TSRB		; wait for byte ready
+	MOVB	@RDIN,R4	; read LSB of data size
 	SWPB	R4
-	CI	R4,>0000
+	CI	R4,>0000	; if size is 0, then be done
 	JEQ	rrt
-	; should check that it will fit... but I'll come back to that.
-	CLR	R0
-rnblock
-	LI	R2,TSRB
-	CLR	R7		; block size counter
-        CLR	R5		; hold a hash of received bytes
+
+	CLR	R0		; reset byte counter
 rnext
-	.transmit TSRB
-	MOVB	@RDIN,R8
-	MOVB	R8,*R1
-	; update hash for the new data
-        XOR	R8,R5		; mutate old hash with new data  - old hash must be in high byte
-	SWPB	R5		; move new hash to low byte
-	ANDI	R5,>00FF	; prepare hash as index into table
-	MOVB	@PHASH(R5),R5	; copy table value as new high byte
-        INC     R1
-	INC	R0
-	INC	R7
-
-	CI	R7,CHUNKSIZE
-	JEQ	rhashpoint
-
+	.transmit TSRB		; wait for byte ready
+	MOVB	@RDIN,*R1+	; copy byte from tipi to RAM
+        INC     R0		; count the read ops
 	C	R0,R4
-	JNE	rnext
-
-	; now we need to check the hash from RPi
-rhashpoint
-	.transmit TSRB
-	MOVB	@RDIN,R6
-	LI	R2,TSWB
-	CB	R5,R6		; compare computed and transmitted hashes
-	JNE	rrewind
-
-	LI	R5,>5A00
-	MOVB	R5,@TDOUT
-	.transmit TSWB
-	
-	C	R0,R4		; check if we are also done with entire message
-	JNE	rnblock
+	JNE	rnext		; if not done then go back and read next
 rrt
 	RT
-
-
-rrewind
-	LI	R5,>A500
-	MOVB	R5,@TDOUT
-	.transmit TSWB
-	S	R7,R1		; rewind destination address
-	S	R7,R0		;  and rewind total counter
-	JMP	rnblock		; and start the block over.
-
 
 ;;; REQUEST a message from the RPi - expects a word containing the length of the message followed by the payload.
 ; Register usage:
@@ -171,71 +130,27 @@ rrewind
 ;   R1 - vdp address of buffer
 ;   Destroys R2, R3, and R4
 vrecvmsg
-	.reset
-	LI	R2,TSRB
-	.transmit TSRB
-	MOVB	@RDIN,R4
+	.reset			; conduct the handshake operation
+	LI	R2,TSRB		; set read byte mode
+	.transmit TSRB		; wait for byte ready
+	MOVB	@RDIN,R4	; read MSB of data size
 	SWPB	R4
-	.transmit TSRB
-	MOVB	@RDIN,R4
+	.transmit TSRB		; wait for next byte
+	MOVB	@RDIN,R4	; read LSB of data size
 	SWPB	R4
-	CI	R4,>0000
+	CI	R4,>0000	; if size is 0, then be done.
 	JEQ	vrrt
-	; should check that it will fit... but I'll come back to that.
-	CLR	R0
-	.setvdpwa R1
-vrnblock
-	LI	R2,TSRB
-	CLR	R7
-	CLR	R5
+
+	CLR	R0		; set counter for read data
+	.setvdpwa R1		; set destination for the data we read
 vrnext
-	.transmit TSRB
-	MOVB	@RDIN,R8
-	MOVB	R8,@VDPWD
-	XOR	R8,R5
-	SWPB	R5
-	ANDI	R5,>00FF
-	MOVB	@PHASH(R5),R5
-	INC	R1		; keep track of where the vdp should be writing
-	INC	R0
-	INC	R7
-	
-	CI	R7,CHUNKSIZE
-	JEQ	vrhashpoint
-
+	.transmit TSRB		; wait for byte ready
+	MOVB	@RDIN,@VDPWD	; copy byte from tipi to vdp
+	INC	R0		; count the read ops
 	C	R0,R4
-	JNE	vrnext
-
-vrnbljmp
-	JMP	vrnblock
-
-vrhashpoint
-	.transmit TSRB
-	MOVB	@RDIN,R6
-	CB	R5,R6
-	JNE	vrrewind
-
-	.reset
-	LI	R2,TSWB
-	LI	R5,>5A00
-	MOVB	R5,@TDOUT
-	.transmit TSWB
-	
-	C	R0,R4
-	JNE	vrnbljmp
+	JNE	vrnext		; if not read expected size then read next
 vrrt
 	RT
-
-vrrewind
-	.reset
-	LI	R2,TSWB
-	LI	R5,>A500
-	MOVB	R5,@TDOUT
-	.transmit TSWB
-	S	R7,R1		; rewind destination address
-	S	R7,R0		;  and rewind total counter
-	.setvdpwa R1		; and update vdp with new destination address
-	JMP	vrnbljmp
 
 
 

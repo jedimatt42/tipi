@@ -39,39 +39,42 @@ void main()
   VDP_SET_REGISTER(VDP_REG_COL, SCREEN_COLOR);
   call_clear();
   charsetlc();
-  VDP_SET_REGISTER(VDP_REG_MODE1, unblank);
   writestring(1, 0, "TIPI Debug");
+
+  VDP_SET_REGISTER(VDP_REG_MODE1, unblank);
 
   tipi_on();
 
-  writestring(2, 4, "echo TIPI");
+  buffer[10] = 1;
+  buffer[11] = 2;
+  buffer[12] = 3;
+  buffer[13] = 4;
+  buffer[14] = 5;
+  buffer[15] = 6;
 
-  buffer[10] = 'T';
-  buffer[11] = 'I';
-  buffer[12] = 'P';
-  buffer[13] = 'I';
-
-  int inc = 0;
   int counter = 0;
 
   while(1) {
 
     VDP_WAIT_VBLANK_CRU;
     counter++;
-    if (counter % 15 == 0) {
-      tipi_sendmsg(4, buffer+10);
+    if (counter % 5 == 0) {
+      tipi_sendmsg(6, buffer+10);
       tipi_recvmsg(&count, buffer);
       buffer[count] = 0;
       writebytehex(3, 4, buffer[0]);
       writebytehex(3, 7, buffer[1]);
       writebytehex(3, 10, buffer[2]);
       writebytehex(3, 13, buffer[3]);
+      writebytehex(3, 16, buffer[4]);
+      writebytehex(3, 19, buffer[5]);
 
-      inc++;
-      buffer[10] = 'T' + inc & 0xFF;
-      buffer[11] = 'I' + inc & 0xFF;
-      buffer[12] = 'P' + inc & 0xFF;
-      buffer[13] = 'I' + inc & 0xFF;
+      buffer[10] += 1;
+      buffer[11] += 1;
+      buffer[12] += 1;
+      buffer[13] += 1;
+      buffer[14] += 1;
+      buffer[15] += 1;
     }
   }
 

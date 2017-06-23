@@ -116,7 +116,7 @@ class TipiMessage(object):
 
     #
     # Send a message, retrying each block if there is a transmission error.
-    def send(self, bytes):
+    def sendWithHash(self, bytes):
         self.__resetProtocol()
         startTime = time.time()
         self.__modeSend()
@@ -143,9 +143,14 @@ class TipiMessage(object):
 
     #
     # Send an array of data as is... no length prefix or hash
-    def sendRaw(self, bytes):
+    def send(self, bytes):
         self.__resetProtocol()
         self.__modeSend()
+        msglen = len(bytes)
+        msb = msglen >> 8
+        lsb = msglen & 0xFF
+        self.__sendByte(msb)
+        self.__sendByte(lsb)
         for byte in bytes:
             self.__sendByte(byte)
 

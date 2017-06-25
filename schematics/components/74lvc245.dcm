@@ -1,8 +1,0 @@
-EESchema-DOCLIB  Version 2.0
-#
-$CMP 74LVC245
-D Octal BUS Transceivers, 3 State out
-K TTL BUS 3State
-$ENDCMP
-#
-#End Doc Library

@@ -1,4 +1,4 @@
-update=5/13/2017 10:24:35 PM
+update=6/25/2017 10:28:20 AM
 version=1
 last_client=kicad
 [pcbnew]
@@ -60,3 +60,13 @@ LibName28=contrib
 LibName29=valves
 LibName30=ti32ksideport
 LibName31=xc9572xl-7vq64c
+[schematic_editor]
+version=1
+PageLayoutDescrFile=
+PlotDirectoryName=
+SubpartIdSeparator=0
+SubpartFirstId=65
+NetFmtName=
+SpiceForceRefPrefix=0
+SpiceUseNetNumbers=0
+LabSize=60

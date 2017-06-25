@@ -36,11 +36,11 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
-Title ""
-Date ""
-Rev ""
-Comp ""
-Comment1 ""
+Title "TIPI - TI-99/4A to RPi adapter"
+Date "2017-06-25"
+Rev "0.01"
+Comp "ti994a.cwfk.net"
+Comment1 "github.com/jedimatt42/tipi"
 Comment2 ""
 Comment3 ""
 Comment4 ""

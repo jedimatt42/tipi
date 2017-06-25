@@ -38,7 +38,7 @@ encoding utf-8
 Sheet 1 1
 Title "TIPI - TI-99/4A to RPi adapter"
 Date "2017-06-25"
-Rev "0.01"
+Rev "0.02"
 Comp "ti994a.cwfk.net"
 Comment1 "github.com/jedimatt42/tipi"
 Comment2 ""
@@ -68,25 +68,14 @@ F 3 "" H 5700 4250 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L Raspberry_Pi_2_3 J2
-U 1 1 5917F3A9
-P 10050 3600
-F 0 "J2" H 10750 2350 50  0000 C CNN
-F 1 "Raspberry_Pi_2_3" H 9650 4500 50  0000 C CNN
-F 2 "Pin_Headers:Pin_Header_Straight_2x20" H 11050 4850 50  0001 C CNN
-F 3 "" H 10100 3450 50  0001 C CNN
-	1    10050 3600
-	1    0    0    -1  
-$EndComp
-$Comp
 L GND #PWR?
 U 1 1 5917F66C
-P 9850 5000
-F 0 "#PWR?" H 9850 4750 50  0001 C CNN
-F 1 "GND" H 9850 4850 50  0000 C CNN
-F 2 "" H 9850 5000 50  0001 C CNN
-F 3 "" H 9850 5000 50  0001 C CNN
-	1    9850 5000
+P 9300 3050
+F 0 "#PWR?" H 9300 2800 50  0001 C CNN
+F 1 "GND" H 9300 2900 50  0000 C CNN
+F 2 "" H 9300 3050 50  0001 C CNN
+F 3 "" H 9300 3050 50  0001 C CNN
+	1    9300 3050
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -335,19 +324,19 @@ F 3 "" H 2700 6300 50  0001 C CNN
 	1    2700 6300
 	-1   0    0    1   
 $EndComp
-Text GLabel 9000 2900 0    60   Output ~ 0
+Text GLabel 9450 2850 0    60   Output ~ 0
 R_LE
-Text GLabel 9000 3000 0    60   Output ~ 0
+Text GLabel 9450 2750 0    60   Output ~ 0
 R_CLK
-Text GLabel 9000 3100 0    60   Output ~ 0
+Text GLabel 9450 2650 0    60   Output ~ 0
 R_DOUT
-Text GLabel 9000 3200 0    60   Input ~ 0
+Text GLabel 9450 2550 0    60   Input ~ 0
 R_DIN
-Text GLabel 9000 3300 0    60   Output ~ 0
+Text GLabel 9950 2950 2    60   Output ~ 0
 R_RT
-Text GLabel 9000 3400 0    60   Output ~ 0
+Text GLabel 9950 2850 2    60   Output ~ 0
 R_DC
-Text GLabel 9000 3500 0    60   Input ~ 0
+Text GLabel 9950 2750 2    60   Input ~ 0
 R_RESET
 Text GLabel 6500 2300 2    60   Output ~ 0
 R_RESET
@@ -620,8 +609,149 @@ F 3 "" H 1650 7050 50  0001 C CNN
 	1    1650 7050
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	9850 5000 9850 4900
+$Comp
+L +3.3V #PWR?
+U 1 1 594EB46B
+P 2600 6950
+F 0 "#PWR?" H 2600 6800 50  0001 C CNN
+F 1 "+3.3V" H 2600 7090 50  0000 C CNN
+F 2 "" H 2600 6950 50  0001 C CNN
+F 3 "" H 2600 6950 50  0001 C CNN
+	1    2600 6950
+	0    1    1    0   
+$EndComp
+$Comp
+L +5V #PWR?
+U 1 1 594EB4B3
+P 1500 6950
+F 0 "#PWR?" H 1500 6800 50  0001 C CNN
+F 1 "+5V" H 1500 7090 50  0000 C CNN
+F 2 "" H 1500 6950 50  0001 C CNN
+F 3 "" H 1500 6950 50  0001 C CNN
+	1    1500 6950
+	0    -1   -1   0   
+$EndComp
+$Comp
+L LED_ALT D1
+U 1 1 594FDAB3
+P 10200 5850
+F 0 "D1" H 10200 5950 50  0000 C CNN
+F 1 "LED_ALT" H 10200 5750 50  0000 C CNN
+F 2 "" H 10200 5850 50  0001 C CNN
+F 3 "" H 10200 5850 50  0001 C CNN
+	1    10200 5850
+	1    0    0    -1  
+$EndComp
+$Comp
+L R R2
+U 1 1 594FDB4A
+P 10600 5850
+F 0 "R2" V 10680 5850 50  0000 C CNN
+F 1 "330" V 10600 5850 50  0000 C CNN
+F 2 "" V 10530 5850 50  0001 C CNN
+F 3 "" H 10600 5850 50  0001 C CNN
+	1    10600 5850
+	0    1    1    0   
+$EndComp
+$Comp
+L +5V #PWR?
+U 1 1 594FDBD5
+P 10850 5850
+F 0 "#PWR?" H 10850 5700 50  0001 C CNN
+F 1 "+5V" H 10850 5990 50  0000 C CNN
+F 2 "" H 10850 5850 50  0001 C CNN
+F 3 "" H 10850 5850 50  0001 C CNN
+	1    10850 5850
+	-1   0    0    1   
+$EndComp
+$Comp
+L R R1
+U 1 1 594FDDEA
+P 9500 5550
+F 0 "R1" V 9580 5550 50  0000 C CNN
+F 1 "1k" V 9500 5550 50  0000 C CNN
+F 2 "" V 9430 5550 50  0001 C CNN
+F 3 "" H 9500 5550 50  0001 C CNN
+	1    9500 5550
+	0    1    1    0   
+$EndComp
+$Comp
+L Q_NPN_BCE Q?
+U 1 1 594FDE57
+P 9750 5750
+F 0 "Q?" H 9950 5800 50  0000 L CNN
+F 1 "Q_NPN_BCE" H 9950 5700 50  0000 L CNN
+F 2 "" H 9950 5850 50  0001 C CNN
+F 3 "" H 9750 5750 50  0001 C CNN
+	1    9750 5750
+	0    1    1    0   
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 594FDF4A
+P 9450 5850
+F 0 "#PWR?" H 9450 5600 50  0001 C CNN
+F 1 "GND" H 9450 5700 50  0000 C CNN
+F 2 "" H 9450 5850 50  0001 C CNN
+F 3 "" H 9450 5850 50  0001 C CNN
+	1    9450 5850
+	1    0    0    -1  
+$EndComp
+Text GLabel 9250 5550 0    60   Input ~ 0
+CRU0
+$Comp
+L CONN_02X04 J3
+U 1 1 594FE925
+P 7550 5750
+F 0 "J3" H 7550 6000 50  0000 C CNN
+F 1 "CONN_02X04" H 7550 5500 50  0000 C CNN
+F 2 "" H 7550 4550 50  0001 C CNN
+F 3 "" H 7550 4550 50  0001 C CNN
+	1    7550 5750
+	1    0    0    -1  
+$EndComp
+Text GLabel 7900 5600 2    60   Output ~ 0
+CRUB_0
+Text GLabel 7900 5700 2    60   Output ~ 0
+CRUB_1
+Text GLabel 7900 5800 2    60   Output ~ 0
+CRUB_2
+Text GLabel 7900 5900 2    60   Output ~ 0
+CRUB_3
+$Comp
+L R R?
+U 1 1 594FEDDD
+P 7150 5500
+F 0 "R?" V 7230 5500 50  0000 C CNN
+F 1 "1k" V 7150 5500 50  0000 C CNN
+F 2 "" V 7080 5500 50  0001 C CNN
+F 3 "" H 7150 5500 50  0001 C CNN
+	1    7150 5500
+	0    1    1    0   
+$EndComp
+$Comp
+L +3.3V #PWR?
+U 1 1 594FF11B
+P 6900 5500
+F 0 "#PWR?" H 6900 5350 50  0001 C CNN
+F 1 "+3.3V" H 6900 5640 50  0000 C CNN
+F 2 "" H 6900 5500 50  0001 C CNN
+F 3 "" H 6900 5500 50  0001 C CNN
+	1    6900 5500
+	-1   0    0    1   
+$EndComp
+Text GLabel 6500 3000 2    60   Input ~ 0
+CRUB_0
+Text GLabel 6500 3100 2    60   Input ~ 0
+CRUB_1
+Text GLabel 6500 3200 2    60   Input ~ 0
+CRUB_2
+Text GLabel 6500 3300 2    60   Input ~ 0
+CRUB_3
+Text GLabel 1350 5000 0    60   Output ~ 0
+TI_PH3
+Text GLabel 5000 1500 0    60   Input ~ 0
+TI_PH3
 Wire Wire Line
 	6400 1300 6400 1150
 Wire Wire Line
@@ -737,20 +867,6 @@ Wire Wire Line
 Wire Wire Line
 	1500 4800 1350 4800
 Wire Wire Line
-	9000 2900 9150 2900
-Wire Wire Line
-	9000 3000 9150 3000
-Wire Wire Line
-	9000 3100 9150 3100
-Wire Wire Line
-	9000 3200 9150 3200
-Wire Wire Line
-	9000 3300 9150 3300
-Wire Wire Line
-	9000 3400 9150 3400
-Wire Wire Line
-	9000 3500 9150 3500
-Wire Wire Line
 	6400 2300 6500 2300
 Wire Wire Line
 	6400 2400 6500 2400
@@ -847,127 +963,18 @@ Connection ~ 1650 6950
 Wire Wire Line
 	2350 6950 2600 6950
 Connection ~ 2450 6950
-$Comp
-L +3.3V #PWR?
-U 1 1 594EB46B
-P 2600 6950
-F 0 "#PWR?" H 2600 6800 50  0001 C CNN
-F 1 "+3.3V" H 2600 7090 50  0000 C CNN
-F 2 "" H 2600 6950 50  0001 C CNN
-F 3 "" H 2600 6950 50  0001 C CNN
-	1    2600 6950
-	0    1    1    0   
-$EndComp
-$Comp
-L +5V #PWR?
-U 1 1 594EB4B3
-P 1500 6950
-F 0 "#PWR?" H 1500 6800 50  0001 C CNN
-F 1 "+5V" H 1500 7090 50  0000 C CNN
-F 2 "" H 1500 6950 50  0001 C CNN
-F 3 "" H 1500 6950 50  0001 C CNN
-	1    1500 6950
-	0    -1   -1   0   
-$EndComp
-$Comp
-L LED_ALT D1
-U 1 1 594FDAB3
-P 10200 5850
-F 0 "D1" H 10200 5950 50  0000 C CNN
-F 1 "LED_ALT" H 10200 5750 50  0000 C CNN
-F 2 "" H 10200 5850 50  0001 C CNN
-F 3 "" H 10200 5850 50  0001 C CNN
-	1    10200 5850
-	1    0    0    -1  
-$EndComp
-$Comp
-L R R2
-U 1 1 594FDB4A
-P 10600 5850
-F 0 "R2" V 10680 5850 50  0000 C CNN
-F 1 "330" V 10600 5850 50  0000 C CNN
-F 2 "" V 10530 5850 50  0001 C CNN
-F 3 "" H 10600 5850 50  0001 C CNN
-	1    10600 5850
-	0    1    1    0   
-$EndComp
-$Comp
-L +5V #PWR?
-U 1 1 594FDBD5
-P 10850 5850
-F 0 "#PWR?" H 10850 5700 50  0001 C CNN
-F 1 "+5V" H 10850 5990 50  0000 C CNN
-F 2 "" H 10850 5850 50  0001 C CNN
-F 3 "" H 10850 5850 50  0001 C CNN
-	1    10850 5850
-	-1   0    0    1   
-$EndComp
 Wire Wire Line
 	10350 5850 10450 5850
 Wire Wire Line
 	10750 5850 10850 5850
-$Comp
-L R R1
-U 1 1 594FDDEA
-P 9500 5550
-F 0 "R1" V 9580 5550 50  0000 C CNN
-F 1 "1k" V 9500 5550 50  0000 C CNN
-F 2 "" V 9430 5550 50  0001 C CNN
-F 3 "" H 9500 5550 50  0001 C CNN
-	1    9500 5550
-	0    1    1    0   
-$EndComp
-$Comp
-L Q_NPN_BCE Q?
-U 1 1 594FDE57
-P 9750 5750
-F 0 "Q?" H 9950 5800 50  0000 L CNN
-F 1 "Q_NPN_BCE" H 9950 5700 50  0000 L CNN
-F 2 "" H 9950 5850 50  0001 C CNN
-F 3 "" H 9750 5750 50  0001 C CNN
-	1    9750 5750
-	0    1    1    0   
-$EndComp
-$Comp
-L GND #PWR?
-U 1 1 594FDF4A
-P 9450 5850
-F 0 "#PWR?" H 9450 5600 50  0001 C CNN
-F 1 "GND" H 9450 5700 50  0000 C CNN
-F 2 "" H 9450 5850 50  0001 C CNN
-F 3 "" H 9450 5850 50  0001 C CNN
-	1    9450 5850
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	9950 5850 10050 5850
 Wire Wire Line
 	9650 5550 9750 5550
 Wire Wire Line
 	9550 5850 9450 5850
-Text GLabel 9250 5550 0    60   Input ~ 0
-CRU0
 Wire Wire Line
 	9250 5550 9350 5550
-$Comp
-L CONN_02X04 J3
-U 1 1 594FE925
-P 7550 5750
-F 0 "J3" H 7550 6000 50  0000 C CNN
-F 1 "CONN_02X04" H 7550 5500 50  0000 C CNN
-F 2 "" H 7550 4550 50  0001 C CNN
-F 3 "" H 7550 4550 50  0001 C CNN
-	1    7550 5750
-	1    0    0    -1  
-$EndComp
-Text GLabel 7900 5600 2    60   Output ~ 0
-CRUB_0
-Text GLabel 7900 5700 2    60   Output ~ 0
-CRUB_1
-Text GLabel 7900 5800 2    60   Output ~ 0
-CRUB_2
-Text GLabel 7900 5900 2    60   Output ~ 0
-CRUB_3
 Wire Wire Line
 	7800 5600 7900 5600
 Wire Wire Line
@@ -976,33 +983,11 @@ Wire Wire Line
 	7800 5800 7900 5800
 Wire Wire Line
 	7800 5900 7900 5900
-$Comp
-L R R?
-U 1 1 594FEDDD
-P 7150 5500
-F 0 "R?" V 7230 5500 50  0000 C CNN
-F 1 "1k" V 7150 5500 50  0000 C CNN
-F 2 "" V 7080 5500 50  0001 C CNN
-F 3 "" H 7150 5500 50  0001 C CNN
-	1    7150 5500
-	0    1    1    0   
-$EndComp
 Wire Wire Line
 	7300 5500 7300 5900
 Connection ~ 7300 5600
 Connection ~ 7300 5700
 Connection ~ 7300 5800
-$Comp
-L +3.3V #PWR?
-U 1 1 594FF11B
-P 6900 5500
-F 0 "#PWR?" H 6900 5350 50  0001 C CNN
-F 1 "+3.3V" H 6900 5640 50  0000 C CNN
-F 2 "" H 6900 5500 50  0001 C CNN
-F 3 "" H 6900 5500 50  0001 C CNN
-	1    6900 5500
-	-1   0    0    1   
-$EndComp
 Wire Wire Line
 	6900 5500 7000 5500
 Wire Wire Line
@@ -1013,18 +998,36 @@ Wire Wire Line
 	6400 3200 6500 3200
 Wire Wire Line
 	6400 3300 6500 3300
-Text GLabel 6500 3000 2    60   Input ~ 0
-CRUB_0
-Text GLabel 6500 3100 2    60   Input ~ 0
-CRUB_1
-Text GLabel 6500 3200 2    60   Input ~ 0
-CRUB_2
-Text GLabel 6500 3300 2    60   Input ~ 0
-CRUB_3
-Text GLabel 1350 5000 0    60   Output ~ 0
-TI_PH3
 Wire Wire Line
 	1350 5000 1500 5000
-Text GLabel 5000 1500 0    60   Input ~ 0
-TI_PH3
+$Comp
+L GND #PWR?
+U 1 1 594FF989
+P 10150 2550
+F 0 "#PWR?" H 10150 2300 50  0001 C CNN
+F 1 "GND" H 10150 2400 50  0000 C CNN
+F 2 "" H 10150 2550 50  0001 C CNN
+F 3 "" H 10150 2550 50  0001 C CNN
+	1    10150 2550
+	-1   0    0    1   
+$EndComp
+$Comp
+L CONN_02X05 J2
+U 1 1 594FFC97
+P 9700 2750
+F 0 "J2" H 9700 3050 50  0000 C CNN
+F 1 "RPI_CONN_02X05" H 9700 2450 50  0000 C CNN
+F 2 "" H 9700 1550 50  0001 C CNN
+F 3 "" H 9700 1550 50  0001 C CNN
+	1    9700 2750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9300 3050 9300 2950
+Wire Wire Line
+	9300 2950 9450 2950
+Wire Wire Line
+	9950 2650 10150 2650
+Wire Wire Line
+	10150 2650 10150 2550
 $EndSCHEMATC

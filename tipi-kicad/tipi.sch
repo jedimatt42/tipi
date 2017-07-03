@@ -70,12 +70,12 @@ $EndComp
 $Comp
 L GND #PWR01
 U 1 1 5917F66C
-P 9300 3050
-F 0 "#PWR01" H 9300 2800 50  0001 C CNN
-F 1 "GND" H 9300 2900 50  0000 C CNN
-F 2 "" H 9300 3050 50  0001 C CNN
-F 3 "" H 9300 3050 50  0001 C CNN
-	1    9300 3050
+P 9250 2950
+F 0 "#PWR01" H 9250 2700 50  0001 C CNN
+F 1 "GND" H 9250 2800 50  0000 C CNN
+F 2 "" H 9250 2950 50  0001 C CNN
+F 3 "" H 9250 2950 50  0001 C CNN
+	1    9250 2950
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -324,33 +324,33 @@ F 3 "" H 2700 6300 50  0001 C CNN
 	1    2700 6300
 	-1   0    0    1   
 $EndComp
-Text GLabel 9450 2850 0    60   Output ~ 0
+Text GLabel 9400 2650 0    60   Output ~ 0
 R_LE
-Text GLabel 9450 2750 0    60   Output ~ 0
+Text GLabel 9400 2450 0    60   Output ~ 0
 R_CLK
-Text GLabel 9450 2650 0    60   Output ~ 0
+Text GLabel 9900 2650 2    60   Output ~ 0
 R_DOUT
-Text GLabel 9450 2550 0    60   Input ~ 0
+Text GLabel 9900 2750 2    60   Input ~ 0
 R_DIN
-Text GLabel 9950 2950 2    60   Output ~ 0
+Text GLabel 9400 2550 0    60   Output ~ 0
 R_RT
-Text GLabel 9950 2850 2    60   Output ~ 0
+Text GLabel 9900 2850 2    60   Output ~ 0
 R_DC
-Text GLabel 9950 2750 2    60   Input ~ 0
+Text GLabel 9400 2750 0    60   Input ~ 0
 R_RESET
-Text GLabel 6400 2600 2    60   Output ~ 0
+Text GLabel 5000 3000 0    60   Output ~ 0
 R_RESET
 Text GLabel 6400 2800 2    60   Input ~ 0
 R_DC
 Text GLabel 5000 2900 0    60   Input ~ 0
 R_RT
-Text GLabel 5000 3000 0    60   Output ~ 0
+Text GLabel 6400 2600 2    60   Output ~ 0
 R_DIN
-Text GLabel 5000 3100 0    60   Input ~ 0
+Text GLabel 5000 3200 0    60   Input ~ 0
 R_DOUT
 Text GLabel 5000 1300 0    60   Input ~ 0
 R_CLK
-Text GLabel 5000 3200 0    60   Input ~ 0
+Text GLabel 5000 3100 0    60   Input ~ 0
 R_LE
 Text GLabel 5000 2500 0    60   Output ~ 0
 CRU0
@@ -933,31 +933,31 @@ Wire Wire Line
 $Comp
 L GND #PWR022
 U 1 1 594FF989
-P 10400 2650
-F 0 "#PWR022" H 10400 2400 50  0001 C CNN
-F 1 "GND" H 10400 2500 50  0000 C CNN
-F 2 "" H 10400 2650 50  0001 C CNN
-F 3 "" H 10400 2650 50  0001 C CNN
-	1    10400 2650
+P 10350 2550
+F 0 "#PWR022" H 10350 2300 50  0001 C CNN
+F 1 "GND" H 10350 2400 50  0000 C CNN
+F 2 "" H 10350 2550 50  0001 C CNN
+F 3 "" H 10350 2550 50  0001 C CNN
+	1    10350 2550
 	-1   0    0    1   
 $EndComp
 $Comp
 L CONN_02X05 J2
 U 1 1 594FFC97
-P 9700 2750
-F 0 "J2" H 9700 3050 50  0000 C CNN
-F 1 "RPI_CONN_02X05" H 9700 2450 50  0000 C CNN
-F 2 "Connect:IDC_Header_Straight_10pins" H 9700 1550 50  0001 C CNN
-F 3 "" H 9700 1550 50  0001 C CNN
-	1    9700 2750
+P 9650 2650
+F 0 "J2" H 9650 2950 50  0000 C CNN
+F 1 "RPI_CONN_02X05" H 9650 2350 50  0000 C CNN
+F 2 "Connect:IDC_Header_Straight_10pins" H 9650 1450 50  0001 C CNN
+F 3 "" H 9650 1450 50  0001 C CNN
+	1    9650 2650
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	9300 3050 9300 2950
+	9250 2950 9250 2850
 Wire Wire Line
-	9300 2950 9450 2950
+	9250 2850 9400 2850
 Wire Wire Line
-	9950 2650 10400 2650
+	9900 2550 10350 2550
 NoConn ~ 1500 4200
 NoConn ~ 2700 4200
 NoConn ~ 2700 4300
@@ -974,7 +974,7 @@ Wire Wire Line
 	1350 6200 1500 6200
 Text GLabel 6400 2400 2    60   Output ~ 0
 TI_EXTINT
-NoConn ~ 9950 2550
+NoConn ~ 9900 2450
 Connection ~ 6650 1800
 Connection ~ 6650 1250
 $Comp

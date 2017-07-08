@@ -373,13 +373,13 @@ F 3 "" H 9900 1150 50  0001 C CNN
 	1    9900 1150
 	1    0    0    -1  
 $EndComp
-Text GLabel 9350 950  0    60   Output ~ 0
+Text GLabel 9100 950  0    60   Output ~ 0
 JTAG_TCK
-Text GLabel 9350 1050 0    60   Input ~ 0
+Text GLabel 9150 1050 0    60   Input ~ 0
 JTAG_TDO
-Text GLabel 9350 1150 0    60   Output ~ 0
+Text GLabel 9100 1150 0    60   Output ~ 0
 JTAG_TMS
-Text GLabel 9350 1350 0    60   Output ~ 0
+Text GLabel 9100 1350 0    60   Output ~ 0
 JTAG_TDI
 $Comp
 L +3.3V #PWR012
@@ -571,7 +571,7 @@ U 1 1 594EAE75
 P 2050 6950
 F 0 "U4" H 2150 6700 50  0000 C CNN
 F 1 "LM1117-3.3" H 2050 7200 50  0000 C CNN
-F 2 "TO_SOT_Packages_SMD:SOT-223" H 2050 6950 50  0001 C CNN
+F 2 "TO_SOT_Packages_SMD:TO-252-3_TabPin2" H 2050 6950 50  0001 C CNN
 F 3 "" H 2050 6950 50  0001 C CNN
 	1    2050 6950
 	1    0    0    -1  
@@ -592,7 +592,7 @@ L CP1_Small C6
 U 1 1 594EB02A
 P 2450 7050
 F 0 "C6" H 2460 7120 50  0000 L CNN
-F 1 "CP1_Small" H 2460 6970 50  0000 L CNN
+F 1 "22uf" H 2460 6970 50  0000 L CNN
 F 2 "Capacitors_SMD:C_0805_HandSoldering" H 2450 7050 50  0001 C CNN
 F 3 "" H 2450 7050 50  0001 C CNN
 	1    2450 7050
@@ -603,7 +603,7 @@ L CP1_Small C5
 U 1 1 594EB077
 P 1650 7050
 F 0 "C5" H 1660 7120 50  0000 L CNN
-F 1 "CP1_Small" H 1660 6970 50  0000 L CNN
+F 1 "10uf" H 1660 6970 50  0000 L CNN
 F 2 "Capacitors_SMD:C_0805_HandSoldering" H 1650 7050 50  0001 C CNN
 F 3 "" H 1650 7050 50  0001 C CNN
 	1    1650 7050
@@ -867,13 +867,13 @@ Wire Wire Line
 Wire Wire Line
 	1500 4800 1350 4800
 Wire Wire Line
-	9350 950  9700 950 
+	9100 950  9700 950 
 Wire Wire Line
-	9350 1050 9700 1050
+	9150 1050 9700 1050
 Wire Wire Line
-	9350 1150 9700 1150
+	9100 1150 9700 1150
 Wire Wire Line
-	9350 1350 9700 1350
+	9100 1350 9700 1350
 Wire Wire Line
 	9950 1350 10350 1350
 Wire Wire Line
@@ -1090,4 +1090,75 @@ Wire Wire Line
 Wire Wire Line
 	5050 7300 5050 7200
 Connection ~ 5050 5900
+$Comp
+L R_Small R4
+U 1 1 59612E43
+P 9150 1700
+F 0 "R4" H 9180 1720 50  0000 L CNN
+F 1 "10k" H 9180 1660 50  0000 L CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" H 9150 1700 50  0001 C CNN
+F 3 "" H 9150 1700 50  0001 C CNN
+	1    9150 1700
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_Small R5
+U 1 1 59612F26
+P 9350 1700
+F 0 "R5" H 9380 1720 50  0000 L CNN
+F 1 "10k" H 9380 1660 50  0000 L CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" H 9350 1700 50  0001 C CNN
+F 3 "" H 9350 1700 50  0001 C CNN
+	1    9350 1700
+	1    0    0    -1  
+$EndComp
+$Comp
+L R_Small R6
+U 1 1 59612F85
+P 9550 1700
+F 0 "R6" H 9580 1720 50  0000 L CNN
+F 1 "10k" H 9580 1660 50  0000 L CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" H 9550 1700 50  0001 C CNN
+F 3 "" H 9550 1700 50  0001 C CNN
+	1    9550 1700
+	1    0    0    -1  
+$EndComp
+$Comp
+L +3.3V #PWR029
+U 1 1 59613684
+P 9700 1850
+F 0 "#PWR029" H 9700 1700 50  0001 C CNN
+F 1 "+3.3V" H 9700 1990 50  0000 C CNN
+F 2 "" H 9700 1850 50  0001 C CNN
+F 3 "" H 9700 1850 50  0001 C CNN
+	1    9700 1850
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	9150 1850 9700 1850
+Wire Wire Line
+	9550 1850 9550 1800
+Wire Wire Line
+	9350 1850 9350 1800
+Connection ~ 9550 1850
+Wire Wire Line
+	9150 1850 9150 1800
+Connection ~ 9350 1850
+Wire Wire Line
+	9150 1600 9150 1350
+Connection ~ 9150 1350
+Wire Wire Line
+	9350 1600 9250 1600
+Wire Wire Line
+	9250 1600 9250 1150
+Connection ~ 9250 1150
+Wire Wire Line
+	9550 1600 9450 1600
+Wire Wire Line
+	9450 1600 9450 1500
+Wire Wire Line
+	9450 1500 9350 1500
+Wire Wire Line
+	9350 1500 9350 950 
+Connection ~ 9350 950 
 $EndSCHEMATC

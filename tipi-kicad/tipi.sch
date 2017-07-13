@@ -974,7 +974,6 @@ Wire Wire Line
 	1350 6200 1500 6200
 Text GLabel 6400 2400 2    60   Output ~ 0
 TI_EXTINT
-NoConn ~ 9900 2450
 Connection ~ 6650 1800
 Connection ~ 6650 1250
 $Comp
@@ -1161,4 +1160,5 @@ Wire Wire Line
 Wire Wire Line
 	9350 1500 9350 950 
 Connection ~ 9350 950 
+NoConn ~ 9900 2450
 $EndSCHEMATC

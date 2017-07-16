@@ -34,9 +34,11 @@ module tipi_top(
 		output dsr_en,
 		
 		input r_clk,
+		// 0 = Data or 1 = Control byte selection
 		input r_dc,
 		input r_dout,
 		input r_le,
+		// R|T 0 = RPi or 1 = TI originating data 
 		input r_rt,
 		output r_din,
 		output r_reset,
@@ -54,7 +56,68 @@ module tipi_top(
 		
     );
 
-assign tp_d = 8'bzzzzzzzz;
+// Process CRU bits
+
+wire ti_cruout = ti_a[15];
+wire [0:3]cru_state;
+wire cru_regout;
+crubits cru(~crub, ti_cruclk, ti_memen, ti_ph3, ti_a[0:14], ti_cruout, cru_regout, cru_state);
+wire cru_dsr_en = cru_state[0];
+assign ti_cruin = cru_regout;
+assign cru0 = cru_dsr_en;
+assign r_reset = cru_state[1];
+assign dsr_b0 = cru_state[2];
+assign dsr_b1 = cru_state[3];
+
+// Latches && Shift Registers for TI to RPi communication - TC & TD
+
+// TD Latch
+wire tipi_td_le = (cru_dsr_en && ~ti_we && ~ti_memen && ti_a == 16'h5fff);
+wire [0:7]rpi_td;
+latch_8bit td(tipi_td_le, tp_d, rpi_td);
+
+// TD Shift output
+wire td_clk = r_clk && r_rt && ~r_dc;
+wire td_out;
+shift_pload_sout shift_td(td_clk, r_le, rpi_td, td_out);
+
+// TC Latch
+wire tipi_tc_le = (cru_dsr_en && ~ti_we && ~ti_memen && ti_a == 16'h5ffd);
+wire [0:7]rpi_tc;
+latch_8bit tc(tipi_tc_le, tp_d, rpi_tc);
+
+// TC Shift output
+wire tc_clk = r_clk && r_rt && r_dc;
+wire tc_out;
+shift_pload_sout shift_tc(tc_clk, r_le, rpi_tc, tc_out);
+
+assign r_din = r_dc ? td_out : tc_out;
+
+// Data from the RPi, to be read by the TI.
+
+// RD
+wire rrd_clk = r_clk && ~r_rt && ~r_dc;
+wire [0:7]tipi_db_rd;
+shift_sin_pout shift_rd(rrd_clk, r_le, r_dout, tipi_db_rd);
+
+// RC
+wire rrc_clk = r_clk && ~r_rt && r_dc;
+wire [0:7]tipi_db_rc;
+shift_sin_pout shift_rc(rrc_clk, r_le, r_dout, tipi_db_rc);
+
+// Databus control
+wire tipi_read = cru_dsr_en && ~ti_memen && ti_dbin;
+wire tipi_dsr_en = tipi_read && ti_a >= 16'h4000 && ti_a < 16'h5ff8;
+wire tipi_rd_en = tipi_read && ti_a == 16'h5ffb;
+wire tipi_rc_en = tipi_read && ti_a == 16'h5ff9;
+reg [0:7]dbus_out;
+always @(*) begin
+    if (tipi_rd_en) dbus_out = tipi_db_rd;
+	 else if (tipi_rc_en) dbus_out = tipi_db_rc;
+	 else dbus_out = 8'bzzzzzzzz;
+end
+
+assign tp_d = dbus_out;
 
 
 

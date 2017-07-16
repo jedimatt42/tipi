@@ -9,9 +9,7 @@ module shift_pload_sout (
 	 // Data to load from
     input [7:0]data,
 	 // output bit from the left.
-    output sout,
-	 // debugging
-	 output [7:0] dout
+    output sout
 );
 
 reg [8:0]tmp;
@@ -22,7 +20,6 @@ always @(posedge clk) begin
 end
 
 assign sout = tmp[8];
-assign dout = tmp[7:0];
 
 endmodule
 

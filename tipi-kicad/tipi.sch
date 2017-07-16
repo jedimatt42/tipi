@@ -718,28 +718,6 @@ Text GLabel 7900 5800 2    60   Output ~ 0
 CRUB_2
 Text GLabel 7900 5900 2    60   Output ~ 0
 CRUB_3
-$Comp
-L R R3
-U 1 1 594FEDDD
-P 7150 5500
-F 0 "R3" V 7230 5500 50  0000 C CNN
-F 1 "1k" V 7150 5500 50  0000 C CNN
-F 2 "Resistors_SMD:R_0805_HandSoldering" V 7080 5500 50  0001 C CNN
-F 3 "" H 7150 5500 50  0001 C CNN
-	1    7150 5500
-	0    1    1    0   
-$EndComp
-$Comp
-L +3.3V #PWR021
-U 1 1 594FF11B
-P 6900 5500
-F 0 "#PWR021" H 6900 5350 50  0001 C CNN
-F 1 "+3.3V" H 6900 5640 50  0000 C CNN
-F 2 "" H 6900 5500 50  0001 C CNN
-F 3 "" H 6900 5500 50  0001 C CNN
-	1    6900 5500
-	-1   0    0    1   
-$EndComp
 Text GLabel 5000 2600 0    60   Input ~ 0
 CRUB_0
 Text GLabel 5000 2700 0    60   Input ~ 0
@@ -929,7 +907,7 @@ Connection ~ 7300 5600
 Connection ~ 7300 5700
 Connection ~ 7300 5800
 Wire Wire Line
-	6900 5500 7000 5500
+	6900 5500 7300 5500
 $Comp
 L GND #PWR022
 U 1 1 594FF989
@@ -1161,4 +1139,15 @@ Wire Wire Line
 	9350 1500 9350 950 
 Connection ~ 9350 950 
 NoConn ~ 9900 2450
+$Comp
+L GND #PWR?
+U 1 1 596AC072
+P 6900 5500
+F 0 "#PWR?" H 6900 5250 50  0001 C CNN
+F 1 "GND" H 6900 5350 50  0000 C CNN
+F 2 "" H 6900 5500 50  0001 C CNN
+F 3 "" H 6900 5500 50  0001 C CNN
+	1    6900 5500
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

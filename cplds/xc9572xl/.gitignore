@@ -1,0 +1,6 @@
+*.runs
+import_ise_summary.txt
+*.data
+*.ppr
+iseconfig
+*.gise

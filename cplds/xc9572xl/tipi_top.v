@@ -56,6 +56,9 @@ module tipi_top(
 		
     );
 
+// Unused
+assign ti_extint = 1'bz;
+
 // Process CRU bits
 
 wire ti_cruout = ti_a[15];
@@ -118,7 +121,9 @@ always @(*) begin
 end
 
 assign tp_d = dbus_out;
-
+assign dsr_en = tipi_dsr_en;
+assign db_en = cru_dsr_en && ~ti_memen && ti_a >= 16'h4000 && ti_a < 16'h6000;
+assign db_dir = ~tipi_read;
 
 
 endmodule

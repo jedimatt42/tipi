@@ -60,13 +60,10 @@ module tipi_top(
 // assign ti_extint = 1'b1; // try to avoid triggering this interrupt ( temporarily an input )
 
 // Process CRU bits
-
-
 wire ti_cruout = ti_a[15];
 wire [0:3]cru_state;
 wire cru_regout;
-wire ncrub = ~crub;
-crubits cru(ncrub, ti_cruclk, ti_memen, ti_ph3, ti_a[0:14], ti_cruout, cru_regout, cru_state);
+crubits cru(~crub, ti_cruclk, ti_memen, ti_ph3, ti_a[0:14], ti_cruout, cru_regout, cru_state);
 wire cru_dsr_en = cru_state[0];
 assign ti_cruin = cru_regout;
 assign cru0 = cru_dsr_en;
@@ -77,9 +74,6 @@ assign r_reset = cru_state[1];
 // For a 8k 27C64 chip, these need to stay constant
 assign dsr_b0 = 1'bz; // not connected on 27C64
 assign dsr_b1 = 1'b1; // Active LOW is PGM on 27C64
-
-
-
 
 // Latches && Shift Registers for TI to RPi communication - TC & TD
 
@@ -121,7 +115,7 @@ shift_sin_pout shift_rc(rrc_clk, r_le, r_dout, tipi_db_rc);
 // Databus control
 wire tipi_read = cru_dsr_en && ~ti_memen && ti_dbin;
 wire tipi_dsr_en = tipi_read && ti_a >= 16'h4000 && ti_a < 16'h5ff8;
-/*
+
 wire tipi_rd_en = tipi_read && ti_a == 16'h5ffb;
 wire tipi_rc_en = tipi_read && ti_a == 16'h5ff9;
 reg [0:7]dbus_out;
@@ -130,16 +124,10 @@ always @(*) begin
 	 else if (tipi_rc_en) dbus_out = tipi_db_rc;
 	 else dbus_out = 8'bzzzzzzzz;
 end
-*/
-reg [0:7]dbus_out = 8'bzzzzzzzz; // no output from CPLD latches
 
 assign tp_d = dbus_out;
 assign dsr_en = ~(tipi_dsr_en);
-// assign db_en = cru_dsr_en && ~ti_memen && ti_a >= 16'h4000 && ti_a < 16'h6000;
-assign db_en = ~(tipi_dsr_en);
+assign db_en = ~(tipi_dsr_en || tipi_rd_en || tipi_rc_en);
 assign db_dir = tipi_read;
-
-// assign db_en = 1'b1;
-
 
 endmodule

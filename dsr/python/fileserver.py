@@ -5,6 +5,7 @@ import logging
 import logging.handlers
 import time
 import os
+import errno
 import RPi.GPIO as GPIO 
 from array import array
 import re
@@ -20,6 +21,14 @@ from ResetHandler import createResetListener
 #
 # Setup logging
 #
+logpath = "/var/log/tipi"
+try:
+    os.makedirs(logpath)
+except OSError as exc:
+    if exc.errno == errno.EEXIST and os.path.isdir(logpath):
+        pass
+    else: raise
+
 LOG_FILENAME = "/var/log/tipi/tipi.log"
 logging.getLogger('').setLevel(logging.DEBUG)
 loghandler = logging.handlers.RotatingFileHandler(

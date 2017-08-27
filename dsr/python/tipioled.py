@@ -1,5 +1,7 @@
 #!/usr/bin/env python2
 
+import os
+import errno
 import time
 import Adafruit_SSD1306
 import re
@@ -56,7 +58,19 @@ def displayLine(line):
 
 displayLine("   TIPI   Waiting...")
 
-pygtail = Pygtail("/var/log/tipi/tipi.log")
+logpath = "/var/log/tipi"
+try:
+    os.makedirs(logpath)
+except OSError as exc:
+    if exc.errno == errno.EEXIST and os.path.isdir(logpath):
+        pass
+    else: raise
+
+logfile = "{}/tipi.log".format(logpath)
+with open(logfile, 'a'):
+    os.utime(logfile, None)
+
+pygtail = Pygtail(logfile)
 oldlines = filter(lambda x: "oled" in x, pygtail.readlines())
 
 if len(oldlines) > 0:

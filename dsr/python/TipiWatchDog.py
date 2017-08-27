@@ -7,7 +7,7 @@ import socket
 class TipiWatchDog(object):
 
     def __init__(self):
-        self.__RESET = 5
+        self.__RESET = 26
 
         GPIO.setmode(GPIO.BCM) 
         GPIO.setwarnings(False)

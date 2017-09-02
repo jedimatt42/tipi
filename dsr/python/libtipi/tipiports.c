@@ -3,12 +3,12 @@
 #include <wiringPi.h>
 
 // Serial output for RD & RC (BCM pin numbers)
-#define PIN_REG0 26
-#define PIN_REG1 19
-#define PIN_SHCLK 20
-#define PIN_SDATA_OUT 13
-#define PIN_SDATA_IN 21
-#define PIN_LE 6 
+#define PIN_R_RT 13
+#define PIN_R_DC 21
+#define PIN_R_CLK 6
+#define PIN_R_DOUT 16
+#define PIN_R_DIN 20
+#define PIN_R_LE 19
 
 #define SEL_RD 0
 #define SEL_RC 1
@@ -17,13 +17,13 @@
 
 inline void signalDelay(void)
 {
-  delayMicroseconds(15L);
+  delayMicroseconds(1L);
 }
 
 inline void setSelect(int reg)
 {
-  digitalWrite(PIN_REG0, reg & 0x02);
-  digitalWrite(PIN_REG1, reg & 0x01);
+  digitalWrite(PIN_R_RT, reg & 0x02);
+  digitalWrite(PIN_R_DC, reg & 0x01);
   signalDelay();
 }
 
@@ -32,24 +32,23 @@ inline unsigned char readByte(int reg)
   unsigned char value = 0;
 
   setSelect(reg);
-  signalDelay();
 
-  digitalWrite(PIN_LE, 1);
+  digitalWrite(PIN_R_LE, 1);
   signalDelay();
-  digitalWrite(PIN_SHCLK, 1);
+  digitalWrite(PIN_R_CLK, 1);
   signalDelay();
-  digitalWrite(PIN_SHCLK, 0);
+  digitalWrite(PIN_R_CLK, 0);
   signalDelay();
-  digitalWrite(PIN_LE, 0);
+  digitalWrite(PIN_R_LE, 0);
   signalDelay();
 
   int i;
   for (i=7; i>=0; i--) {
-    digitalWrite(PIN_SHCLK, 1);
+    digitalWrite(PIN_R_CLK, 1);
     signalDelay();
-    digitalWrite(PIN_SHCLK, 0);
+    digitalWrite(PIN_R_CLK, 0);
     signalDelay();
-    value |= digitalRead(PIN_SDATA_IN) << i;
+    value |= digitalRead(PIN_R_DIN) << i;
   }
 
   return value;
@@ -77,21 +76,21 @@ inline void writeByte(unsigned char value, int reg)
 
   int i;
   for (i=7; i>=0; i--) {
-    digitalWrite(PIN_SDATA_OUT, (value >> i) & 0x01);
+    digitalWrite(PIN_R_DOUT, (value >> i) & 0x01);
     signalDelay();
-    digitalWrite(PIN_SHCLK, 1);
+    digitalWrite(PIN_R_CLK, 1);
     signalDelay();
-    digitalWrite(PIN_SHCLK, 0);
+    digitalWrite(PIN_R_CLK, 0);
     signalDelay();
   }
 
-  digitalWrite(PIN_LE, 1);
+  digitalWrite(PIN_R_LE, 1);
   signalDelay();
-  digitalWrite(PIN_SHCLK, 1);
+  digitalWrite(PIN_R_CLK, 1);
   signalDelay();
-  digitalWrite(PIN_SHCLK, 0);
+  digitalWrite(PIN_R_CLK, 0);
   signalDelay();
-  digitalWrite(PIN_LE, 0);
+  digitalWrite(PIN_R_LE, 0);
   signalDelay();
 }
 
@@ -124,19 +123,19 @@ tipi_initGpio(PyObject *self, PyObject *args)
 {
   wiringPiSetupGpio();
 
-  pinMode(PIN_REG0, OUTPUT);
-  pinMode(PIN_REG1, OUTPUT);
-  pinMode(PIN_SHCLK, OUTPUT);
-  pinMode(PIN_SDATA_OUT, OUTPUT);
-  pinMode(PIN_LE, OUTPUT);
-  pinMode(PIN_SDATA_IN, INPUT);
-  pullUpDnControl(PIN_SDATA_IN, PUD_DOWN);
+  pinMode(PIN_R_RT, OUTPUT);
+  pinMode(PIN_R_DC, OUTPUT);
+  pinMode(PIN_R_CLK, OUTPUT);
+  pinMode(PIN_R_DOUT, OUTPUT);
+  pinMode(PIN_R_LE, OUTPUT);
+  pinMode(PIN_R_DIN, INPUT);
+  pullUpDnControl(PIN_R_DIN, PUD_DOWN);
 
-  digitalWrite(PIN_REG0, 0);
-  digitalWrite(PIN_REG1, 0);
-  digitalWrite(PIN_SHCLK, 0);
-  digitalWrite(PIN_SDATA_OUT, 0);
-  digitalWrite(PIN_LE, 0);
+  digitalWrite(PIN_R_RT, 0);
+  digitalWrite(PIN_R_DC, 0);
+  digitalWrite(PIN_R_CLK, 0);
+  digitalWrite(PIN_R_DOUT, 0);
+  digitalWrite(PIN_R_LE, 0);
 
   Py_INCREF(Py_None);
   return Py_None;

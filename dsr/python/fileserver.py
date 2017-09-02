@@ -316,6 +316,8 @@ def createFileReadRecord(path,recordNumber):
 ## MAIN
 ##
 
+oled.info("TIPI Init")
+
 createResetListener()
 
 tipi_io = TipiMessage()

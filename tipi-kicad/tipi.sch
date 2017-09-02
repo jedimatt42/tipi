@@ -37,8 +37,8 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
 Title "TIPI - TI-99/4A to RPi adapter"
-Date "2017-06-25"
-Rev "0.02"
+Date "2017-08-26"
+Rev "2"
 Comp "ti994a.cwfk.net"
 Comment1 "github.com/jedimatt42/tipi"
 Comment2 ""
@@ -116,21 +116,21 @@ Text GLabel 10250 4100 2    60   BiDi ~ 0
 TI_D6
 Text GLabel 10250 4200 2    60   BiDi ~ 0
 TI_D7
-Text GLabel 1350 4700 0    60   BiDi ~ 0
-TI_D0
-Text GLabel 1350 4600 0    60   BiDi ~ 0
-TI_D1
-Text GLabel 1350 4500 0    60   BiDi ~ 0
-TI_D2
-Text GLabel 2850 4600 2    60   BiDi ~ 0
-TI_D3
-Text GLabel 1350 4300 0    60   BiDi ~ 0
-TI_D4
-Text GLabel 2850 4400 2    60   BiDi ~ 0
-TI_D5
-Text GLabel 1350 4400 0    60   BiDi ~ 0
-TI_D6
 Text GLabel 2850 4500 2    60   BiDi ~ 0
+TI_D0
+Text GLabel 1350 4400 0    60   BiDi ~ 0
+TI_D1
+Text GLabel 2850 4400 2    60   BiDi ~ 0
+TI_D2
+Text GLabel 1350 4300 0    60   BiDi ~ 0
+TI_D3
+Text GLabel 2850 4600 2    60   BiDi ~ 0
+TI_D4
+Text GLabel 1350 4500 0    60   BiDi ~ 0
+TI_D5
+Text GLabel 1350 4600 0    60   BiDi ~ 0
+TI_D6
+Text GLabel 1350 4700 0    60   BiDi ~ 0
 TI_D7
 Text GLabel 1350 4900 0    60   Output ~ 0
 TI_A1
@@ -1183,4 +1183,20 @@ F 3 "" H 7550 5900 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	7700 5750 7550 5750
+Text Notes 8550 2800 0    60   ~ 0
+GPIO_26
+Text Notes 8550 2700 0    60   ~ 0
+GPIO_19
+Text Notes 8550 2600 0    60   ~ 0
+GPIO_13
+Text Notes 8550 2500 0    60   ~ 0
+GPIO_6
+Text Notes 10500 2500 0    60   ~ 0
+GPIO_12
+Text Notes 10350 2700 0    60   ~ 0
+GPIO_16
+Text Notes 10350 2800 0    60   ~ 0
+GPIO_20
+Text Notes 10350 2900 0    60   ~ 0
+GPIO_21
 $EndSCHEMATC

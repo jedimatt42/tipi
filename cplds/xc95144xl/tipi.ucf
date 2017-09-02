@@ -1,5 +1,5 @@
 
-NET "cru0" LOC = P52;
+NET "led0" LOC = P52;
 
 NET "crub<0>" LOC = P70;
 NET "crub<1>" LOC = P71;
@@ -12,7 +12,7 @@ NET "dsr_b0" LOC = P29;
 NET "dsr_b1" LOC = P30;
 NET "dsr_en" LOC = P61;
 
-NET "r_clk" LOC = P22; // GCK1
+NET "r_clk" LOC = P22; NET "r_clk" BUFG = CLK; // GCK1
 NET "r_dc" LOC = P02;
 NET "r_dout" LOC = P07;
 NET "r_le" LOC = P06;
@@ -20,12 +20,12 @@ NET "r_rt" LOC = P08;
 NET "r_din" LOC = P04;
 NET "r_reset" LOC = P03;
 
-NET "ti_cruclk" LOC = P23; // GCK2
+NET "ti_cruclk" LOC = P23; NET "ti_cruclk" BUFG = CLK; // GCK2
 NET "ti_cruin" LOC = P01;
 NET "ti_dbin" LOC = P82;
 NET "ti_extint" LOC = P76;
 NET "ti_memen" LOC = P99;
-NET "ti_ph3" LOC = P27; // GKC3
+NET "ti_ph3" LOC = P27; NET "ti_ph3" BUFG = CLK; // GKC3
 NET "ti_we" LOC = P94;
 
 NET "ti_a<0>" LOC = P97;

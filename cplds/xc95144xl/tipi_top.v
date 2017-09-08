@@ -22,6 +22,8 @@
 `include "latch_8bit.v"
 `include "shift_pload_sout.v"
 `include "shift_sin_pout.v"
+`include "tristate_8bit.v"
+`include "mux2_8bit.v"
 module tipi_top(
 		output led0,
 		
@@ -88,13 +90,20 @@ wire tipi_rc = ~r_rt && r_dc;
 wire tipi_td = r_rt && ~r_dc;
 wire tipi_tc = r_rt && r_dc; 
 
+// address comparisons
+wire reg_addr = ti_a[0:12] == 14'b0101111111111;
+wire rc_addr = reg_addr && ti_a[13:15] == 3'b001; // 16'h5ff9
+wire rd_addr = reg_addr && ti_a[13:15] == 3'b011; // 16'h5ffb
+wire tc_addr = reg_addr && ti_a[13:15] == 3'b101; // 16'h5ffd
+wire td_addr = reg_addr && ti_a[13:15] == 3'b111; // 16'h5fff
+
 // TD Latch
-wire tipi_td_le = (cru_dsr_en && ~ti_we && ~ti_memen && ti_a == 16'h5fff);
+wire tipi_td_le = (cru_dsr_en && ~ti_we && ~ti_memen && td_addr);
 wire [0:7]rpi_td;
 latch_8bit td(tipi_td_le, tp_d, rpi_td);
 
 // TC Latch
-wire tipi_tc_le = (cru_dsr_en && ~ti_we && ~ti_memen && ti_a == 16'h5ffd);
+wire tipi_tc_le = (cru_dsr_en && ~ti_we && ~ti_memen && tc_addr);
 wire [0:7]rpi_tc;
 latch_8bit tc(tipi_tc_le, tp_d, rpi_tc);
 
@@ -128,22 +137,20 @@ shift_sin_pout shift_rc(rrc_clk, r_le, r_dout, tipi_db_rc);
 wire tipi_read = cru_dsr_en && ~ti_memen && ti_dbin;
 wire tipi_dsr_en = tipi_read && ti_a >= 16'h4000 && ti_a < 16'h5ff8;
 
-wire tipi_rd_en = tipi_read && ti_a == 16'h5ffb;
-wire tipi_rc_en = tipi_read && ti_a == 16'h5ff9;
-
-// Currently hacked up to just read the td register, maybe
-reg [0:7]dbus_out;
-always @(*) begin
-    if (tipi_read && ti_a == 16'h5fff) dbus_out = rpi_td;
-    else dbus_out = 8'bzzzzzzzz;
-end
-assign tp_d = dbus_out;
-
 // drive the dsr eprom oe and cs lines.
 assign dsr_en = ~(tipi_dsr_en);
 // drive the 74hct245 oe and dir lines.
 assign db_en = ~(cru_state[0] && ti_a >= 16'h4000 && ti_a < 16'h6000);
 assign db_dir = tipi_read;
+
+// register to databus output selection
+wire [0:7]tp_d_buf;
+wire [0:7]rreg_mux_out; 
+mux2_8bit rreg_mux(ti_a[13:14], tipi_db_rd, tipi_db_rc, td_out, tc_out, rreg_mux_out);
+wire dbus_ts_en = tipi_read && ( rd_addr || rc_addr || tc_addr || td_addr );
+tristate_8bit dbus_ts(dbus_ts_en, rreg_mux_out, tp_d_buf);
+
+assign tp_d[0:7] = tp_d_buf[0:7];
 
 assign led0 = cru_state[0] && db_en;
 

@@ -30,6 +30,7 @@ _xmsgs
 *.xst
 *.xrpt
 *.csv
+*.ipf
 xlnx_auto_0_xdb
 tipi_top_html
 _ngo

@@ -141,10 +141,11 @@ assign db_en = ~(cru_dev_en && ~ti_memen && ti_a >= 16'h4000 && ti_a < 16'h6000)
 assign db_dir = tipi_read;
 
 // register to databus output selection
-wire [0:7]tp_d_buf;
 wire [0:7]rreg_mux_out; 
-mux2_8bit rreg_mux(ti_ph3, ti_a[13:15], tipi_db_rc, tipi_db_rd, rpi_tc, rpi_td, rreg_mux_out);
-wire dbus_ts_en = cru_state[0] && ~ti_memen && ti_dbin && ( rd_addr || rc_addr || tc_addr || td_addr );
+mux2_8bit rreg_mux(ti_ph3, rc_addr, tipi_db_rc, rd_addr, tipi_db_rd, tc_addr, rpi_tc, td_addr, rpi_td, rreg_mux_out);
+
+wire [0:7]tp_d_buf;
+wire dbus_ts_en = cru_state[0] && ~ti_memen && ti_dbin && ( ti_a >= 16'h5ff8 && ti_a < 16'h6000 );
 tristate_8bit dbus_ts(dbus_ts_en, rreg_mux_out, tp_d_buf);
 
 assign tp_d = tp_d_buf;

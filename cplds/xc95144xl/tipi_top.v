@@ -54,8 +54,9 @@ module tipi_top(
 		output ti_extint,
 		
 		input[0:15] ti_a,
-		inout[0:7] tp_d
+		inout[0:7] tp_d,
 		
+		output[0:3] test
     );
 
 // Unused
@@ -145,7 +146,7 @@ assign db_dir = tipi_read;
 // register to databus output selection
 wire [0:7]tp_d_buf;
 wire [0:7]rreg_mux_out; 
-mux2_8bit rreg_mux(ti_a[13:14], tipi_db_rd, tipi_db_rc, rpi_td, rpi_tc, rreg_mux_out);
+mux2_8bit rreg_mux(ti_a[13:14], tipi_db_rd, tipi_db_rc, rpi_tc, rpi_td, rreg_mux_out);
 wire dbus_ts_en = cru_state[0] && ~ti_memen && ti_dbin && ( rd_addr || rc_addr || tc_addr || td_addr );
 tristate_8bit dbus_ts(dbus_ts_en, rreg_mux_out, tp_d_buf);
 

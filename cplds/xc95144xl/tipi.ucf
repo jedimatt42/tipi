@@ -13,7 +13,7 @@ NET "dsr_b1" LOC = P30;
 NET "dsr_en" LOC = P61;
 
 NET "r_clk" LOC = P22; NET "r_clk" BUFG = CLK; // GCK1
-NET "r_dc" LOC = P02;
+NET "r_cd" LOC = P02;
 NET "r_dout" LOC = P07;
 NET "r_le" LOC = P06;
 NET "r_rt" LOC = P08;

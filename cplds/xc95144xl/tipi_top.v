@@ -37,7 +37,7 @@ module tipi_top(
 		
 		input r_clk,
 		// 0 = Data or 1 = Control byte selection
-		input r_dc,
+		input r_cd,
 		input r_dout,
 		input r_le,
 		// R|T 0 = RPi or 1 = TI originating data 
@@ -86,17 +86,16 @@ assign dsr_b1 = 1'b1; // Active LOW is PGM on 27C64
 //                     r_dc == 0 is data register
 //                     r_dc == 1 is control register
 // The following aliases should help.
-wire tipi_rd = ~r_rt && ~r_dc;
-wire tipi_rc = ~r_rt && r_dc;
-wire tipi_td = r_rt && ~r_dc;
-wire tipi_tc = r_rt && r_dc; 
+wire tipi_rc = ~r_rt && ~r_cd;
+wire tipi_rd = ~r_rt && r_cd;
+wire tipi_tc = r_rt && ~r_cd;
+wire tipi_td = r_rt && r_cd; 
 
 // address comparisons
-wire reg_addr = ti_a[0:12] == 14'b0101111111111;
-wire rc_addr = reg_addr && ti_a[13:15] == 3'b001; // 16'h5ff9
-wire rd_addr = reg_addr && ti_a[13:15] == 3'b011; // 16'h5ffb
-wire tc_addr = reg_addr && ti_a[13:15] == 3'b101; // 16'h5ffd
-wire td_addr = reg_addr && ti_a[13:15] == 3'b111; // 16'h5fff
+wire rc_addr = ti_a == 16'h5ff9;
+wire rd_addr = ti_a == 16'h5ffb;
+wire tc_addr = ti_a == 16'h5ffd;
+wire td_addr = ti_a == 16'h5fff;
 
 // TD Latch
 wire tipi_td_le = (cru_dev_en && ~ti_we && ~ti_memen && td_addr);
@@ -119,19 +118,17 @@ wire tc_out;
 shift_pload_sout shift_tc(tc_clk, r_le, rpi_tc, tc_out);
 
 // Select if output is from the data or control register
-assign r_din = r_dc ? td_out : tc_out;
+assign r_din = r_cd ? tc_out : td_out;
 
 // Data from the RPi, to be read by the TI.
 
 // RD
-wire rrd_clk = r_clk && tipi_rd;
 wire [0:7]tipi_db_rd;
-shift_sin_pout shift_rd(rrd_clk, r_le, r_dout, tipi_db_rd);
+shift_sin_pout shift_rd(r_clk, tipi_rd, r_le, r_dout, tipi_db_rd);
 
 // RC
-wire rrc_clk = r_clk && tipi_rc;
 wire [0:7]tipi_db_rc;
-shift_sin_pout shift_rc(rrc_clk, r_le, r_dout, tipi_db_rc);
+shift_sin_pout shift_rc(r_clk, tipi_rc, r_le, r_dout, tipi_db_rc);
 
 //-- Databus control
 wire tipi_read = cru_dev_en && ~ti_memen && ti_dbin;
@@ -146,12 +143,14 @@ assign db_dir = tipi_read;
 // register to databus output selection
 wire [0:7]tp_d_buf;
 wire [0:7]rreg_mux_out; 
-mux2_8bit rreg_mux(ti_a[13:14], tipi_db_rd, tipi_db_rc, rpi_tc, rpi_td, rreg_mux_out);
+mux2_8bit rreg_mux(ti_ph3, ti_a[13:15], tipi_db_rc, tipi_db_rd, rpi_tc, rpi_td, rreg_mux_out);
 wire dbus_ts_en = cru_state[0] && ~ti_memen && ti_dbin && ( rd_addr || rc_addr || tc_addr || td_addr );
 tristate_8bit dbus_ts(dbus_ts_en, rreg_mux_out, tp_d_buf);
 
 assign tp_d = tp_d_buf;
 
 assign led0 = cru_state[0] && db_en;
+
+assign test = cru_state;
 
 endmodule

@@ -15,10 +15,10 @@ tipiports.setRD(0x0A)
 
 a = 1
 while (a != 0):
-    tipiports.setRC(0x50)
-    tipiports.setRD(0x0A)
-    sys.stdout.write("native {} : TC {} - TD {}".format(native, tipiports.getTC(), tipiports.getTD()))
+    # tipiports.setRC(0x50)
+    # tipiports.setRD(0x0A)
+    sys.stdout.write("native {} : TC {} - TD {} - a: {}".format(native, hex(tipiports.getTC()), hex(tipiports.getTD()), a))
     sys.stdout.write('\r')
+    a += 1
 
-print a
 

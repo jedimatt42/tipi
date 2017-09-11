@@ -30,7 +30,7 @@ except OSError as exc:
     else: raise
 
 LOG_FILENAME = "/var/log/tipi/tipi.log"
-logging.getLogger('').setLevel(logging.DEBUG)
+logging.getLogger('').setLevel(logging.INFO)
 loghandler = logging.handlers.RotatingFileHandler(
                  LOG_FILENAME, maxBytes=(5000 * 1024), backupCount=5)
 logformatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')

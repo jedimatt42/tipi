@@ -17,7 +17,7 @@
 
 inline void signalDelay(void)
 {
-  delayMicroseconds(5L);
+  delayMicroseconds(1L);
 }
 
 inline void setSelect(int reg)
@@ -32,6 +32,7 @@ inline unsigned char readByte(int reg)
   unsigned char value = 0;
 
   setSelect(reg);
+  signalDelay();
 
   digitalWrite(PIN_R_LE, 1);
   signalDelay();

@@ -4,26 +4,26 @@
 
 // Serial output for RD & RC (BCM pin numbers)
 #define PIN_R_RT 13
-#define PIN_R_DC 21
+#define PIN_R_CD 21
 #define PIN_R_CLK 6
 #define PIN_R_DOUT 16
 #define PIN_R_DIN 20
 #define PIN_R_LE 19
 
-#define SEL_RD 0
-#define SEL_RC 1
-#define SEL_TD 2
-#define SEL_TC 3
+#define SEL_RC 0
+#define SEL_RD 1
+#define SEL_TC 2
+#define SEL_TD 3
 
 inline void signalDelay(void)
 {
-  delayMicroseconds(1L);
+  delayMicroseconds(5L);
 }
 
 inline void setSelect(int reg)
 {
   digitalWrite(PIN_R_RT, reg & 0x02);
-  digitalWrite(PIN_R_DC, reg & 0x01);
+  digitalWrite(PIN_R_CD, reg & 0x01);
   signalDelay();
 }
 
@@ -124,7 +124,7 @@ tipi_initGpio(PyObject *self, PyObject *args)
   wiringPiSetupGpio();
 
   pinMode(PIN_R_RT, OUTPUT);
-  pinMode(PIN_R_DC, OUTPUT);
+  pinMode(PIN_R_CD, OUTPUT);
   pinMode(PIN_R_CLK, OUTPUT);
   pinMode(PIN_R_DOUT, OUTPUT);
   pinMode(PIN_R_LE, OUTPUT);
@@ -132,7 +132,7 @@ tipi_initGpio(PyObject *self, PyObject *args)
   pullUpDnControl(PIN_R_DIN, PUD_DOWN);
 
   digitalWrite(PIN_R_RT, 0);
-  digitalWrite(PIN_R_DC, 0);
+  digitalWrite(PIN_R_CD, 0);
   digitalWrite(PIN_R_CLK, 0);
   digitalWrite(PIN_R_DOUT, 0);
   digitalWrite(PIN_R_LE, 0);

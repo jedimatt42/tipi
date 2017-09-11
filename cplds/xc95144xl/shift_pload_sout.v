@@ -4,6 +4,8 @@
 module shift_pload_sout (
     // Clock for shifting
     input clk,
+	 // Select
+	 input select,
 	 // load tmp with data to shift out.
     input aload,
 	 // Data to load from
@@ -12,14 +14,14 @@ module shift_pload_sout (
     output sout
 );
 
-reg [8:0]tmp;
+reg [7:0]tmp;
 
 always @(posedge clk) begin
-    if (aload) tmp = { 1'b0, data };
-    else tmp = {tmp[7:0], 1'b0};
+  if (aload && select) tmp = data;
+  else if (select) tmp = { tmp[6:0], 1'b0 };
 end
 
-assign sout = tmp[8];
+assign sout = tmp[7];
 
 endmodule
 

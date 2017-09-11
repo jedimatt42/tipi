@@ -108,17 +108,20 @@ wire [0:7]rpi_tc;
 latch_8bit tc(tipi_tc_le, tp_d, rpi_tc);
 
 // TD Shift output
-wire td_clk = r_clk && tipi_td;
 wire td_out;
-shift_pload_sout shift_td(td_clk, r_le, rpi_td, td_out);
+shift_pload_sout shift_td(r_clk, tipi_td, r_le, rpi_td, td_out);
 
 // TC Shift output
-wire tc_clk = r_clk && tipi_tc;
 wire tc_out;
-shift_pload_sout shift_tc(tc_clk, r_le, rpi_tc, tc_out);
+shift_pload_sout shift_tc(r_clk, tipi_tc, r_le, rpi_tc, tc_out);
 
 // Select if output is from the data or control register
-assign r_din = r_cd ? tc_out : td_out;
+reg r_din_mux;
+always @(posedge r_clk) begin
+  if (r_cd) r_din_mux <= td_out;
+  else r_din_mux <= tc_out;
+end
+assign r_din = r_din_mux;
 
 // Data from the RPi, to be read by the TI.
 

@@ -69,7 +69,7 @@ wire cru_regout;
 crubits cru(~crub, ti_cruclk, ti_memen, ti_ph3, ti_a[0:14], ti_cruout, cru_regout, cru_state);
 wire cru_dev_en = cru_state[0];
 assign ti_cruin = cru_regout;
-assign r_reset = cru_state[1];
+assign r_reset = ~cru_state[1];
 // For a 32k 27C256 chip, these control bank switching.
 // assign dsr_b0 = cru_state[2];
 // assign dsr_b1 = cru_state[3];

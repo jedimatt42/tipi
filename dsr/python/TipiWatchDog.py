@@ -16,9 +16,11 @@ class TipiWatchDog(object):
         # Do not proceed unless the reset signal has turned off
         # attempt to prevent restart storm in systemd
         
+        print "waiting for reset to complete."
         while GPIO.input(self.__RESET) != 1:
-            print "waiting for reset to complete."
+            time.sleep(0.100)
             pass
+
         GPIO.add_event_detect(self.__RESET, GPIO.FALLING, callback=onReset, bouncetime=100)
         print "GPIO initialized."
 

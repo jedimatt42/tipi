@@ -78,7 +78,7 @@ if len(oldlines) > 0:
 else:
     line = ""
 
-pat = re.compile(r"^.* oled - INFO - (.*)$")
+pat = re.compile(r"^.*oled.*: INFO (.*)$")
 
 while True:
     for line in pygtail:

@@ -29,35 +29,35 @@ pwrlnk
 
 ; Device name/main DSR link entries ( name must be no more than 7 characters )
 tipilnk
-	DATA	>0000		; terminate dsr list.
+	DATA	tipi0		; next dsr list entry
 	DATA	tipidsr		; tipi dsr routine pointer
 	BYTE	4		; TIPI Drive name length
 	TEXT	"TIPI"		; name of tipi drive
 	EVEN
 
 tipi0
-	DATA	tipi1		; terminate dsr list.
+	DATA	tipi1		; next dsr list entry
 	DATA	tipidsr		; tipi dsr routine pointer
 	BYTE	4		; TIPI Drive name length
 	TEXT	"DSK0"		; name of tipi drive
 	EVEN
 
 tipi1
-	DATA	tipi2		; terminate dsr list.
+	DATA	tipi2		; next dsr list entry
 	DATA	tipidsr		; tipi dsr routine pointer
 	BYTE	4		; TIPI Drive name length
 	TEXT	"DSK1"		; name of tipi drive
 	EVEN
 
 tipi2
-	DATA	tipi3		; terminate dsr list.
+	DATA	tipi3		; next dsr list entry
 	DATA	tipidsr		; tipi dsr routine pointer
 	BYTE	4		; TIPI Drive name length
 	TEXT	"DSK2"		; name of tipi drive
 	EVEN
 
 tipi3
-	DATA	tipid		; terminate dsr list.
+	DATA	tipid		; next dsr list entry
 	DATA	tipidsr		; tipi dsr routine pointer
 	BYTE	4		; TIPI Drive name length
 	TEXT	"DSK3"		; name of tipi drive

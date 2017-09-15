@@ -15,9 +15,16 @@
 #define SEL_TC 2
 #define SEL_TD 3
 
+// volatile to force slow memory access.
+volatile long delmem = 55; 
+
 inline void signalDelay(void)
 {
-  delayMicroseconds(1L);
+  // delayMicroseconds(1L);
+  int i = 0;
+  for(i = 0; i < 40; i++) {
+    delmem *= i;
+  }
 }
 
 inline void setSelect(int reg)

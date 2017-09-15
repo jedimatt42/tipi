@@ -86,4 +86,5 @@ while True:
             m = pat.match(line)
             msg = m.group(1)
             displayLine(msg)
+    time.sleep(0.100)
 

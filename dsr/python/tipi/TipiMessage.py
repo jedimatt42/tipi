@@ -111,39 +111,14 @@ class TipiMessage(object):
         for i in range(0,msglen):
             message[i] = self.__readByte()
         elapsed = time.time() - startTime
-        logger.info('received msg len %d, rate %d', len(message), len(message) / elapsed)
+        logger.info('received msg len %d, rate %d bytes/sec', len(message), len(message) / elapsed)
         return message
 
-    #
-    # Send a message, retrying each block if there is a transmission error.
-    def sendWithHash(self, bytes):
-        self.__resetProtocol()
-        startTime = time.time()
-        self.__modeSend()
-        msglen = len(bytes)
-        msb = msglen >> 8
-        lsb = msglen & 0xFF
-        self.__sendByte(msb)
-        self.__sendByte(lsb)
-        cidx = 0
-        retries = 0
-        for chunk in self.__splitMessage(bytes):
-            clean = False
-            while clean != True:
-                for byte in chunk:
-                    self.__sendByte(byte)
-                clean = self.__checkHash(chunk)
-                if not clean:
-                    retries += 1
-            cidx += 1    
-        elapsed = time.time() - startTime
-        logger.info('sent msg len %d, rate %d', len(bytes), len(bytes) / elapsed)
-        if retries > 0:
-            logger.info("message required %d retries", retries)
 
     #
     # Send an array of data as is... no length prefix or hash
     def send(self, bytes):
+        startTime = time.time()
         self.__resetProtocol()
         self.__modeSend()
         msglen = len(bytes)
@@ -153,5 +128,7 @@ class TipiMessage(object):
         self.__sendByte(lsb)
         for byte in bytes:
             self.__sendByte(byte)
+        elapsed = time.time() - startTime
+        logger.info('sent msg len %d, rate %d bytes/sec', len(bytes), len(bytes) / elapsed)
 
 

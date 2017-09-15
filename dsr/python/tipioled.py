@@ -12,6 +12,8 @@ from PIL import ImageFont
 
 from pygtail import Pygtail
 
+pat = re.compile(r"^.*oled.*: INFO     (.*)$")
+
 fontpath = "/home/pi/dev/github/tipi/dsr/python/TI99Basic.ttf"
 
 # 128x32 oledlay with hardware I2C:
@@ -78,7 +80,6 @@ if len(oldlines) > 0:
 else:
     line = ""
 
-pat = re.compile(r"^.*oled.*: INFO (.*)$")
 
 while True:
     for line in pygtail:

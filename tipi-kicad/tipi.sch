@@ -1,4 +1,5 @@
 EESchema Schematic File Version 2
+LIBS:tipi-rescue
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -434,7 +435,7 @@ DSR_B1
 Text GLabel 4100 2900 0    60   Output ~ 0
 TI_CRUIN
 $Comp
-L LM1117-3.3 U4
+L LM1117-3.3-RESCUE-tipi U4
 U 1 1 594EAE75
 P 2050 6950
 F 0 "U4" H 2150 6700 50  0000 C CNN

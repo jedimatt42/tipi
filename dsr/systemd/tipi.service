@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/home/pi/dev/github/tipi/dsr/python/env.sh /home/pi/dev/github/tipi/dsr/python/fileserver.py
+ExecStart=/home/pi/dev/github/tipi/dsr/python/env.sh /home/pi/dev/github/tipi/dsr/python/TipiService.py
 Restart=always
 
 [Install]

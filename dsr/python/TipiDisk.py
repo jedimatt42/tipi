@@ -1,12 +1,9 @@
-#!/usr/bin/env python2
 import sys
 import traceback
 import logging
-import logging.handlers
 import time
 import os
 import errno
-import RPi.GPIO as GPIO 
 from array import array
 import re
 from ti_files import ti_files
@@ -15,30 +12,27 @@ from tifloat import tifloat
 from tinames import tinames
 from SpecialFiles import SpecialFiles
 from Pab import *
-from RawExtensions import RawExtensions
-from ResetHandler import createResetListener
 
-#
-# Setup logging
-#
-logpath = "/var/log/tipi"
-try:
-    os.makedirs(logpath)
-except OSError as exc:
-    if exc.errno == errno.EEXIST and os.path.isdir(logpath):
-        pass
-    else: raise
-
-LOG_FILENAME = "/var/log/tipi/tipi.log"
-logging.getLogger('').setLevel(logging.INFO)
-loghandler = logging.handlers.RotatingFileHandler(
-                 LOG_FILENAME, maxBytes=(5000 * 1024), backupCount=5)
-logformatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
-loghandler.setFormatter(logformatter)
-logging.getLogger('').addHandler(loghandler)
-
-logger = logging.getLogger('tipi')
+logger = logging.getLogger(__name__)
 oled = logging.getLogger('oled')
+
+#
+# Entry point to process all disk pab requests.
+def handleTipiDisk(pab, filename):
+    switcher = {
+            0: handleOpen,
+            1: handleClose,
+            2: handleRead,
+            3: handleWrite,
+            4: handleRestore,
+            5: handleLoad,
+            6: handleSave,
+            7: handleDelete,
+            8: handleScratch,
+            9: handleStatus
+    }
+    handler = switcher.get(opcode(pab), handleNotSupported)
+    handler(pab, filename)
 
 #
 # Utils
@@ -311,70 +305,3 @@ def createFileReadRecord(path,recordNumber):
             fh.close()
     return None
         
-
-## 
-## MAIN
-##
-
-oled.info("TIPI Init")
-
-createResetListener()
-
-tipi_io = TipiMessage()
-specialFiles = SpecialFiles(tipi_io)
-rawExtensions = RawExtensions(tipi_io)
-
-oled.info("TIPI Ready")
-
-while True:
-    logger.info("waiting for PAB request...")
-
-    pab = tipi_io.receive()
-    if rawExtensions.handle(pab):
-        continue
-
-    logger.debug("PAB received.")
-
-    logger.debug("waiting for devicename...")
-    devicename = tipi_io.receive()
-
-    # Special file name requests to force different errors
-    filename = str(devicename)
-    if filename == "TIPI.EDVNAME":
-        sendErrorCode(EDVNAME)
-    elif filename == "TIPI.EWPROT":
-        sendErrorCode(EWPROT)
-    elif filename == "TIPI.EOPATTR":
-        sendErrorCode(EOPATTR)
-    elif filename == "TIPI.EILLOP":
-        sendErrorCode(EILLOP)
-    elif filename == "TIPI.ENOSPAC":
-        sendErrorCode(ENOSPAC)
-    elif filename == "TIPI.EEOF":
-        sendErrorCode(EEOF)
-    elif filename == "TIPI.EDEVERR":
-        sendErrorCode(EDEVERR)
-    elif filename == "TIPI.EFILERR":
-        sendErrorCode(EFILERR)
-    else:
-        if specialFiles.handle(pab, filename):
-            continue
-
-        switcher = {
-            0: handleOpen,
-            1: handleClose,
-            2: handleRead,
-            3: handleWrite,
-            4: handleRestore,
-            5: handleLoad,
-            6: handleSave,
-            7: handleDelete,
-            8: handleScratch,
-            9: handleStatus
-        }
-        handler = switcher.get(opcode(pab), handleNotSupported)
-        handler(pab, filename)
-
-    logger.info("Request completed.")
-
-

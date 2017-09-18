@@ -25,3 +25,6 @@ xdm99.py -T build/GET -o build/tifiles/GET
 xbas99.py -c dmap.bas -o build/DMAP
 xdm99.py -T build/DMAP -o build/tifiles/DMAP
 
+# STATUS Display
+xbas99.py -c showstatus.bas -o build/SHOWSTATUS
+xdm99.py -T build/SHOWSTATUS -o build/tifiles/SHOWSTATUS

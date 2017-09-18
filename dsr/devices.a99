@@ -23,6 +23,7 @@ RECLEN	EQU	FAC+>4		; PAB - logical record length
 CHRCNT	EQU	FAC+>5		; PAB - character count
 RECNUM	EQU	FAC+>6		; PAB - record number
 SCNOFF	EQU	FAC+>8		; PAB - screen offset
+STATB 	EQU	SCNOFF		; Alias for when SCNOFF makes no sense.
 OPTLEN	EQU	FAC+>9		; PAB - option length
 
 ; Error codes - RPi will return one of these or SUCCESS after evaluating PAB and device name.
@@ -122,6 +123,22 @@ tipidsr
 	MOV	R9,R1
 	JNE	reterr
 
+; Return without handling device
+tipipass
+	BL	@cleanup
+	MOV	@RET,R11
+	RT
+
+; Exit and return an error status back to OS, status expected in R1
+reterr
+	SRC	R1,3		;   move status to top 3 bits.
+	SOCB	@FLGSTS(R10),R1	;   merge with file flags so we don't overwrite them
+	MOV	@VPAB,R3	;   compose the address of status byte 
+	INC	R3		;   second byte in PAB
+	.setvdpwa R3
+	MOVB	R1,@VDPWD	;   write the status byte
+	JMP	retdone
+
 ; RPi thinks it can handle this request :) Good news!
 hresponse
 	CLR	R1		; switch on opcode in R1
@@ -142,12 +159,15 @@ hresponse
 	CI	R1,OPLOAD
 	JEQ	hload
 
+	CI	R1,OPSTAT
+	JEQ	hstatus
+
 	LI	R1,EDEVERR	;   default: return device error
 	JMP	reterr
 
 ; Handle OPCODE 0 - OPEN
 hopen
-	; quick hack, supposed to return record length if it is zero...
+	; quick hack, supposed to return record length if it is zero in the pab request...
 	LI	R0,1
 	MOV	R10,R1
 	AI	R1,R9MB		; Set recv buffer to address of R9 to read an int.
@@ -196,6 +216,18 @@ hload
 	BL	@vrecvmsg 	; Load image data
 	JMP	retdone
 
+; Handle OPCODE 9 - STATUS
+hstatus
+	; TODO - implement an update to the PAB with EOF and other status bits.
+	LI	R0,1
+	MOV	R10,R1
+	AI	R1,R9MB		; Set recv buffer to address of R9 to read an int.
+	BL	@recvmsg	; R9 MSB now has status byte
+	MOV	@VPAB,R3
+	AI	R3,STATB-OPCODE
+	.setvdpwa R3
+	MOVB	R9,@VDPWD
+	JMP	retdone
 
 ; 
 ; Support 3 possible exit modes:
@@ -209,21 +241,5 @@ retdone
 	BL	@cleanup
 	MOV	@RET,R11
 	INCT	R11
-	RT
-
-; Exit and return an error status back to OS, status expected in R1
-reterr
-	SRC	R1,3		;   move status to top 3 bits.
-	SOCB	@FLGSTS(R10),R1	;   merge with file flags so we don't overwrite them
-	MOV	@VPAB,R3	;   compose the address of status byte 
-	INC	R3		;   second byte in PAB
-	.setvdpwa R3
-	MOVB	R1,@VDPWD	;   write the status byte
-	JMP	retdone
-
-; Return without handling device
-tipipass
-	BL	@cleanup
-	MOV	@RET,R11
 	RT
 

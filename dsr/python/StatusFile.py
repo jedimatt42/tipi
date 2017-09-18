@@ -17,6 +17,12 @@ class StatusFile(object):
         self.tipiStatus = []
         self.recordNo = 0
 
+    def getRecNo(self, pab):
+	readRec = recordNumber(pab)
+	if readRec != 0:
+	    self.recordNo = readRec
+        return self.recordNo
+
     def handle(self, pab, devname):
         op = opcode(pab)
         if op == OPEN:
@@ -51,11 +57,7 @@ class StatusFile(object):
         logger.info("read %s", devname)
         if mode(pab) == INPUT:
             if dataType(pab) == DISPLAY:
-                readRec = recordNumber(pab)
-                if readRec == 0:
-                    readRec = self.recordNo
-                else:
-                    self.recordNo = readRec
+                readRec = self.getRecNo(pab)
 
                 if readRec >= self.tipiStatus.len():
                     self.tipi_io.send([EEOF])
@@ -73,10 +75,11 @@ class StatusFile(object):
         if mode(pab) == INPUT:
             if dataType(pab) == DISPLAY:
 		self.tipi_io.send([SUCCESS])
-                statbyte = STPROTECT | STVARIABLE | STPEOF 
+                statbyte = STVARIABLE
+                readRec = self.getRecNo(pab)
                 if readRec >= self.tipiStatus.len():
-                    statByte |= STLEOF
-                self.tipi_io.send([ statByte ])
+                    statbyte |= STLEOF
+                self.tipi_io.send([ statbyte ])
 	        return
         self.tipi_io.send([EOPATTR])
 

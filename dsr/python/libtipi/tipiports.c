@@ -22,7 +22,7 @@ inline void signalDelay(void)
 {
   // delayMicroseconds(1L);
   int i = 0;
-  for(i = 0; i < 40; i++) {
+  for(i = 0; i < 50; i++) {
     delmem *= i;
   }
 }

@@ -218,7 +218,7 @@ hload
 
 ; Handle OPCODE 9 - STATUS
 hstatus
-	; TODO - implement an update to the PAB with EOF and other status bits.
+	; Fetch status byte from TIPI and update in VDP PAB
 	LI	R0,1
 	MOV	R10,R1
 	AI	R1,R9MB		; Set recv buffer to address of R9 to read an int.

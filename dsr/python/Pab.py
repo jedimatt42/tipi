@@ -82,9 +82,7 @@ def logPab(pab):
     )
 
 #
-# Opcode Handling
-#
-
+# Error Codes
 EDVNAME=0x00
 EWPROT=0x01
 EOPATTR=0x02
@@ -93,6 +91,19 @@ ENOSPAC=0x04
 EEOF=0x05
 EDEVERR=0x06
 EFILERR=0x07
-
+# TIPI Success
 SUCCESS=0xFF
+
+#
+# Status constants to be OR'ed together
+STNOFILE=0x80
+STPROTECTED=0x40
+STRES1=0x20
+STINTERNAL=0x10
+STPROGRAM=0x08
+STVARIABLE=0x04
+STPEOF=0x02
+STLEOF=0x01
+
+
 

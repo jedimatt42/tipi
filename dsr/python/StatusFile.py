@@ -18,9 +18,9 @@ class StatusFile(object):
         self.recordNo = 0
 
     def getRecNo(self, pab):
-	readRec = recordNumber(pab)
-	if readRec != 0:
-	    self.recordNo = readRec
+        readRec = recordNumber(pab)
+        if readRec != 0:
+            self.recordNo = readRec
         return self.recordNo
 
     def handle(self, pab, devname):

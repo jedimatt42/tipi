@@ -8,7 +8,7 @@ from SpecialFiles import SpecialFiles
 from Pab import *
 from RawExtensions import RawExtensions
 from ResetHandler import createResetListener
-from TipiDisk import handleTipiDisk
+from TipiDisk import TipiDisk
 
 #
 # Setup logging
@@ -43,6 +43,7 @@ createResetListener()
 tipi_io = TipiMessage()
 specialFiles = SpecialFiles(tipi_io)
 rawExtensions = RawExtensions(tipi_io)
+tipiDisk = TipiDisk(tipi_io)
 
 oled.info("TIPI Ready")
 
@@ -65,7 +66,7 @@ while True:
         continue
 
     # nothing special, so fall back to disk access
-    handleTipiDisk(pab, filename)
+    tipiDisk.handle(pab, filename)
 
     logger.info("Request completed.")
 

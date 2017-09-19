@@ -160,9 +160,12 @@ class ti_files(object):
         
     @staticmethod
     def readFixedRecord(bytes, recNumber):
-        logger.debug("read fix record %d", recNumber)
-        data = bytes[128:]
         reclen = ti_files.recordLength(bytes)
+        maxRecNo = ti_files.byteLength(bytes) / reclen
+        logger.debug("read fix record %d of %d", recNumber, maxRecNo)
+        if recNumber > maxRecNo:
+            return None
+        data = bytes[128:]
         offset = reclen * recNumber
         try:
             return bytearray(data[offset:offset+reclen])

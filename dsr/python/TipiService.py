@@ -29,7 +29,9 @@ logformatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
 loghandler.setFormatter(logformatter)
 logging.getLogger('').addHandler(loghandler)
 
-logger = logging.getLogger('tipi')
+__name__ = "TipiService"
+
+logger = logging.getLogger(__name__)
 oled = logging.getLogger('oled')
 
 ## 

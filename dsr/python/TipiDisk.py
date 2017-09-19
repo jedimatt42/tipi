@@ -135,9 +135,9 @@ class TipiDisk(object):
 	localPath = tinames.devnameToLocal(devname)
 
 	if not os.path.exists(localPath):
+           logger.debug("file %s does not exist", localPath)
 	   self.sendErrorCode(EFILERR)
 	   return
-
 
 	recNum = recordNumber(pab)
 	# UNSPEC'ED
@@ -297,6 +297,7 @@ class TipiDisk(object):
 	return bytes
 
     def createFileReadRecord(self, path, recordNumber):
+        logger.debug("loading record %d from %s", recordNumber, path)
 	fh = None
 	try:
 	    fh = open(path, 'rb')

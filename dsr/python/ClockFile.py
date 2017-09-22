@@ -2,6 +2,7 @@
 import time
 from Pab import *
 
+
 class ClockFile(object):
 
     @staticmethod
@@ -25,7 +26,7 @@ class ClockFile(object):
     def close(self, pab, devname):
         print "close special? {}".format(devname)
         self.tipi_io.send([SUCCESS])
-        
+
     def open(self, pab, devname):
         if mode(pab) == INPUT:
             if dataType(pab) == DISPLAY:
@@ -43,5 +44,3 @@ class ClockFile(object):
                 self.tipi_io.send(fdata)
                 return
         self.tipi_io.send([EOPATTR])
-
-

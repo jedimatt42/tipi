@@ -2,6 +2,7 @@
 import random
 import Ptable
 
+
 class Phash:
 
     def __init__(self):
@@ -31,4 +32,3 @@ class Phash:
 # phash = PHash()
 
 # phash.printTable()
-

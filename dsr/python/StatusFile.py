@@ -6,6 +6,7 @@ from Status import Status
 
 logger = logging.getLogger(__name__)
 
+
 class StatusFile(object):
 
     @staticmethod
@@ -40,7 +41,7 @@ class StatusFile(object):
     def close(self, pab, devname):
         logger.info("close %s", devname)
         self.tipi_io.send([SUCCESS])
-        
+
     def open(self, pab, devname):
         logger.info("open %s", devname)
         if mode(pab) == INPUT:
@@ -63,24 +64,22 @@ class StatusFile(object):
                     self.tipi_io.send([EEOF])
                     return
                 else:
-		    fdata = bytearray(self.tipiStatus.record(readRec))
-		    self.tipi_io.send([SUCCESS])
-		    self.tipi_io.send(fdata)
-		    self.recordNo += 1
-		    return
+                    fdata = bytearray(self.tipiStatus.record(readRec))
+                    self.tipi_io.send([SUCCESS])
+                    self.tipi_io.send(fdata)
+                    self.recordNo += 1
+                    return
         self.tipi_io.send([EOPATTR])
 
     def status(self, pab, devname):
         logger.info("status %s", devname)
         if mode(pab) == INPUT:
             if dataType(pab) == DISPLAY:
-		self.tipi_io.send([SUCCESS])
+                self.tipi_io.send([SUCCESS])
                 statbyte = STVARIABLE
                 readRec = self.getRecNo(pab)
                 if readRec >= self.tipiStatus.len():
                     statbyte |= STLEOF
-                self.tipi_io.send([ statbyte ])
-	        return
+                self.tipi_io.send([statbyte])
+                return
         self.tipi_io.send([EOPATTR])
-
-

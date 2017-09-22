@@ -19,12 +19,13 @@ try:
 except OSError as exc:
     if exc.errno == errno.EEXIST and os.path.isdir(logpath):
         pass
-    else: raise
+    else:
+        raise
 
 LOG_FILENAME = "/var/log/tipi/tipi.log"
 logging.getLogger('').setLevel(logging.INFO)
 loghandler = logging.handlers.RotatingFileHandler(
-                 LOG_FILENAME, maxBytes=(5000 * 1024), backupCount=5)
+    LOG_FILENAME, maxBytes=(5000 * 1024), backupCount=5)
 logformatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
 loghandler.setFormatter(logformatter)
 logging.getLogger('').addHandler(loghandler)
@@ -34,8 +35,8 @@ __name__ = "TipiService"
 logger = logging.getLogger(__name__)
 oled = logging.getLogger('oled')
 
-## 
-## MAIN
+##
+# MAIN
 ##
 
 oled.info("TIPI Init")
@@ -71,5 +72,3 @@ while True:
     tipiDisk.handle(pab, filename)
 
     logger.info("Request completed.")
-
-

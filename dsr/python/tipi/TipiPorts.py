@@ -6,6 +6,7 @@ import RPi.GPIO as GPIO
 
 logger = logging.getLogger(__name__)
 
+
 class TipiPorts(object):
 
     def __init__(self):
@@ -18,7 +19,6 @@ class TipiPorts(object):
     # Read TI_DATA
     def getTD(self):
         return tipiports.getTD()
-            
 
     # Read TI_CONTROL
     def getTC(self):
@@ -31,6 +31,3 @@ class TipiPorts(object):
     # Write RPI_CONTROL
     def setRC(self, value):
         tipiports.setRC(value)
-
-
-

@@ -16,6 +16,7 @@ BACKOFF_DELAY = 10000
 
 logger = logging.getLogger(__name__)
 
+
 class TipiMessage(object):
 
     def __init__(self):
@@ -34,7 +35,7 @@ class TipiMessage(object):
         self.prev_syn = 0
         while self.prev_syn != RESET:
             backoff -= 1
-            if backoff < 1: 
+            if backoff < 1:
                 backoff = 1
                 time.sleep(0.01)
             self.prev_syn = self.ports.getTC()
@@ -45,7 +46,8 @@ class TipiMessage(object):
     #
     # change mode to sending bytes
     def __modeSend(self):
-        # actual send calls will always pre-increment this, so we start a series by making sure the low bit will increment to zero.
+        # actual send calls will always pre-increment this, so we start a
+        # series by making sure the low bit will increment to zero.
         self.prev_syn = TSRB + 1
 
     #
@@ -61,7 +63,8 @@ class TipiMessage(object):
     #
     # change mode to sending bytes
     def __modeRead(self):
-        # actual send calls will always pre-increment this, so we start a series by making sure the low bit will increment to zero.
+        # actual send calls will always pre-increment this, so we start a
+        # series by making sure the low bit will increment to zero.
         self.prev_syn = TSWB + 1
 
     #
@@ -90,15 +93,14 @@ class TipiMessage(object):
     # Return an array of arrays
     def __splitMessage(self, bytes):
         l = len(bytes)
-        chunks = [ ]
+        chunks = []
         bc = (l / CHUNKSIZE) + 1
         for i in range(bc):
-            chunk = bytes[i*CHUNKSIZE:(i+1)*CHUNKSIZE]
+            chunk = bytes[i * CHUNKSIZE:(i + 1) * CHUNKSIZE]
             if len(chunk):
-                chunks += [ chunk ]
+                chunks += [chunk]
         return chunks
 
-        
     #
     # Receive a message, returned as a byte array
     def receive(self):
@@ -108,12 +110,14 @@ class TipiMessage(object):
         msglen = (self.__readByte() << 8) + self.__readByte()
         logger.debug("msglen: %d", msglen)
         message = bytearray(msglen)
-        for i in range(0,msglen):
+        for i in range(0, msglen):
             message[i] = self.__readByte()
         elapsed = time.time() - startTime
-        logger.info('received msg len %d, rate %d bytes/sec', len(message), len(message) / elapsed)
+        logger.info(
+            'received msg len %d, rate %d bytes/sec',
+            len(message),
+            len(message) / elapsed)
         return message
-
 
     #
     # Send an array of data as is... no length prefix or hash
@@ -129,6 +133,7 @@ class TipiMessage(object):
         for byte in bytes:
             self.__sendByte(byte)
         elapsed = time.time() - startTime
-        logger.info('sent msg len %d, rate %d bytes/sec', len(bytes), len(bytes) / elapsed)
-
-
+        logger.info(
+            'sent msg len %d, rate %d bytes/sec',
+            len(bytes),
+            len(bytes) / elapsed)

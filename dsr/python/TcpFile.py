@@ -8,6 +8,7 @@ from Pab import *
 
 logger = logging.getLogger(__name__)
 
+
 class TcpFile(object):
 
     @staticmethod
@@ -18,7 +19,7 @@ class TcpFile(object):
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
-        self.sock = { }
+        self.sock = {}
 
     def handle(self, pab, devname):
         op = opcode(pab)
@@ -40,19 +41,19 @@ class TcpFile(object):
             if self.sock[devname]:
                 self.sock[devname].close()
                 del(self.sock[devname])
-        except:
+        except BaseException:
             pass
 
     def open(self, pab, devname):
         logger.debug("open devname: %s", devname)
         try:
             server = self.parseDev(devname)
-            logger.debug("host %s, port %s",server[0], server[1])
+            logger.debug("host %s, port %s", server[0], server[1])
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect(server)
             fcntl.fcntl(sock, fcntl.F_SETFL, os.O_NONBLOCK)
             self.sock[devname] = sock
-        except socket.error, e:
+        except socket.error as e:
             logger.error(e, exc_info=True)
             self.tipi_io.send([EFILERR])
             return
@@ -73,7 +74,7 @@ class TcpFile(object):
             self.tipi_io.send([SUCCESS])
             self.tipi_io.send(fdata)
             return
-        except socket.error, e:
+        except socket.error as e:
             err = e.args[0]
             if err == errno.EAGAIN or err == errno.EWOULDBLOCK:
                 fdata = bytearray("")
@@ -90,11 +91,10 @@ class TcpFile(object):
             self.tipi_io.send([SUCCESS])
             msg = self.tipi_io.receive()
             sock.sendall(msg)
-        except socket.error, e:
+        except socket.error as e:
             self.sock[devname].close()
             del(self.sock[devname])
 
     def parseDev(self, devname):
         parts = str(devname).split("=")[1].split(":")
         return (parts[0], int(parts[1]))
-

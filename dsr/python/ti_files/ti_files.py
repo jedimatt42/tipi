@@ -7,6 +7,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class ti_files(object):
 
     PROGRAM = 0x01
@@ -19,7 +20,7 @@ class ti_files(object):
         fh = None
         try:
             if os.stat(filename).st_size > 128:
-                fh = open(filename,'rb')
+                fh = open(filename, 'rb')
                 header = bytearray(fh.read()[:9])
                 isGood = ti_files.isValid(header)
                 return isGood
@@ -27,7 +28,7 @@ class ti_files(object):
             logger.error(e, exc_info=True)
             pass
         finally:
-            if fh != None:
+            if fh is not None:
                 fh.close()
         return False
 
@@ -50,7 +51,7 @@ class ti_files(object):
     @staticmethod
     def isValid(bytes):
         return bytes[0] == 0x07 and str(bytes[1:8]) == "TIFILES"
-        
+
     @staticmethod
     def getSectors(bytes):
         return bytes[9] + (bytes[8] << 8)
@@ -84,7 +85,7 @@ class ti_files(object):
         eofsize = ti_files.eofOffset(bytes)
         if eofsize == 0:
             eofsize = 256
-        return ((ti_files.getSectors(bytes)-1) * 256) + eofsize
+        return ((ti_files.getSectors(bytes) - 1) * 256) + eofsize
 
     @staticmethod
     def dsrFileType(bytes):
@@ -93,17 +94,16 @@ class ti_files(object):
 
         if ti_files.isInternal(bytes):
             if ti_files.isVariable(bytes):
-                 return 4
+                return 4
             else:
-                 return 3
+                return 3
         else:
             if ti_files.isVariable(bytes):
-                 return 2
+                return 2
             else:
-                 return 1
+                return 1
 
         return 0
-           
 
     @staticmethod
     def flagsToString(bytes):
@@ -115,7 +115,7 @@ class ti_files(object):
             type += "VAR"
         else:
             type += "FIX"
-        
+
         if ti_files.isProgram(bytes):
             type = "PROGRAM"
 
@@ -127,14 +127,20 @@ class ti_files(object):
     @staticmethod
     def showHeader(bytes):
         if ti_files.isValid(bytes):
-	    logger.debug("TIFILES Header: ")
-	    logger.debug("  [8,9]  sectors: " + str(ti_files.getSectors(bytes)))
-	    logger.debug("   [10]  type: " + str(ti_files.flagsToString(bytes)))
-	    logger.debug("   [11]  records per sector: " + str(ti_files.recordsPerSector(bytes)))
-	    logger.debug("   [12]  eofOffset: " + str(ti_files.eofOffset(bytes)))
-	    logger.debug("   [13]  record length: " + str(ti_files.recordLength(bytes)))
-	    logger.debug("[14,15]  record count: " + str(ti_files.recordCount(bytes)))
-	    logger.debug("[16:26]  name: " + str(ti_files.tiName(bytes)))
+            logger.debug("TIFILES Header: ")
+            logger.debug("  [8,9]  sectors: " +
+                         str(ti_files.getSectors(bytes)))
+            logger.debug("   [10]  type: " +
+                         str(ti_files.flagsToString(bytes)))
+            logger.debug("   [11]  records per sector: " +
+                         str(ti_files.recordsPerSector(bytes)))
+            logger.debug("   [12]  eofOffset: " +
+                         str(ti_files.eofOffset(bytes)))
+            logger.debug("   [13]  record length: " +
+                         str(ti_files.recordLength(bytes)))
+            logger.debug("[14,15]  record count: " +
+                         str(ti_files.recordCount(bytes)))
+            logger.debug("[16:26]  name: " + str(ti_files.tiName(bytes)))
         else:
             logger.error("not TIFILES header")
 
@@ -154,19 +160,19 @@ class ti_files(object):
         offset = 0
         nextoff = offset + data[offset] + 1
         try:
-	    while rIdx < recNumber:
-		offset = nextoff
-		if data[offset] == 0xff:
-		    # we need to move to the next sector
-		    offset = int((offset / 256) + 1) * 256
-		    nextoff = offset + data[offset] + 1
-		else:
-		    nextoff += data[offset] + 1
-		rIdx += 1
-	    return bytearray(data[offset+1:nextoff])
-        except:
+            while rIdx < recNumber:
+                offset = nextoff
+                if data[offset] == 0xff:
+                    # we need to move to the next sector
+                    offset = int((offset / 256) + 1) * 256
+                    nextoff = offset + data[offset] + 1
+                else:
+                    nextoff += data[offset] + 1
+                rIdx += 1
+            return bytearray(data[offset + 1:nextoff])
+        except BaseException:
             return None
-        
+
     @staticmethod
     def readFixedRecord(bytes, recNumber):
         reclen = ti_files.recordLength(bytes)
@@ -177,8 +183,8 @@ class ti_files(object):
         data = bytes[128:]
         offset = reclen * recNumber
         try:
-            return bytearray(data[offset:offset+reclen])
-        except:
+            return bytearray(data[offset:offset + reclen])
+        except BaseException:
             return None
 
     @staticmethod
@@ -191,7 +197,7 @@ class ti_files(object):
         header[1:7] = bytearray("TIFILES")
         header[10] = flags
 
-        datalen = len(data) 
+        datalen = len(data)
         sectors = datalen / 256
         eofOffset = datalen % 256
         if eofOffset != 0:
@@ -206,11 +212,10 @@ class ti_files(object):
     @staticmethod
     def createProgramImage(devname, bytes, unix_name):
         nameParts = str(devname).split('.')
-        tiname = nameParts[len(nameParts)-1]
-        
+        tiname = nameParts[len(nameParts) - 1]
+
         header = ti_files.createHeader(ti_files.PROGRAM, tiname, bytes)
-        fdata = bytearray(256 * (len(bytes)/256 + 1) + 128)
+        fdata = bytearray(256 * (len(bytes) / 256 + 1) + 128)
         fdata[0:127] = header
         fdata[128:] = bytes
         return fdata
-

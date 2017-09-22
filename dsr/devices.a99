@@ -70,7 +70,7 @@ cleanup
 
 ; Handle requests to TIPI device
 tipidsr
-        LIMI	0		; I/O plays with VDP registers and relies on them 
+	LIMI	0		; I/O plays with VDP registers and relies on them
 	MOV	R11,@RET	; Stash the dsrlnk Return address
 	STWP	R10		; PAB equates are relative to R10, don't mess with R10
 
@@ -107,7 +107,7 @@ tipidsr
 	SRL	R0,8		;   just a byte
 	INC	R1		; Set address of beginning device name data.
 	BL	@vsendmsg	; send the full devicename
-        
+
 ; Handle result
 	LI	R0,1		; Get initial response from RPi (code will be in R9)
 	MOV	R10,R1
@@ -137,7 +137,7 @@ reterr
 	INC	R3		;   second byte in PAB
 	.setvdpwa R3
 	MOVB	R1,@VDPWD	;   write the status byte
-	JMP	retdone
+	B	@retdone
 
 ; RPi thinks it can handle this request :) Good news!
 hresponse
@@ -159,8 +159,17 @@ hresponse
 	CI	R1,OPLOAD
 	JEQ	hload
 
+	CI	R1,OPSAVE
+	JEQ	hsave
+
 	CI	R1,OPSTAT
 	JEQ	hstatus
+
+	CI	R1,OPREST
+	JEQ	hrestore
+
+	CI	R1,OPDEL
+	JEQ	hdelete
 
 	LI	R1,EDEVERR	;   default: return device error
 	JMP	reterr
@@ -176,7 +185,7 @@ hopen
 	AI	R3,RECLEN-OPCODE
 	.setvdpwa R3
 	MOVB	R9,@VDPWD
-	JMP	retdone
+	B	@retdone
 
 ; Handle OPCODE 1 - CLOSE
 hclose
@@ -209,12 +218,27 @@ hwrite
 	BL	@vsendmsg
 	JMP	retdone
 
+; Handle OPCODE 4 - Restore
+hrestore
+	JMP	retdone		; No further work on TI side.
+
 ; Handle response for OPCODE 5 - LOAD
 hload
 	MOV	@RECNUM(R10),R0	; VPD space left is limited
 	MOV	@BUFADR(R10),R1	; Set VDP location to load in to.
 	BL	@vrecvmsg 	; Load image data
 	JMP	retdone
+
+; Handle response for OPCODE 6 - OPSAVE
+hsave
+	MOV	@RECNUM(R10),R0
+	MOV	@BUFADR(R10),R1
+	BL	@vsendmsg
+	JMP	retdone
+
+; Handle response for OPCODE 7 - OPDEL
+hdelete
+	JMP	retdone		; no further work for the TI side
 
 ; Handle OPCODE 9 - STATUS
 hstatus

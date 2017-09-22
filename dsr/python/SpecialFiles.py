@@ -5,11 +5,12 @@ from TcpFile import TcpFile
 from CurlFile import CurlFile
 from DSKMapFile import DSKMapFile
 
+
 class SpecialFiles(object):
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
-        self.specreg = { 
+        self.specreg = {
             TcpFile.filename(): TcpFile(self.tipi_io),
             ClockFile.filename(): ClockFile(self.tipi_io),
             StatusFile.filename(): StatusFile(self.tipi_io),
@@ -24,4 +25,3 @@ class SpecialFiles(object):
                 handler.handle(pab, devname)
                 return True
         return False
-

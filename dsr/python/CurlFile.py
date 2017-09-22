@@ -8,6 +8,7 @@ from Pab import *
 
 logger = logging.getLogger("tipi")
 
+
 class CurlFile(object):
 
     @staticmethod
@@ -18,8 +19,8 @@ class CurlFile(object):
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
-        self.bodies = { }
-        self.record = { }
+        self.bodies = {}
+        self.record = {}
 
     def handle(self, pab, devname):
         op = opcode(pab)
@@ -40,7 +41,7 @@ class CurlFile(object):
         try:
             del(self.bodies[devname])
             del(self.record[devname])
-        except:
+        except BaseException:
             pass
 
     def open(self, pab, devname):
@@ -56,7 +57,7 @@ class CurlFile(object):
             body = bytearray(buffer.getvalue())
             self.bodies[devname] = body
             self.record[devname] = 0
-        except:
+        except BaseException:
             self.tipi_io.send([EFILERR])
             return
 
@@ -76,8 +77,8 @@ class CurlFile(object):
             lbody = len(body)
             startOff = record * recLen
             if startOff >= lbody:
-               self.tipi_io.send([EEOF])
-               return
+                self.tipi_io.send([EEOF])
+                return
             endOff = (record + 1) * recLen
             if endOff >= lbody:
                 endOff = lbody
@@ -86,7 +87,7 @@ class CurlFile(object):
             self.tipi_io.send(fdata)
             self.record[devname] = record + 1
             return
-        except:
+        except BaseException:
             traceback.print_exc()
         self.tipi_io.send([EEOF])
         return
@@ -110,13 +111,10 @@ class CurlFile(object):
             self.tipi_io.send([SUCCESS])
             self.tipi_io.send((body[128:])[:filesize])
             return
-        except:
+        except BaseException:
             traceback.print_exc()
         self.tipi_io.send([EFILERR])
         return
 
-  
-
     def parseDev(self, devname):
         return str(devname[5:])
-

@@ -38,25 +38,27 @@ draw = ImageDraw.Draw(image)
 # Load TI Basic short caps font.
 font = ImageFont.truetype(fontpath, 32)
 
+
 def displayLine(line):
     ll = len(line)
     l1s = 0
-    l1e = min(ll,10)
-    l2s = min(ll,10)
-    l2e = min(ll,20)
+    l1e = min(ll, 10)
+    l2s = min(ll, 10)
+    l2e = min(ll, 20)
 
     line1 = line[l1s:l1e]
     line2 = line[l2s:l2e]
 
     # Draw a black filled box to clear the image.
-    draw.rectangle((0,0,width,height), outline=0, fill=0)
+    draw.rectangle((0, 0, width, height), outline=0, fill=0)
 
-    draw.text((0, 0), line1,  font=font, fill=255)
-    draw.text((0, 16), line2,  font=font, fill=255)
+    draw.text((0, 0), line1, font=font, fill=255)
+    draw.text((0, 16), line2, font=font, fill=255)
 
     # Display image.
     oled.image(image)
     oled.display()
+
 
 displayLine("   TIPI   Waiting...")
 
@@ -66,7 +68,8 @@ try:
 except OSError as exc:
     if exc.errno == errno.EEXIST and os.path.isdir(logpath):
         pass
-    else: raise
+    else:
+        raise
 
 logfile = "{}/tipi.log".format(logpath)
 with open(logfile, 'a'):
@@ -76,7 +79,7 @@ pygtail = Pygtail(logfile)
 oldlines = filter(lambda x: "oled" in x, pygtail.readlines())
 
 if len(oldlines) > 0:
-    line = oldlines[len(oldlines)-1]
+    line = oldlines[len(oldlines) - 1]
 else:
     line = ""
 
@@ -88,4 +91,3 @@ while True:
             msg = m.group(1)
             displayLine(msg)
     time.sleep(0.100)
-

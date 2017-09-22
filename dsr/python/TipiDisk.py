@@ -214,21 +214,32 @@ class TipiDisk(object):
 	    self.tipi_io.send((bytes[128:])[:filesize])
 
 	except Exception as e:
-	    # I don't think this will work. we need to check for as many errors as possible up front.
+	    # I don't think this will work. we need to check for as 
+            #   many errors as possible up front.
 	    self.sendErrorCode(EFILERR)
 	    logger.exception("failed to load file - %s", devname)
 	finally:
 	    if fh != None:
-		fh.close()
+	        fh.close()
 	
     def handleSave(self, pab, devname):
 	logger.info("Opcode 6 Save - %s", devname)
 	logPab(pab)
+	unix_name = tinames.devnameToLocal(devname)
+        if self.parentExists(unix_name):
+            self.sendSuccess()
+            fdata = self.tipi_io.receive()
+            ddata = ti_files.createProgramImage(devname, fdata, unix_name)
+            fh = open(unix_name, "w")
+            fh.write(ddata)
+            fh.close()
+            return
 	self.sendErrorCode(EDEVERR)
 
     def handleDelete(self, pab, devname):
 	logger.info("Opcode 7 Delete - %s", devname)
 	logPab(pab)
+        logger.info("Delete not implemented yet")
 	self.sendErrorCode(EDEVERR)
 
     def handleScratch(self, pab, devname):
@@ -239,6 +250,7 @@ class TipiDisk(object):
     def handleStatus(self, pab, devname):
 	logger.info("Opcode 9 Status - %s", devname)
 	logPab(pab)
+        logger.info("Status not implemented yet")
 	self.sendErrorCode(EDEVERR)
 
     def createVolumeData(self, path):
@@ -310,3 +322,6 @@ class TipiDisk(object):
 		fh.close()
 	return None
         
+    def parentExists(self, unix_name):
+        parent = os.path.dirname(unix_name)
+        return os.path.exists(parent) and os.path.isdir(parent)

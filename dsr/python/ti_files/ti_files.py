@@ -1,4 +1,5 @@
 import os
+import io
 import sys
 import traceback
 import math
@@ -7,6 +8,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 class ti_files(object):
+
+    PROGRAM = 0x01
+    INTERNAL = 0x02
+    PROTECTED = 0x04
+    VARIABLE = 0x08
 
     @staticmethod
     def isTiFile(filename):
@@ -27,19 +33,19 @@ class ti_files(object):
 
     @staticmethod
     def isProgram(bytes):
-        return ti_files.flags(bytes) & 0x01
+        return ti_files.flags(bytes) & ti_files.PROGRAM
 
     @staticmethod
     def isInternal(bytes):
-        return ti_files.flags(bytes) & 0x02
+        return ti_files.flags(bytes) & ti_files.INTERNAL
 
     @staticmethod
     def isProtected(bytes):
-        return ti_files.flags(bytes) & 0x04
+        return ti_files.flags(bytes) & ti_files.PROTECTED
 
     @staticmethod
     def isVariable(bytes):
-        return ti_files.flags(bytes) & 0x80
+        return ti_files.flags(bytes) & ti_files.VARIABLE
 
     @staticmethod
     def isValid(bytes):
@@ -120,14 +126,17 @@ class ti_files(object):
 
     @staticmethod
     def showHeader(bytes):
-        logger.debug("TIFILES Header: ")
-        logger.debug("  name: " + str(ti_files.tiName(bytes)))
-        logger.debug("  type: " + str(ti_files.flagsToString(bytes)))
-        logger.debug("  sectors: " + str(ti_files.getSectors(bytes)))
-        logger.debug("  records: " + str(ti_files.recordsPerSector(bytes)))
-        logger.debug("  eof: " + str(ti_files.eofOffset(bytes)))
-        logger.debug("  record length: " + str(ti_files.recordLength(bytes)))
-        logger.debug("  record count: " + str(ti_files.recordCount(bytes)))
+        if ti_files.isValid(bytes):
+	    logger.debug("TIFILES Header: ")
+	    logger.debug("  [8,9]  sectors: " + str(ti_files.getSectors(bytes)))
+	    logger.debug("   [10]  type: " + str(ti_files.flagsToString(bytes)))
+	    logger.debug("   [11]  records per sector: " + str(ti_files.recordsPerSector(bytes)))
+	    logger.debug("   [12]  eofOffset: " + str(ti_files.eofOffset(bytes)))
+	    logger.debug("   [13]  record length: " + str(ti_files.recordLength(bytes)))
+	    logger.debug("[14,15]  record count: " + str(ti_files.recordCount(bytes)))
+	    logger.debug("[16:26]  name: " + str(ti_files.tiName(bytes)))
+        else:
+            logger.error("not TIFILES header")
 
     @staticmethod
     def readRecord(bytes, recNumber):
@@ -172,4 +181,36 @@ class ti_files(object):
         except:
             return None
 
+    @staticmethod
+    def createHeader(flags, tiname, data):
+        # create a 128 byte array, set flag byte,
+        # copy in tiname
+        # set record counts based on data array. (not sufficient)
+        header = bytearray(128)
+        header[0] = 0x07
+        header[1:7] = bytearray("TIFILES")
+        header[10] = flags
+
+        datalen = len(data) 
+        sectors = datalen / 256
+        eofOffset = datalen % 256
+        if eofOffset != 0:
+            sectors += 1
+        header[8] = sectors >> 8
+        header[9] = sectors & 0xFF
+        header[12] = eofOffset
+
+        header[0x10:0x1A] = bytearray(tiname)
+        return header
+
+    @staticmethod
+    def createProgramImage(devname, bytes, unix_name):
+        nameParts = str(devname).split('.')
+        tiname = nameParts[len(nameParts)-1]
+        
+        header = ti_files.createHeader(ti_files.PROGRAM, tiname, bytes)
+        fdata = bytearray(256 * (len(bytes)/256 + 1) + 128)
+        fdata[0:127] = header
+        fdata[128:] = bytes
+        return fdata
 

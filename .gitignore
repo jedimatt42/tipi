@@ -4,4 +4,4 @@ work
 *.bak
 *-bak
 *.pyc
-
+.vscode

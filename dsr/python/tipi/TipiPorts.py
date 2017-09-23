@@ -6,8 +6,13 @@ import RPi.GPIO as GPIO
 
 logger = logging.getLogger(__name__)
 
+singleton = TipiPorts()
 
 class TipiPorts(object):
+
+    @staticmethod
+    def getInstance():
+        return singleton
 
     def __init__(self):
         logger.info("Using libtipi wiringPi GPIO")

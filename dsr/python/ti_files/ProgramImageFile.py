@@ -1,49 +1,50 @@
-import os
-import io
-import sys
-import traceback
-import math
 import logging
 from ti_files import ti_files
 
 logger = logging.getLogger(__name__)
 
-class ProgramImageFile(ti_files):
+class ProgramImageFile(object):
 
     def __init__(self, bytes):
         self.header = bytes[:128]
         self.body = bytes[128:]
 
+    def isValid(self):
+        return ti_files.isValid(self.header) and ti_files.isProgram(self.header)
+
     @staticmethod
     def load(unix_file_name):
         fh = None
         try:
-            fh = fopen(unix_file_name, "rb")
-            bytes = fh.read()
-            if ti_files.isValid(bytes) and ti_files.isProgram(bytes):
-                return ProgramImageFile(bytes)
-        except expression as identifier:
-            logger.error("not a valid Program Image TIFILE %s", unix_file_name)
-            return None
+            fh = open(unix_file_name, "rb")
+            bytes = bytearray(fh.read())
+            prog_file = ProgramImageFile(bytes)
+            if prog_file.isValid():
+                return prog_file
+            else:
+                raise Exception("Invalid Program Image")
+        except Exception as e:
+            logger.error("Error reading file %s", unix_file_name)
+            raise
         finally:
             if fh != None:
                 fh.close()
 
     @staticmethod
     def create(device_name, unix_file_name, body):
-        nameParts = str(devname).split('.')
+        nameParts = str(device_name).split('.')
         tiname = nameParts[len(nameParts) - 1]
 
-        header = ti_files.createHeader(ti_files.PROGRAM, tiname, bytes)
-        fdata = bytearray(256 * (len(bytes) / 256 + 1) + 128)
+        header = ti_files.createHeader(ti_files.PROGRAM, tiname, body)
+        fdata = bytearray(256 * (len(body) / 256 + 1) + 128)
         fdata[0:127] = header
-        fdata[128:] = bytes
-        return ProgramImageFile(bytes)
+        fdata[128:] = body
+        return ProgramImageFile(fdata)
 
-    def save(unix_file_name):
-        fh = fopen(unix_file_name, "wb")
-        fh.write(header)
-        fh.write(body)
+    def save(self, unix_file_name):
+        fh = open(unix_file_name, "wb")
+        fh.write(self.header)
+        fh.write(self.body)
         fh.close()
 
     def getImage(self):

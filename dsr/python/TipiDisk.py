@@ -4,9 +4,10 @@ import logging
 import time
 import os
 import errno
+
+from ti_files import ti_files
+from ti_files.ProgramImageFile import ProgramImageFile
 from array import array
-import re
-from ti_files import *
 from tipi.TipiMessage import TipiMessage
 from tifloat import tifloat
 from tinames import tinames
@@ -200,7 +201,7 @@ class TipiDisk(object):
         maxsize = recordNumber(pab)
         unix_name = tinames.devnameToLocal(devname)
         try:
-            prog_file = ProgramImageFile(unix_name)
+            prog_file = ProgramImageFile.load(unix_name)
             filesize = prog_file.getImageSize()
             if filesize > maxsize:
                 logger.debug("TI buffer too small")
@@ -209,11 +210,8 @@ class TipiDisk(object):
 
             bytes = prog_file.getImage()
             self.sendSuccess()
-
-            filesizemsb = filesize >> 8
-            filesizelsb = filesize & 0xFF
-
-            self.tipi_io.send((bytes[128:])[:filesize])
+            logger.info("LOAD image size %d", filesize)
+            self.tipi_io.send(bytes)
 
         except Exception as e:
             # I don't think this will work. we need to check for as
@@ -234,6 +232,7 @@ class TipiDisk(object):
                 # TODO: modify DSR to expect a response after sending the bytes down.
                 # self.sendSuccess()
             except Exception as e:
+                traceback.print_exc()
                 self.sendErrorCode(EDEVERR)
             return
         self.sendErrorCode(EDEVERR)

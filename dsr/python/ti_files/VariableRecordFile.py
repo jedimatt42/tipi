@@ -8,7 +8,7 @@ from ti_files import ti_files
 
 logger = logging.getLogger(__name__)
 
-class VariableRecordFile(ti_files):
+class VariableRecordFile(object):
 
     def __init__(self, bytes):
         self.header = bytes[:128]

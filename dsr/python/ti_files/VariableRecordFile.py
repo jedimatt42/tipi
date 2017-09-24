@@ -16,11 +16,13 @@ class VariableRecordFile(object):
         self.records = self.__loadRecords(bytes)
 
     @staticmethod
-    def load(unix_file_name):
+    def load(unix_file_name, dataType):
         fh = None
         try:
             fh = fopen(unix_file_name, "rb")
             bytes = fh.read()
+            if ti_files.isInternal(bytes) == (dataType == INTERNAL):
+                logger.error("wrong dataType %s", unix_file_name)
             if ti_files.isValid(bytes) and ti_files.isVariable(bytes):
                 return VariableRecordFile(bytes)
         except expression as identifier:

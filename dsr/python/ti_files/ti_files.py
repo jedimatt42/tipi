@@ -34,19 +34,19 @@ class ti_files(object):
 
     @staticmethod
     def isProgram(bytes):
-        return ti_files.flags(bytes) & ti_files.PROGRAM
+        return (ti_files.flags(bytes) & ti_files.PROGRAM) != 0
 
     @staticmethod
     def isInternal(bytes):
-        return ti_files.flags(bytes) & ti_files.INTERNAL
+        return (ti_files.flags(bytes) & ti_files.INTERNAL) != 0
 
     @staticmethod
     def isProtected(bytes):
-        return ti_files.flags(bytes) & ti_files.PROTECTED
+        return (ti_files.flags(bytes) & ti_files.PROTECTED) != 0
 
     @staticmethod
     def isVariable(bytes):
-        return ti_files.flags(bytes) & ti_files.VARIABLE
+        return (ti_files.flags(bytes) & ti_files.VARIABLE) != 0
 
     @staticmethod
     def isValid(bytes):
@@ -170,20 +170,6 @@ class ti_files(object):
                     nextoff += data[offset] + 1
                 rIdx += 1
             return bytearray(data[offset + 1:nextoff])
-        except BaseException:
-            return None
-
-    @staticmethod
-    def readFixedRecord(bytes, recNumber):
-        reclen = ti_files.recordLength(bytes)
-        maxRecNo = ti_files.byteLength(bytes) / reclen
-        logger.debug("read fix record %d of %d", recNumber, maxRecNo)
-        if recNumber > maxRecNo:
-            return None
-        data = bytes[128:]
-        offset = reclen * recNumber
-        try:
-            return bytearray(data[offset:offset + reclen])
         except BaseException:
             return None
 

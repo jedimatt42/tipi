@@ -6,7 +6,7 @@ import os
 import errno
 from array import array
 import re
-from ti_files import ti_files
+from ti_files import *
 from tipi.TipiMessage import TipiMessage
 from tifloat import tifloat
 from tinames import tinames
@@ -199,22 +199,19 @@ class TipiDisk(object):
         logPab(pab)
         maxsize = recordNumber(pab)
         unix_name = tinames.devnameToLocal(devname)
-        fh = None
         try:
-            fh = open(unix_name, 'rb')
-            bytes = bytearray(fh.read())
-            # TODO: check that it fits in maxsize
-            ti_files.showHeader(bytes)
-            if not ti_files.isValid(bytes):
-                raise Exception("not tifiles format")
-            if not ti_files.isProgram(bytes):
-                raise Exception("not PROGRAM image file")
-            filesize = ti_files.byteLength(bytes)
+            prog_file = ProgramImageFile(unix_name)
+            filesize = prog_file.getImageSize()
+            if filesize > maxsize:
+                logger.debug("TI buffer too small")
+                self.tipi_io.sendErrorCode(EFILERR)
+                return
+
+            bytes = prog_file.getImage()
             self.sendSuccess()
 
-            # Just cause DSR doesn't have a global SYN for reading.
-            filesizemsb = (filesize & 0xFF00) >> 8
-            filesizelsb = (filesize & 0xFF)
+            filesizemsb = filesize >> 8
+            filesizelsb = filesize & 0xFF
 
             self.tipi_io.send((bytes[128:])[:filesize])
 
@@ -223,9 +220,6 @@ class TipiDisk(object):
             #   many errors as possible up front.
             self.sendErrorCode(EFILERR)
             logger.exception("failed to load file - %s", devname)
-        finally:
-            if fh is not None:
-                fh.close()
 
     def handleSave(self, pab, devname):
         logger.info("Opcode 6 Save - %s", devname)
@@ -234,10 +228,13 @@ class TipiDisk(object):
         if self.parentExists(unix_name):
             self.sendSuccess()
             fdata = self.tipi_io.receive()
-            ddata = ti_files.createProgramImage(devname, fdata, unix_name)
-            fh = open(unix_name, "w")
-            fh.write(ddata)
-            fh.close()
+            try:
+                prog_file = ProgramImageFile.create(devname, unix_name, fdata)
+                prog_file.save(unix_name)
+                # TODO: modify DSR to expect a response after sending the bytes down.
+                # self.sendSuccess()
+            except Exception as e:
+                self.sendErrorCode(EDEVERR)
             return
         self.sendErrorCode(EDEVERR)
 

@@ -25,7 +25,6 @@ class TipiDisk(object):
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
-        self.openRecord = {}
         self.openFiles = {}
 
     #
@@ -120,11 +119,6 @@ class TipiDisk(object):
         logger.debug("Opcode 1 Close - %s", devname)
         logPab(pab)
         self.sendSuccess()
-        try:
-            del self.openRecord[tinames.devnameToLocal(devname)]
-        except Exception as e:
-            # I don't care if close is called while file is not open
-            pass
         try:
             del self.openFiles[tinames.devnameToLocal(devname)]
         except Exception as e:

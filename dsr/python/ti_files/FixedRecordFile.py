@@ -24,8 +24,8 @@ class FixedRecordFile(object):
             fh = open(unix_file_name, "rb")
             fdata = bytearray(fh.read())
             # Check that request matches DISPLAY or INTERNAL of file
-            if ti_files.isInternal(fdata) == (dataType == INTERNAL):
-                logger.error("wrong dataType %s", unix_file_name)
+            ti_files.validateDataType(fdata, dataType)
+
             # Check that target file is valid
             if not ti_files.isValid(fdata):
                 raise Exception("invaid TIFILE")
@@ -65,6 +65,8 @@ class FixedRecordFile(object):
         return record
 
     def getRecord(self, idx):
+        if idx >= len(self.records):
+            return None
         return self.records[idx]
 
     def getRecordLength(self):
@@ -81,3 +83,4 @@ class FixedRecordFile(object):
         except BaseException:
             traceback.print_exc()
             return None
+

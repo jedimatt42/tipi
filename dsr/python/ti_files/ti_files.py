@@ -145,13 +145,6 @@ class ti_files(object):
             logger.error("not TIFILES header")
 
     @staticmethod
-    def readRecord(bytes, recNumber):
-        if ti_files.isVariable(bytes):
-            return ti_files.readVariableRecord(bytes, recNumber)
-        else:
-            return ti_files.readFixedRecord(bytes, recNumber)
-
-    @staticmethod
     def createHeader(flags, tiname, data):
         # create a 128 byte array, set flag byte,
         # copy in tiname
@@ -172,17 +165,6 @@ class ti_files(object):
 
         header[0x10:0x1A] = bytearray(tiname)
         return header
-
-    @staticmethod
-    def createProgramImage(devname, bytes, unix_name):
-        nameParts = str(devname).split('.')
-        tiname = nameParts[len(nameParts) - 1]
-
-        header = ti_files.createHeader(ti_files.PROGRAM, tiname, bytes)
-        fdata = bytearray(256 * (len(bytes) / 256 + 1) + 128)
-        fdata[0:127] = header
-        fdata[128:] = bytes
-        return fdata
 
     @staticmethod
     def validateDataType(fdata, dataType):

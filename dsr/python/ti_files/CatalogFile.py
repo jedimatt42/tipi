@@ -16,6 +16,7 @@ class CatalogFile(object):
     def __init__(self, localpath):
         self.recNum = 0
         self.localpath = localpath
+        self.records = self.__loadRecords()
 
     @staticmethod
     def load(path, pab):
@@ -41,27 +42,31 @@ class CatalogFile(object):
         return record
 
     def getRecord(self, idx):
-        if idx == 0:
-            return self.createVolumeData()
-        else:
-            return self.createFileCatRecord()
+        if idx >= len(self.records):
+            return None
+        return self.records[idx]
 
-    def createVolumeData(self):
-        return self.encodeDirRecord("TIPI", 0, 1440, 1438)
+    def __loadRecords(self):
+        recs = []
+        recs += [ self.__createVolumeData() ]
+        recs += self.__createFileCatRecords()
+        recs += [ self.__encodeDirRecord("", 0, 0, 0) ]
+        return recs
 
-    def createFileCatRecord(self):
+    def __createVolumeData(self):
+        return self.__encodeDirRecord("TIPI", 0, 1440, 1438)
+
+    def __createFileCatRecords(self):
         files = sorted(list(filter(lambda x: 
             os.path.isdir(os.path.join(self.localpath, x)) or 
             ti_files.isTiFile(str(os.path.join(self.localpath, x))), os.listdir(self.localpath))))
+        return map(self.__createFileRecord, files)
+
+    def __createFileRecord(self, f):
         fh = None
         try:
-            if self.recNum - 1 >= len(files):
-                return self.encodeDirRecord("", 0, 0, 0)
-
-            f = files[self.recNum - 1]
-
             if os.path.isdir(os.path.join(self.localpath, f)):
-                return self.encodeDirRecord(f, 6, 2, 0)
+                return self.__encodeDirRecord(f, 6, 2, 0)
 
             fh = open(os.path.join(self.localpath, f), 'rb')
 
@@ -70,7 +75,7 @@ class CatalogFile(object):
             ft = ti_files.dsrFileType(header)
             sectors = ti_files.getSectors(header) + 1
             recordlen = ti_files.recordLength(header)
-            return self.encodeDirRecord(f, ft, sectors, recordlen)
+            return self.__encodeDirRecord(f, ft, sectors, recordlen)
 
         except Exception as e:
             traceback.print_exc()
@@ -80,7 +85,7 @@ class CatalogFile(object):
             if fh is not None:
                 fh.close()
 
-    def encodeDirRecord(self, name, ftype, sectors, recordLength):
+    def __encodeDirRecord(self, name, ftype, sectors, recordLength):
         bytes = bytearray(38)
 
         shortname = tinames.asTiShortName(name)

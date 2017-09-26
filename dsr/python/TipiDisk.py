@@ -224,20 +224,6 @@ class TipiDisk(object):
         logger.info("Status not implemented yet")
         self.sendErrorCode(EDEVERR)
 
-    def createFileReadRecord(self, path, recordNumber):
-        logger.debug("loading record %d from %s", recordNumber, path)
-        fh = None
-        try:
-            fh = open(path, 'rb')
-            bytes = bytearray(fh.read())
-            return ti_files.readRecord(bytes, recordNumber)
-        except BaseException:
-            raise
-        finally:
-            if fh is not None:
-                fh.close()
-        return None
-
     def parentExists(self, unix_name):
         parent = os.path.dirname(unix_name)
         return os.path.exists(parent) and os.path.isdir(parent)

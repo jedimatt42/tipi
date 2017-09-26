@@ -18,13 +18,13 @@ class FixedRecordFile(object):
         self.currentRecord = 0
 
     @staticmethod
-    def load(unix_file_name, dataType):
+    def load(unix_file_name, pab):
         fh = None
         try:
             fh = open(unix_file_name, "rb")
             fdata = bytearray(fh.read())
             # Check that request matches DISPLAY or INTERNAL of file
-            ti_files.validateDataType(fdata, dataType)
+            ti_files.validateDataType(fdata, dataType(pab))
 
             # Check that target file is valid
             if not ti_files.isValid(fdata):

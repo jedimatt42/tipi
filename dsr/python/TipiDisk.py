@@ -91,9 +91,9 @@ class TipiDisk(object):
             try:
                 open_file = None
                 if recordType(pab) == FIXED:
-                    open_file = FixedRecordFile.load(localPath, dataType(pab))
+                    open_file = FixedRecordFile.load(localPath, pab)
                 else:
-                    open_file = VariableRecordFile.load(localPath, dataType(pab))
+                    open_file = VariableRecordFile.load(localPath, pab)
 
                 fillInRecordLen = open_file.getRecordLength()
 

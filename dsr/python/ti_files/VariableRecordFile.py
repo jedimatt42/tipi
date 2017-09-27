@@ -42,19 +42,6 @@ class VariableRecordFile(object):
             if fh != None:
                 fh.close()
 
-    def __loadRecords(self, bytes):
-        count = ti_files.recordCount(bytes)
-        idx = 0
-        records = []
-        while idx < count:
-            # Todo: migrate readFixedRecord code into this class
-            record = self.__readVariableRecord(bytes, idx)
-            if record == None:
-                break
-            records.append(record)
-            idx += 1
-        return records
-
     def isLegal(self, pab):
         return mode(pab) == INPUT and recordType(pab) != FIXED
 
@@ -73,22 +60,33 @@ class VariableRecordFile(object):
     def getRecordLength(self):
         return self.recordLength
 
-    def __readVariableRecord(self, bytes, idx):
-        logger.debug("read var record %d", idx)
-        sec = 0
-        rIdx = 0
+    def __loadRecords(self, bytes):
+        records = []
+        # variable records return sectors instead of actual record count
+        sectors = ti_files.recordCount(self.header)
+        sIdx = 0
         offset = 0
+        if len(bytes) <= offset:
+            return records
+
         nextoff = offset + bytes[offset] + 1
-        try:
-            while rIdx < idx:
-                offset = nextoff
-                if bytes[offset] == 0xff:
-                    # we need to move to the next ~sector~
-                    offset = int((offset / 256) + 1) * 256
-                    nextoff = offset + bytes[offset] + 1
-                else:
-                    nextoff += bytes[offset] + 1
-                rIdx += 1
-            return bytearray(bytes[offset + 1:nextoff])
-        except BaseException:
-            return None
+        record = bytearray(bytes[offset + 1:nextoff])
+        logger.debug("record: %s", str(record))
+        records += [record]
+
+        while sIdx < sectors:
+            logger.debug("record %d of %d", sIdx, sectors)
+            offset = nextoff
+            if bytes[offset] == 0xff:
+                sIdx += 1
+                if sIdx >= sectors:
+                    break
+                # we need to move to the next ~sector~
+                offset = int((offset / 256) + 1) * 256
+                nextoff = offset + bytes[offset] + 1
+            else:
+                nextoff += bytes[offset] + 1
+            record = bytearray(bytes[offset + 1:nextoff])
+            logger.debug("record: %s", str(record))
+            records += [record]
+        return records

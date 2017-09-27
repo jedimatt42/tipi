@@ -42,7 +42,7 @@ class FixedRecordFile(object):
                 fh.close()
 
     def __loadRecords(self, bytes):
-        count = ti_files.recordCount(bytes)
+        count = ti_files.recordCount(self.header)
         idx = 0
         records = []
         while idx < count:

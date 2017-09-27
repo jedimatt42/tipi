@@ -74,7 +74,7 @@ class ti_files(object):
 
     @staticmethod
     def recordCount(bytes):
-        return bytes[15] + (bytes[14] << 8)
+        return bytes[14] + (bytes[15] << 8)
 
     @staticmethod
     def tiName(bytes):

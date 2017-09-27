@@ -1,6 +1,5 @@
 #!/usr/bin/env python2
 import logging
-from array import array
 
 logger = logging.getLogger(__name__)
 

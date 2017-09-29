@@ -83,7 +83,19 @@ class CatalogFile(object):
                 recordlen = ti_files.recordLength(header)
                 return self.__encodeDirRecord(f, ft, sectors, recordlen)
 
-            return self.__encodeDirRecord(f, 1, 1, 128)
+            # else it is a native file
+            if fp.endswith(".txt") or fp.endswith(".TXT"):
+                # dis/var
+                ft = 2
+                recCount = self.__line_count(fp)
+                recSize = 80
+            else:
+                # dis/fix
+                ft = 1
+                stats = os.stat(fp)
+                recCount = stats.st_size / 128 + 1
+                recSize = 128
+            return self.__encodeDirRecord(f, ft, recCount, recSize)
 
         except Exception as e:
             traceback.print_exc()
@@ -120,3 +132,10 @@ class CatalogFile(object):
             bytes[i] = 0
 
         return bytes
+
+    def __line_count(self, fp):
+        i = 0
+        with open(fp) as f:
+            for i, l in enumerate(f):
+                pass
+        return i + 1

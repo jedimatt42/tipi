@@ -5,11 +5,13 @@ import time
 import os
 import errno
 
-from ti_files import ti_files
+from ti_files.ti_files import ti_files
 from ti_files.ProgramImageFile import ProgramImageFile
 from ti_files.FixedRecordFile import FixedRecordFile
 from ti_files.VariableRecordFile import VariableRecordFile
 from ti_files.CatalogFile import CatalogFile
+from ti_files.NativeFile import NativeFile
+from ti_files.BasicFile import BasicFile
 from array import array
 from tipi.TipiMessage import TipiMessage
 from tifloat import tifloat
@@ -90,10 +92,13 @@ class TipiDisk(object):
         if os.path.exists(localPath):
             try:
                 open_file = None
-                if recordType(pab) == FIXED:
-                    open_file = FixedRecordFile.load(localPath, pab)
+                if ti_files.isTiFile(localPath):
+                    if recordType(pab) == FIXED:
+                        open_file = FixedRecordFile.load(localPath, pab)
+                    else:
+                        open_file = VariableRecordFile.load(localPath, pab)
                 else:
-                    open_file = VariableRecordFile.load(localPath, pab)
+                    open_file = NativeFile.load(localPath, pab)
 
                 fillInRecordLen = open_file.getRecordLength()
 
@@ -171,7 +176,11 @@ class TipiDisk(object):
         maxsize = recordNumber(pab)
         unix_name = tinames.devnameToLocal(devname)
         try:
-            prog_file = ProgramImageFile.load(unix_name)
+            if unix_name.lower().endswith((".bas", ".xb")):
+                prog_file = BasicFile.load(unix_name)
+            else:
+                prog_file = ProgramImageFile.load(unix_name)
+            
             filesize = prog_file.getImageSize()
             if filesize > maxsize:
                 logger.debug("TI buffer too small")

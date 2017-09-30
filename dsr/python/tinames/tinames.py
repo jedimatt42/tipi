@@ -28,6 +28,7 @@ def devnameToLocal(devname):
 
 
 def asTiShortName(name):
+    name = name.replace('.', '/')
     if len(name) <= 10:
         return name
     else:
@@ -60,4 +61,8 @@ def findpath(path, part):
                     os.listdir(path)))
             if candidates:
                 return candidates[0]
+        else:
+            lpart = part.replace("/", ".").replace("\\", ".")
+            if os.path.exists(str(os.path.join(path, lpart))):
+                return lpart
     return part

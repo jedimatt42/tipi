@@ -4,6 +4,7 @@ import sys
 import traceback
 import math
 import logging
+import NativeFile
 from ti_files import ti_files
 from tinames import tinames
 from tifloat import tifloat
@@ -58,24 +59,44 @@ class CatalogFile(object):
 
     def __createFileCatRecords(self):
         files = sorted(list(filter(lambda x: 
-            os.path.isdir(os.path.join(self.localpath, x)) or 
-            ti_files.isTiFile(str(os.path.join(self.localpath, x))), os.listdir(self.localpath))))
+            self.__include(os.path.join(self.localpath, x)), os.listdir(self.localpath))))
         return map(self.__createFileRecord, files)
 
+    def __include(self, fp):
+        logger.debug("__include %s", fp)
+        return os.path.isdir(fp) or ti_files.isTiFile(fp) or os.path.isfile(fp)
+
     def __createFileRecord(self, f):
+        logger.debug("createFileRecord %s", f)
         fh = None
         try:
-            if os.path.isdir(os.path.join(self.localpath, f)):
+            fp = os.path.join(self.localpath, f)
+            if os.path.isdir(fp):
                 return self.__encodeDirRecord(f, 6, 2, 0)
 
-            fh = open(os.path.join(self.localpath, f), 'rb')
+            if ti_files.isTiFile(fp):
+                fh = open(fp, 'rb')
 
-            header = bytearray(fh.read()[:128])
+                header = bytearray(fh.read()[:128])
 
-            ft = ti_files.dsrFileType(header)
-            sectors = ti_files.getSectors(header) + 1
-            recordlen = ti_files.recordLength(header)
-            return self.__encodeDirRecord(f, ft, sectors, recordlen)
+                ft = ti_files.dsrFileType(header)
+                sectors = ti_files.getSectors(header) + 1
+                recordlen = ti_files.recordLength(header)
+                return self.__encodeDirRecord(f, ft, sectors, recordlen)
+
+            # else it is a native file
+            if fp.lower().endswith(NativeFile.dv80suffixes):
+                # dis/var
+                ft = 2
+                recCount = self.__line_count(fp)
+                recSize = 80
+            else:
+                # dis/fix
+                ft = 1
+                stats = os.stat(fp)
+                recCount = stats.st_size / 128 + 1
+                recSize = 128
+            return self.__encodeDirRecord(f, ft, recCount, recSize)
 
         except Exception as e:
             traceback.print_exc()
@@ -89,6 +110,7 @@ class CatalogFile(object):
         bytes = bytearray(38)
 
         shortname = tinames.asTiShortName(name)
+        logger.debug("cat record: %s, %d, %d, %d", shortname, ftype, sectors, recordLength)
 
         bytes[0] = len(shortname)
         i = 1
@@ -111,3 +133,10 @@ class CatalogFile(object):
             bytes[i] = 0
 
         return bytes
+
+    def __line_count(self, fp):
+        i = 0
+        with open(fp) as f:
+            for i, l in enumerate(f):
+                pass
+        return i + 1

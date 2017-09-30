@@ -44,7 +44,7 @@ class NativeFile(object):
         return records
 
     @staticmethod
-    def loadBytes(fh):
+    def loadBytes(fp):
         records = []
         with open(fp) as f:
             bytes = bytearray(f.read())

@@ -40,7 +40,7 @@ class NativeFile(object):
         records = []
         with open(fp) as f:
             for i, l in enumerate(f):
-                records += [bytearray(l)]
+                records += [bytearray(l.rstrip())]
         return records
 
     @staticmethod

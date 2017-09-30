@@ -4,6 +4,7 @@ import sys
 import traceback
 import math
 import logging
+import NativeFile
 from ti_files import ti_files
 from tinames import tinames
 from tifloat import tifloat
@@ -84,7 +85,7 @@ class CatalogFile(object):
                 return self.__encodeDirRecord(f, ft, sectors, recordlen)
 
             # else it is a native file
-            if fp.endswith(".txt") or fp.endswith(".TXT"):
+            if fp.lower().endswith(NativeFile.dv80suffixes):
                 # dis/var
                 ft = 2
                 recCount = self.__line_count(fp)

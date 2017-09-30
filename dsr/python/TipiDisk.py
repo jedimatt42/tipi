@@ -176,7 +176,7 @@ class TipiDisk(object):
         maxsize = recordNumber(pab)
         unix_name = tinames.devnameToLocal(devname)
         try:
-            if unix_name.lower().endswith(".bas") or unix_name.lower().endswith(".xb"):
+            if unix_name.lower().endswith((".bas", ".xb")):
                 prog_file = BasicFile.load(unix_name)
             else:
                 prog_file = ProgramImageFile.load(unix_name)

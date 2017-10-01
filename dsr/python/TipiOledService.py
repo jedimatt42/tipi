@@ -14,7 +14,7 @@ from pygtail import Pygtail
 
 pat = re.compile(r"^.*oled.*: INFO     (.*)$")
 
-fontpath = "/home/pi/dev/github/tipi/dsr/python/TI99Basic.ttf"
+fontpath = "/home/tipi/services/TI99Basic.ttf"
 
 # 128x32 oledlay with hardware I2C:
 oled = Adafruit_SSD1306.SSD1306_128_32(rst=None)
@@ -62,7 +62,7 @@ def displayLine(line):
 
 displayLine("   TIPI   Waiting...")
 
-logpath = "/var/log/tipi"
+logpath = "/home/tipi/log"
 try:
     os.makedirs(logpath)
 except OSError as exc:

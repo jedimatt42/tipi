@@ -33,7 +33,7 @@ class BasicFile(object):
 
     @staticmethod
     def toBasic(fp, tmpfp):
-        cmdargs = ["/home/pi/dev/github/xdt99/xbas99.py", "-c", "-o", tmpfp, fp]
+        cmdargs = ["/home/tipi/xdt99/xbas99.py", "-c", "-o", tmpfp, fp]
         if call(cmdargs) != 0:
             raise Exception("Invalid BASIC Source")
  

@@ -1,11 +1,12 @@
 [Unit]
 Description=TI-99/4A DSR RESET Service
-After=network.target
+After=network.target tipiboot.service
 
 [Service]
 Type=simple
-ExecStart=/home/pi/dev/github/tipi/dsr/python/env.sh /home/pi/dev/github/tipi/dsr/python/TipiWatchDogService.py
+ExecStart=/home/tipi/services/tipiwatchdog.sh
 Restart=always
+User=tipi
 
 [Install]
 WantedBy=multi-user.target

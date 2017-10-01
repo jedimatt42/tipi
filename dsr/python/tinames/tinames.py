@@ -10,11 +10,11 @@ def devnameToLocal(devname):
     parts = str(devname).split('.')
     path = ""
     if parts[0] == "TIPI":
-        path = "/tipi_disk"
+        path = "/home/tipi/tipi_disk"
     elif parts[0] == "DSK1":
-        path = "/tipi_disk/DSK1"
+        path = "/home/tipi/tipi_disk/DSK1"
     elif parts[0] == "DSK":
-        path = "/tipi_disk"
+        path = "/home/tipi/tipi_disk"
 
     for part in parts[1:]:
         if part != "":

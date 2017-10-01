@@ -28,6 +28,11 @@ cd /home/tipi/services/systemd
 ./setup.sh
 ```
 
+```
+cd /home/tipi
+git clone https://github.com/endlos99/xdt99.git
+```
+
 There are a number of systemd services that provide the function
 of TIPI. Follow these commands to install:
 

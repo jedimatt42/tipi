@@ -1,0 +1,13 @@
+[Unit]
+Description=TI-99/4A OLED Output Service
+After=network.target tipiboot.service
+
+[Service]
+Type=simple
+ExecStart=/home/tipi/services/tipioled.sh
+Restart=always
+User=tipi
+
+[Install]
+WantedBy=multi-user.target
+

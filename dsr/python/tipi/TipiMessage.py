@@ -1,16 +1,10 @@
 import time
 import logging
 from TipiPorts import TipiPorts
-from Phash import Phash
 
 RESET = 0xF1
 TSWB = 0x02
 TSRB = 0x06
-
-HASHOK = 0x5A
-HASHERR = 0xA5
-
-CHUNKSIZE = 64
 
 BACKOFF_DELAY = 10000
 
@@ -21,8 +15,7 @@ class TipiMessage(object):
 
     def __init__(self):
         self.prev_syn = 0
-        self.ports = TipiPorts()
-        self.phash = Phash()
+        self.ports = TipiPorts.getInstance()
 
     #
     # Block until both sides show control bits reset
@@ -78,28 +71,6 @@ class TipiMessage(object):
         self.ports.setRC(self.prev_syn)
         logger.debug('received byte: %d', val)
         return val
-
-    #
-    # exchange and check hash
-    def __checkHash(self, bytes):
-        hash = self.phash.digestAll(0, bytes)
-        self.__sendByte(hash)
-        self.__modeRead()
-        check = self.__readByte()
-        self.__modeRead()
-        return check == HASHOK
-
-    #
-    # Return an array of arrays
-    def __splitMessage(self, bytes):
-        l = len(bytes)
-        chunks = []
-        bc = (l / CHUNKSIZE) + 1
-        for i in range(bc):
-            chunk = bytes[i * CHUNKSIZE:(i + 1) * CHUNKSIZE]
-            if len(chunk):
-                chunks += [chunk]
-        return chunks
 
     #
     # Receive a message, returned as a byte array

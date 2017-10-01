@@ -13,13 +13,13 @@ class ti_files(object):
     PROGRAM = 0x01
     INTERNAL = 0x02
     PROTECTED = 0x04
-    VARIABLE = 0x08
+    VARIABLE = 0x80
 
     @staticmethod
     def isTiFile(filename):
         fh = None
         try:
-            if os.stat(filename).st_size > 128:
+            if os.stat(filename).st_size >= 128:
                 fh = open(filename, 'rb')
                 header = bytearray(fh.read()[:9])
                 isGood = ti_files.isValid(header)
@@ -74,7 +74,7 @@ class ti_files(object):
 
     @staticmethod
     def recordCount(bytes):
-        return bytes[15] + (bytes[14] << 8)
+        return bytes[14] + (bytes[15] << 8)
 
     @staticmethod
     def tiName(bytes):
@@ -145,49 +145,6 @@ class ti_files(object):
             logger.error("not TIFILES header")
 
     @staticmethod
-    def readRecord(bytes, recNumber):
-        if ti_files.isVariable(bytes):
-            return ti_files.readVariableRecord(bytes, recNumber)
-        else:
-            return ti_files.readFixedRecord(bytes, recNumber)
-
-    @staticmethod
-    def readVariableRecord(bytes, recNumber):
-        logger.debug("read var record %d", recNumber)
-        data = bytes[128:]
-        sec = 0
-        rIdx = 0
-        offset = 0
-        nextoff = offset + data[offset] + 1
-        try:
-            while rIdx < recNumber:
-                offset = nextoff
-                if data[offset] == 0xff:
-                    # we need to move to the next sector
-                    offset = int((offset / 256) + 1) * 256
-                    nextoff = offset + data[offset] + 1
-                else:
-                    nextoff += data[offset] + 1
-                rIdx += 1
-            return bytearray(data[offset + 1:nextoff])
-        except BaseException:
-            return None
-
-    @staticmethod
-    def readFixedRecord(bytes, recNumber):
-        reclen = ti_files.recordLength(bytes)
-        maxRecNo = ti_files.byteLength(bytes) / reclen
-        logger.debug("read fix record %d of %d", recNumber, maxRecNo)
-        if recNumber > maxRecNo:
-            return None
-        data = bytes[128:]
-        offset = reclen * recNumber
-        try:
-            return bytearray(data[offset:offset + reclen])
-        except BaseException:
-            return None
-
-    @staticmethod
     def createHeader(flags, tiname, data):
         # create a 128 byte array, set flag byte,
         # copy in tiname
@@ -210,12 +167,9 @@ class ti_files(object):
         return header
 
     @staticmethod
-    def createProgramImage(devname, bytes, unix_name):
-        nameParts = str(devname).split('.')
-        tiname = nameParts[len(nameParts) - 1]
-
-        header = ti_files.createHeader(ti_files.PROGRAM, tiname, bytes)
-        fdata = bytearray(256 * (len(bytes) / 256 + 1) + 128)
-        fdata[0:127] = header
-        fdata[128:] = bytes
-        return fdata
+    def validateDataType(fdata, dataType):
+        if dataType != 0 and ti_files.isInternal(fdata) != 0:
+            return
+        if dataType == 0 and ti_files.isInternal(fdata) == 0:
+            return
+        raise Exception("mismatch data type")

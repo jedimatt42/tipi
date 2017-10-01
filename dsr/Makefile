@@ -17,6 +17,7 @@ clean:
 tipi.bin: $(sources)
 	xas99.py -R -b -L tipi.list -o $@ rom.a99
 	mv $@_4000 $@
+	dd if=/dev/null of=$@ bs=1 count=0 seek=8192
 
 tipi_emu.bin: $(sources)
 	xas99.py -R -b -L tipi_emu.list -o $@ rom.a99 -D emulation nowaitwrite 

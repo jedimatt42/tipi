@@ -10,11 +10,11 @@ def devnameToLocal(devname):
     parts = str(devname).split('.')
     path = ""
     if parts[0] == "TIPI":
-        path = "/tipi_disk"
+        path = "/home/tipi/tipi_disk"
     elif parts[0] == "DSK1":
-        path = "/tipi_disk/DSK1"
+        path = "/home/tipi/tipi_disk/DSK1"
     elif parts[0] == "DSK":
-        path = "/tipi_disk"
+        path = "/home/tipi/tipi_disk"
 
     for part in parts[1:]:
         if part != "":
@@ -28,6 +28,7 @@ def devnameToLocal(devname):
 
 
 def asTiShortName(name):
+    name = name.replace('.', '/')
     if len(name) <= 10:
         return name
     else:
@@ -60,4 +61,8 @@ def findpath(path, part):
                     os.listdir(path)))
             if candidates:
                 return candidates[0]
+        else:
+            lpart = part.replace("/", ".").replace("\\", ".")
+            if os.path.exists(str(os.path.join(path, lpart))):
+                return lpart
     return part

@@ -13,7 +13,7 @@ from TipiDisk import TipiDisk
 #
 # Setup logging
 #
-logpath = "/var/log/tipi"
+logpath = "/home/tipi/log"
 try:
     os.makedirs(logpath)
 except OSError as exc:
@@ -22,7 +22,7 @@ except OSError as exc:
     else:
         raise
 
-LOG_FILENAME = "/var/log/tipi/tipi.log"
+LOG_FILENAME = logpath + "/tipi.log"
 logging.getLogger('').setLevel(logging.INFO)
 loghandler = logging.handlers.RotatingFileHandler(
     LOG_FILENAME, maxBytes=(5000 * 1024), backupCount=5)

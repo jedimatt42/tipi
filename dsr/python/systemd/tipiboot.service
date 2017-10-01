@@ -1,0 +1,11 @@
+[Unit]
+Description=TIPI System Preparation
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/home/tipi/services/tipiboot.sh
+
+[Install]
+WantedBy=multi-user.target
+

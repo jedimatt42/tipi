@@ -1,11 +1,12 @@
 [Unit]
-Description=TI-99/4A DSR Service
-After=network.target
+Description=TI-99/4A OLED Output Service
+After=network.target tipiboot.service
 
 [Service]
 Type=simple
-ExecStart=/home/pi/dev/github/tipi/dsr/python/env.sh /home/pi/dev/github/tipi/dsr/python/TipiOledService.py
+ExecStart=/home/tipi/services/tipioled.sh
 Restart=always
+User=tipi
 
 [Install]
 WantedBy=multi-user.target

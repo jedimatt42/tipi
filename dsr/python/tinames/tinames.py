@@ -11,8 +11,14 @@ def devnameToLocal(devname):
     path = ""
     if parts[0] == "TIPI":
         path = "/home/tipi/tipi_disk"
+    elif parts[0] == "DSK0":
+        path = "/home/tipi/tipi_disk"
     elif parts[0] == "DSK1":
         path = "/home/tipi/tipi_disk/DSK1"
+    elif parts[0] == "DSK2":
+        path = "/home/tipi/tipi_disk/DSK2"
+    elif parts[0] == "DSK3":
+        path = "/home/tipi/tipi_disk/DSK3"
     elif parts[0] == "DSK":
         path = "/home/tipi/tipi_disk"
 

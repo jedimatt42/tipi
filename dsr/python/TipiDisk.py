@@ -230,8 +230,27 @@ class TipiDisk(object):
     def handleStatus(self, pab, devname):
         logger.info("Opcode 9 Status - %s", devname)
         logPab(pab)
-        logger.info("Status not implemented yet")
-        self.sendErrorCode(EDEVERR)
+        statbyte = 0
+        localPath = tinames.devnameToLocal(devname)
+        if not os.path.exists(localPath):
+            statbyte |= STNOFILE
+        else:
+            open_file = self.openFiles[localPath]
+            if open_file != None:
+                statbyte = open_file.getStatusByte()
+            else:
+                if ti_files.isTiFile(localPath):
+                    fh = open(localPath, "rb")
+                    header = bytearray(fh.read())[:128]
+                    if ti_files.isVariable(header):
+                        statbyte |= STVARIABLE
+                    if ti_files.isProgram(header):
+                        statbyte |= STPROGRAM
+                    if ti_files.isInternal(header):
+                        statbyte |= STINTERNAL
+
+        self.tipi_io.send([SUCCESS])
+        self.tipi_io.send([statbyte])
 
     def parentExists(self, unix_name):
         parent = os.path.dirname(unix_name)

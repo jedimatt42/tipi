@@ -62,6 +62,14 @@ class NativeFile(object):
                 records += [padded]
         return records
 
+    @staticmethod
+    def status(fp):
+        if fp.lower().endswith(dv80suffixes):
+            statByte = STVARIABLE
+        else:
+            statByte = 0
+        return statByte
+
     def isLegal(self, pab):
         return mode(pab) == INPUT
 

@@ -248,6 +248,8 @@ class TipiDisk(object):
                         statbyte |= STPROGRAM
                     if ti_files.isInternal(header):
                         statbyte |= STINTERNAL
+                else:
+                    statbyte = NativeFile.status(localPath)
 
         self.tipi_io.send([SUCCESS])
         self.tipi_io.send([statbyte])

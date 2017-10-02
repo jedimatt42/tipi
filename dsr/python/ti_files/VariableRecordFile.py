@@ -45,6 +45,14 @@ class VariableRecordFile(object):
     def isLegal(self, pab):
         return mode(pab) == INPUT and recordType(pab) != FIXED
 
+    def getStatusByte(self):
+        statByte = STVARIABLE
+        if ti_files.isInternal(self.header):
+            statByte |= STINTERNAL
+        if self.currentRecord >= len(self.records):
+            statByte |= STLEOF
+        return statByte
+
     def readRecord(self, idx):
         if idx != 0:
             self.currentRecord = idx

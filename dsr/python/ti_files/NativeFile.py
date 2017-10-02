@@ -14,10 +14,11 @@ dv80suffixes = (".txt", ".bas", ".xb", ".md")
 
 class NativeFile(object):
 
-    def __init__(self, records, recordLength):
+    def __init__(self, records, recordLength, statByte):
         self.records = records
         self.currentRecord = 0
         self.recordLength = recordLength
+        self.statByte = statByte
 
     @staticmethod
     def load(unix_file_name, pab):
@@ -25,10 +26,14 @@ class NativeFile(object):
             if unix_file_name.lower().endswith(dv80suffixes):
                 records = NativeFile.loadLines(unix_file_name)
                 recLen = 80
+                statByte = STVARIABLE
             else:
                 records = NativeFile.loadBytes(unix_file_name)
                 recLen = 128
-            return NativeFile(records, recLen)
+                statByte = 0
+                if dataType(pab):
+                    statByte |= STINTERNAL
+            return NativeFile(records, recLen, statByte)
         except Exception as e:
             traceback.print_exc()
             logger.error("not a valid Fixed Record TIFILE %s", unix_file_name)
@@ -57,8 +62,22 @@ class NativeFile(object):
                 records += [padded]
         return records
 
+    @staticmethod
+    def status(fp):
+        if fp.lower().endswith(dv80suffixes):
+            statByte = STVARIABLE
+        else:
+            statByte = 0
+        return statByte
+
     def isLegal(self, pab):
         return mode(pab) == INPUT
+
+    def getStatusByte(self):
+        statByte = self.statByte
+        if self.currentRecord >= len(self.records):
+            statByte |= STLEOF
+        return statByte
 
     def readRecord(self, idx):
         if idx != 0:

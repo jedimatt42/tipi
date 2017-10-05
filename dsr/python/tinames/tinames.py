@@ -31,10 +31,10 @@ def devnameToLocal(devname):
     return path
 
 # Transform long host filename to 10 character TI filename
-
-
 def asTiShortName(name):
-    name = name.replace('.', '/')
+    parts = name.split('/')
+    lastpart = parts[len(parts)-1]
+    name = lastpart.replace('.', '/')
     if len(name) <= 10:
         return name
     else:

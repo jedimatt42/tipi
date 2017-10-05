@@ -114,9 +114,15 @@ class TipiDisk(object):
 
 
         else:
-            # TODO: here we can handle creation of new files.
-            pass
-            # TODO: check that any parent directory specified does exist.
+            if self.parentExists(localPath):
+                if recordType(pab) == VARIABLE:
+                    open_file = VariableRecordFile.create(devname, localPath, pab)
+                else:
+                    open_file = FixedRecordFile.create(devname, localPath, pab)
+                self.openFiles[localPath] = open_file
+                self.sendSuccess()
+                self.tipi_io.send([open_file.getRecordLength()])
+                return
 
         self.sendErrorCode(EFILERR)
 
@@ -125,7 +131,10 @@ class TipiDisk(object):
         logPab(pab)
         self.sendSuccess()
         try:
-            del self.openFiles[tinames.devnameToLocal(devname)]
+            localPath = tinames.devnameToLocal(devname)
+            open_file = self.openFiles[localPath]
+            open_file.close(localPath)
+            del self.openFiles[localPath]
         except Exception as e:
             pass
 
@@ -163,6 +172,22 @@ class TipiDisk(object):
     def handleWrite(self, pab, devname):
         logger.info("Opcode 3 Write - %s", devname)
         logPab(pab)
+        localPath = tinames.devnameToLocal(devname)
+        try:
+            open_file = self.openFiles[localPath]
+            if open_file == None:
+                self.sendErrorCode(EFILERR)
+                return
+
+            self.sendSuccess()
+            bytes = self.tipi_io.receive()
+            open_file.writeRecord(bytes, pab)
+            return
+
+        except Exception as e:
+            traceback.print_exc()
+            self.sendErrorCode(EFILERR)
+
         self.sendErrorCode(EDEVERR)
 
     def handleRestore(self, pab, devname):

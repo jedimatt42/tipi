@@ -22,6 +22,7 @@ from Pab import *
 logger = logging.getLogger(__name__)
 oled = logging.getLogger('oled')
 
+basicSuffixes = (".b99", ".bas", ".xb")
 
 class TipiDisk(object):
 
@@ -56,7 +57,7 @@ class TipiDisk(object):
         self.sendErrorCode(EILLOP)
 
     def sendErrorCode(self, code):
-        logger.error("responding with error: " + str(code))
+        logger.exception("responding with error: " + str(code))
         self.sendSingleByte(code)
 
     def sendSuccess(self):
@@ -201,7 +202,7 @@ class TipiDisk(object):
         maxsize = recordNumber(pab)
         unix_name = tinames.devnameToLocal(devname)
         try:
-            if unix_name.lower().endswith((".b99", ".bas", ".xb")):
+            if (not ti_files.isTiFile(unix_name)) and unix_name.lower().endswith(basicSuffixes):
                 prog_file = BasicFile.load(unix_name)
             else:
                 prog_file = ProgramImageFile.load(unix_name)
@@ -227,16 +228,23 @@ class TipiDisk(object):
         logger.info("Opcode 6 Save - %s", devname)
         logPab(pab)
         unix_name = tinames.devnameToLocal(devname)
+        logger.debug("saving program to %s", unix_name)
         if self.parentExists(unix_name):
             self.sendSuccess()
             fdata = self.tipi_io.receive()
+            logger.debug("received program image")
             try:
-                prog_file = ProgramImageFile.create(devname, unix_name, fdata)
+                if unix_name.lower().endswith(basicSuffixes):
+                    prog_file = BasicFile.create(fdata)
+                else:
+                    prog_file = ProgramImageFile.create(devname, unix_name, fdata)
+                logger.debug("created file object")
                 prog_file.save(unix_name)
+
                 # TODO: modify DSR to expect a response after sending the bytes down.
                 # self.sendSuccess()
             except Exception as e:
-                traceback.print_exc()
+                logger.exception("failed to save PROGRAM")
                 self.sendErrorCode(EDEVERR)
             return
         self.sendErrorCode(EDEVERR)

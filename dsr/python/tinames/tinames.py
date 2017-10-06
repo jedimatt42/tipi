@@ -1,10 +1,12 @@
 import sys
 import os
 import re
+import logging
 from crccheck.crc import Crc15
 
 # Transform a name supplied by the 4A into our storage path
 
+logger = logging.getLogger(__name__)
 
 def devnameToLocal(devname):
     parts = str(devname).split('.')
@@ -24,7 +26,9 @@ def devnameToLocal(devname):
 
     for part in parts[1:]:
         if part != "":
+            logger.debug("matching path part: %s", part)
             path += "/" + findpath(path, part)
+            logger.debug("building path: %s", path)
 
     path = str(path)
 
@@ -52,6 +56,7 @@ def baseN(num, b, numerals="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"):
 
 
 def findpath(path, part):
+    part = part.replace("/", ".").replace("\\", ".")
     # if the file actually exists (or dir) then use literal name
     if os.path.exists(str(os.path.join(path, part))):
         return part
@@ -67,8 +72,5 @@ def findpath(path, part):
                     os.listdir(path)))
             if candidates:
                 return candidates[0]
-        else:
-            lpart = part.replace("/", ".").replace("\\", ".")
-            if os.path.exists(str(os.path.join(path, lpart))):
-                return lpart
+
     return part

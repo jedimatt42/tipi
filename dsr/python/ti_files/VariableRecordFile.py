@@ -11,12 +11,16 @@ logger = logging.getLogger(__name__)
 
 class VariableRecordFile(object):
 
-    def __init__(self, bytes):
+    def __init__(self, bytes, pab):
         self.dirty = False
+        self.mode = mode(pab)
         self.header = bytes[:128]
         self.recordLength = ti_files.recordLength(self.header)
         self.records = self.__loadRecords(bytes[128:])
-        self.currentRecord = 0
+        if self.mode == APPEND:
+            self.currentRecord = len(self.records)
+        else:
+            self.currentRecord = 0
 
     @staticmethod
     def create(devname, localPath, pab):
@@ -31,7 +35,7 @@ class VariableRecordFile(object):
         header = ti_files.createHeader(flags, tiname, bytearray(0))
         ti_files.setRecordLength(header, recLen)
         ti_files.setRecordsPerSector(header, int(256/recLen))
-        return VariableRecordFile(header)
+        return VariableRecordFile(header, pab)
 
     @staticmethod
     def load(unix_file_name, pab):
@@ -49,7 +53,7 @@ class VariableRecordFile(object):
             logger.debug("flags %d", ti_files.flags(fdata))
             if not ti_files.isVariable(fdata):
                 raise Exception("file is FIXED, must be VARIABLE")
-            return VariableRecordFile(fdata)
+            return VariableRecordFile(fdata, pab)
         except Exception as e:
             logger.exception("not a valid Variable Record TIFILE %s", unix_file_name)
             return None
@@ -159,7 +163,7 @@ class VariableRecordFile(object):
                 sector[offset:offset + recLen] = rec
                 offset += recLen
             recNo += 1
-            
+
         if offset != 0:
             sector[offset] = 0xff
             offset += 1

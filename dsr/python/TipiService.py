@@ -14,13 +14,8 @@ from TipiDisk import TipiDisk
 # Setup logging
 #
 logpath = "/home/tipi/log"
-try:
+if not os.path.isdir(logpath):
     os.makedirs(logpath)
-except OSError as exc:
-    if exc.errno == errno.EEXIST and os.path.isdir(logpath):
-        pass
-    else:
-        raise
 
 LOG_FILENAME = logpath + "/tipi.log"
 logging.getLogger('').setLevel(logging.INFO)

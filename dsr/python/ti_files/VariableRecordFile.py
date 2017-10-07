@@ -53,6 +53,8 @@ class VariableRecordFile(object):
             logger.debug("flags %d", ti_files.flags(fdata))
             if not ti_files.isVariable(fdata):
                 raise Exception("file is FIXED, must be VARIABLE")
+            if fileType(pab) == RELATIVE:
+                raise Exception("variable length records are restricted to SEQUENTIAL access")
             return VariableRecordFile(fdata, pab)
         except Exception as e:
             logger.exception("not a valid Variable Record TIFILE %s", unix_file_name)
@@ -72,14 +74,14 @@ class VariableRecordFile(object):
             statByte |= STLEOF
         return statByte
 
-    def writeRecord(self, bytes, pab):
+    def writeRecord(self, rdata, pab):
         self.dirty = True
         recNo = recordNumber(pab)
         if recNo != 0:
             self.currentRecord = recNo
         if self.currentRecord >= len(self.records):
             self.records += [bytearray(0)] * (1 + self.currentRecord - len(self.records))
-        self.records[self.currentRecord] = bytearray(bytes)
+        self.records[self.currentRecord] = bytearray(rdata)
         self.currentRecord += 1
 
     def readRecord(self, idx):
@@ -131,12 +133,7 @@ class VariableRecordFile(object):
     def close(self, localPath):
         if self.dirty:
             try:
-                logger.debug("Dirty file, writing to disk %s", localPath)
-                logger.debug("records: %d", len(self.records))
-                shortName = tinames.asTiShortName(localPath)
-                logger.debug("writing TIFILE: %s", shortName)
                 bytes = self.__packRecords()
-                logger.debug("tifile length %d", len(bytes))
                 fh = open(localPath, "wb")
                 fh.write(bytes)
                 fh.close()

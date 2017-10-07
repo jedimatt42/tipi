@@ -19,7 +19,7 @@ class ti_files(object):
     def isTiFile(filename):
         fh = None
         try:
-            if os.stat(filename).st_size >= 128:
+            if os.path.exists(filename) and os.stat(filename).st_size >= 128:
                 fh = open(filename, 'rb')
                 header = bytearray(fh.read()[:9])
                 isGood = ti_files.isValid(header)
@@ -53,8 +53,20 @@ class ti_files(object):
         return bytes[0] == 0x07 and str(bytes[1:8]) == "TIFILES"
 
     @staticmethod
+    def setTiFile(bytes):
+        bytes[0] = 0x07
+        bytes[1:8] = "TIFILES"
+
+    @staticmethod
     def getSectors(bytes):
         return bytes[9] + (bytes[8] << 8)
+
+    @staticmethod
+    def setSectors(bytes, sectors):
+        lsb = 0xff & sectors
+        msb = sectors >> 8
+        bytes[8] = msb
+        bytes[9] = lsb
 
     @staticmethod
     def flags(bytes):
@@ -65,20 +77,43 @@ class ti_files(object):
         return bytes[11]
 
     @staticmethod
+    def setRecordsPerSector(bytes, rps):
+        bytes[11] = rps
+
+    @staticmethod
     def eofOffset(bytes):
         return bytes[12]
+
+    @staticmethod
+    def setEofOffset(bytes, offset):
+        bytes[12] = offset
 
     @staticmethod
     def recordLength(bytes):
         return bytes[13]
 
     @staticmethod
+    def setRecordLength(bytes, recLen):
+        bytes[13] = recLen
+
+    @staticmethod
     def recordCount(bytes):
         return bytes[14] + (bytes[15] << 8)
 
     @staticmethod
+    def setRecordCount(bytes, count):
+        lsb = count & 0xff
+        msb = count >> 8
+        bytes[14] = lsb
+        bytes[15] = msb
+
+    @staticmethod
     def tiName(bytes):
         return str(bytes[0x10:0x1A])
+
+    @staticmethod
+    def setName(bytes, shortName):
+        bytes[0x10:0x1A] = shortName
 
     @staticmethod
     def byteLength(bytes):

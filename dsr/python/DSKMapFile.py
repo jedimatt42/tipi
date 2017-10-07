@@ -1,7 +1,9 @@
 
 import os
+import logging
 from Pab import *
 
+logger = logging.getLogger(__name__)
 
 class DSKMapFile(object):
 
@@ -11,7 +13,7 @@ class DSKMapFile(object):
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
-        self.LINK = "/tipi_disk/DSK1"
+        self.LINK = "/home/tipi/tipi_disk/DSK"
 
     def handle(self, pab, devname):
         op = opcode(pab)
@@ -40,11 +42,12 @@ class DSKMapFile(object):
 
     def read(self, pab, devname):
         if dataType(pab) == DISPLAY:
-            if self.recordNo != 0:
+            if self.recordNo < 0 or self.recordNo > 2:
                 self.tipi_io.send([EEOF])
                 return
             else:
-                linkpath = os.path.basename(os.path.realpath(self.LINK))
+                dsk = self.recordNo + 1
+                linkpath = os.path.basename(os.path.realpath(self.LINK + str(dsk)))
                 fdata = bytearray(linkpath)
                 self.tipi_io.send([SUCCESS])
                 self.tipi_io.send(fdata)
@@ -54,8 +57,10 @@ class DSKMapFile(object):
 
     def write(self, pab, devname):
         self.tipi_io.send([SUCCESS])
-        msg = str(self.tipi_io.receive())
-
-        if os.path.exists(self.LINK):
-            os.unlink(self.LINK)
-        os.symlink("/tipi_disk/{}".format(msg), self.LINK)
+        msg = str(self.tipi_io.receive()).rstrip()
+        logger.debug("setting link to \"%s\"", msg)
+        link = self.LINK + str(self.recordNo)
+        self.recordNo = recordNumber(pab)
+        if os.path.exists(link):
+            os.unlink(link)
+        os.symlink("/home/tipi/tipi_disk/{}".format(msg), link)

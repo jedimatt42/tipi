@@ -14,13 +14,8 @@ from TipiDisk import TipiDisk
 # Setup logging
 #
 logpath = "/home/tipi/log"
-try:
+if not os.path.isdir(logpath):
     os.makedirs(logpath)
-except OSError as exc:
-    if exc.errno == errno.EEXIST and os.path.isdir(logpath):
-        pass
-    else:
-        raise
 
 LOG_FILENAME = logpath + "/tipi.log"
 logging.getLogger('').setLevel(logging.INFO)
@@ -38,37 +33,39 @@ oled = logging.getLogger('oled')
 ##
 # MAIN
 ##
+try:
+    oled.info("TIPI Init")
 
-oled.info("TIPI Init")
+    createResetListener()
 
-createResetListener()
+    tipi_io = TipiMessage()
+    specialFiles = SpecialFiles(tipi_io)
+    rawExtensions = RawExtensions(tipi_io)
+    tipiDisk = TipiDisk(tipi_io)
 
-tipi_io = TipiMessage()
-specialFiles = SpecialFiles(tipi_io)
-rawExtensions = RawExtensions(tipi_io)
-tipiDisk = TipiDisk(tipi_io)
+    oled.info("TIPI Ready")
 
-oled.info("TIPI Ready")
+    while True:
+        logger.info("waiting for PAB request...")
 
-while True:
-    logger.info("waiting for PAB request...")
+        pab = tipi_io.receive()
+        if rawExtensions.handle(pab):
+            continue
 
-    pab = tipi_io.receive()
-    if rawExtensions.handle(pab):
-        continue
+        logger.debug("PAB received.")
 
-    logger.debug("PAB received.")
+        logger.debug("waiting for devicename...")
+        devicename = tipi_io.receive()
 
-    logger.debug("waiting for devicename...")
-    devicename = tipi_io.receive()
+        # Special file name requests to force different errors
+        filename = str(devicename)
 
-    # Special file name requests to force different errors
-    filename = str(devicename)
+        if specialFiles.handle(pab, filename):
+            continue
 
-    if specialFiles.handle(pab, filename):
-        continue
+        # nothing special, so fall back to disk access
+        tipiDisk.handle(pab, filename)
 
-    # nothing special, so fall back to disk access
-    tipiDisk.handle(pab, filename)
-
-    logger.info("Request completed.")
+        logger.info("Request completed.")
+except Exception as e:
+    logger.error("Unhandled exception in main", exc_info=True)

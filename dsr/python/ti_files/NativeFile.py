@@ -10,7 +10,7 @@ from Pab import *
 
 logger = logging.getLogger(__name__)
 
-dv80suffixes = (".txt", ".bas", ".xb", ".md")
+dv80suffixes = (".txt", ".a99", ".b99", ".bas", ".xb")
 
 class NativeFile(object):
 
@@ -22,22 +22,29 @@ class NativeFile(object):
 
     @staticmethod
     def load(unix_file_name, pab):
+        if mode(pab) != INPUT:
+            raise Exception("Native files are read only")
+
         try:
             if unix_file_name.lower().endswith(dv80suffixes):
+                if recordLength(pab) != 80 and recordLength(pab) != 0:
+                    raise Exception("Incompatible recordlength")
                 records = NativeFile.loadLines(unix_file_name)
                 recLen = 80
                 statByte = STVARIABLE
             else:
+                if recordLength(pab) != 128 and recordLength(pab) != 0:
+                    raise Exception("Incompatible recordlength")
                 records = NativeFile.loadBytes(unix_file_name)
                 recLen = 128
                 statByte = 0
                 if dataType(pab):
                     statByte |= STINTERNAL
             return NativeFile(records, recLen, statByte)
+
         except Exception as e:
-            traceback.print_exc()
-            logger.error("not a valid Fixed Record TIFILE %s", unix_file_name)
-            return None
+            logger.exception("not a valid NativeFile %s", unix_file_name)
+            raise
 
     @staticmethod
     def loadLines(fp):

@@ -25,6 +25,26 @@ class BasicFile(object):
             if fh != None:
                 fh.close()
 
+    @staticmethod
+    def create(fdata):
+        return BasicFile(fdata)
+
+    def save(self, unix_file_name):
+        fh = None
+        try:
+            tmpfp = "/tmp/xbas_tmp"
+            fh = open(tmpfp, "wb")
+            fh.write(self.body)
+            fh.close()
+            fh = None
+            BasicFile.toText(tmpfp, unix_file_name)
+        except Exception as e:
+            logger.exception("failed to save BasicFile")
+            raise
+        finally:
+            if fh != None:
+                fh.close()
+
     def getImage(self):
         return self.body
 
@@ -36,4 +56,10 @@ class BasicFile(object):
         cmdargs = ["/home/tipi/xdt99/xbas99.py", "-c", "-o", tmpfp, fp]
         if call(cmdargs) != 0:
             raise Exception("Invalid BASIC Source")
+
+    @staticmethod
+    def toText(tmpfp, fp):
+        cmdargs = ["/home/tipi/xdt99/xbas99.py", "-d", "-o", fp, tmpfp]
+        if call(cmdargs) != 0:
+            raise Exception("Invalid BASIC Program")
  

@@ -22,6 +22,7 @@ from Pab import *
 logger = logging.getLogger(__name__)
 oled = logging.getLogger('oled')
 
+basicSuffixes = (".b99", ".bas", ".xb")
 
 class TipiDisk(object):
 
@@ -56,7 +57,7 @@ class TipiDisk(object):
         self.sendErrorCode(EILLOP)
 
     def sendErrorCode(self, code):
-        logger.error("responding with error: " + str(code))
+        logger.exception("responding with error: " + str(code))
         self.sendSingleByte(code)
 
     def sendSuccess(self):
@@ -114,9 +115,15 @@ class TipiDisk(object):
 
 
         else:
-            # TODO: here we can handle creation of new files.
-            pass
-            # TODO: check that any parent directory specified does exist.
+            if self.parentExists(localPath):
+                if recordType(pab) == VARIABLE:
+                    open_file = VariableRecordFile.create(devname, localPath, pab)
+                else:
+                    open_file = FixedRecordFile.create(devname, localPath, pab)
+                self.openFiles[localPath] = open_file
+                self.sendSuccess()
+                self.tipi_io.send([open_file.getRecordLength()])
+                return
 
         self.sendErrorCode(EFILERR)
 
@@ -125,7 +132,10 @@ class TipiDisk(object):
         logPab(pab)
         self.sendSuccess()
         try:
-            del self.openFiles[tinames.devnameToLocal(devname)]
+            localPath = tinames.devnameToLocal(devname)
+            open_file = self.openFiles[localPath]
+            open_file.close(localPath)
+            del self.openFiles[localPath]
         except Exception as e:
             pass
 
@@ -163,6 +173,22 @@ class TipiDisk(object):
     def handleWrite(self, pab, devname):
         logger.info("Opcode 3 Write - %s", devname)
         logPab(pab)
+        localPath = tinames.devnameToLocal(devname)
+        try:
+            open_file = self.openFiles[localPath]
+            if open_file == None:
+                self.sendErrorCode(EFILERR)
+                return
+
+            self.sendSuccess()
+            bytes = self.tipi_io.receive()
+            open_file.writeRecord(bytes, pab)
+            return
+
+        except Exception as e:
+            traceback.print_exc()
+            self.sendErrorCode(EFILERR)
+
         self.sendErrorCode(EDEVERR)
 
     def handleRestore(self, pab, devname):
@@ -175,8 +201,11 @@ class TipiDisk(object):
         logPab(pab)
         maxsize = recordNumber(pab)
         unix_name = tinames.devnameToLocal(devname)
+        if not os.path.exists(unix_name):
+            self.sendErrorCode(EFILERR)
+            return
         try:
-            if unix_name.lower().endswith((".bas", ".xb")):
+            if (not ti_files.isTiFile(unix_name)) and unix_name.lower().endswith(basicSuffixes):
                 prog_file = BasicFile.load(unix_name)
             else:
                 prog_file = ProgramImageFile.load(unix_name)
@@ -202,16 +231,23 @@ class TipiDisk(object):
         logger.info("Opcode 6 Save - %s", devname)
         logPab(pab)
         unix_name = tinames.devnameToLocal(devname)
+        logger.debug("saving program to %s", unix_name)
         if self.parentExists(unix_name):
             self.sendSuccess()
             fdata = self.tipi_io.receive()
+            logger.debug("received program image")
             try:
-                prog_file = ProgramImageFile.create(devname, unix_name, fdata)
+                if unix_name.lower().endswith(basicSuffixes):
+                    prog_file = BasicFile.create(fdata)
+                else:
+                    prog_file = ProgramImageFile.create(devname, unix_name, fdata)
+                logger.debug("created file object")
                 prog_file.save(unix_name)
+
                 # TODO: modify DSR to expect a response after sending the bytes down.
                 # self.sendSuccess()
             except Exception as e:
-                traceback.print_exc()
+                logger.exception("failed to save PROGRAM")
                 self.sendErrorCode(EDEVERR)
             return
         self.sendErrorCode(EDEVERR)

@@ -11,11 +11,32 @@ logger = logging.getLogger(__name__)
 
 class FixedRecordFile(object):
 
-    def __init__(self, bytes):
+    def __init__(self, bytes, pab):
+        self.dirty = False
         self.header = bytes[:128]
+        self.mode = mode(pab)
         self.recordLength = ti_files.recordLength(self.header)
         self.records = self.__loadRecords(bytes[128:])
-        self.currentRecord = 0
+        if self.mode == APPEND:
+            self.currentRecord = len(self.records)
+        else:
+            self.currentRecord = 0
+
+    @staticmethod
+    def create(devname, localpath, pab):
+        nameParts = str(devname).split('.')
+        tiname = nameParts[len(nameParts) - 1]
+        recLen = recordLength(pab)
+        if recLen == 0:
+            recLen = 80
+        # FIXED is default (or flag clear/unset)
+        flags = 0
+        if dataType(pab) == INTERNAL:
+            flags |= ti_files.INTERNAL
+        header = ti_files.createHeader(flags, tiname, bytearray(0))
+        ti_files.setRecordLength(header, recLen)
+        ti_files.setRecordsPerSector(header, int(256/recLen))
+        return FixedRecordFile(header, pab)
 
     @staticmethod
     def load(unix_file_name, pab):
@@ -32,7 +53,7 @@ class FixedRecordFile(object):
             # Check that we are a FIXED record file
             if ti_files.isVariable(fdata):
                 raise Exception("file is variable")
-            return FixedRecordFile(fdata)
+            return FixedRecordFile(fdata, pab)
         except Exception as e:
             traceback.print_exc()
             logger.error("not a valid Fixed Record TIFILE %s", unix_file_name)
@@ -40,19 +61,6 @@ class FixedRecordFile(object):
         finally:
             if fh != None:
                 fh.close()
-
-    def __loadRecords(self, bytes):
-        count = ti_files.recordCount(self.header)
-        idx = 0
-        records = []
-        while idx < count:
-            # Todo: migrate readFixedRecord code into this class
-            record = self.readFixedRecord(bytes, idx)
-            if record == None:
-                break
-            records.append(record)
-            idx += 1
-        return records
 
     def isLegal(self, pab):
         return mode(pab) == INPUT and recordType(pab) == FIXED
@@ -64,6 +72,17 @@ class FixedRecordFile(object):
         if self.currentRecord >= len(self.records):
             statByte |= STLEOF
         return statByte
+
+    def writeRecord(self, rdata, pab):
+        self.dirty = True
+        recNo = recordNumber(pab)
+        if recNo != 0:
+            self.currentRecord = recNo
+        if self.currentRecord >= len(self.records):
+            self.records += [bytearray(self.recordLength)] * (1 + self.currentRecord - len(self.records))
+        self.records[self.currentRecord] = bytearray(rdata)
+        logger.debug("record data: %s", rdata)
+        self.currentRecord += 1
 
     def readRecord(self, idx):
         if idx != 0:
@@ -80,15 +99,71 @@ class FixedRecordFile(object):
     def getRecordLength(self):
         return self.recordLength
 
-    def readFixedRecord(self, bytes, idx):
-        maxRecNo = ti_files.byteLength(self.header) / self.recordLength
-        logger.debug("read fix record %d of %d", idx, maxRecNo)
-        if idx > maxRecNo:
-            return None
-        offset = self.recordLength * idx
-        try:
-            return bytearray(bytes[offset:offset + self.recordLength])
-        except BaseException:
-            traceback.print_exc()
-            return None
+    def __loadRecords(self, bytes):
+        count = ti_files.recordCount(self.header)
+        idx = 0
+        records = []
+        
+        while idx < count:
+            record = self.__recordBytes(bytes, idx)
+            if record == None:
+                break
+            records.append(record)
+            idx += 1
+        return records
 
+    def __recordBytes(self, bytes, idx):
+        recPerSec = int(256 / self.recordLength)
+        secNumber = int(idx / recPerSec)
+        recInSec = idx % recPerSec
+        start = (secNumber * 256) + (recInSec * self.recordLength)
+        end = start + self.recordLength
+        return bytes[start:end]
+
+    def close(self, localPath):
+        if self.dirty:
+            try:
+                bytes = self.__packRecords()
+                fh = open(localPath, "wb")
+                fh.write(bytes)
+                fh.close()
+                self.dirty = False
+            except Exception as e:
+                logger.exception("Failed to save fixed file %s", localPath)
+
+    def __packRecords(self):
+        recLen = self.recordLength
+        sectors = []
+        sector = bytearray(256)
+        recNo = 0
+        offset = 0
+        while recNo < len(self.records):
+            rec = self.records[recNo]
+            if (256 - offset) < (recLen):
+                sectors += [sector]
+                offset = 0
+                sector = bytearray(256)
+            sector[offset:offset + recLen] = rec
+            offset += recLen
+            recNo += 1
+
+        if offset != 0:
+            sectors += [sector]
+        sectorCount = len(sectors)
+
+        header = bytearray(self.header)
+        ti_files.setSectors(header, sectorCount)
+        if offset == 256:
+            offset = 0
+        ti_files.setEofOffset(header, offset)
+        ti_files.setRecordCount(header, len(self.records))
+
+        bytes = bytearray(128 + (sectorCount * 256))
+        bytes[:128] = header
+        idx = 128
+        sec = 0
+        while sec < sectorCount:
+            bytes[idx:] = sectors[sec]
+            sec += 1
+            idx += 256
+        return bytes

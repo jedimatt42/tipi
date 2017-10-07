@@ -201,6 +201,9 @@ class TipiDisk(object):
         logPab(pab)
         maxsize = recordNumber(pab)
         unix_name = tinames.devnameToLocal(devname)
+        if not os.path.exists(unix_name):
+            self.sendErrorCode(EFILERR)
+            return
         try:
             if (not ti_files.isTiFile(unix_name)) and unix_name.lower().endswith(basicSuffixes):
                 prog_file = BasicFile.load(unix_name)

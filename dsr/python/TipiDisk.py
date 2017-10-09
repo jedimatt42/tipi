@@ -75,7 +75,8 @@ class TipiDisk(object):
         localPath = tinames.devnameToLocal(devname)
         logger.debug("  local file: " + localPath)
         if mode(pab) == INPUT and not os.path.exists(localPath):
-            self.sendErrorCode(EFILERR)
+            logger.info("Passing to other controllers")
+            self.sendErrorCode(EDVNAME)
             return
 
         if os.path.isdir(localPath):
@@ -124,29 +125,38 @@ class TipiDisk(object):
                 self.sendSuccess()
                 self.tipi_io.send([open_file.getRecordLength()])
                 return
+            else:
+                # EDEVERR triggers passing on the pab request to other controllers.
+                self.sendErrorCode(EDEVERR)
+                return
 
         self.sendErrorCode(EFILERR)
 
     def handleClose(self, pab, devname):
         logger.debug("Opcode 1 Close - %s", devname)
         logPab(pab)
-        self.sendSuccess()
+        localPath = tinames.devnameToLocal(devname)
+        if not localPath in self.openFiles:
+            # not open by us, maybe some other controller handled it.
+            self.sendErrorCode(EDEVERR)
+            return
+
         try:
-            localPath = tinames.devnameToLocal(devname)
             open_file = self.openFiles[localPath]
             open_file.close(localPath)
             del self.openFiles[localPath]
+            self.sendSuccess()
         except Exception as e:
+            self.sendErrorCode(EFILERR)
             pass
 
     def handleRead(self, pab, devname):
         logger.debug("Opcode 2 Read - %s", devname)
         logPab(pab)
         localPath = tinames.devnameToLocal(devname)
-
-        if not os.path.exists(localPath):
-            logger.debug("file %s does not exist", localPath)
-            self.sendErrorCode(EFILERR)
+        if not localPath in self.openFiles:
+            # pass to a different device.
+            self.sendErrorCode(EDEVERR)
             return
 
         try:
@@ -174,6 +184,11 @@ class TipiDisk(object):
         logger.info("Opcode 3 Write - %s", devname)
         logPab(pab)
         localPath = tinames.devnameToLocal(devname)
+        if not localPath in self.openFiles:
+            # pass to a different device.
+            self.sendErrorCode(EDEVERR)
+            return
+
         try:
             open_file = self.openFiles[localPath]
             if open_file == None:
@@ -183,6 +198,7 @@ class TipiDisk(object):
             self.sendSuccess()
             bytes = self.tipi_io.receive()
             open_file.writeRecord(bytes, pab)
+            self.sendSuccess()
             return
 
         except Exception as e:
@@ -202,7 +218,8 @@ class TipiDisk(object):
         maxsize = recordNumber(pab)
         unix_name = tinames.devnameToLocal(devname)
         if not os.path.exists(unix_name):
-            self.sendErrorCode(EFILERR)
+            logger.info("Passing to other controllers")
+            self.sendErrorCode(EDVNAME)
             return
         try:
             if (not ti_files.isTiFile(unix_name)) and unix_name.lower().endswith(basicSuffixes):
@@ -244,8 +261,7 @@ class TipiDisk(object):
                 logger.debug("created file object")
                 prog_file.save(unix_name)
 
-                # TODO: modify DSR to expect a response after sending the bytes down.
-                # self.sendSuccess()
+                self.sendSuccess()
             except Exception as e:
                 logger.exception("failed to save PROGRAM")
                 self.sendErrorCode(EDEVERR)
@@ -269,7 +285,12 @@ class TipiDisk(object):
         statbyte = 0
         localPath = tinames.devnameToLocal(devname)
         if not os.path.exists(localPath):
-            statbyte |= STNOFILE
+            # TODO? Should we pass to other controllers here?
+            if devname.startswith(("TIPI.", "DSK0.")): 
+                statbyte |= STNOFILE
+            else:
+                self.sendErrorCode(EDEVERR)
+                return
         else:
             open_file = self.openFiles[localPath]
             if open_file != None:

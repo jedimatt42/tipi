@@ -73,12 +73,16 @@ Raspberry PI transforms TI device-filenames with the following rules:
 
 Examples:
 
+```
++---------------------+-------------------------------------+
 | TI NAME             | UNIX NAME                           |
 +---------------------+-------------------------------------+
 | TIPI.BAS.MYGAME     | /home/tipi/tipi_disk/BAS/MYGAME     |
 | TIPI.BAS.MYGAME/B99 | /home/tipi/tipi_disk/BAS/MYGAME.B99 |
 | TIPI.docs.race/md   | /home/tipi/tipi_disk/docs/race.md   |
 | DSK.WB.FAVORITES    | /home/tipi/tipi_disk/WB/FAVORITES   |
++---------------------+-------------------------------------+
+```
 
 Low level support:
 

@@ -45,14 +45,14 @@ NET "ti_a<13>" LOC = P87;
 NET "ti_a<14>" LOC = P89;
 NET "ti_a<15>" LOC = P92;
 
-NET "tp_d<0>" LOC = P11;
-NET "tp_d<1>" LOC = P12;
-NET "tp_d<2>" LOC = P13;
-NET "tp_d<3>" LOC = P15;
-NET "tp_d<4>" LOC = P14;
-NET "tp_d<5>" LOC = P16;
-NET "tp_d<6>" LOC = P17;
-NET "tp_d<7>" LOC = P18;
+NET "tp_d<7>" LOC = P11;
+NET "tp_d<6>" LOC = P12;
+NET "tp_d<5>" LOC = P13;
+NET "tp_d<4>" LOC = P15;
+NET "tp_d<3>" LOC = P14;
+NET "tp_d<2>" LOC = P16;
+NET "tp_d<1>" LOC = P17;
+NET "tp_d<0>" LOC = P18;
 
 NET "test<0>" LOC = P65;
 NET "test<1>" LOC = P66;

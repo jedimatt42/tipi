@@ -26,6 +26,8 @@ import uuid
 from subprocess import call
 import re
 
+tipi_disk_base = '/home/tipi/tipi_disk' 
+
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
@@ -92,7 +94,7 @@ def files(path):
                              }
                            )
    
-    full_path = '/tipi_disk' 
+    full_path = tipi_disk_base
     
     if len(path):
         full_path += '/' + path
@@ -162,7 +164,7 @@ def edit_b99_file():
 
     status_message = ''
 
-    edit_file_path = '/tipi_disk/' + request.args.get('file')
+    edit_file_path = tipi_disk_base + '/' + request.args.get('file')
     rp = request.args.get('rp')
     
     if request.form.get('action') == 'save_b99_file' or request.args.get('action') == 'save_b99_file':
@@ -170,18 +172,18 @@ def edit_b99_file():
 
         file_name = request.form.get('file_name')  # Yeah, need to sanitize this, esp if this stuff runs as root!
  
-        file = open('/tipi_disk/' + file_name, 'w') 
+        file = open(tipi_disk_base + '/' + file_name, 'w') 
         file.write(file_contents)
         file.close()
     
-        status_message = '/' + file_name + ' Saved, ' + str(os.stat('/tipi_disk/' + file_name).st_size) + ' bytes written'
+        status_message = '/' + file_name + ' Saved, ' + str(os.stat(tipi_disk_base + '/' + file_name).st_size) + ' bytes written'
         
         # Attempt to convert to TI's binary format:  (Needs validation)
         #
         binary_file_name = os.path.splitext(file_name)[0]
         
 
-    with open('/tipi_disk/' + request.args.get('file'), 'r') as content_file:
+    with open(tipi_disk_base + '/' + request.args.get('file'), 'r') as content_file:
         file_contents = content_file.read()
 
     return render_template('edit_b99_file.html', file_contents=file_contents, file_name = request.args.get('file'), rp = rp, status_message = status_message )
@@ -193,7 +195,7 @@ def edit_basic_file():
 
     status_message = ''
 
-    edit_file_path = '/tipi_disk/' + request.args.get('file')
+    edit_file_path = tipi_disk_base + '/' + request.args.get('file')
     rp = request.args.get('rp')
     
     if request.form.get('action') == 'save_basic_file' or request.args.get('action') == 'save_basic_file':
@@ -214,9 +216,9 @@ def edit_basic_file():
 
         # Now convert to TIFILES format:
         #
-        call(['xdm99.py', '-T', prg_tmp_file, '-o', '/tipi_disk/' + file_name])
+        call(['xdm99.py', '-T', prg_tmp_file, '-o', tipi_disk_base + '/' + file_name])
 
-        status_message = '/' + file_name + ' Saved, ' + str(os.stat('/tipi_disk/' + file_name).st_size) + ' bytes written'
+        status_message = '/' + file_name + ' Saved, ' + str(os.stat(tipi_disk_base + '/' + file_name).st_size) + ' bytes written'
 
     # First try decoding the file (non-FIAD format):
     #

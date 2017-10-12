@@ -5,3 +5,4 @@ work
 *-bak
 *.pyc
 .vscode
+ENV

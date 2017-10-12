@@ -1,0 +1,67 @@
+
+{% extends "page_template.html"%}
+{% block content %}
+
+
+
+<div class="alert alert-info" role="alert">
+    
+</div>
+
+<div class="files_container">
+<table cellspacing=4 cellpadding=0 border=0>
+    <tr><td colspan=6> Total files: {{ total_files }} </td></tr>
+    <tr><td colspan=6> Displaying contents of &nbsp; <b>{{ display_path }}</b> 
+                       &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="{{ request.path }}">refresh</a>
+        </td>
+    </tr>
+
+  <tr>
+    <td> &nbsp; </td>
+    <td><b>filename</td>
+    <td><b>type</td>
+    <td><b>size</td>
+    <td> &nbsp; &nbsp; <b>datestamp</td>
+    <td> &nbsp; </td>
+<!--        <th>host path</td> -->
+  </tr>
+
+{% for tipi_file in tipi_dir_listing %}
+    <tr>
+         <td valign=top align=center> {{ tipi_file.icon|safe }} </td>
+         <td valign=top> {{ tipi_file.name|safe }} </td>
+         <td valign=top align=left> {{ tipi_file.type }} </td>
+         <td valign=top align=right> {{ tipi_file.size }} </td>
+         <td valign=top> &nbsp; &nbsp; {{ tipi_file.date }} </td>
+        <td valign=top> &nbsp; &nbsp; {{ tipi_file.edit_link|safe }} </td>
+<!--             <td> {{ tipi_file.full_path }} </td>  -->
+    </tr>
+
+{% endfor %}
+
+</table>
+</div>
+
+
+
+<form>
+
+
+
+<div class="files_container">
+<table cellpadding=2 border=0>
+    <tr> <td colspan=2> <input type=button value=" Make a new directory in {{ display_path }}" </td> </tr>
+    <tr>
+        <td nowrap>Upload File to your TIPI: <input type="file" name="upload_file"> </td>
+        <td nowrap><input type=submit value=" Upload to TIPI "> <i>not implemented yet</i></td>
+    </tr>
+</table>
+</form>
+</div>
+
+<BR><BR>
+
+{% endblock %}
+
+
+

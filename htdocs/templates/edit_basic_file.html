@@ -1,0 +1,52 @@
+{% extends "page_template.html"%}
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>TIPI - Edit BASIC File</title>
+
+    <link rel="stylesheet" href="/css/style.css"></link>
+</head>
+
+<body>
+
+<div class="container">
+
+
+<form method=post>
+<input type=hidden name=action value="save_basic_file">
+<input type=hidden name=file_name value="{{ file_name }}">
+<input type=hidden name=rp value="{{ rp }}">
+
+<table align=center>
+<tr><td> <div class="ti99">Editing: {{ file_name }}</div> </td></tr>
+
+<tr><td>
+
+<textarea name="file_contents" rows=40 cols=60 class="ti_textarea">
+{{ file_contents }}
+</textarea>
+
+</td></tr>
+<tr><td align=center> <input type=button value=" < <  Back " onClick="location.href='{{ rp }}'"> &nbsp; &nbsp; &nbsp; <input type=submit value=" Save "> </td></tr>
+<tr><td> {{ status_message }} </td></tr>
+</table>
+</form>
+
+</div>
+
+
+</div>
+
+
+
+</body>
+
+</html>
+{% endblock %}

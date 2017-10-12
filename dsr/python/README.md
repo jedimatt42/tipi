@@ -47,6 +47,8 @@ sudo systemctl enable tipi.service
 sudo systemctl start tipi.service
 sudo systemctl enable tipioled.service
 sudo systemctl start tipioled.service
+sudo systemctl enable tipisuper.service
+sudo systemctl start tipisuper.service
 ```
 
 These services will auto restart when the Raspberry PI is booted.

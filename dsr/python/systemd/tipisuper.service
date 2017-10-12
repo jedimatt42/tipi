@@ -1,0 +1,11 @@
+[Unit]
+Description=TIPI Super User Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/home/tipi/services/tipisuper.sh
+
+[Install]
+WantedBy=multi-user.target
+

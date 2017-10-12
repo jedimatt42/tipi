@@ -6,13 +6,27 @@ Turn a Raspberry PI and some glue hardware into a TI Disk Drive and Network inte
 
 Keep it open for further device extension.
 
+# Level 2 IO (sector like) is not yet supported. You cannot use apps like DM2K to copy files yet.
+
 What can we do:
 
 DSR for file READ support:
-  INTERNAL/DISPLAY, FIXED/VARIABLE, PROGRAM, DIRECTORY
+
+* INTERNAL/DISPLAY, FIXED/VARIABLE, PROGRAM, DIRECTORY
+
+Write support:
+
+* INTERNAL/DISPLAY, FIXED/VARIABLE, PROGRAM
 
 CATALOG support. 
-Sub-directory support.
+
+* Sub-directory support.
+
+Native file support:
+
+* /b99 /bas /xb files can be LOADed or SAVEd as PROGRAM files with automatic transformation to/from ASCII native os files.
+* /txt /a99 /b99 /bas /xb native os ascii files can be OPEN and READ as DISPLAY VARIABLE 80 files.
+* other native os files can be OPEN and READ as DISPLAY FIXED 128 files.
 
 Partial long name support
 
@@ -22,7 +36,10 @@ Partial long name support
 DSR devices: 
 
 * TIPI. 
+* DSK0. 
 * DSK1. 
+* DSK2. 
+* DSK3. 
 * DSK.
 
 Special files:
@@ -31,6 +48,41 @@ Special files:
 * TIPI.STATUS - virtual D/V 80 file with list of network device info on PI. (mac addresses, and ip addresses for each network device )
 * TIPI.HTTP://... - GETs an HTTP url and let you access it like a normal file.
 * TIPI.TCP=hostname:port - open a socket, write opcode supported to write, read to read... 
+
+File name transformation:
+
+Devices are mapped to unix filesystem locations:
+
+* TIPI. - /home/tipi/tipi_disk
+* DSK0. - /home/tipi/tipi_disk ( alias for TIPI. for disk unit 0 support )
+* DSK1. - /home/tipi/tipi_disk/DSK1
+* DSK2. - /home/tipi/tipi_disk/DSK2
+* DSK3. - /home/tipi/tipi_disk/DSK3
+* DSK.<vol> - /home/tipi/tipi_disk/<vol>
+
+DSK1-3 are managed as symlinks, and can be configured with the DMAP BASIC program.
+
+Raspberry PI transforms TI device-filenames with the following rules:
+
+* '.' in file or path names become '/'
+* '/' or '\' in file or path names becomes '.'
+* linux filenames with more than 10 characters can be referenced with either the long name, or the short hashed name
+  as listed in the CATALOG
+* there is no shortening support for directory names
+* capitolization is observed ( the host os provides a case sensitive filesystem, as is the TI FS )
+
+Examples:
+
+```
++---------------------+-------------------------------------+
+| TI NAME             | UNIX NAME                           |
++---------------------+-------------------------------------+
+| TIPI.BAS.MYGAME     | /home/tipi/tipi_disk/BAS/MYGAME     |
+| TIPI.BAS.MYGAME/B99 | /home/tipi/tipi_disk/BAS/MYGAME.B99 |
+| TIPI.docs.race/md   | /home/tipi/tipi_disk/docs/race.md   |
+| DSK.WB.FAVORITES    | /home/tipi/tipi_disk/WB/FAVORITES   |
++---------------------+-------------------------------------+
+```
 
 Low level support:
 

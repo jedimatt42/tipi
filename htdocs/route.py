@@ -279,6 +279,21 @@ def about():
     return render_template('about.html', webpage_object=webpage_object, )
 
 
+@app.route('/rebootnow', methods=['GET'])
+def rebootnow():
+
+    with open("/tmp/tipireboot", 'w') as reboot_trigger:
+        reboot_trigger.write("tipi")
+
+    return render_template('reboot.html', webpage_object=webpage_object )
+
+@app.route('/shutdownnow', methods=['GET'])
+def shutdownnow():
+
+    with open("/tmp/tipihalt", 'w') as reboot_trigger:
+        reboot_trigger.write("tipi")
+
+    return render_template('shutdown.html', webpage_object=webpage_object )
 
 
 

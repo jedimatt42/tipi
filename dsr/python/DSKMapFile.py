@@ -16,6 +16,7 @@ class DSKMapFile(object):
         self.LINK = "/home/tipi/tipi_disk/DSK"
 
     def handle(self, pab, devname):
+        logPab(pab)
         op = opcode(pab)
         if op == OPEN:
             self.open(pab, devname)
@@ -60,15 +61,16 @@ class DSKMapFile(object):
         try:
             msg = str(self.tipi_io.receive()).rstrip()
             logger.debug("setting link to \"%s\"", msg)
-            link = self.LINK + str(self.recordNo)
             self.recordNo = recordNumber(pab)
+            link = self.LINK + str(self.recordNo)
             if os.path.lexists(link):
                 logger.info("removing symlink %s", link)
                 os.unlink(link)
             else:
                 logger.info("link did not exist %s", link)
-            logger.info("creating symlink for mapping %s", link)
-            os.symlink("/home/tipi/tipi_disk/{}".format(msg), link)
+            if msg != "DSK{}".format(self.recordNo):
+                logger.info("creating symlink for mapping %s", link)
+                os.symlink("/home/tipi/tipi_disk/{}".format(msg), link)
             self.tipi_io.send([SUCCESS])
         except Exception as e:
             logger.exception("Failed to create %s link", link)

@@ -63,7 +63,7 @@ class FixedRecordFile(object):
                 fh.close()
 
     def isLegal(self, pab):
-        return mode(pab) == INPUT and recordType(pab) == FIXED
+        return recordType(pab) == FIXED
 
     def getStatusByte(self):
         statByte = 0

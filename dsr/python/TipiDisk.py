@@ -228,12 +228,11 @@ class TipiDisk(object):
                 prog_file = ProgramImageFile.load(unix_name)
             
             filesize = prog_file.getImageSize()
-            if filesize > maxsize:
-                logger.debug("TI buffer too small")
-                self.tipi_io.sendErrorCode(EFILERR)
-                return
-
             bytes = prog_file.getImage()
+            if filesize > maxsize:
+                logger.debug("TI buffer too small, only loading %d of %d bytes", maxsize, filesize)
+                bytes = bytes[:maxsize]
+
             self.sendSuccess()
             logger.info("LOAD image size %d", filesize)
             self.tipi_io.send(bytes)

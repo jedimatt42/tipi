@@ -64,7 +64,7 @@ class VariableRecordFile(object):
                 fh.close()
 
     def isLegal(self, pab):
-        return mode(pab) == INPUT and recordType(pab) != FIXED
+        return recordType(pab) != FIXED
 
     def getStatusByte(self):
         statByte = STVARIABLE
@@ -126,7 +126,6 @@ class VariableRecordFile(object):
             else:
                 nextoff += bytes[offset] + 1
             record = bytearray(bytes[offset + 1:nextoff])
-            logger.debug("record: %s", str(record))
             records += [record]
         return records
 

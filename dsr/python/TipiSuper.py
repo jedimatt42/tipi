@@ -12,7 +12,7 @@ while True:
             raise Exception("failed to run /sbin/shutdown")
         else:
             while True:
-                time.sleep(2)
+                time.sleep(20)
         
     if os.path.exists("/tmp/tipireboot"):
         callargs = ["/sbin/shutdown", "-r", "now"]
@@ -20,5 +20,5 @@ while True:
             raise Exception("failed to run /sbin/shutdown")
         else:
             while True:
-                time.sleep(2)
+                time.sleep(20)
         

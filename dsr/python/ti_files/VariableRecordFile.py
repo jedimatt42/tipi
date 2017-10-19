@@ -110,23 +110,26 @@ class VariableRecordFile(object):
 
         nextoff = offset + bytes[offset] + 1
         record = bytearray(bytes[offset + 1:nextoff])
-        logger.debug("record: %s", str(record))
         records += [record]
 
-        while sIdx < sectors:
-            logger.debug("record %d of %d", sIdx, sectors)
-            offset = nextoff
-            if bytes[offset] == 0xff:
-                sIdx += 1
-                if sIdx >= sectors:
-                    break
-                # we need to move to the next ~sector~
-                offset = int((offset / 256) + 1) * 256
-                nextoff = offset + bytes[offset] + 1
-            else:
-                nextoff += bytes[offset] + 1
-            record = bytearray(bytes[offset + 1:nextoff])
-            records += [record]
+        try:
+            while sIdx < sectors:
+                logger.debug("record %d of %d", sIdx, sectors)
+                offset = nextoff
+                if bytes[offset] == 0xff:
+                    sIdx += 1
+                    if sIdx >= sectors:
+                        break
+                    # we need to move to the next ~sector~
+                    offset = int((offset / 256) + 1) * 256
+                    nextoff = offset + bytes[offset] + 1
+                else:
+                    nextoff += bytes[offset] + 1
+                record = bytearray(bytes[offset + 1:nextoff])
+                records += [record]
+        except Exception as e:
+            logger.exception("failed to load all records", e)
+
         return records
 
     def close(self, localPath):

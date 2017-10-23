@@ -35,6 +35,9 @@ class CatalogFile(object):
     def isLegal(self, pab):
         return mode(pab) == INPUT and dataType(pab) == INTERNAL and recordType(pab) == FIXED
 
+    def close(self, localPath):
+        pass
+
     def readRecord(self, pabRecNum):
         if pabRecNum != 0:
             self.recNum = pabRecNum

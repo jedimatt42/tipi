@@ -109,11 +109,11 @@ tipidsr
 	BL	@vsendmsg	; send the full devicename
 
 ; Handle result
-	LI	R0,1		; Get initial response from RPi (code will be in R9)
-	MOV	R10,R1
-	CLR	R9		; setup R9 LSB as our receive buffer ( yep 1 byte )
-	AI	R1,R9LB		; load single byte message into R9, the response code
-	BL	@recvmsg
+	LI	R0,1		; Set expectation to read 1 byte
+	MOV	R10,R1		; Set receive address to Workspace
+	AI	R1,R9LB		; add low byte address of R9 to receive address
+	CLR	R9		; clear value in R9 so MSB is 0.
+	BL	@recvmsg	; receive single byte response from TIPI into R9
 
 	CI	R9,EDVNAME	; If device name error ( such as we don't handle it )
 	JEQ	tipipass
@@ -216,7 +216,16 @@ hwrite
 	SWPB	R0
 	MOV	@BUFADR(R10),R1
 	BL	@vsendmsg
-	JMP	retdone
+	
+	LI	R0,1		; Set expectation to read 1 byte
+	MOV	R10,R1		; Set receive address to Workspace
+	AI	R1,R9LB		; add low byte address of R9 to receive address
+	CLR	R9		; clear value in R9 so MSB is 0.
+	BL	@recvmsg	; receive single byte response from TIPI into R9
+	CI	R9,SUCCESS
+	JEQ	retdone
+	MOV	R9,R1
+	B	@reterr
 
 ; Handle OPCODE 4 - Restore
 hrestore
@@ -234,7 +243,16 @@ hsave
 	MOV	@RECNUM(R10),R0
 	MOV	@BUFADR(R10),R1
 	BL	@vsendmsg
-	JMP	retdone
+
+	LI	R0,1		; Set expectation to read 1 byte
+	MOV	R10,R1		; Set receive address to Workspace
+	AI	R1,R9LB		; add low byte address of R9 to receive address
+	CLR	R9		; clear value in R9 so MSB is 0.
+	BL	@recvmsg	; receive single byte response from TIPI into R9
+	CI	R9,SUCCESS
+	JEQ	retdone
+	MOV	R9,R1
+	B	@reterr
 
 ; Handle response for OPCODE 7 - OPDEL
 hdelete

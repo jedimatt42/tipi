@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>TIPI</title>
+
+
+    <link rel="stylesheet" href="/css/style.css"></link>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="nav_bar">
+     <div class="nav_dropdown"><a class="files" href="/">My TIPI</a>
+            <div class="nav_dropdown_menu">
+                <a id="about" href="/about">About</a>
+                <a id="support" href="#">Create Support Bundle</a>
+                <a id="logs" href="#">Tail log files</a>
+                <a id="reboot" href="/rebootnow">Reboot RPi</a>
+                <a id="shutdown" href="/shutdownnow">Shutdown RPi</a>
+            </div>     
+     </div>
+     
+<!--    <img src="/images/clearpixel.gif" width=100 height=1 border=0>  -->
+
+    <div class="nav_dropdown"><a id="files" href="/files">Files</a></div>
+    
+        <div class="nav_dropdown">
+            <a id="files">Settings</a>
+            <div class="nav_dropdown_menu">
+                <a id="rpiconfig" href="#">RPi Configuration</a>
+            </div>
+        </div>
+    
+    </div>
+
+    {% block content %}
+    {% endblock %}
+</div>
+
+<!-- testing the TI99 TTF -->
+<p class="ti99">&nbsp; TI BASIC READY</p>
+
+
+
+</div>
+
+
+
+
+</body>
+
+</html>
+

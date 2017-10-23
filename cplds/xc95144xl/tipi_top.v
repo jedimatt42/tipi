@@ -71,11 +71,11 @@ wire cru_dev_en = cru_state[0];
 assign ti_cruin = cru_regout;
 assign r_reset = ~cru_state[1];
 // For a 32k 27C256 chip, these control bank switching.
-// assign dsr_b0 = cru_state[2];
-// assign dsr_b1 = cru_state[3];
+assign dsr_b0 = cru_state[2];
+assign dsr_b1 = cru_state[3];
 // For a 8k 27C64 chip, these need to stay constant
-assign dsr_b0 = 1'bz; // not connected on 27C64
-assign dsr_b1 = 1'b1; // Active LOW is PGM on 27C64
+// assign dsr_b0 = 1'bz; // not connected on 27C64
+// assign dsr_b1 = 1'b1; // Active LOW is PGM on 27C64
 
 // Latches && Shift Registers for TI to RPi communication - TC & TD
 

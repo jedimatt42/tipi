@@ -24,7 +24,7 @@ under /home/tipi ( the tipi user's home directory )
 
 Setup the python prerequisites:
 ```
-cd /home/tipi/services/systemd
+cd /home/tipi/services
 ./setup.sh
 ```
 

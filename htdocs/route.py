@@ -14,7 +14,7 @@ from tinames import tinames
 import sys
 import Cookie
 import datetime
-import os, time
+import os, time, errno
 import socket
 # import os.path
 import glob
@@ -68,11 +68,31 @@ def home():
 def send_css(path):
     return send_from_directory('css', path)
 
-@app.route('/files', defaults = {'path': ''})
+
+# @app.route('/edit_b99_file', methods=['GET', 'POST'])
+
+@app.route('/files', defaults = {'path': ''}, methods=['GET', 'POST'])
 @app.route('/files/<path:path>')
 def files(path):
     tipi_subdirs = []
     tipi_files = []
+
+
+    if request.args.get('newDir'):
+        eprint("newDir", request.args.get('newDir'))
+        eprint("filePath", request.args.get('filePath'))
+        
+        # Need to sanitize these !!!
+        newDir = request.args.get('newDir')
+        filePath = request.args.get('filePath')
+    
+        try:
+            os.makedirs(tipi_disk_base + filePath + '/' + newDir)  # Danger! Danger!
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+        
+    
 
 #
 # Add a link to go back up a directory:

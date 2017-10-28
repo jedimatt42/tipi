@@ -1,6 +1,0 @@
-
-# TIPI Web Manager 
-
-
-
-

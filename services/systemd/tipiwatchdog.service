@@ -4,7 +4,7 @@ After=network.target tipiboot.service
 
 [Service]
 Type=simple
-ExecStart=/home/tipi/services/tipiwatchdog.sh
+ExecStart=/home/tipi/tipi/services/tipiwatchdog.sh
 Restart=always
 User=tipi
 

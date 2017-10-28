@@ -14,7 +14,7 @@ from pygtail import Pygtail
 
 pat = re.compile(r"^.*oled.*: INFO     (.*)$")
 
-fontpath = "/home/tipi/services/TI99Basic.ttf"
+fontpath = "/home/tipi/tipi/services/TI99Basic.ttf"
 
 # 128x32 oledlay with hardware I2C:
 oled = Adafruit_SSD1306.SSD1306_128_32(rst=None)

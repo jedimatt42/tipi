@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/home/tipi/services/tipiboot.sh
+ExecStart=/home/tipi/tipi/services/tipiboot.sh
 
 [Install]
 WantedBy=multi-user.target

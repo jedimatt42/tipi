@@ -4,7 +4,7 @@ After=network.target tipiboot.service
 
 [Service]
 Type=simple
-ExecStart=/home/tipi/services/tipioled.sh
+ExecStart=/home/tipi/tipi/services/tipioled.sh
 Restart=always
 User=tipi
 

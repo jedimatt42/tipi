@@ -50,7 +50,16 @@
 
 <div class="files_container">
 <table cellpadding=2 border=0>
-    <tr> <td colspan=2> <input type=button value=" Make a new directory in {{ display_path }}" </td> </tr>
+    <tr> <td colspan=2> <input id="newDirButton" type=button value=" Create a New Directory in: {{ display_path }}" onClick="document.getElementById('newDirButton').style.display='none'; document.getElementById('newDirForm').style.display='block';document.getElementById('newDir').focus();"> 
+                        <div id="newDirForm" style="display:none">
+                        <form method=post action="files">
+                        <input type=hidden name="filePath" value="{{ display_path }}">
+                        <input type="text" id="newDir" size=32 name="newDir" placeholder="New Directory Name">
+                        <input type=submit value=" Create ">
+                        </form>
+                        </div>
+         </td> 
+    </tr>
     <tr>
         <td nowrap>Upload File to your TIPI: <input type="file" name="upload_file"> </td>
         <td nowrap><input type=submit value=" Upload to TIPI "> <i>not implemented yet</i></td>

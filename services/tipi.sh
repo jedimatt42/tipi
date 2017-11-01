@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd /home/tipi/services
+cd /home/tipi/tipi/services
 
 source ENV/bin/activate
 

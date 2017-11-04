@@ -4,6 +4,7 @@ from StatusFile import StatusFile
 from TcpFile import TcpFile
 from CurlFile import CurlFile
 from DSKMapFile import DSKMapFile
+from WifiConfigFile import WifiConfigFile
 
 
 class SpecialFiles(object):
@@ -15,7 +16,8 @@ class SpecialFiles(object):
             ClockFile.filename(): ClockFile(self.tipi_io),
             StatusFile.filename(): StatusFile(self.tipi_io),
             DSKMapFile.filename(): DSKMapFile(self.tipi_io),
-            CurlFile.filename(): CurlFile(self.tipi_io)
+            CurlFile.filename(): CurlFile(self.tipi_io),
+            WifiConfigFile.filename(): WifiConfigFile(self.tipi_io)
         }
 
     def handle(self, pab, devname):

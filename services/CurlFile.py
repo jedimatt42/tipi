@@ -117,4 +117,4 @@ class CurlFile(object):
         return
 
     def parseDev(self, devname):
-        return str(devname[5:])
+        return str(devname[3:])

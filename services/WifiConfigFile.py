@@ -9,7 +9,7 @@ class WifiConfigFile(object):
 
     @staticmethod
     def filename():
-        return "TIPI.WIFICONFIG"
+        return "WIFICONFIG"
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io

@@ -9,7 +9,7 @@
 115 INPUT "Path: ":PATH$
 120 CR$ = CHR$(13)
 130 LF$ = CHR$(10)
-140 OPEN #1:"TIPI.TCP="&HOST$&":"&PORT$,DISPLAY,VARIABLE
+140 OPEN #1:"PI.TCP="&HOST$&":"&PORT$,DISPLAY,VARIABLE
 150 PRINT #1:"GET ";PATH$;" HTTP/1.0";CR$;LF$;
 160 PRINT #1:"Accept: text/plain, text/html, text/*";CR$;LF$;
 170 PRINT #1:CR$;LF$;

@@ -14,8 +14,8 @@ class CurlFile(object):
     @staticmethod
     def filename():
         # open file in "input" for GET, "output" for POST
-        #   TIPI.HTTP://ti994a.cwfk.net/tipi.html
-        return "TIPI.HTTP:"
+        #   PI.HTTP://ti994a.cwfk.net/tipi.html
+        return "HTTP:"
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
@@ -117,4 +117,4 @@ class CurlFile(object):
         return
 
     def parseDev(self, devname):
-        return str(devname[5:])
+        return str(devname[3:])

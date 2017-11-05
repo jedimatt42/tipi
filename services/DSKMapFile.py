@@ -9,7 +9,7 @@ class DSKMapFile(object):
 
     @staticmethod
     def filename():
-        return "TIPI.DSKMAP"
+        return "DSKMAP"
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io

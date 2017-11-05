@@ -11,7 +11,7 @@ class StatusFile(object):
 
     @staticmethod
     def filename():
-        return "TIPI.STATUS"
+        return "STATUS"
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io

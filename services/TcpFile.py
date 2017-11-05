@@ -14,8 +14,8 @@ class TcpFile(object):
     @staticmethod
     def filename():
         # open file in "append" mode, such as:
-        #   TIPI.TCP=<hostname/ipv4-addr>:<port>
-        return "TIPI.TCP="
+        #   PI.TCP=<hostname/ipv4-addr>:<port>
+        return "TCP="
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io

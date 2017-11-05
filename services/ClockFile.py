@@ -7,7 +7,7 @@ class ClockFile(object):
 
     @staticmethod
     def filename():
-        return "TIPI.CLOCK"
+        return "CLOCK"
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io

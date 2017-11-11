@@ -1,5 +1,0 @@
-ENV
-*.bin
-*.hex
-*.list
-.idea

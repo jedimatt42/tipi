@@ -1,7 +1,0 @@
-*.o
-*.i
-*.s
-*.elf
-*.bin
-mapfile
-patterns.h

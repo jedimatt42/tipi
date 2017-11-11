@@ -5,6 +5,7 @@ from StatusFile import StatusFile
 from TcpFile import TcpFile
 from CurlFile import CurlFile
 from DSKMapFile import DSKMapFile
+from ConfigFile import ConfigFile
 from WifiConfigFile import WifiConfigFile
 
 logger = logging.getLogger(__name__)
@@ -19,6 +20,7 @@ class SpecialFiles(object):
             StatusFile.filename(): StatusFile(self.tipi_io),
             DSKMapFile.filename(): DSKMapFile(self.tipi_io),
             CurlFile.filename(): CurlFile(self.tipi_io),
+            ConfigFile.filename(): ConfigFile(self.tipi_io),
             WifiConfigFile.filename(): WifiConfigFile(self.tipi_io)
         }
 

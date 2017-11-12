@@ -3,26 +3,31 @@ import os
 import re
 import logging
 from crccheck.crc import Crc15
+from TipiConfig import TipiConfig
 
 # Transform a name supplied by the 4A into our storage path
 
 logger = logging.getLogger(__name__)
 
+tipi_config = TipiConfig.instance()
+
+TIPI_DIR = "/home/tipi/tipi_disk"
+
 def devnameToLocal(devname):
     parts = str(devname).split('.')
     path = ""
     if parts[0] == "TIPI":
-        path = "/home/tipi/tipi_disk"
+        path = TIPI_DIR
     elif parts[0] == "DSK0":
-        path = "/home/tipi/tipi_disk"
+        path = TIPI_DIR
     elif parts[0] == "DSK1":
-        path = "/home/tipi/tipi_disk/DSK1"
+        path = tipi_config.get("DSK1_DIR")
     elif parts[0] == "DSK2":
-        path = "/home/tipi/tipi_disk/DSK2"
+        path = tipi_config.get("DSK2_DIR")
     elif parts[0] == "DSK3":
-        path = "/home/tipi/tipi_disk/DSK3"
+        path = tipi_config.get("DSK3_DIR")
     elif parts[0] == "DSK":
-        path = "/home/tipi/tipi_disk"
+        path = TIPI_DIR
 
     for part in parts[1:]:
         if part != "":

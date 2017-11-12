@@ -9,6 +9,7 @@ while True:
 
     # shutdown the PI safely
     if os.path.exists("/tmp/tipihalt"):
+        os.remove("/tmp/tipihalt")
         callargs = ["/sbin/shutdown", "-h", "now"]
         if call(callargs) != 0:
             raise Exception("failed to run /sbin/shutdown")
@@ -18,6 +19,7 @@ while True:
         
     # reboot the PI
     if os.path.exists("/tmp/tipireboot"):
+        os.remove("/tmp/tipireboot")
         callargs = ["/sbin/shutdown", "-r", "now"]
         if call(callargs) != 0:
             raise Exception("failed to run /sbin/shutdown")
@@ -41,7 +43,7 @@ while True:
             os.remove(wificonfig)
 
             # adjust settings for network 0
-            with open("/etc/wpa_supplicant/wpa_supplicant.conf",'w') as fh_out:
+            with open("/etc/wpa_supplicant/wpa_supplicant.conf", 'w') as fh_out:
                 with open("/home/tipi/tipi/services/templates/wpa_supplicant.conf") as fh_in:
                     for line in fh_in:
                         line = line.replace("${SSID}", ssid)

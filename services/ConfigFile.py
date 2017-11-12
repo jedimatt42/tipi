@@ -1,11 +1,13 @@
-
 import os
 import logging
+from TipiConfig import TipiConfig
 from Pab import *
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
+
 
 class ConfigFile(object):
+    """ Special file PI.CONFIG for reading and writing tipi configuration """
 
     @staticmethod
     def filename():
@@ -13,10 +15,8 @@ class ConfigFile(object):
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
-        self.localpath = "/home/tipi/tipi.config"
         self.currentRecord = 0
-        self.records = {}
-        self.sortedKeys = []
+        self.tipi_config = TipiConfig.instance()
 
     def handle(self, pab, devname):
         logPab(pab)
@@ -33,28 +33,14 @@ class ConfigFile(object):
             self.tipi_io.send([EOPATTR])
 
     def close(self, pab, devname):
-        with open(self.localpath, 'w') as fh:
-            for key in self.sortedKeys:
-                fh.write(key + "=" + self.records[key])
-                fh.write("\n")
+        self.tipi_config.save()
         self.tipi_io.send([SUCCESS])
 
     def open(self, pab, devname):
         if dataType(pab) == DISPLAY:
             if recordLength(pab) == 0 or recordLength(pab) == 80:
                 self.currentRecord = 0
-                self.records = {}
-                if os.path.exists(self.localpath):
-                    with open(self.localpath, 'r') as fh:
-                        for line in fh.readlines():
-                            key = line.split('=')[0].strip()
-                            value = line.split('=')[1].strip()
-                            self.records[key] = value
-                            logger.debug("read record: %s = %s", key, value)
-                else:
-                    logger.info("config file missing: %s", self.localpath)
-                self.sortedKeys = list(self.records.keys())
-                self.sortedKeys.sort()
+                self.tipi_config.load()
                 self.tipi_io.send([SUCCESS])
                 self.tipi_io.send([80])
                 return
@@ -62,11 +48,11 @@ class ConfigFile(object):
 
     def read(self, pab, devname):
         if dataType(pab) == DISPLAY:
-            if len(self.sortedKeys) < (self.currentRecord + 1):
+            if len(self.tipi_config.keys()) < (self.currentRecord + 1):
                 self.tipi_io.send([EEOF])
                 return
-            key = self.sortedKeys[self.currentRecord]
-            value = self.records[key]
+            key = self.tipi_config.keys()[self.currentRecord]
+            value = self.tipi_config.get(key)
             msg = key + "=" + value
             self.tipi_io.send([SUCCESS])
             self.tipi_io.send(bytearray(msg))
@@ -79,8 +65,5 @@ class ConfigFile(object):
         msg = str(self.tipi_io.receive())
         key = msg.split('=')[0].strip()
         value = msg.split('=')[1].strip()
-        self.records[key] = value
-        self.sortedKeys = list(self.records.keys())
-        self.sortedKeys.sort()
+        self.tipi_config.set(key, value)
         self.tipi_io.send([SUCCESS])
-

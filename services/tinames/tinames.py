@@ -13,6 +13,13 @@ tipi_config = TipiConfig.instance()
 
 TIPI_DIR = "/home/tipi/tipi_disk"
 
+def __driveMapping(key):
+    path = tipi_config.get(key)
+    path = path.replace('.', "/")
+    if path != "":
+        path = TIPI_DIR + "/" + path
+    return path
+
 def devnameToLocal(devname):
     parts = str(devname).split('.')
     path = ""
@@ -21,13 +28,16 @@ def devnameToLocal(devname):
     elif parts[0] == "DSK0":
         path = TIPI_DIR
     elif parts[0] == "DSK1":
-        path = tipi_config.get("DSK1_DIR")
+        path = __driveMapping("DSK1_DIR")
     elif parts[0] == "DSK2":
-        path = tipi_config.get("DSK2_DIR")
+        path = __driveMapping("DSK2_DIR")
     elif parts[0] == "DSK3":
-        path = tipi_config.get("DSK3_DIR")
+        path = __driveMapping("DSK3_DIR")
     elif parts[0] == "DSK":
         path = TIPI_DIR
+
+    if path == "":
+        return None
 
     for part in parts[1:]:
         if part != "":

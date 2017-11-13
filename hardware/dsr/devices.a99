@@ -116,7 +116,7 @@ tipidsr
 	BL	@recvmsg	; receive single byte response from TIPI into R9
 
 	CI	R9,EDVNAME	; If device name error ( such as we don't handle it )
-	JEQ	tipipass
+	JEQ	retskip
 	CI	R9,SUCCESS	; If not success, we'll pass the code back to the PAB
 	JEQ	hresponse
 
@@ -124,7 +124,7 @@ tipidsr
 	JNE	reterr
 
 ; Return without handling device
-tipipass
+retskip
 	BL	@cleanup
 	MOV	@RET,R11
 	RT
@@ -137,7 +137,9 @@ reterr
 	INC	R3		;   second byte in PAB
 	.setvdpwa R3
 	MOVB	R1,@VDPWD	;   write the status byte
-	B	@retdone
+	BL	@cleanup
+	MOV	@RET,R11
+	RT
 
 ; RPi thinks it can handle this request :) Good news!
 hresponse

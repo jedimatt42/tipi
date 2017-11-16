@@ -16,7 +16,6 @@ import Cookie
 import datetime
 import os, time, errno
 import socket
-# import os.path
 import glob
 import fnmatch
 import ntpath
@@ -42,12 +41,6 @@ webpage_object = {}       # Object we'll be passing to render_template
 def send_image(path):
     return send_from_directory('images', path)
     
-    
-    
-    
-    
-
-
 
 @app.route('/twbs/<path:path>')   # What does twbs stand for??????
 def staticFonts(path):
@@ -56,9 +49,7 @@ def staticFonts(path):
 
 @app.route('/')
 def home():
-
     return render_template('home.html', webpage_object=webpage_object)
-
 
 
 @app.route('/uploadFile', methods=['POST'])
@@ -169,11 +160,8 @@ def files(path):
             if ti_files.isTIBasicPrg(item_path):
                 icon = '<img src="/images/BASIC.png" width=36>'
                 type = 'TI'
-#                edit_link = '<a href="/edit_basic_file?file=' + path + '/' + item + '&rp=/files/' + path + '">Edit</a>'            
                 edit_link = '<a href="/edit_basic_file?file_name=' + path + '/' + item + '&rp=/files/' + path + '">Edit</a>'
                 dl_link = '<a href="/files/' + path + '/' + item + '?action=download">Download</a>'
-                
-                
             
             elif ti_files.isTiFile(item_path):
                 icon = '<img src="/images/ti_logo_icon.jpg" width=22>'
@@ -185,7 +173,6 @@ def files(path):
             
             
             if item_path.endswith('.b99'):
-#                edit_link = '<a href="/edit_b99_file?file=' + path + '/' + item + '&rp=/files/' + path + '">Edit</a>'
                 edit_link = '<a href="/edit_b99_file?file_name=' + path + '/' + item + '&rp=/files/' + path + '">Edit</a>'
         
             tipi_files.append( { 'name'      : item,
@@ -334,20 +321,6 @@ def edit_basic_file():
             
     return render_template('edit_basic_file.html', file_contents=file_contents, file_name = file_name, rp = rp, status_message = status_message )
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

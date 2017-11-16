@@ -1,20 +1,22 @@
-
 import os
 import logging
+from TipiConfig import TipiConfig
 from Pab import *
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
-class WifiConfigFile(object):
+
+class ConfigFile(object):
+    """ Special file PI.CONFIG for reading and writing tipi configuration """
 
     @staticmethod
     def filename():
-        return "WIFICONFIG"
+        return "CONFIG"
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
-        self.tmp = "/tmp/wificonfig"
         self.currentRecord = 0
+        self.tipi_config = TipiConfig.instance()
 
     def handle(self, pab, devname):
         logPab(pab)
@@ -31,17 +33,14 @@ class WifiConfigFile(object):
             self.tipi_io.send([EOPATTR])
 
     def close(self, pab, devname):
-        with open("/tmp/wificonfig",'w') as fh:
-            for line in self.records:
-                fh.write(line)
-                fh.write("\n")
+        self.tipi_config.save()
         self.tipi_io.send([SUCCESS])
 
     def open(self, pab, devname):
         if dataType(pab) == DISPLAY:
             if recordLength(pab) == 0 or recordLength(pab) == 80:
                 self.currentRecord = 0
-                self.records = []
+                self.tipi_config.load()
                 self.tipi_io.send([SUCCESS])
                 self.tipi_io.send([80])
                 return
@@ -49,22 +48,22 @@ class WifiConfigFile(object):
 
     def read(self, pab, devname):
         if dataType(pab) == DISPLAY:
-            self.tipi_io.send([EEOF])
+            if len(self.tipi_config.keys()) < (self.currentRecord + 1):
+                self.tipi_io.send([EEOF])
+                return
+            key = self.tipi_config.keys()[self.currentRecord]
+            value = self.tipi_config.get(key)
+            msg = key + "=" + value
+            self.tipi_io.send([SUCCESS])
+            self.tipi_io.send(bytearray(msg))
+            self.currentRecord += 1
+            return
         self.tipi_io.send([EOPATTR])
 
     def write(self, pab, devname):
         self.tipi_io.send([SUCCESS])
-        msg = str(self.tipi_io.receive()).rstrip()
-        try:
-            recNo = recordNumber(pab)
-            if recNo != 0:
-                self.currentRecord = recNo
-            if self.currentRecord >= len(self.records):
-                self.records += [bytearray(0)] * (1 + self.currentRecord - len(self.records))
-            self.records[self.currentRecord] = msg
-            self.currentRecord += 1
-            self.tipi_io.send([SUCCESS])
-        except Exception as e:
-            logger.exception(e)
-            self.tipi_io.send([EFILERR])
-
+        msg = str(self.tipi_io.receive())
+        key = msg.split('=')[0].strip()
+        value = msg.split('=')[1].strip()
+        self.tipi_config.set(key, value)
+        self.tipi_io.send([SUCCESS])

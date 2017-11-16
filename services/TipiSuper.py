@@ -41,6 +41,7 @@ while True:
 
     # shutdown the PI safely
     if os.path.exists("/tmp/tipihalt"):
+        os.remove("/tmp/tipihalt")
         callargs = ["/sbin/shutdown", "-h", "now"]
         if call(callargs) != 0:
             raise Exception("failed to run /sbin/shutdown")
@@ -50,13 +51,14 @@ while True:
         
     # reboot the PI
     if os.path.exists("/tmp/tipireboot"):
+        os.remove("/tmp/tipireboot")
         callargs = ["/sbin/shutdown", "-r", "now"]
         if call(callargs) != 0:
             raise Exception("failed to run /sbin/shutdown")
         else:
             while True:
                 time.sleep(20)
-
+                
     # Configure WiFi from TI-side
     if os.path.exists("/tmp/wificonfig"):
         configureWifi("/tmp/wificonfig")
@@ -64,6 +66,8 @@ while True:
     # Configure WiFi from bootstrap file on USB stick:
     elif os.path.exists("/media/usb1/tipiwifi.txt"):
         configureWifi("/media/usb1/tipiwifi.txt")    
+
+  
         
 
 

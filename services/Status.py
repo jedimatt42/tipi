@@ -21,6 +21,9 @@ class Status(object):
                         str(parts[0]).strip().upper(),
                         str(parts[1]).strip()))
 
+        with open("/home/tipi/tipi.uuid", 'r') as fh_in:
+            self.__records.append("UUID={}".format(fh_in.readline()))
+
     def record(self, idx):
         return self.__records[idx]
 

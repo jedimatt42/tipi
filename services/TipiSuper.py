@@ -50,7 +50,7 @@ while True:
                 time.sleep(20)
         
     # reboot the PI
-    if os.path.exists("/tmp/tipireboot"):
+    elif os.path.exists("/tmp/tipireboot"):
         os.remove("/tmp/tipireboot")
         callargs = ["/sbin/shutdown", "-r", "now"]
         if call(callargs) != 0:
@@ -60,14 +60,17 @@ while True:
                 time.sleep(20)
                 
     # Configure WiFi from TI-side
-    if os.path.exists("/tmp/wificonfig"):
+    elif os.path.exists("/tmp/wificonfig"):
         configureWifi("/tmp/wificonfig")
     
     # Configure WiFi from bootstrap file on USB stick:
     elif os.path.exists("/media/usb1/tipiwifi.txt"):
         configureWifi("/media/usb1/tipiwifi.txt")    
 
-  
-        
-
+    # Upgrade TIPI services
+    elif os.path.exists("/tmp/tipiupgrade"):
+        os.remove("/tmp/tipiupgrade")
+        callargs = ["/home/tipi/tipi/setup/upgrade.sh", "--upgrade"]
+        if call(callargs) != 0:
+            raise Exception("failed to run tipi upgrade")
 

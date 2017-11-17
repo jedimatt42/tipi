@@ -14,5 +14,5 @@ fi
 
 ( cd $TIPI/services && $TIPI/services/setup.sh )
 ( cd $TIPI/htdocs && $TIPI/htdocs/setup.sh )
-( cd $TIPI/services/systemd && $TIPI/services/systemd/setup.sh )
+( cd $TIPI/setup && $TIPI/setup/setup.sh )
 

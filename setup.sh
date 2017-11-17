@@ -3,10 +3,6 @@
 TIPI=/home/tipi/tipi
 cd $TIPI || exit 1
 
-sudo adduser tipi gpio
-sudo adduser tipi input
-sudo adduser tipi i2c
-
 if [ -d /home/tipi/xdt99 ]; then
   rm -r /home/tipi/xdt99
 fi

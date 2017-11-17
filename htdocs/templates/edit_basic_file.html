@@ -1,17 +1,74 @@
 {% extends "page_template.html"%}
 {% block content %}
 
+{{ something|safe }}
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
+<!--    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+-->    
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    
+    
     <title>TIPI - Edit BASIC File</title>
 
     <link rel="stylesheet" href="/css/style.css"></link>
+
+
+<script>
+
+    function dumbenMe(e) {
+//        alert(e.keyCode);
+        
+        if (e.keyCode != 38 && e.keyCode != 40 && e.keyCode != 37 && e.keyCode != 39) {
+//            changeFlag++;
+            document.BASIC.changeFlag.value++;
+        }
+        
+        var position = document.BASIC.file_contents.selectionStart;  // Store cursor position within textfield
+        var n = document.BASIC.file_contents.value;
+
+        n = n.replace(/\u2018|\u2019/g, "'");  // Single and Double "smart" quotes, and apostrophes
+        n = n.replace(/\u201c|\u201d/g, '"');  // Opening and Closing double "smart" quotes
+        
+        if (n.indexOf("\u2014") > -1) {        // Emdashes. Have to increase cursor position. Ugh.
+            n = n.replace(/\u2014/g, '--');
+            position += 1;
+        }
+    
+        document.BASIC.file_contents.value = n;
+
+        document.BASIC.file_contents.selectionEnd = position;  // Restore cursor position since the regex resets cursor to end of contents
+
+        return false;
+    }
+    
+    function checkChangeFlag() {
+//        alert("dude");
+        if ( document.BASIC.changeFlag.value >0 ) {
+            alert("You Have Unsaved Changes");
+            return false;
+        }
+
+        return true;
+    }
+    
+    
+    function goBack() {
+        if (checkChangeFlag()) {
+            window.location.assign("{{ rp }}");
+        }
+
+    
+    }
+    
+
+</script>
+
 </head>
 
 <body>
@@ -19,29 +76,31 @@
 <div class="container">
 
 
-<form method=post>
+<!-- <form method=post name="BASIC" onSubmit="return checkChangeFlag();">-->
+<form method=post name="BASIC">
+
 <input type=hidden name=action value="save_basic_file">
 <input type=hidden name=file_name value="{{ file_name }}">
+<input type=hidden name="changeFlag" value="0">
+
 <input type=hidden name=rp value="{{ rp }}">
 
 <table align=center>
 <tr><td> <div class="ti99">Editing: {{ file_name }}</div> </td></tr>
 
-<tr><td>
-
-<textarea name="file_contents" rows=40 cols=60 class="ti_textarea">
+<tr>
+<td>
+<textarea name="file_contents" rows=20 cols=34 class="ti_textarea" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" onKeyUp="dumbenMe(event)">
 {{ file_contents }}
 </textarea>
 
 </td></tr>
-<tr><td align=center> <input type=button value=" < <  Back " onClick="location.href='{{ rp }}'"> &nbsp; &nbsp; &nbsp; <input type=submit value=" Save "> </td></tr>
+<tr><td align=center> <input type=button value=" < <  Back " onClick="goBack();"> &nbsp; &nbsp; &nbsp; <input type=submit name="save" value=" Save "> &nbsp; &nbsp; &nbsp; <input type=submit name="saveAndExit" value=" Save and Exit "> </td></tr>
 <tr><td> {{ status_message }} </td></tr>
 </table>
 </form>
 
 </div>
-
-
 </div>
 
 

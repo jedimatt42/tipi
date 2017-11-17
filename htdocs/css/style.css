@@ -126,7 +126,7 @@ a {
     min-height: -moz-calc(100% - 275px);     /* Firefox */
     min-height: calc(100% - 275px);     /* native */
     margin: 40px;
-    width: 640px;
+    width: 800px;
 
 /*    background-image: url("/images/background.jpg");  */
     background-size: cover;
@@ -192,7 +192,8 @@ a {
 {  
    font-family:"TI99", Times, serif;  
    font-size: 40px;
-   background-color : #00CED1;
+/*   background-color : #00CED1;    */
+   background-color : #5CCADC; 
 }
 
 

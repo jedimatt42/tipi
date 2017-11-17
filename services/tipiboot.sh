@@ -8,3 +8,8 @@ mkdir /var/log/tipi
 chown tipi.tipi /var/log/tipi
 ln -s /var/log/tipi /home/tipi/log
 
+if [ ! -e /home/tipi/tipi.uuid ]; then
+( echo "import uuid" ; echo "print uuid.uuid1()" ) | \
+    python - >/home/tipi/tipi.uuid
+fi
+

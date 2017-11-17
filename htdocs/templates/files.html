@@ -2,7 +2,19 @@
 {% extends "page_template.html"%}
 {% block content %}
 
+<script>
+function checkFields(f) {
+    if (f.upload_file.value == '') {
+       alert("Please select a file from your computer to upload to TIPI");
+       f.upload_file.focus();
+       
+       return false;
+    }
 
+    f.uploadFileSubmit.value = ' Uploading, Please Wait ... ';
+    f.uploadFileSubmit.disabled = true;
+}
+</script>
 
 <div class="alert alert-info" role="alert">
     
@@ -10,8 +22,8 @@
 
 <div class="files_container">
 <table cellspacing=4 cellpadding=0 border=0>
-    <tr><td colspan=6> Total files: {{ total_files }} </td></tr>
-    <tr><td colspan=6> Displaying contents of &nbsp; <b>{{ display_path }}</b> 
+    <tr><td colspan=7> Total files: {{ total_files }} </td></tr>
+    <tr><td colspan=7> Displaying contents of &nbsp; <b>{{ display_path }}</b> 
                        &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="{{ request.path }}">refresh</a>
         </td>
     </tr>
@@ -22,6 +34,7 @@
     <td><b>type</td>
     <td><b>size</td>
     <td> &nbsp; &nbsp; <b>datestamp</td>
+    <td> &nbsp; </td>
     <td> &nbsp; </td>
 <!--        <th>host path</td> -->
   </tr>
@@ -34,6 +47,7 @@
          <td valign=top align=right> {{ tipi_file.size }} </td>
          <td valign=top> &nbsp; &nbsp; {{ tipi_file.date }} </td>
         <td valign=top> &nbsp; &nbsp; {{ tipi_file.edit_link|safe }} </td>
+        <td valign=top> &nbsp; &nbsp; {{ tipi_file.dl_link|safe }} </td>
 <!--             <td> {{ tipi_file.full_path }} </td>  -->
     </tr>
 
@@ -49,8 +63,9 @@
 
 
 <div class="files_container">
-<table cellpadding=2 border=0>
-    <tr> <td colspan=2> <input id="newDirButton" type=button value=" Create a New Directory in: {{ display_path }}" onClick="document.getElementById('newDirButton').style.display='none'; document.getElementById('newDirForm').style.display='block';document.getElementById('newDir').focus();"> 
+<table cellpadding=4 cellspacing=0 border=0>
+    <tr> <td>           
+                        <input id="newDirButton" type=button value=" Create a New Directory in: {{ display_path }}" onClick="document.getElementById('newDirButton').style.display='none'; document.getElementById('newDirForm').style.display='block';document.getElementById('newDir').focus();"> 
                         <div id="newDirForm" style="display:none">
                         <form method=post action="files">
                         <input type=hidden name="filePath" value="{{ display_path }}">
@@ -59,16 +74,35 @@
                         </form>
                         </div>
          </td> 
+         <td> 
+                        <input id="newBasicFileButton" type=button value=" Create new BASIC file in: {{ display_path }} " onClick="document.getElementById('newBasicFileButton').style.display='none'; document.getElementById('newBasicFileForm').style.display='block';document.getElementById('file').focus();"> 
+                        <div id="newBasicFileForm" style="display:none">
+                        <form method=post action="/edit_basic_file">
+                        <input type=hidden name="action" value="create_new_basic_file">
+                        <input type=hidden name="rp" value="{{ rp }}">
+                        <input type=hidden name="path" value="{{ path }}">
+                        <input type="text" id="file" size=32 name="file" placeholder="New BASIC Filename">
+                        <input type=submit value=" Create ">
+                        </form>
+                        </div>
+         </td>
     </tr>
     <tr>
-        <td nowrap>Upload File to your TIPI: <input type="file" name="upload_file"> </td>
-        <td nowrap><input type=submit value=" Upload to TIPI "> <i>not implemented yet</i></td>
+        <td nowrap>
+                    <form name="f" action="/uploadFile" method=post enctype="multipart/form-data" onSubmit="return checkFields(this);">
+                    <input type=hidden name="rp" value="{{ rp }}">
+                    <input type=hidden name="path" value="{{ path }}">
+                    Upload File to {{ display_path }}: <input type="file" name="upload_file" onClick="f.uploadFileSubmit.value=' Upload ';f.uploadFileSubmit.disabled=false;"> 
+                    <input name="uploadFileSubmit" id="uploadFileSubmit" type=submit value=" Upload ">
+                    </form>
+        </td>
+        <td nowrap> &nbsp; </td>
     </tr>
 </table>
 </form>
 </div>
 
-<BR><BR>
+<BR><BR>  
 
 {% endblock %}
 

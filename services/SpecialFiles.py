@@ -4,8 +4,7 @@ from ClockFile import ClockFile
 from StatusFile import StatusFile
 from TcpFile import TcpFile
 from CurlFile import CurlFile
-from DSKMapFile import DSKMapFile
-from WifiConfigFile import WifiConfigFile
+from ConfigFile import ConfigFile
 
 logger = logging.getLogger(__name__)
 
@@ -17,9 +16,8 @@ class SpecialFiles(object):
             TcpFile.filename(): TcpFile(self.tipi_io),
             ClockFile.filename(): ClockFile(self.tipi_io),
             StatusFile.filename(): StatusFile(self.tipi_io),
-            DSKMapFile.filename(): DSKMapFile(self.tipi_io),
             CurlFile.filename(): CurlFile(self.tipi_io),
-            WifiConfigFile.filename(): WifiConfigFile(self.tipi_io)
+            ConfigFile.filename(): ConfigFile(self.tipi_io)
         }
 
     def handle(self, pab, devname):

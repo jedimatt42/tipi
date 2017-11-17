@@ -4,9 +4,14 @@
 # standard boot services.
 
 # /var/log is a tmpfs, need to add permissions on each boot
-mkdir /var/log/tipi
-chown tipi.tipi /var/log/tipi
-ln -s /var/log/tipi /home/tipi/log
+if [ ! -e /var/log/tipi ]; then
+  mkdir /var/log/tipi
+  chown tipi.tipi /var/log/tipi
+fi
+
+if [ ! -e /home/tipi/log ]; then
+  ln -s /var/log/tipi /home/tipi/log
+fi
 
 if [ ! -e /home/tipi/tipi.uuid ]; then
 ( echo "import uuid" ; echo "print uuid.uuid1()" ) | \

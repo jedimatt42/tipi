@@ -31,6 +31,7 @@ sudo useradd --create-home --system --user-group tipi
 sudo adduser tipi gpio
 sudo adduser tipi input
 sudo adduser tipi i2c
+sudo adduser tipi sudo
 sudo passwd tipi
 ```
 
@@ -43,6 +44,7 @@ sudo apt-get install python-imaging
 sudo apt-get install libcurl4-openssl-dev
 sudo apt-get install libssl-dev
 sudo apt-get install libjpeg-dev
+sudo apt-get install wiringpi
 ```
 
 ## Install services

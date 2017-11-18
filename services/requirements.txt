@@ -4,7 +4,6 @@ Adafruit-SSD1306==1.6.1
 crccheck==0.6
 netifaces==0.10.6
 Pillow==4.0.0
-pkg-resources==0.0.0
 pycurl==7.43.0
 pygtail==0.7.0
 python-magic==0.4.13

@@ -1,5 +1,7 @@
 # Setting up...
 
+## If using the SD-Card image the following has already been performed.
+
 ## Replace log and tmp folders with tmpfs to prolong SD card life
 
 Add the following to /etc/fstab:
@@ -35,16 +37,12 @@ sudo adduser tipi sudo
 sudo passwd tipi
 ```
 
-## Install prerequisites
+## Install Software
+
+Make sure git is installed
 
 ```
-sudo apt-get install python-dev
-sudo apt-get install python-virtualenv
-sudo apt-get install python-imaging
-sudo apt-get install libcurl4-openssl-dev
-sudo apt-get install libssl-dev
-sudo apt-get install libjpeg-dev
-sudo apt-get install wiringpi
+sudo apt-get install git
 ```
 
 ## Install services
@@ -73,4 +71,18 @@ cd /home/tipi/tipi
 * change the password for user pi
 * install samba share for /home/tipi/tipi_disk
 
+Recommended Samba configuration for /etc/samba/smb.conf:
 
+```
+[TIPI]
+comment=TI-99/4A Files
+path=/home/tipi/tipi_disk
+public=no
+browseable=Yes
+writeable=Yes
+only guest=no
+valid user=tipi
+create mask=0644
+directory mask=0755
+force user=tipi
+```

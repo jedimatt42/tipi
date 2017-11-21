@@ -73,6 +73,11 @@ class TipiDisk(object):
         logger.debug("Opcode 0 Open - %s", devname)
         logPab(pab)
         localPath = tinames.devnameToLocal(devname)
+        if localPath is None:
+            logger.info("Passing to other controllers")
+            self.sendErrorCode(EDVNAME)
+            return
+
         logger.debug("  local file: " + localPath)
         if mode(pab) == INPUT and not os.path.exists(localPath):
             logger.info("Passing to other controllers")
@@ -127,7 +132,7 @@ class TipiDisk(object):
                 return
             else:
                 # EDEVERR triggers passing on the pab request to other controllers.
-                self.sendErrorCode(EDEVERR)
+                self.sendErrorCode(EDVNAME)
                 return
 
         self.sendErrorCode(EFILERR)
@@ -136,9 +141,15 @@ class TipiDisk(object):
         logger.debug("Opcode 1 Close - %s", devname)
         logPab(pab)
         localPath = tinames.devnameToLocal(devname)
-        if not localPath in self.openFiles:
+
+        if localPath is None:
+            logger.info("Passing to other controllers")
+            self.sendErrorCode(EDVNAME)
+            return
+
+        if localPath not in self.openFiles:
             # not open by us, maybe some other controller handled it.
-            self.sendErrorCode(EDEVERR)
+            self.sendErrorCode(EDVNAME)
             return
 
         try:
@@ -154,9 +165,15 @@ class TipiDisk(object):
         logger.debug("Opcode 2 Read - %s", devname)
         logPab(pab)
         localPath = tinames.devnameToLocal(devname)
-        if not localPath in self.openFiles:
+
+        if localPath is None:
+            logger.info("Passing to other controllers")
+            self.sendErrorCode(EDVNAME)
+            return
+
+        if localPath not in self.openFiles:
             # pass to a different device.
-            self.sendErrorCode(EDEVERR)
+            self.sendErrorCode(EDVNAME)
             return
 
         try:
@@ -184,9 +201,15 @@ class TipiDisk(object):
         logger.info("Opcode 3 Write - %s", devname)
         logPab(pab)
         localPath = tinames.devnameToLocal(devname)
-        if not localPath in self.openFiles:
+
+        if localPath is None:
+            logger.info("Passing to other controllers")
+            self.sendErrorCode(EDVNAME)
+            return
+
+        if localPath not in self.openFiles:
             # pass to a different device.
-            self.sendErrorCode(EDEVERR)
+            self.sendErrorCode(EDVNAME)
             return
 
         try:
@@ -217,7 +240,8 @@ class TipiDisk(object):
         logPab(pab)
         maxsize = recordNumber(pab)
         unix_name = tinames.devnameToLocal(devname)
-        if not os.path.exists(unix_name):
+
+        if unix_name is None or not os.path.exists(unix_name):
             logger.info("Passing to other controllers")
             self.sendErrorCode(EDVNAME)
             return
@@ -226,7 +250,7 @@ class TipiDisk(object):
                 prog_file = BasicFile.load(unix_name)
             else:
                 prog_file = ProgramImageFile.load(unix_name)
-            
+
             filesize = prog_file.getImageSize()
             bytes = prog_file.getImage()
             if filesize > maxsize:
@@ -247,6 +271,10 @@ class TipiDisk(object):
         logger.info("Opcode 6 Save - %s", devname)
         logPab(pab)
         unix_name = tinames.devnameToLocal(devname)
+
+        if unix_name is None:
+            self.sendErrorCode(EDVNAME)
+
         logger.debug("saving program to %s", unix_name)
         if self.parentExists(unix_name):
             self.sendSuccess()
@@ -271,12 +299,12 @@ class TipiDisk(object):
         logger.info("Opcode 7 Delete - %s", devname)
         logPab(pab)
         logger.info("Delete not implemented yet")
-        self.sendErrorCode(EDEVERR)
+        self.sendErrorCode(EDVNAME)
 
     def handleScratch(self, pab, devname):
         logger.info("Opcode 8 Scratch - %s", devname)
         logPab(pab)
-        self.sendErrorCode(EDEVERR)
+        self.sendErrorCode(EDVNAME)
 
     def handleStatus(self, pab, devname):
         logger.info("Opcode 9 Status - %s", devname)
@@ -288,11 +316,11 @@ class TipiDisk(object):
             if devname.startswith(("TIPI.", "DSK0.")): 
                 statbyte |= STNOFILE
             else:
-                self.sendErrorCode(EDEVERR)
+                self.sendErrorCode(EDVNAME)
                 return
         else:
             open_file = self.openFiles[localPath]
-            if open_file != None:
+            if open_file is not None:
                 statbyte = open_file.getStatusByte()
             else:
                 if ti_files.isTiFile(localPath):

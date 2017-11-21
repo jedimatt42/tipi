@@ -58,9 +58,7 @@ try:
         logger.debug("waiting for devicename...")
         devicename = tipi_io.receive()
 
-        # Special file name requests to force different errors
         filename = str(devicename)
-
         if specialFiles.handle(pab, filename):
             continue
 

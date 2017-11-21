@@ -1,10 +1,10 @@
 [Unit]
-Description=TI-99/4A DSR Service
+Description=TI-99/4A Web UI Service
 After=network.target tipiboot.service
 
 [Service]
 Type=simple
-ExecStart=/home/tipi/services/tipi.sh
+ExecStart=/home/tipi/tipi/htdocs/app_run.sh
 Restart=always
 User=tipi
 

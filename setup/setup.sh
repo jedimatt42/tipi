@@ -2,7 +2,7 @@
 
 echo "Installing systemd services..."
 
-cd /home/tipi/tipi/services/systemd
+cd /home/tipi/tipi/setup/
 sudo cp *.service /lib/systemd/system/
 sudo systemctl enable tipiboot.service
 sudo systemctl restart tipiboot.service

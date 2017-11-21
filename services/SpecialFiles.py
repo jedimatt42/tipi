@@ -5,6 +5,7 @@ from StatusFile import StatusFile
 from TcpFile import TcpFile
 from CurlFile import CurlFile
 from ConfigFile import ConfigFile
+from UpgradeFile import UpgradeFile
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,8 @@ class SpecialFiles(object):
             ClockFile.filename(): ClockFile(self.tipi_io),
             StatusFile.filename(): StatusFile(self.tipi_io),
             CurlFile.filename(): CurlFile(self.tipi_io),
-            ConfigFile.filename(): ConfigFile(self.tipi_io)
+            ConfigFile.filename(): ConfigFile(self.tipi_io),
+            UpgradeFile.filename(): UpgradeFile(self.tipi_io)
         }
 
     def handle(self, pab, devname):

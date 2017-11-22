@@ -7,6 +7,7 @@ import re
 from subprocess import call
 
 
+
 class ti_files(object):
 
     @staticmethod
@@ -39,7 +40,6 @@ class ti_files(object):
 
     @staticmethod
     def isTIBasicPrg(filename):     # Returns true if file is a PRG file and is detected to be BASIC.
-    
         # First let's see if it's in FIAD format format or not.
         #
         try:
@@ -47,13 +47,12 @@ class ti_files(object):
             bas_tmp_file = '/tmp/' + str(uuid.uuid4()) + '.tmp'
 
             call(['xdm99.py', '-P', filename, '-o', prg_tmp_file])
-
             call(['xbas99.py', '-d', prg_tmp_file, '-o', bas_tmp_file])         
             
             with open(bas_tmp_file, 'r') as f:
                 line = f.readline()
             
-            if re.match(r"^\d+\s\w+", line) is not None:
+            if re.match(r"^\d+\s(\w+|\!)", line) is not None:
                 return True
 
         except Exception as e:
@@ -62,26 +61,18 @@ class ti_files(object):
         try:
             bas_tmp_file = '/tmp/' + str(uuid.uuid4()) + '.tmp'
         
-#            print "Attempting to decode file: %s" % bas_tmp_file
-        
             call(['xbas99.py', '-d', filename, '-o', bas_tmp_file])
             
             with open(bas_tmp_file, 'r') as f:
                 line = f.readline()
             
-            if re.match(r"^\d+\s\w+", line) is not None:
+            if re.match(r"^\d+\s(\w+|\!)", line) is not None:
                 return True
 
-
-
-            
-            
         except Exception as e:
             traceback.print_exc()
             pass
-#         finally:
-#             if fh != None:
-#                 fh.close()
+
         return False
 
 

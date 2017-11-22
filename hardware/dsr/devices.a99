@@ -4,6 +4,10 @@
 ;  R11 == Return address
 ;  R12 == CRUBASE of current device
 ; Available Scratchpad: >834A - >836D (inclusive) (except?? >8354 and >8356 are preset to locate PAB in VDP)
+;  TIPI will pass to other controllers, so the DSRLNK setup must be preserved. Top of FAC is device name
+;  If TIPI is responding, that is 4 bytes at most. However, 8355 is the name length. Leaving only 7 bytes
+;  So I've chosen CPAB (>8364->836D) and the rest of the code must operate with the R0-R10 of the GPLWS
+ 
 
 ; This will be all about interacting with PABs in VDP and IO to the Raspberry PI
 
@@ -12,19 +16,20 @@ PABNAM	EQU	>8356		; Address in VDP of Device Name
 PABNLE	EQU	>8354		; Length of name (?only trust the LSB?)
 ; PAB begins at VDP address pointed to by: @>8356 - @>8354 - >0A
 
-; There is room in PAD for the 10 byte header at FAC (floating point accumulator)
+; There is room in PAD for the 10 byte header at CPAB
 ;   These equates are relative to WP at DSR entry. (We store that in R10)
 PAD	EQU	->E0		; Beginning of scratchpad ram
-FAC	EQU	PAD+>4A		; 36 bytes available to DSR We'll copy the PAB header here.
-OPCODE	EQU	FAC+>0		; PAB - location of opcode after copied
-FLGSTS	EQU	FAC+>1		; PAB - [blah][blah]
-BUFADR	EQU	FAC+>2		; PAB - address of read or write buffer
-RECLEN	EQU	FAC+>4		; PAB - logical record length
-CHRCNT	EQU	FAC+>5		; PAB - character count
-RECNUM	EQU	FAC+>6		; PAB - record number
-SCNOFF	EQU	FAC+>8		; PAB - screen offset
+FAC	EQU	PAD+>4A		; Some of this must be preserved for DSRLNK, some is available
+CPAB	EQU	PAD+>64		; Supposedly memory up to 836D is available ( 15 bytes )
+
+OPCODE	EQU	CPAB+>0		; PAB - location of opcode after copied
+FLGSTS	EQU	CPAB+>1		; PAB - [blah][blah]
+BUFADR	EQU	CPAB+>2		; PAB - address of read or write buffer
+RECLEN	EQU	CPAB+>4		; PAB - logical record length
+CHRCNT	EQU	CPAB+>5		; PAB - character count
+RECNUM	EQU	CPAB+>6		; PAB - record number
+SCNOFF	EQU	CPAB+>8		; PAB - screen offset
 STATB 	EQU	SCNOFF		; Alias for when SCNOFF makes no sense.
-OPTLEN	EQU	FAC+>9		; PAB - option length
 
 ; Error codes - RPi will return one of these or SUCCESS after evaluating PAB and device name.
 EDVNAME	EQU	>00		; Bad device name
@@ -73,7 +78,6 @@ tipidsr
 	LIMI	0		; I/O plays with VDP registers and relies on them
 	MOV	R11,@RET	; Stash the dsrlnk Return address
 	STWP	R10		; PAB equates are relative to R10, don't mess with R10
-
 	LI	R4,PABNAM	; Begin computing beginning of PAB
 	CLR	R9
 	A	*R4,R9
@@ -86,7 +90,7 @@ tipidsr
 
 ; Set VDP to read from beginning of PAB that is now in R0 and copy to scratchpad
 	.setvdpra R9
-	LI	R1,>0A		; while r1 ne 0; do
+	LI	R1,>09		; while r1 ne 0; do  (PAB is 10 bytes, but we never use the last OPTLEN)
 	MOV	R10,R2		;   R2 will be index relative to scratchpad
 !	MOVB	@VDPRD,@OPCODE(R2)	;   load from PAB in vdp
 	INC	R2		;   inc index... 

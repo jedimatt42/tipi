@@ -15,10 +15,10 @@
 #define PI_CONFIG "PI.CONFIG"
 #define PI_STATUS "PI.STATUS"
 
-unsigned char fopenDV(struct PAB* pab, char* fname, int vdpbuffer, unsigned char flags);
-unsigned char fclose(struct PAB* pab);
-unsigned char fread(struct PAB* pab, int recordNumber);
-unsigned char fwrite(struct PAB* pab, unsigned char* record);
+unsigned char dsr_openDV(struct PAB* pab, char* fname, int vdpbuffer, unsigned char flags);
+unsigned char dsr_close(struct PAB* pab);
+unsigned char dsr_read(struct PAB* pab, int recordNumber);
+unsigned char dsr_write(struct PAB* pab, unsigned char* record);
 
 int strcmp(const char* a, const char* b);
 int indexof(const char* str, char c);
@@ -58,7 +58,6 @@ void showCrubase(int crubase) {
   cprintf("CRUBASE: %x", crubase);
 }
 
-
 void showValue(int x, int y, const char* val) {
   gotoxy(x,y);
   cclear(40 - x);
@@ -67,9 +66,6 @@ void showValue(int x, int y, const char* val) {
 }
 
 void initGlobals() {
-  conio_cursorChar=95;
-  conio_cursorFlag=1;
-
   strcpy(ipaddress,"");
   strcpy(version,"");
   strcpy(dsk1_dir,"");
@@ -202,7 +198,7 @@ void loadPiStatus() {
   gotoxy(0,3);
   cputs("Loading PI.STATUS");
   
-  unsigned char ferr = fopenDV(&pab, PI_STATUS, FBUF, DSR_TYPE_INPUT);
+  unsigned char ferr = dsr_openDV(&pab, PI_STATUS, FBUF, DSR_TYPE_INPUT);
   if (ferr) {
     cprintf(" ERROR: %x", ferr);
     halt();
@@ -217,7 +213,7 @@ void loadPiStatus() {
   ferr = DSR_ERR_NONE;
   while(ferr == DSR_ERR_NONE) {
     unsigned char cbuf[81];
-    ferr = fread(&pab, 0);
+    ferr = dsr_read(&pab, 0);
     gotoxy(0,22);
     if (ferr == DSR_ERR_NONE) {
       // Now FBUF has the data... 
@@ -230,7 +226,7 @@ void loadPiStatus() {
   showValue(25, 0, version);
   showValue(25, 1, ipaddress);
 
-  ferr = fclose(&pab);
+  ferr = dsr_close(&pab);
   if (ferr) {
     cprintf("Close ERROR: %x", ferr);
     halt();
@@ -261,7 +257,7 @@ void loadPiConfig() {
   gotoxy(0,3);
   cputs("Loading PI.CONFIG");
   
-  unsigned char ferr = fopenDV(&pab, PI_CONFIG, FBUF, DSR_TYPE_INPUT);
+  unsigned char ferr = dsr_openDV(&pab, PI_CONFIG, FBUF, DSR_TYPE_INPUT);
   if (ferr) {
     cprintf(" ERROR: %x", ferr);
     halt();
@@ -271,7 +267,7 @@ void loadPiConfig() {
   ferr = DSR_ERR_NONE;
   while(ferr == DSR_ERR_NONE) {
     unsigned char cbuf[81];
-    ferr = fread(&pab, 0);
+    ferr = dsr_read(&pab, 0);
     gotoxy(0,22);
     if (ferr == DSR_ERR_NONE) {
       // Now FBUF has the data... 
@@ -287,7 +283,7 @@ void loadPiConfig() {
   showValue(10, 11, wifi_ssid);
   showValue(10, 12, wifi_psk);
 
-  ferr = fclose(&pab);
+  ferr = dsr_close(&pab);
   if (ferr) {
     cprintf("Close ERROR: %x", ferr);
     halt();
@@ -360,7 +356,7 @@ void savePiConfig() {
   gotoxy(0,3);
   cputs("Saving PI.CONFIG");
   
-  unsigned char ferr = fopenDV(&pab, PI_CONFIG, FBUF, DSR_TYPE_APPEND);
+  unsigned char ferr = dsr_openDV(&pab, PI_CONFIG, FBUF, DSR_TYPE_APPEND);
   if (ferr) {
     cprintf(" ERROR: %x", ferr);
     halt();
@@ -371,21 +367,21 @@ void savePiConfig() {
   if (disks_dirty) {
     strcpy(line, "DSK1_DIR=");
     strcpy(line+9, dsk1_dir);
-    ferr = fwrite(&pab, line);
+    ferr = dsr_write(&pab, line);
     if (ferr) {
       cprintf(" ERROR: %x", ferr);
       halt();
     }
     strcpy(line, "DSK2_DIR=");
     strcpy(line+9, dsk2_dir);
-    ferr = fwrite(&pab, line);
+    ferr = dsr_write(&pab, line);
     if (ferr) {
       cprintf(" ERROR: %x", ferr);
       halt();
     }
     strcpy(line, "DSK3_DIR=");
     strcpy(line+9, dsk3_dir);
-    ferr = fwrite(&pab, line);
+    ferr = dsr_write(&pab, line);
     if (ferr) {
       cprintf(" ERROR: %x", ferr);
       halt();
@@ -395,21 +391,21 @@ void savePiConfig() {
   if (wifi_dirty) {
     strcpy(line, "WIFI_SSID=");
     strcpy(line+10, wifi_ssid);
-    ferr = fwrite(&pab, line);
+    ferr = dsr_write(&pab, line);
     if (ferr) {
       cprintf(" ERROR: %x", ferr);
       halt();
     }
     strcpy(line, "WIFI_PSK=");
     strcpy(line+9, wifi_psk);
-    ferr = fwrite(&pab, line);
+    ferr = dsr_write(&pab, line);
     if (ferr) {
       cprintf(" ERROR: %x", ferr);
       halt();
     }
   }
 
-  ferr = fclose(&pab);
+  ferr = dsr_close(&pab);
   if (ferr) {
     cprintf("Close ERROR: %x", ferr);
     halt();
@@ -431,7 +427,7 @@ void initPab(struct PAB* pab) {
 }
 
 // Configures a PAB for filename and DV80, and opens the file
-unsigned char fopenDV(struct PAB* pab, char* fname, int vdpbuffer, unsigned char flags) {
+unsigned char dsr_openDV(struct PAB* pab, char* fname, int vdpbuffer, unsigned char flags) {
   initPab(pab);
   pab->OpCode = DSR_OPEN;
   pab->Status = DSR_TYPE_DISPLAY | DSR_TYPE_VARIABLE | DSR_TYPE_SEQUENTIAL | flags;
@@ -442,7 +438,7 @@ unsigned char fopenDV(struct PAB* pab, char* fname, int vdpbuffer, unsigned char
   return dsrlnk(pab, VPAB);
 }
 
-unsigned char fclose(struct PAB* pab) {
+unsigned char dsr_close(struct PAB* pab) {
   pab->OpCode = DSR_CLOSE;
 
   return dsrlnk(pab, VPAB);
@@ -451,7 +447,7 @@ unsigned char fclose(struct PAB* pab) {
 // the data read is in FBUF, the length read in pab->CharCount
 // typically passing 0 in for record number will let the controller
 // auto-increment it. 
-unsigned char fread(struct PAB* pab, int recordNumber) {
+unsigned char dsr_read(struct PAB* pab, int recordNumber) {
   pab->OpCode = DSR_READ;
   pab->RecordNumber = recordNumber;
   pab->CharCount = 0;
@@ -461,7 +457,7 @@ unsigned char fread(struct PAB* pab, int recordNumber) {
   return result;
 }
 
-unsigned char fwrite(struct PAB* pab, unsigned char* record) {
+unsigned char dsr_write(struct PAB* pab, unsigned char* record) {
   pab->OpCode = DSR_WRITE;
   int len = strlen(record);
   vdpmemcpy(pab->VDPBuffer, record, len);

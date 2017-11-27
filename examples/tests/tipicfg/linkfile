@@ -2,7 +2,6 @@ MEMORY
 {
   cart_rom   (rx) : ORIGIN = 0x6000, LENGTH = 0x2000 /* cartridge ROM, read-only */
   lower_exp  (wx) : ORIGIN = 0x2080, LENGTH = 0x1F80 /* 8k - 128 bytes       */
-  higher_exp (wx) : ORIGIN = 0xa000, LENGTH = 0x6000
   scratchpad (wx) : ORIGIN = 0x8320, LENGTH = 0x00e0 /* 32b is for workspace */
 }
 
@@ -15,7 +14,7 @@ SECTIONS
   __CTOR_END = .;
 
   __VAL_START = .;
-  .data 0xa000 : { __DATA_START = .; *(.data);}
+  .data 0x2000 : { __DATA_START = .; *(.data);}
   __DATA_END = .;
 
   .bss  ALIGN(2) : { __BSS_START = .; *(.bss);}

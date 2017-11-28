@@ -1,6 +1,6 @@
 MEMORY
 {
-  cart_rom   (rx) : ORIGIN = 0x6000, LENGTH = 0x2000 /* cartridge ROM, read-only */
+  upper_exp  (wx) : ORIGIN = 0xA000, LENGTH = 0x6000 /* upper ram */
   lower_exp  (wx) : ORIGIN = 0x2080, LENGTH = 0x1F80 /* 8k - 128 bytes       */
   scratchpad (wx) : ORIGIN = 0x8320, LENGTH = 0x00e0 /* 32b is for workspace */
 }
@@ -8,7 +8,7 @@ MEMORY
 
 SECTIONS
 {
-  .text 0x6000 : {*(.text)}
+  .text 0xA000 : {*(.text)}
   
   .ctors ALIGN(2) : { __CTOR_START = .; *(.ctors);}
   __CTOR_END = .;

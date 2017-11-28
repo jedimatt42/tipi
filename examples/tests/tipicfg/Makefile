@@ -3,7 +3,7 @@ LD=tms9900-ld
 CC=tms9900-gcc
 LIBTI99?=/home/matthew/dev/ti99/libti99
 
-ELF2CART=elf2cart
+ELF2EA5=elf2ea5
 
 FNAME=tipicfg
 
@@ -11,14 +11,13 @@ LDFLAGS=\
   --script=linkfile
 
 OBJECT_LIST=\
-  header.o\
   crt0.o\
   main.o
 
 all: $(FNAME).bin
 
 $(FNAME).bin: $(FNAME).elf
-	$(ELF2CART) $(FNAME).elf $(FNAME).bin
+	$(ELF2EA5) $(FNAME).elf $(FNAME).bin
 
 $(FNAME).elf: $(OBJECT_LIST)
 	$(LD) $(OBJECT_LIST) $(LDFLAGS) -L$(LIBTI99) -lti99 -o $(FNAME).elf -Map=mapfile

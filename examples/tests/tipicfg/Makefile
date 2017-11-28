@@ -6,6 +6,7 @@ LIBTI99?=/home/matthew/dev/ti99/libti99
 ELF2EA5=elf2ea5
 
 FNAME=tipicfg
+UCFNAME=$(shell echo -n $(FNAME) | tr 'a-z' 'A-Z')
 
 LDFLAGS=\
   --script=linkfile
@@ -14,7 +15,10 @@ OBJECT_LIST=\
   crt0.o\
   main.o
 
-all: $(FNAME).bin
+all: $(FNAME)
+
+$(FNAME): $(FNAME).bin
+	xdm99.py -T $(FNAME).bin -o $(UCFNAME) -t -f PROGRAM -n $(UCFNAME)
 
 $(FNAME).bin: $(FNAME).elf
 	$(ELF2EA5) $(FNAME).elf $(FNAME).bin
@@ -29,6 +33,7 @@ $(FNAME).elf: $(OBJECT_LIST)
 	rm -f *.i
 	rm -f *.s
 	rm -f mapfile
+	rm -f $(UCFNAME)
 
 %.o: %.asm
 	$(GAS) $< -o $@

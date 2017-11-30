@@ -44,10 +44,12 @@ DSR devices:
 
 Special files:
 
-* TIPI.CLOCK - reading a DISPLAY 24 record returns asctime (time & date as string)
-* TIPI.STATUS - virtual D/V 80 file with list of network device info on PI. (mac addresses, and ip addresses for each network device )
-* TIPI.HTTP://... - GETs an HTTP url and let you access it like a normal file.
-* TIPI.TCP=hostname:port - open a socket, write opcode supported to write, read to read... 
+* PI.CLOCK - reading a DISPLAY 24 record returns asctime (time & date as string)
+* PI.STATUS - virtual D/V 80 file with list of network device info on PI. (mac addresses, and ip addresses for each network device )
+* PI.HTTP://... - GETs an HTTP url and let you access it like a normal file.
+* PI.TCP=hostname:port - open a socket, write opcode supported to write, read to read... 
+* PI.STATUS - virtual D/V 80 file with version and network information.
+* PI.CONFIG - virtual D/V 80 file for configuration of TIPI services.
 
 File name transformation:
 

@@ -29,6 +29,8 @@ tipi_disk_base = '/home/tipi/tipi_disk'
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
+    
+    # Should instead use this since it will work with python 3 too: sys.stderr.write("error!\n"); 
 
 
 
@@ -78,7 +80,6 @@ def files(path):
     tipi_subdirs = []
     tipi_files = []
 
-
     if request.args.get('newDir'):
         eprint("newDir", request.args.get('newDir'))
         eprint("filePath", request.args.get('filePath'))
@@ -92,7 +93,6 @@ def files(path):
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
-        
 
     if request.args.get('action') == 'download':
         eprint("wants to download!")
@@ -104,8 +104,6 @@ def files(path):
         eprint("file_path: ", file_path)
         
         return send_from_directory(directory = os.path.dirname(file_path), filename = os.path.basename(file_path))
-        
-    
 
     #
     # Add a link to go back up a directory:
@@ -135,7 +133,6 @@ def files(path):
         item_path = os.path.join(full_path, item)
         
         if os.path.isdir(item_path):
-        
             item_display_path = item
             
             if len(path):

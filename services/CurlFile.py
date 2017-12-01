@@ -3,10 +3,10 @@ import traceback
 import pycurl
 import logging
 from io import BytesIO
-from ti_files import ti_files
+from ti_files.ti_files import ti_files
 from Pab import *
 
-logger = logging.getLogger("tipi")
+logger = logging.getLogger(__name__)
 
 
 class CurlFile(object):
@@ -96,6 +96,7 @@ class CurlFile(object):
         logger.info("load devname - %s", devname)
         try:
             url = self.parseDev(devname)
+            logger.debug("url: %s", url)
             buffer = BytesIO()
             c = pycurl.Curl()
             c.setopt(c.URL, url)
@@ -103,7 +104,13 @@ class CurlFile(object):
             c.perform()
             c.close()
             body = bytearray(buffer.getvalue())
-            if not ti_files.isValid(body) or not ti_files.isProgram(body):
+            logger.debug("downloaded %d bytes", len(body))
+            if not ti_files.isValid(body):
+                logger.debug("not a TIFILES file")
+                self.tipi_io.send([EFILERR])
+                return
+            if not ti_files.isProgram(body):
+                logger.debug("not a PROGRAM image file")
                 self.tipi_io.send([EFILERR])
                 return
             filesize = ti_files.byteLength(body)
@@ -112,7 +119,7 @@ class CurlFile(object):
             self.tipi_io.send((body[128:])[:filesize])
             return
         except BaseException:
-            traceback.print_exc()
+            logger.exception("Error loading %s", devname)
         self.tipi_io.send([EFILERR])
         return
 

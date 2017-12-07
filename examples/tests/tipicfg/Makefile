@@ -1,6 +1,7 @@
 GAS=tms9900-as
 LD=tms9900-ld
 CC=tms9900-gcc
+EA5SPLIT=ea5split
 LIBTI99?=/home/matthew/dev/ti99/libti99
 
 ELF2EA5=elf2ea5
@@ -18,7 +19,7 @@ OBJECT_LIST=\
 all: $(FNAME)
 
 $(FNAME): $(FNAME).bin
-	xdm99.py -T $(FNAME).bin -o $(UCFNAME) -t -f PROGRAM -n $(UCFNAME)
+	$(EA5SPLIT) $(FNAME).bin
 
 $(FNAME).bin: $(FNAME).elf
 	$(ELF2EA5) $(FNAME).elf $(FNAME).bin
@@ -33,7 +34,8 @@ $(FNAME).elf: $(OBJECT_LIST)
 	rm -f *.i
 	rm -f *.s
 	rm -f mapfile
-	rm -f $(UCFNAME)
+	rm -f TIPICFG
+	rm -f TIPICFH
 
 %.o: %.asm
 	$(GAS) $< -o $@

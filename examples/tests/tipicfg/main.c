@@ -12,8 +12,9 @@
 
 #define GPLWS ((unsigned int*)0x83E0)
 
-#define PI_CONFIG "PI.CONFIG"
-#define PI_STATUS "PI.STATUS"
+#define PI_CONFIG "DSK1.PICONFIG"
+#define PI_STATUS "DSK1.PISTATUS"
+#define PI_UPGRADE "PI.UPGRADE"
 
 unsigned char dsr_openDV(struct PAB* pab, char* fname, int vdpbuffer, unsigned char flags);
 unsigned char dsr_close(struct PAB* pab);
@@ -31,10 +32,13 @@ void loadPiConfig();
 
 void savePiConfig();
 
+void upgrade();
+
 void getstr(int x, int y, char* var);
 
 char ipaddress[79]; // generically k=v values from files would be at most 78 characters. 
 char version[79];
+char latest[79];
 int crubase;
 
 char dsk1_dir[79];
@@ -63,6 +67,19 @@ void showValue(int x, int y, const char* val) {
   cclear(40 - x);
   gotoxy(x,y);
   cputs(val);
+}
+
+void showQMenu() {
+  gotoxy(6,23);
+  cputs("Q) quit");
+  if (disks_dirty || wifi_dirty) {
+    gotoxy(15,23);
+    cputs("W) write");
+  } else {
+    cclearxy(15,23,8);
+  }
+  gotoxy(25,23);
+  cputs("R) reload");  
 }
 
 void initGlobals() {
@@ -123,8 +140,7 @@ void layoutScreen() {
 
   gotoxy(0,22);
   chline(40);
-  gotoxy(6,23);
-  cputs("Q) quit, W) write, R) reload");
+  showQMenu();
 }
 
 void main()
@@ -162,30 +178,38 @@ void main()
         showValue(10,8,dsk3_dir);
         break;
       case 'S':
+      case 's':
         wifi_dirty = 1;
         getstr(10,11,wifi_ssid);
         showValue(10,11,wifi_ssid);
         break;
       case 'P':
+      case 'p':
         wifi_dirty = 1;
         getstr(10,12,wifi_psk);
         showValue(10,12,wifi_psk);
         break;
       case 'R':
+      case 'r':
         disks_dirty = 0;
         wifi_dirty = 0;
         loadPiStatus();
         loadPiConfig();
         break;
       case 'W':
+      case 'w':
         savePiConfig();
         disks_dirty = 0;
         wifi_dirty = 0;
         break;
+      case 'U':
+      case 'u':
+        upgrade();
+        break;
     }
 
-
-  } while(key != 'Q');
+    showQMenu();
+  } while(key != 'Q' && key != 'q');
 
   gotoxy(0,3);
   cputs("quiting...");
@@ -201,7 +225,7 @@ void loadPiStatus() {
   unsigned char ferr = dsr_openDV(&pab, PI_STATUS, FBUF, DSR_TYPE_INPUT);
   if (ferr) {
     cprintf(" ERROR: %x", ferr);
-    halt();
+    return;
   }
 
   // see if we can steal the crubase
@@ -225,6 +249,13 @@ void loadPiStatus() {
 
   showValue(25, 0, version);
   showValue(25, 1, ipaddress);
+  if (0 != strcmp(version, latest)) {
+    gotoxy(6, 15);
+    cputs("U) upgrade to ");
+    cputs(latest);
+  } else {
+    cclearxy(0,15,40);
+  }
 
   ferr = dsr_close(&pab);
   if (ferr) {
@@ -248,6 +279,8 @@ void processStatusLine(char* cbuf) {
     strcpy(ipaddress, val);
   } else if (0 == strcmp(cbuf, "IP_ETH0")) {
     strcpy(ipaddress, val);
+  } else if (0 == strcmp(cbuf, "LATEST")) {
+    strcpy(latest, val);
   }
 }
 
@@ -260,7 +293,7 @@ void loadPiConfig() {
   unsigned char ferr = dsr_openDV(&pab, PI_CONFIG, FBUF, DSR_TYPE_INPUT);
   if (ferr) {
     cprintf(" ERROR: %x", ferr);
-    halt();
+    return;
   }
 
   int recNo = 0;
@@ -412,6 +445,25 @@ void savePiConfig() {
   }
   gotoxy(0,3);
   cclear(40);
+}
+
+void upgrade() {
+  struct PAB pab;
+
+  unsigned char ferr = dsr_openDV(&pab, PI_UPGRADE, FBUF, DSR_TYPE_INPUT);
+  if (ferr) {
+    cprintf(" ERROR: %x", ferr);
+    return;
+  }
+
+  ferr = dsr_close(&pab);
+  if (ferr) {
+    cprintf("Close ERROR: %x", ferr);
+    halt();
+  }
+
+  gotoxy(0,3);
+  cputs("Upgrading... reload to check version");
 }
 
 //---- the following are meant to be easy, not fast ----

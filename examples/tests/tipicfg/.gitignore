@@ -5,3 +5,6 @@
 *.bin
 *.elf
 mapfile
+TIPICFG
+TIPICFH
+TIPICFG.*

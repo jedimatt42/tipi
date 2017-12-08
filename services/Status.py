@@ -1,6 +1,9 @@
 import netifaces
+import logging
 
 from subprocess import check_output
+
+logger = logging.getLogger(__name__)
 
 class Status(object):
 

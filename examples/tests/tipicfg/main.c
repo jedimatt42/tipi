@@ -12,8 +12,9 @@
 
 #define GPLWS ((unsigned int*)0x83E0)
 
-#define PI_CONFIG "DSK1.PICONFIG"
-#define PI_STATUS "DSK1.PISTATUS"
+#define TIPICFG_VER "2"
+#define PI_CONFIG "PI.CONFIG"
+#define PI_STATUS "PI.STATUS"
 #define PI_UPGRADE "PI.UPGRADE"
 
 unsigned char dsr_openDV(struct PAB* pab, char* fname, int vdpbuffer, unsigned char flags);
@@ -106,7 +107,8 @@ void setupScreen() {
 void layoutScreen() {
   clrscr();
   gotoxy(0,0);
-  cputs("TIPI Config");
+  cputs("TIPI Config v");
+  cputs(TIPICFG_VER);
   showCrubase(crubase);
 
   gotoxy(16,0);

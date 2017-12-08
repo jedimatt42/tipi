@@ -31,7 +31,7 @@ class Status(object):
         # This needs to work even if there is no network.. thus a catch all.
         try:
             upgradeCheck = check_output(["/home/tipi/tipi/setup/upgrade.sh"])
-            latest = blah.split('\n')[1]
+            latest = upgradeCheck.split('\n')[1]
             if latest.startswith("Latest Version: "):
                 self.__records.append("LATEST={}".format(latest.split(':')[1].strip()))
         except Exception as e:

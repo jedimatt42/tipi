@@ -1,0 +1,542 @@
+***************************************************************
+***************************************************************
+* E/A#5 loader for Extended BASIC - 9/13/2013
+* --  based on --
+* E/A#5 loader for TI BASIC -- 26 Apr 09
+* Uses scratchpad RAM to load anywhere in the 32k space
+*
+* Original by Mark Wills
+* Tweaks by Mike Brent
+* Support from the SWPB group, particularly Bill, Tim and Ben
+*
+* Limitations:
+* - Maximum filename length, 64 characters
+* - Maximum number of files, 10
+* - Pretty much no error handling
+*
+* Usage:
+* CALL INIT
+* CALL LOAD("DSKx.SCRATCHO")
+* CALL LINK("OPT5","DSKx.FILE1")
+*
+* Will reset to master title page if FILE1 is not found
+*
+* Possible improvements:
+* -Verify filename is 64 characters or less before using
+* -Return gracefully to XB program (with error?) if first file not found
+*
+***************************************************************
+
+		DEF OPT5
+
+* XB references - note XB doesn't have DSRLNK so we provide our own 
+* which does only as much as we should need. There is also no GPLLNK,
+* so we work around that and copy the character set manually. As such,
+* this code is much larger than the TI BASIC version was.
+STRREF	EQU	>2014
+VMBW	EQU	>2024
+VWTR	EQU	>2030
+VDPWA	EQU >8C02
+VDPRD	EQU >8800
+VDPWD	EQU >8C00
+VSBR	EQU	>2028
+
+
+VDPADR 	EQU >1380 			address to load the file(s) in vdp ram (EA uses >1380)
+VDPPAB 	EQU VDPADR-740		address of the first pab in vdp ram (10 PABs at 74 bytes each)
+OPLOAD 	EQU >0500 			opcode for load operation for dsrlnk
+
+* sit at the end of ram out of the way :-)
+* less critical than before, since we move to scratchpad
+* before we overwrite RAM!
+* Enable this if you embed it in XB isntead of loading it :)
+		AORG >FC00
+*		RORG >0000
+
+* out of the way workspace for starters (not sure how necessary..)
+WS		BSS 32
+
+***********************************************
+* GROM routines - from Tursi's Multicart code *
+***********************************************
+
+* Set GROM address
+GPLSET
+ MOVB R0,@>9C02
+ SWPB R0
+ MOVB R0,@>9C02
+ B *R11
+
+* Get a word from GPL
+GETGPL
+ MOVB @>9800,R0
+ SWPB R0
+ MOVB @>9800,R0
+ SWPB R0
+ B *R11
+
+* Copy R2 characters from a GPL copy function vectored at
+* R0 to VDP R1. GPL vector must be a B or BR and
+* the first actual instruction must be a DEST with an
+* immediate operand. Set R3 to 7 for a 99/4A (7 byte characters)
+GPLVDP
+ MOV R11,R10    * save return address
+ BL @GPLSET     * set GROM address
+ BL @GETGPL     * Get branch instruction (not verified!)
+ ANDI R0,>1FFF  * mask out instruction part
+ AI R0,3        * skip instruction and destination
+ BL @GPLSET     * set new GROM address
+ BL @GETGPL     * get actual address of the table
+ BL @GPLSET     * and set that GROM address - GROM is now ready!
+
+ SWPB R1        * assume VDP is already prepared for write to save space
+ MOVB R1,@>8C02
+ SWPB R1
+ MOVB R1,@>8C02 * VDP is now ready!
+
+ CLR R0
+LP8
+ MOVB R0,@>8C00 * pad the top of the char with a space
+ MOV R3,R0      * then copy 7 (or 6) bytes
+
+LP9
+ MOVB @>9800,@>8C00  * copy a byte (both sides autoincrement)
+ DEC R0
+ JNE LP9
+
+ DEC R2         * next character
+ JNE LP8
+
+ B *R10
+
+**********************************************************
+* DSRLNK Replacement - Editor/assembler adapted by Tursi *
+**********************************************************
+
+DSRADR BSS 2
+DSRCRU BSS 2
+SAVE   BSS 2
+NAMBUF BSS 8
+NAMLEN BSS 2
+DSRDAT DATA >2EAA
+
+* Modified version of the E/A DSRLNK - pass address of PAB in R0
+* BL instead BLWP, assumes DATA >8 	
+EA3DSR
+	   MOV R11,@SAVE
+	   AI R0,9
+	   MOV R0,@>8356				Load the PAB pointer
+A22B2  LI R5,8		                Get Data, should be 8 in the case I care about
+*      SZCB @A20FC,15               Zero out the EQUAL bit in the return CPU status (ahh, I don't do this)
+*      MOV  @>8356,0			    Get PAB pointer into R0
+       MOV  0,9						Copy to R9
+       AI   9,-8                    pab status
+       BLWP @VSBR                    vsbr: read size (from R0 to MSB R1 - for DSK1.BLAH is 9)
+       MOVB 1,3						copy to R3
+       SRL  3,8						move into low byte (make a count)
+       SETO 4						R4 = 0xffff
+       LI   2,NAMBUF               	name buffer in R2
+A22D0  INC  0						point to next byte of name (first byte on first pass)
+       INC  4						increment R4 (becomes 0 on first pass)
+       C    4,3						check if name finished
+       JEQ  A22E4                  	Jump ahead if so
+       BLWP @VSBR                 	vsbr: copy character of name
+       MOVB 1,*2+                  	copy 1 char into name buffer
+       CB   1,@DSRDAT              	is it .?
+       JNE  A22D0					no, loop around
+A22E4  MOV  4,4						if we get here, we either got the whole length or a '.'
+       JEQ  A238C                  	size=0, that's an error so skip out (no name to search)
+       CI   4,>0007					check against 7 characters (just the DSR name part)
+       JGT  A238C                  	size>7 is too long, so error out
+       CLR  @>83D0					clear the CRU base search
+       MOV  4,@>8354				length of the name (excluding '.') goes into >8354
+       MOV  4,@NAMLEN				also save it for later use
+*       MOV  4,@>2036               	also goes into >2036 (this is the official place)(not safe in XB)
+       INC  4						add one to name length
+       A    4,@>8356				add to the PAB pointer (>8356 points to the period!)
+*       MOV  @>8356,@>2038          	save the pointer at >2038, too (not safe in XB)
+       LWPI >83E0                  	Load GPLWS to call the DSR with
+       CLR  1						R1=0
+       LI   12,>0F00				CRU base to >0F00 (first card -1)
+       JMP  A2316				    skip card off (was a bug in the EA code?)
+A2310  MOV  12,12					check base for 0
+       JEQ  A2316					if not 0, skip card off. Looks like a bug, it's never 0??
+       SBZ  0                      	card off
+A2316  AI   12,>0100				next card (>1000 for first)
+       CLR  @>83D0					clear CRU tracking at >83D0
+       CI   12,>2000				check if all cards are done
+       JEQ  A2388                  	if yes, we didn't find it, so error out
+       MOV  12,@>83D0              	save cru base
+       SBO  0                      	card on
+       LI   2,>4000					read card header bytes
+       CB   *2,@DSRDAT+1           	>AA = header
+       JNE  A2310                  	no: loop back for next card
+       AI   R2,8            		offset (contains the DATA statement, so 8 for a device, for >4008)
+       JMP  A2340					always jump into the loop from here
+A233A  MOV  @>83D2,2               	next sub
+       SBO  0                      	card on (already is, isn't it??)
+A2340  MOV  *2,2                   	grab link pointer to next
+       JEQ  A2310                  	If no pointer, link back to get next card
+       MOV  2,@>83D2               	save link address in >83D2
+       INCT 2						point to entry address
+       MOV  *2+,9                  	save address in R9
+       MOVB @>8355,5				get DSR name length (low byte of >8354)
+       JEQ  A2364                  	size=0, so take it 
+       CB   5,*2+					compare length to length in DSR
+       JNE  A233A                  	diff size: loop back for next
+       SRL  5,8						make length a word count
+       LI   6,NAMBUF               	name buffer pointer in R6
+A235C  CB   *6+,*2+                	check name
+       JNE  A233A                  	diff name: loop back for next entry
+       DEC  5						count down length
+       JNE  A235C                  	not done yet: next char
+A2364  INC  1                      	if we get here, everything matched, increment # calls
+*       MOV  1,@>203A              	save # of calls (not safe in XB)
+       MOV  9,@DSRADR              	save address (move in XB for later)
+       MOV  12,@DSRCRU             	save cru base (move in XB for later)
+       BL   *9                     	link
+       JMP  A233A                  	check next entry on the same card -- most DSRs will skip this 
+       SBZ  0                      	card off
+       LWPI WS
+       MOV  9,0
+       BLWP @VSBR	               	read pab status
+       SRL  1,13					should be okay on Geneve?
+       JNE  A238E                  	err
+       CLR  R0						no err?
+       MOV  @SAVE,R11
+       B *R11
+A2388  LWPI WS	                    errors
+A238C  SETO 1                       flag error
+A238E  SWPB 1
+       MOVB R1,R0                   code in r0
+*      SOCB @>20FC,15               eq=1
+       MOV @SAVE,R11
+       B *R11
+
+*********************************
+******* Entry point *************
+*********************************
+
+* get the file name from call link statement
+OPT5
+		LIMI 0				disable interrupts
+		LWPI WS 			set workspace
+		CLR R0 				not an array element
+		LI R1,1 			first parameter
+		LI R2,PAB+9 		address of buffer to place the string
+		BLWP @STRREF 		get string from call link
+		
+* set up most of the EA environment before we start loading things
+		LI R1,EAREGS 		address of register data
+		LI R2,8 			8 bytes to write
+		CLR R0 				vdp register
+NXTREG
+		MOVB *R1+,R0 		get a byte from the list
+		SWPB R0 			rotate register value into lsb
+		BLWP @VWTR 			write to vdp register
+		AI R0,>0100 		next register
+		SWPB R0 			get reg value in msb
+		DEC R2 				finished?
+		JNE NXTREG 			loop if not
+		
+* Fix TI BASIC screen - TI BASIC has an offset of >60 bytes,
+* if we offset it back down, we can let BASIC display whatever
+* text it had up before. We also turn edge characters (31) into spaces
+		LI R2,767			start at end of screen and work down
+		CLR R1				make compares easier
+FIXUP
+		BL @GVDPST			Set VDP address for read
+		MOVB @VDPRD,R1		Get data (don't care about LSB)
+		AI R1,>A000			Subtract >60 by adding >A0
+		CI R1,>1F00			Is it an edge character?
+		JNE NOTEDGE
+		AI R1,>0100			Make it a space so we don't see cursors
+NOTEDGE		
+		ORI R2,>4000		Make a write address
+		BL @GVDPST			Set it
+		MOVB R1,@VDPWD		Write it back
+		ANDI R2,>3FFF		Turn R2 back into a read address
+		DEC R2				Next one!
+		JOC FIXUP			Keep going till we wrap to >FFFF
+		
+* Clear VDP
+* The E/A cart also clears the screen at >0000 (with >20 bytes), but 
+* we start at >300 that so BASIC can leave something up if it likes. 
+		LI R2,>4300			VDP write address of >0300
+		CLR R1				Write >00
+		LI R0,>D00			4k (minus >300) - console only clears the first 4k!
+		BL @VDPCLR
+
+* Go through the GPL data - bring in the character sets
+		LI R3,7
+		
+*		* 'lowercase' letters
+		LI R0,>004A  * GPL vector address (not available for 99/4)
+		LI R1,>4B00  * dest in VDP - must OR with >4000 for write
+		LI R2,>001F  * how many chars
+		BL @GPLVDP   * this function goes somewhere later in your ROM
+		
+*		* main set - uppercase
+		LI R0,>0018  * GPL vector address
+		LI R1,>4900  * dest in VDP - must OR with >4000 for write
+		LI R2,>0040  * how many chars
+		BL @GPLVDP   * this function goes somewhere later in your ROM
+		
+* E/A loads 3 special chars - copyright and two cursors, so do that
+		LI R0,>0850
+		LI R1,COPYR
+		LI R2,8
+		BLWP @VMBW
+		LI R0,>08F0
+		LI R1,CURSOR
+		LI R2,16
+		BLWP @VMBW
+		
+* And last, the E/A cart sets a pretty simple color table, we'll do that too
+		LI R2,>4380			VDP Write address of >0380
+		LI R1,>1300			Every byte is >13
+		LI R0,32			and there are 32 entries
+		BL @VDPCLR
+
+* now we are going to precompute more PABs than we
+* hopefully need! The idea is to save needing to update/
+* rewrite the PABs in the scratchpad portion.
+* For performance reasons, we don't examine the actual
+* files at this point. Each PAB is 74 bytes.
+
+* Get address of PAB's last filename character in CPU into R5
+		CLR R1 				prepare r1 for byte operations
+		LI R5,PAB+9			address of start of filename - 1
+		MOVB @PAB+9,R1 		length byte in msb
+		SWPB R1 			rotate into lsb
+		A R1,R5 			add length to address. now pointing at last character
+
+		LI R3,VDPPAB		Get first PAB address
+		LI R4,10			Countdown number of PABs
+DOLOAD
+		MOV R3,R0	 		vdp ram address
+		LI R1,PAB 			source address
+		LI R2,74			copy pab (I use long filenames!)
+		BLWP @VMBW 			write to vdp ram
+		
+		AI R3,74			Next PAB target
+		MOVB *R5,R1			Get filename last character
+		AI R1,>0100			Increment it (we don't care about the LSB)
+		MOVB R1,*R5			Write it back
+		DEC R4				Count down
+		JNE DOLOAD			Copy next PAB
+
+* now we load the first file into VDP
+* load address >8356 with address of length byte
+		LI R0,VDPPAB 		address of pab in vdp ram
+* call the loader - first file is safe!
+		BL @EA3DSR			tursi's DSRLNK adaptation
+		MOVB R0,R0			check for DSRLNK error
+		JNE RESET
+		
+* check for error in load, reset if so
+		LI R0,VDPPAB+1		address of the error byte in VDP
+		BLWP @VSBR			read it in
+		MOVB R1,R1			Test the byte
+		JEQ NOERR			all was well
+RESET		
+		BLWP @>0000			reset console otherwise
+
+NOERR		
+* the file should now be in vdp ram at address vdpadr onwards
+
+* now get the rest of our code into scratchpad RAM, so that we
+* are safe no matter how much of the 32k is loaded. This means
+* we give up the handy utility functions too
+
+* copy two blocks to 'safe' areas in scratchpad, per E/A page 404 and 405
+		LI	R0,A8320
+		LI 	R1,>8320
+		LI  R2,42
+CP20	MOV *R0+,*R1+
+		DECT R2
+		JNE	CP20
+		
+		LI	R0,A8380
+		LI 	R1,>8380
+		LI  R2,64
+CP80	MOV *R0+,*R1+
+		DECT R2
+		JNE	CP80
+
+* final chance to do initialization in large memory bank!
+		LWPI >8300			relocate workspace to scratchpad too (safe per E/A page 404)
+* All registers used:
+* 0	- work				8 - VDPRD
+* 1 - work				9 - Difference from 'next' PAB to 'this' error byte
+* 2 - work				10- DSR Entry point
+* 3 - work				11- BL return address
+* 4 - work				12- name length for >8354
+* 5 - size of PAB (>40)	13- address of SBO 0 so we can NOP it for the final call
+* 6 - start address		14- VDPSET in scratchpad
+* 7 - VDP PAB pointer	15- BL second level return address
+
+* Note that these scratch pad routines pretty much fill
+* their alloted space - any changes will need to make room!
+* When calling the DSR directly, we need to account for an additional
+* 5 byte offset that DSRLNK is sneaking into the beginning. Since
+* previous DSRs are done, it doesn't matter if those bytes are used.
+		MOV @DSRCRU,@>83F8	DSR CRU base, so we don't need DSRLNK again (GPLWS R12)
+		MOV @DSRADR,R10		DSR entry point, so we don't need DSRLNK again
+		MOV @NAMLEN,R12		DSR name length (to reload each call)
+		LI R5,74			Size of PAB
+		LI R7,VDPPAB+88		Second PAB (74), plus 9 for the filename length offset, plus 5 (DSRLNK pads it!)
+		LI R9,87			Distance back from 'next' PAB to 'this' error byte
+		LI R13,>83B2		address of SBO 0 - we clear it before the program jump
+		LI R8,VDPRD			store some addresses in registers to reduce code size
+		LI R14,VDPSET
+		
+* It's the first file, get the start address into R6
+		LI R2,VDPADR+4 		address of VDP load address
+		LI R1,>8300+12 		target address R6
+		LI R0,2 			2 bytes to read
+		BL @TVMBR 			get the data
+		
+* jump into scratchpad and start to copy!
+		B @>8380
+	
+* VDPCLR - Write the same value to a set of VDP addresses
+* R0 - count, R1 (MSB) - Value, R2 - VDP address
+* Destroys R0,R15
+VDPCLR	
+		MOV R11,R15			Save return address
+		BL @GVDPST			
+		
+VCLRLP
+		MOVB R1,@VDPWD		Write the byte
+		DEC R0
+		JNE VCLRLP
+		
+		B *R15
+
+* Tag start of block
+A8320
+
+*		AORG >8320			(42 bytes available)
+* VDP access utilities, so we don't rely on the EA ones being undisturbed
+* need to use equates since the assembler isn't doing complex math right?
+
+* Set VDP address in R2 for read			
+VDPSET	EQU >8320
+* Second label used by main RAM code during init
+GVDPST
+		SWPB R2				2
+		MOVB R2,@VDPWA		4 6
+		SWPB R2				8
+		MOVB R2,@VDPWA		10 12
+		B *R11				14
+
+* Get header - read the 6 byte header from VDP into R2,R3,R4
+GETHDR	EQU >832E
+		LI R2,VDPADR		16 18	Reading from the VDP buffer
+		LI R1,>8300+4		20 22	Reading into R2,R3,R4 (Yes, we can overwrite VDP adr)
+		LI R0,6				24 26	Get 6 bytes
+* instead of branching, we can just fall through now into tvmbr
+
+* Tiny multi-byte read - R0=count, R1=CPU address, R2=VDP Address (nonstandard!)
+* This odd order is used so we can use the header data more directly
+* R1,R0 destroyed 		
+TVMBR	EQU	>833A
+		MOV R11,R15			28
+		BL *R14				30
+LP1		MOVB *R8,*R1+		32
+		DEC R0				34
+		JNE LP1				36
+		
+* these moves are only useful to GETHDR, but should
+* not harm anything else, since R0 and R1 are scratch
+* this just gives us a little more space in the other block
+		MOV R3,R0			38 		byte count for gethdr
+		MOV R4,R1			40		set CPU address for gethdr
+
+* now back to caller		
+		B *R15				42
+		
+* Tag start of block
+A8380
+
+*		AORG >8380			(64 bytes available)
+* At this point, we have data in VDP, ready to go
+* get the first three words of data from vdp, which tell us
+* how to handle the data
+* word 0 (r2)=eof file indicator (0=no more files to load)
+* word 1 (r3)=length of data in bytes
+* word 2 (r4)=destination address in cpu ram
+* we'll read them directly into registers, just to be clever :-)
+CPYLP
+		BL @GETHDR			2 4
+
+* R2 contains the 'next' flag, so preserve that
+* we now have all the info we need to copy the loaded data to
+* cpu ram. GetHdr moved R3 and R4 for us already.
+NEXT
+*		MOV R3,R0					Byte count
+		MOV R2,R3			6		Save 'next' flag
+*		MOV	R4,R1					Set CPU address
+		LI R2,VDPADR+6		8  10	Set next VDP address
+		BL @TVMBR			12 14	tvmbr
+
+* see if any more files are required
+		MOV R3,R3 			16		check flag
+		JNE NOGO 			18		if not 0 then skip ahead
+
+* loads R13 with a SWPB R2 - harmless replacement for SBO 0
+		MOV *R14,*R13		28		
+		
+* clear lower PAB, some apps (like Munchman) assume bytes are zeroed
+		MOV R14,R0			20 		First code block, we have to skip workspace
+
+*		*LI R2,41			
+* we will count with R9 instead, which contains "87" for the PAB count. We'll count
+* down by two but only clear 1, which will loop for 44 bytes, clearing
+* two extra bytes (which is in the temp stack area and should be safe)
+* we also take advantage of knowing the MSB of R9 is zeroed
+CLRPAB
+*		CLR *R0+			
+		MOVB R9,*R0+		22
+*		DECT R2				
+		DECT R9				24
+		JOC CLRPAB			26
+		
+		MOV R6,R10			30		load program jump address to R10 (was DSR address)
+		JMP GPLJMP			32		load GPLWS and branch (even though it's BL, that's ok)
+
+* else more files are required
+NOGO
+* now we need to do a smaller version of DSRLNK that merely calls the last entry point
+* note that this code assumes that >8354 (containing the DSR name length) is unmodified!
+		MOV R7,@>8356		34 36	address of filename period
+		MOV R12,@>8354		38 40	length of DSR name
+		A R5,R7				42		Point to next PAB
+GPLJMP	MOV R10,@>83F2		44 46	copy address into GPLWS R9
+		LWPI >83E0			48 50	load GPLWS to protect ours
+		SBO 0				52		turn on the DSR card - nop'd in final call (equ >83B2 for R13)
+		BL  *R9				54		call same DSR again (also branch to program)
+		NOP					56		DSRs usually skip this on success
+		SBZ 0				58		turn off the DSR card
+		LWPI >8300			60 62	restore our workspace
+		JMP CPYLP			64		go back and do the copy again, if no error
+
+EAREGS
+		DATA >00E0,>000E,>0106,>00F3 vdp register values
+COPYR
+		DATA >3C42,>99A1,>A199,>423C
+CURSOR
+		DATA >7070,>7070,>7070,>7070
+		DATA >007E,>4242,>4242,>7E00
+
+PAB
+		DATA OPLOAD 		opcode for load
+		DATA VDPADR 		destination address in vdp
+		DATA >0000 			not required for load operation
+		DATA 8198 			max number of bytes to load
+		DATA >000F 			last byte=length byte
+		BSS 64 				buffer to hold filename
+		
+* XB top is normally >FFE7		
+		END

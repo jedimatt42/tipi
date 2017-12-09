@@ -1,3 +1,8 @@
+*
+* Modified XB scratchpad loader code from harmlesslion.com 
+* - http://www.harmlesslion.com/cgi-bin/onesoft.cgi?59
+*
+
 ***************************************************************
 ***************************************************************
 * E/A#5 loader for Extended BASIC - 9/13/2013
@@ -27,7 +32,7 @@
 *
 ***************************************************************
 
-		DEF OPT5
+*		DEF OPT5
 
 * XB references - note XB doesn't have DSRLNK so we provide our own 
 * which does only as much as we should need. There is also no GPLLNK,
@@ -36,25 +41,27 @@
 STRREF	EQU	>2014
 VMBW	EQU	>2024
 VWTR	EQU	>2030
-VDPWA	EQU >8C02
-VDPRD	EQU >8800
-VDPWD	EQU >8C00
+* VDPWA	EQU >8C02
+* VDPRD	EQU >8800
+* VDPWD	EQU >8C00
 VSBR	EQU	>2028
 
 
 VDPADR 	EQU >1380 			address to load the file(s) in vdp ram (EA uses >1380)
 VDPPAB 	EQU VDPADR-740		address of the first pab in vdp ram (10 PABs at 74 bytes each)
-OPLOAD 	EQU >0500 			opcode for load operation for dsrlnk
+* OPLOAD 	EQU >0500 			opcode for load operation for dsrlnk
 
 * sit at the end of ram out of the way :-)
 * less critical than before, since we move to scratchpad
 * before we overwrite RAM!
 * Enable this if you embed it in XB isntead of loading it :)
-		AORG >FC00
+* -M@ - Letting this run from DSR ROM
+*		AORG >FC00
 *		RORG >0000
 
 * out of the way workspace for starters (not sure how necessary..)
-WS		BSS 32
+* WS		BSS 32
+WS	EQU	>8300
 
 ***********************************************
 * GROM routines - from Tursi's Multicart code *
@@ -92,15 +99,15 @@ GPLVDP
  SWPB R1        * assume VDP is already prepared for write to save space
  MOVB R1,@>8C02
  SWPB R1
- MOVB R1,@>8C02 * VDP is now ready!
+ MOVB R1,@>8C02 	* VDP is now ready!
 
  CLR R0
 LP8
- MOVB R0,@>8C00 * pad the top of the char with a space
- MOV R3,R0      * then copy 7 (or 6) bytes
+ MOVB R0,@>8C00 	* pad the top of the char with a space
+ MOV R3,R0      	* then copy 7 (or 6) bytes
 
 LP9
- MOVB @>9800,@>8C00  * copy a byte (both sides autoincrement)
+ MOVB @>9800,@>8C00  	* copy a byte (both sides autoincrement)
  DEC R0
  JNE LP9
 
@@ -157,12 +164,18 @@ A22E4  MOV  4,4						if we get here, we either got the whole length or a '.'
 *       MOV  @>8356,@>2038          	save the pointer at >2038, too (not safe in XB)
        LWPI >83E0                  	Load GPLWS to call the DSR with
        CLR  1						R1=0
-       LI   12,>0F00				CRU base to >0F00 (first card -1)
+
+* R12 already set since we are in the DSR
+*       LI   12,>0F00				CRU base to >0F00 (first card -1)
+
        JMP  A2316				    skip card off (was a bug in the EA code?)
 A2310  MOV  12,12					check base for 0
        JEQ  A2316					if not 0, skip card off. Looks like a bug, it's never 0??
        SBZ  0                      	card off
-A2316  AI   12,>0100				next card (>1000 for first)
+
+* R12 already set since we are in the DSR
+* A2316  AI   12,>0100				next card (>1000 for first)
+A2316
        CLR  @>83D0					clear CRU tracking at >83D0
        CI   12,>2000				check if all cards are done
        JEQ  A2388                  	if yes, we didn't find it, so error out
@@ -174,7 +187,10 @@ A2316  AI   12,>0100				next card (>1000 for first)
        AI   R2,8            		offset (contains the DATA statement, so 8 for a device, for >4008)
        JMP  A2340					always jump into the loop from here
 A233A  MOV  @>83D2,2               	next sub
-       SBO  0                      	card on (already is, isn't it??)
+
+* we are in the DSR
+*       SBO  0                      	card on (already is, isn't it??)
+
 A2340  MOV  *2,2                   	grab link pointer to next
        JEQ  A2310                  	If no pointer, link back to get next card
        MOV  2,@>83D2               	save link address in >83D2
@@ -196,7 +212,8 @@ A2364  INC  1                      	if we get here, everything matched, incremen
        MOV  12,@DSRCRU             	save cru base (move in XB for later)
        BL   *9                     	link
        JMP  A233A                  	check next entry on the same card -- most DSRs will skip this 
-       SBZ  0                      	card off
+* cannot switch card off until we move into scratchpad
+*       SBZ  0                      	card off
        LWPI WS
        MOV  9,0
        BLWP @VSBR	               	read pab status
@@ -523,7 +540,7 @@ GPLJMP	MOV R10,@>83F2		44 46	copy address into GPLWS R9
 		JMP CPYLP			64		go back and do the copy again, if no error
 
 EAREGS
-		DATA >00E0,>000E,>0106,>00F3 vdp register values
+		DATA >00E0,>000E,>0106,>00F3 	vdp register values
 COPYR
 		DATA >3C42,>99A1,>A199,>423C
 CURSOR
@@ -539,4 +556,4 @@ PAB
 		BSS 64 				buffer to hold filename
 		
 * XB top is normally >FFE7		
-		END
+*		END

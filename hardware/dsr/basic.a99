@@ -1,12 +1,9 @@
 
-btipimap
+btipicfg
 	MOV	R11,@RET	; stash the return to basic
 	MOV	@>832C,R8	; get token pointer to play with
 	; do some useful stuff
 
-	LI	R0,256
-	LI	R1,>4000
-	BL	@sendmsg	; this is just test code, that copies the ROM to the RPi
 
 	; and return
 	JMP	bok

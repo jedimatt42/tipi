@@ -64,6 +64,9 @@ R9LB	EQU	>13
 ; R0 - LSB - Value to write
 VWTR
 	DATA	>83E0		Workspace 
+	DATA	uvmtr
+
+uvmtr
 	MOV	@R0MB(R13),R0
 	ORI	R0,>8000
 	.setvdpra R0
@@ -75,6 +78,9 @@ VWTR
 ; R2 - number of bytes to write
 VMBW
 	DATA	>83E0		Workspace 
+	DATA	uvmbw
+
+uvmbw
 	MOV	@R0MB(R13),R0
 	MOV	@R1MB(R13),R1
 	MOV	@R2MB(R13),R2

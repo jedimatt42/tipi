@@ -9,6 +9,7 @@ btipicfg
 	; copy the file name in
 
 	; call the opt5 loader
+	B	@OPT5
 
 	; and return
 	JMP	bok

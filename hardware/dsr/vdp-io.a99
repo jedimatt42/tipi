@@ -57,3 +57,30 @@ R9LB	EQU	>13
         .endm
 
 
+; BLWP routines for VDP operations like in EA
+
+; VDP Write To Register
+; R0 - MSB - Register to modify
+; R0 - LSB - Value to write
+VWTR
+	DATA	>83E0		Workspace 
+	MOV	@R0MB(R13),R0
+	ORI	R0,>8000
+	.setvdpra R0
+	RTWP
+
+; VDP Multiple Byte Write 
+; R0 - VDP RAM desitination address
+; R1 - CPU RAM source address
+; R2 - number of bytes to write
+VMBW
+	DATA	>83E0		Workspace 
+	MOV	@R0MB(R13),R0
+	MOV	@R1MB(R13),R1
+	MOV	@R2MB(R13),R2
+	.setvdpwa R0
+!	MOVB	*R1+,@VDPWD
+	DEC	R2
+	JNE	-!
+	RTWP
+

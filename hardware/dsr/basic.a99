@@ -4,6 +4,11 @@ btipicfg
 	MOV	@>832C,R8	; get token pointer to play with
 	; do some useful stuff
 
+	; create a PAB
+
+	; copy the file name in
+
+	; call the opt5 loader
 
 	; and return
 	JMP	bok

@@ -18,9 +18,6 @@ TSRSET	EQU	>F100		; Reset SYN value
 TSWB	EQU	>0200		; Write Byte SYN value
 TSRB	EQU	>0600		; Read Byte SYN value
 
-CHUNKSIZE EQU	64		; size of blocks intervals for hash comparison
-
-
 ;;; Macro: handshake TSWB or handshake TSRB to signal and increment syn/ack in R2, also destroys R3.
 	.defm transmit
 	MOVB	R2,@TCOUT

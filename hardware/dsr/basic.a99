@@ -1,10 +1,22 @@
 
+GPLWS	EQU	>83E0
+
 btipicfg
+	LIMI	0
 	MOV	R11,@RET	; stash the return to basic
+	LWPI	WS		; We will eventually be using this workspace any, lets us use GPLWS for BLWP routines.
 	MOV	@>832C,R8	; get token pointer to play with
-	; do some useful stuff
 
 	; create a PAB
+	LI	R0,VDPPAB	; destination: PAB in VDP
+	LI	R1,PAB		; source: PAB template in ROM
+	LI	R2,10		; length: 10 bytes.
+	BLWP	@VMBW		; copy LOAD pab template to VDP
+	AI	R0,9		; destionation: length byte in VDP PAB
+	MOV	R8,R1		; source: string parameter to call tipi("
+	AI	R1,7		;   source is 7 bytes after call token as long as it is "TIPI"
+	LI	R2,65		; length: real length will be copied into PAB
+	BLWP	@VDPCPY		; copy VDP call param to VDP pab filename
 
 	; copy the file name in
 

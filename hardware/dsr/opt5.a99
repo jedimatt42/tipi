@@ -165,8 +165,85 @@ NOTEDGE
 	BL	@VDPCLR
 
 DOLOAD
-	
+	CLR	@RET
+	; send pab
+FILELOOP
+	LI	R0,10
+	LI	R1,VDPPAB
+	BL	@vsendmsg
+	; send device and file name
+	LI	R0,VDPPAB+9
+	.setvdpra R0
+	CLR	R0
+	MOVB	@VDPRD,R0
+	SWPB	R0
+	LI	R1,VDPPAB+10
+	BL	@vsendmsg
 
+	; get success or error code
+	STWP	R10
+	LI	R0,1
+	MOV	R10,R1
+	CLR	R9
+	AI	R1,R9LB
+	BL	@recvmsg
+	CI	R9,SUCCESS	; If PI returns success
+	JEQ	GETDATA		;  jump to look at header
+	B	@LOADERR	;  otherwise error out
+
+GETDATA
+	; load the next stream into the VDP buffer
+	LI	R0,8198
+	LI	R1,VDPADR
+	BL	@vrecvmsg
+	
+EAHEADER
+	; We loaded a file! Now we have to get the header and process it
+	LI	R0,R3MB		; destination will be R3
+	A	R10,R0
+	LI	R1,VDPADR
+	LI	R2,6
+	BLWP	@VMBR		; copy continuation flag into R3
+				; copy file size to R4
+				; copy target address to R5
+	AI	R4,-6		; R4 is now data length
+
+	MOV	@RET,@RET	; just test for zero.
+	JNE	SKIPADDR
+	MOV	R5,@RET
+
+SKIPADDR
+	; now copy the file data to CPU ram
+	MOV	R5,R0
+	LI	R1,VDPADR+6
+	MOV	R4,R2
+	BLWP	@VMBR		; program data is loaded for this file
+
+	CI	R3,>FFFF	; If continuation flag set,
+	JEQ	INCPABNAM	;  then loop to next file
+
+	; launch program
+	MOV	@RET,R6
+	B	*R6		; Run EA5 Program!!
+	
+INCPABNAM
+	; Need to add 1 to last character in filename
+	LI	R0,VDPPAB+9	; R0 is VDP addr of name length
+	.setvdpra R0
+	CLR	R1		; clear R1
+	MOVB	@VDPRD,R1	; read length to R1_MSB
+	SWPB	R1		; move length to LSB
+	A	R1,R0		; now R0 is last character in name
+	.setvdpra R0
+	CLR	R1
+	MOVB	@VDPRD,R1	; get the last character in R1_MSB
+	AI	R1,>0100	;   inc MSB by 1
+	.setvdpwa R0
+	MOVB	R1,@VDPWD	; Write new character to PAB
+	B	@FILELOOP
+
+LOADERR
+	; just reset the console by falling through here.
 
 RESET		
 	BLWP	@>0000		reset console otherwise

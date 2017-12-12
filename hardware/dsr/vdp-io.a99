@@ -90,3 +90,44 @@ uvmbw
 	JNE	-!
 	RTWP
 
+; VDP Multiple Byte Read
+; R0 - CPU Destination
+; R1 - VDP Source address
+; R2 - number of bytes to read
+VMBR
+	DATA	>83E0		Workspace
+	DATA	uvmbr
+
+uvmbr
+	MOV	@R0MB(R13),R0
+	MOV	@R1MB(R13),R1
+	MOV	@R2MB(R13),R2
+	.setvdpra R1
+!	MOVB	@VDPRD,*R0+
+	DEC	R2
+	JNE	-!
+	RTWP
+	
+
+; VDP Copy
+; R0 - VDP RAM desitination address
+; R1 - CPU RAM source address
+; R2 - number of bytes to write
+VDPCPY
+	DATA	>83E0		Workspace 
+	DATA	uvdpcpy
+
+uvdpcpy
+	MOV	@R0MB(R13),R0
+	MOV	@R1MB(R13),R1
+	MOV	@R2MB(R13),R2
+!	.setvdpra R1
+	MOVB	@VDPRD,R4
+	.setvdpwa R0
+	MOVB	R4,@VDPWD
+	INC	R0
+	INC	R1
+	DEC	R2
+	JNE	-!
+	RTWP
+

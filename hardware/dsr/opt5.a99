@@ -4,7 +4,6 @@
 *
 * I purged all the DSR related stuff to rewrite as optimized code
 * when stuck in the TIPI DSR. No need for DSR lookup and search.
-* or even PAB, really.. 
 
 ***************************************************************
 ***************************************************************
@@ -197,9 +196,8 @@ GETDATA
 	LI	R1,VDPADR
 	BL	@vrecvmsg
 	
-EAHEADER
 	; We loaded a file! Now we have to get the header and process it
-	LI	R0,R3MB		; destination will be R3
+	LI	R0,R3MB		; destination will be R3, R4, R5
 	A	R10,R0
 	LI	R1,VDPADR
 	LI	R2,6
@@ -219,13 +217,37 @@ SKIPADDR
 	MOV	R4,R2
 	BLWP	@VMBR		; program data is loaded for this file
 
-	CI	R3,>FFFF	; If continuation flag set,
-	JEQ	INCPABNAM	;  then loop to next file
+	MOV	R3,R3		; If continuation flag set,
+	JNE	INCPABNAM	;  then loop to next file
 
+	LWPI	GPLWS
+	MOV	@RET,R0		; store EA5 launch address
+
+	; scratchpad cleanup
+	LI	R1,(>83C0->8300)/2
+	LI	R2,>8300
+	CLR	R3
+!	MOV	R3,*R2+
+	DEC	R1
+	JNE	-!
+	; set ISR WS to known good state
+	CLR	@>83C2		; set ISR R1 to 0 - ISR Flags
+	CLR	@>83C4		; set ISR R2 to 0 - ISR Hook
+	LI	R1,>0204
+	MOV	R1,@>83C6	; set ISR R3 default keyboard state
+	LI	R1,>0001
+	MOV	R1,@>83D6	; set ISR R11 screen timeout counter
+
+	; code needs to be run from scratchpad 
+	; turn off dsr (we only load from TIPI so GPLWS R12 should be set already)
+	LI	R1,>1E00	; load R1 with: SBZ 0
 	; launch program
-	MOV	@RET,R6
-	B	*R6		; Run EA5 Program!!
-	
+	LI	R2,>0450	; load R2 with: B *R0
+
+	LIMI	2		; restore interrupts
+	; goto code is scratchpad
+	B	@GPLWS+2
+
 INCPABNAM
 	; Need to add 1 to last character in filename
 	LI	R0,VDPPAB+9	; R0 is VDP addr of name length
@@ -287,3 +309,4 @@ PAB
 	DATA	8198 		max number of bytes to load
 	DATA	>000F 		last byte=length byte
 		
+	

@@ -202,9 +202,8 @@ GETDATA
 	LI	R1,VDPADR
 	LI	R2,6
 	BLWP	@VMBR		; copy continuation flag into R3
-				; copy file size to R4
+				; copy data size to R4
 				; copy target address to R5
-	AI	R4,-6		; R4 is now data length
 
 	MOV	@RET,@RET	; just test for zero.
 	JNE	SKIPADDR

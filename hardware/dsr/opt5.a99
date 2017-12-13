@@ -237,15 +237,25 @@ SKIPADDR
 	LI	R1,>0001
 	MOV	R1,@>83D6	; set ISR R11 screen timeout counter
 
-	; code needs to be run from scratchpad 
-	; turn off dsr (we only load from TIPI so GPLWS R12 should be set already)
-	LI	R1,>1E00	; load R1 with: SBZ 0
-	; launch program
-	LI	R2,>0450	; load R2 with: B *R0
+	; copy a little code to scratchpad
+	LI	R1,ENDPAD-GOPAD
+	LI	R2,>8380
+	CLR	R3
+!	MOV	@GOPAD(R3),@>8380(R3)
+	INCT	R3
+	DECT	R1
+	JNE	-!
 
-	LIMI	2		; restore interrupts
 	; goto code is scratchpad
-	B	@GPLWS+2
+	B	@>8380
+
+; code to copy to scratchpad so we can turn off DSR ROM before running loaded program
+GOPAD
+	SBZ	0		; turn off the tipi board
+	MOV	R0,R11		; save program load address to R11
+	LIMI	2		; enable ISR, only after saving what we need from GPLWS
+	RT			; 'return' to the loaded program.
+ENDPAD
 
 INCPABNAM
 	; Need to add 1 to last character in filename
@@ -308,4 +318,4 @@ PAB
 	DATA	8198 		max number of bytes to load
 	DATA	>000F 		last byte=length byte
 		
-	
+

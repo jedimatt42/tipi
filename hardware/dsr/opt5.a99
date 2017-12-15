@@ -17,7 +17,7 @@
 * Support from the SWPB group, particularly Bill, Tim and Ben
 *
 * Limitations:
-* - Maximum filename length, 64 characters
+* - Maximum filename length, 64 characters ( -M@ 254 )
 * - Maximum number of files, 10
 * - Pretty much no error handling
 * ...
@@ -146,7 +146,8 @@ NOTEDGE
 * Clear VDP
 * The E/A cart also clears the screen at >0000 (with >20 bytes), but 
 * we start at >300 that so BASIC can leave something up if it likes. 
-	LI	R2,>4000	VDP write address of >0300
+; -M@ changed to clear entire screen as well. Probably makes the FIXUP above pointless.
+	LI	R2,>4000	VDP write address of //>0300// >0000
 	LI	R1,>2000	Write 'space'
 	LI	R0,>1000	4k - console only clears the first 4k!
 	BL	@VDPCLR
@@ -158,13 +159,13 @@ NOTEDGE
 	LI	R0,>004A	* GPL vector address (not available for 99/4)
 	LI	R1,>4B00	* dest in VDP - must OR with >4000 for write
 	LI	R2,>001F	* how many chars
-	BL	@GPLVDP		* this function goes somewhere later in your ROM
+	BL	@GPLVDP	
 		
 *	* main set - uppercase
 	LI	R0,>0018	* GPL vector address
 	LI	R1,>4900	* dest in VDP - must OR with >4000 for write
 	LI	R2,>0040	* how many chars
-	BL	@GPLVDP		* this function goes somewhere later in your ROM
+	BL	@GPLVDP
 		
 * E/A loads 3 special chars - copyright and two cursors, so do that
 	LI	R0,>0850
@@ -183,8 +184,9 @@ NOTEDGE
 	BL	@VDPCLR
 
 	LWPI	GPLWS
+	; zero out scratchpad space up to a point...
 	LI	R1,>8300
-	LI	R2,>C0
+	LI	R2,>40
 !	CLR	R1
 	INCT	R1
 	DECT	R2
@@ -197,7 +199,7 @@ NOTEDGE
 	DECT	R2
 	JNE	-!
 
-JUMPMAN	EQU	>8320
+JUMPMAN	EQU	>8380
 
 	; copy a little code to scratchpad
 	LI	R1,ENDPAD-GOPAD

@@ -32,6 +32,27 @@ VDPPAB	EQU	VDPADR-740		address of the first pab in vdp ram (10 PABs at 74 bytes 
 
 WS	EQU	>8300
 
+* VDPCLR - Write the same value to a set of VDP addresses
+* R0 - count, R1 (MSB) - Value, R2 - VDP address
+* Destroys R0,R15
+VDPCLR	
+	MOV	R11,R15		Save return address
+	BL	@GVDPST			
+		
+!	MOVB	R1,@VDPWD	Write the byte
+	DEC	R0
+	JNE	-!
+	B	*R15
+
+* Second label used by main RAM code during init
+GVDPST
+	SWPB	R2
+	MOVB	R2,@VDPWA
+	SWPB	R2
+	MOVB	R2,@VDPWA
+	B	*R11
+
+
 ***********************************************
 * GROM routines - from Tursi's Multicart code *
 ***********************************************
@@ -87,10 +108,8 @@ LP9
 
 
 * Start preparing the environment for EA5 programs
+; Assumes the Address of the loaded program is in GPLWS R9
 OPT5
-	LIMI	0		disable interrupts
-	LWPI	WS 		set workspace
-		
 * set up most of the EA environment before we start loading things
 	LI	R1,EAREGS	address of register data
 	LI	R2,8 		8 bytes to write
@@ -127,9 +146,9 @@ NOTEDGE
 * Clear VDP
 * The E/A cart also clears the screen at >0000 (with >20 bytes), but 
 * we start at >300 that so BASIC can leave something up if it likes. 
-	LI	R2,>4300	VDP write address of >0300
-	CLR	R1		Write >00
-	LI	R0,>D00		4k (minus >300) - console only clears the first 4k!
+	LI	R2,>4000	VDP write address of >0300
+	LI	R1,>2000	Write 'space'
+	LI	R0,>1000	4k - console only clears the first 4k!
 	BL	@VDPCLR
 
 * Go through the GPL data - bring in the character sets
@@ -163,146 +182,46 @@ NOTEDGE
 	LI	R0,32		and there are 32 entries
 	BL	@VDPCLR
 
-DOLOAD
-	CLR	@RET
-	; send pab
-FILELOOP
-	LI	R0,10
-	LI	R1,VDPPAB
-	BL	@vsendmsg
-	; send device and file name
-	LI	R0,VDPPAB+9
-	.setvdpra R0
-	CLR	R0
-	MOVB	@VDPRD,R0
-	SWPB	R0
-	LI	R1,VDPPAB+10
-	BL	@vsendmsg
-
-	; get success or error code
-	STWP	R10
-	LI	R0,1
-	MOV	R10,R1
-	CLR	R9
-	AI	R1,R9LB
-	BL	@recvmsg
-	CI	R9,SUCCESS	; If PI returns success
-	JEQ	GETDATA		;  jump to look at header
-	B	@LOADERR	;  otherwise error out
-
-GETDATA
-	; load the next stream into the VDP buffer
-	LI	R0,8198
-	LI	R1,VDPADR
-	BL	@vrecvmsg
-	
-	; We loaded a file! Now we have to get the header and process it
-	LI	R0,R3MB		; destination will be R3, R4, R5
-	A	R10,R0
-	LI	R1,VDPADR
-	LI	R2,6
-	BLWP	@VMBR		; copy continuation flag into R3
-				; copy data size to R4
-				; copy target address to R5
-
-	MOV	@RET,@RET	; just test for zero.
-	JNE	SKIPADDR
-	MOV	R5,@RET
-
-SKIPADDR
-	; now copy the file data to CPU ram
-	MOV	R5,R0
-	LI	R1,VDPADR+6
-	MOV	R4,R2
-	BLWP	@VMBR		; program data is loaded for this file
-
-	MOV	R3,R3		; If continuation flag set,
-	JNE	INCPABNAM	;  then loop to next file
-
 	LWPI	GPLWS
-	MOV	@RET,R0		; store EA5 launch address
-
-	; scratchpad cleanup
-	LI	R1,(>83C0->8300)/2
-	LI	R2,>8300
-	CLR	R3
-!	MOV	R3,*R2+
-	DEC	R1
+	LI	R1,>8300
+	LI	R2,>C0
+!	CLR	R1
+	INCT	R1
+	DECT	R2
 	JNE	-!
-	; set ISR WS to known good state
-	CLR	@>83C2		; set ISR R1 to 0 - ISR Flags
-	CLR	@>83C4		; set ISR R2 to 0 - ISR Hook
-	LI	R1,>0204
-	MOV	R1,@>83C6	; set ISR R3 default keyboard state
-	LI	R1,>0001
-	MOV	R1,@>83D6	; set ISR R11 screen timeout counter
+
+	LI	R1,>83C0
+	LI	R2,>20
+	LI	R3,A83C0
+!	MOV	*R3+,*R1+
+	DECT	R2
+	JNE	-!
+
+JUMPMAN	EQU	>8320
 
 	; copy a little code to scratchpad
 	LI	R1,ENDPAD-GOPAD
-	LI	R2,>8380
+	LI	R2,JUMPMAN
 	CLR	R3
-!	MOV	@GOPAD(R3),@>8380(R3)
+!	MOV	@GOPAD(R3),*R2+
 	INCT	R3
 	DECT	R1
 	JNE	-!
-
+	
 	; goto code is scratchpad
-	B	@>8380
+	B	@JUMPMAN
 
 ; code to copy to scratchpad so we can turn off DSR ROM before running loaded program
 GOPAD
 	SBZ	0		; turn off the tipi board
-	MOV	R0,R11		; save program load address to R11
-	LIMI	2		; enable ISR, only after saving what we need from GPLWS
-	RT			; 'return' to the loaded program.
+	LI	R12,>0000	; clear crubase.
+	LI	R13,>9800
+	LI	R14,>0108
+	LI	R15,>8C02
+	B	*R9		; uses vector in pad to avoid ISR messing with destination address.
 ENDPAD
 
-INCPABNAM
-	; Need to add 1 to last character in filename
-	LI	R0,VDPPAB+9	; R0 is VDP addr of name length
-	.setvdpra R0
-	CLR	R1		; clear R1
-	MOVB	@VDPRD,R1	; read length to R1_MSB
-	SWPB	R1		; move length to LSB
-	A	R1,R0		; now R0 is last character in name
-	.setvdpra R0
-	CLR	R1
-	MOVB	@VDPRD,R1	; get the last character in R1_MSB
-	AI	R1,>0100	;   inc MSB by 1
-	.setvdpwa R0
-	MOVB	R1,@VDPWD	; Write new character to PAB
-	B	@FILELOOP
-
-LOADERR
-	; just reset the console by falling through here.
-
-RESET		
-	BLWP	@>0000		reset console otherwise
-
 	
-* VDPCLR - Write the same value to a set of VDP addresses
-* R0 - count, R1 (MSB) - Value, R2 - VDP address
-* Destroys R0,R15
-VDPCLR	
-	MOV	R11,R15		Save return address
-	BL	@GVDPST			
-		
-VCLRLP
-	MOVB	R1,@VDPWD	Write the byte
-	DEC	R0
-	JNE	VCLRLP
-		
-	B	*R15
-
-* Second label used by main RAM code during init
-GVDPST
-	SWPB	R2
-	MOVB	R2,@VDPWA
-	SWPB	R2
-	MOVB	R2,@VDPWA
-	B	*R11
-
-
 EAREGS
 	DATA	>00E0,>000E,>0106,>00F3 	vdp register values
 COPYR
@@ -311,11 +230,10 @@ CURSOR
 	DATA	>7070,>7070,>7070,>7070
 	DATA	>007E,>4242,>4242,>7E00
 
-PAB
-	DATA	OPLOAD 		opcode for load
-	DATA	VDPADR 		destination address in vdp
-	DATA	>0000 		not required for load operation
-	DATA	8198 		max number of bytes to load
-	DATA	>000F 		last byte=length byte
-		
+; State of ISR workspace when EA launches
+A83C0
+	DATA	>2517,>0000,>0000,>0204
+	DATA	>05FF,>FF00,>0484,>0000
+	DATA	>1100,>4070,>E000,>000A
+	DATA	>0070,>83E0,>0074,>D002
 

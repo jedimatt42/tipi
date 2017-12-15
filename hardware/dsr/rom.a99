@@ -6,6 +6,7 @@
 	COPY	'powerup.a99'
 	COPY	'devices.a99'
 	COPY	'level2.a99'
+	COPY	'loadea5.a99'
 	COPY	'opt5.a99'
 	COPY	'basic.a99'
 

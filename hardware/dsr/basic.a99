@@ -31,7 +31,9 @@ btipicfg
 
 copyname
 	; R0 and R1 should still be set from above activity
-	LI	R2,65		; length: real length will be copied into PAB
+	MOV	R9,R2
+	SWPB	R2
+	INC	R2
 	BLWP	@VDPCPY		; copy VDP call param to VDP pab filename
 
 loadfiles

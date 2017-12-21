@@ -16,12 +16,7 @@
 * Tweaks by Mike Brent
 * Support from the SWPB group, particularly Bill, Tim and Ben
 *
-* Limitations:
-* - Maximum filename length, 64 characters
-* - Maximum number of files, 10
-* - Pretty much no error handling
 * ...
-*
 * Will reset to master title page if FILE1 is not found
 * ...
 *

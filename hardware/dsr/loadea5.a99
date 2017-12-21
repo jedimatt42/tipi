@@ -1,5 +1,17 @@
 
 DOLOAD
+	; erase expansion ram
+	LI	R0,>2000
+	LI	R1,>2000
+!	CLR	*R0+
+	DECT	R1
+	JNE	-!
+	LI	R0,>A000
+	LI	R1,>7F00
+!	CLR	*R0+
+	DECT	R1
+	JNE	-!
+
 	CLR	@RET
 	; send pab
 FILELOOP
@@ -55,7 +67,7 @@ SKIPADDR
 	MOV	R3,R3		; If continuation flag set,
 	JNE	INCPABNAM	;  then loop to next file
 
-	MOV	@RET,@GPLWS+R9MB	; store EA5 launch address
+	MOV	@RET,@GPLWS+R4MB	; store EA5 launch address
 
 	B	@OPT5		; setup the ea5 environment, and launch
 

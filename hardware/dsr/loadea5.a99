@@ -55,7 +55,7 @@ SKIPADDR
 	MOV	R3,R3		; If continuation flag set,
 	JNE	INCPABNAM	;  then loop to next file
 
-	MOV	@RET,@GPLWS+R9MB	; store EA5 launch address
+	MOV	@RET,@GPLWS+R4MB	; store EA5 launch address
 
 	B	@OPT5		; setup the ea5 environment, and launch
 

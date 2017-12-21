@@ -103,7 +103,7 @@ LP9
 
 
 * Start preparing the environment for EA5 programs
-; Assumes the Address of the loaded program is in GPLWS R9
+; Assumes the Address of the loaded program is in GPLWS R4
 OPT5
 * set up most of the EA environment before we start loading things
 	LI	R1,EAREGS	address of register data
@@ -153,13 +153,13 @@ NOTEDGE
 	LI	R0,>004A	* GPL vector address (not available for 99/4)
 	LI	R1,>4B00	* dest in VDP - must OR with >4000 for write
 	LI	R2,>001F	* how many chars
-	BL	@GPLVDP		* this function goes somewhere later in your ROM
+	BL	@GPLVDP
 		
 *	* main set - uppercase
 	LI	R0,>0018	* GPL vector address
 	LI	R1,>4900	* dest in VDP - must OR with >4000 for write
 	LI	R2,>0040	* how many chars
-	BL	@GPLVDP		* this function goes somewhere later in your ROM
+	BL	@GPLVDP
 		
 * E/A loads 3 special chars - copyright and two cursors, so do that
 	LI	R0,>0850
@@ -202,6 +202,8 @@ JUMPMAN	EQU	>8320
 	INCT	R3
 	DECT	R1
 	JNE	-!
+
+	MOV	@GPLWS+R4MB,@>8300	; ea leaves the launch value here.
 	
 	; goto code is scratchpad
 	B	@JUMPMAN
@@ -209,11 +211,11 @@ JUMPMAN	EQU	>8320
 ; code to copy to scratchpad so we can turn off DSR ROM before running loaded program
 GOPAD
 	SBZ	0		; turn off the tipi board
-	LI	R12,>0000	; clear crubase.
+	CLR	R12		; clear crubase.
 	LI	R13,>9800
 	LI	R14,>0108
 	LI	R15,>8C02
-	B	*R9		; uses vector in pad to avoid ISR messing with destination address.
+	B	*R4		; uses vector in pad to avoid ISR messing with destination address.
 ENDPAD
 
 	

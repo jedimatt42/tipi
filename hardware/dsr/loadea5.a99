@@ -60,6 +60,11 @@ SKIPADDR
 	B	@OPT5		; setup the ea5 environment, and launch
 
 INCPABNAM
+	LI	R0,VDPPAB	; reset PAB for this file
+	LI	R1,PAB
+	LI	R2,8
+	BLWP	@VMBW
+	
 	; Need to add 1 to last character in filename
 	LI	R0,VDPPAB+9	; R0 is VDP addr of name length
 	.setvdpra R0

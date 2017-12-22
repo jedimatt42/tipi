@@ -185,13 +185,6 @@ NOTEDGE
 	DECT	R2
 	JNE	-!
 
-	LI	R1,>83C0
-	LI	R2,>20
-	LI	R3,A83C0
-!	MOV	*R3+,*R1+
-	DECT	R2
-	JNE	-!
-
 JUMPMAN	EQU	>8320
 
 	; copy a little code to scratchpad
@@ -203,9 +196,9 @@ JUMPMAN	EQU	>8320
 	DECT	R1
 	JNE	-!
 
-	MOV	@GPLWS+R4MB,@>8300	; ea leaves the launch value here.
+	MOV	@GPLWS+R4MB,@>8300	; EA leaves the launch value here.
 	
-	; goto code is scratchpad
+	; goto code in scratchpad
 	B	@JUMPMAN
 
 ; code to copy to scratchpad so we can turn off DSR ROM before running loaded program
@@ -226,11 +219,4 @@ COPYR
 CURSOR
 	DATA	>7070,>7070,>7070,>7070
 	DATA	>007E,>4242,>4242,>7E00
-
-; State of ISR workspace when EA launches
-A83C0
-	DATA	>2517,>0000,>0000,>0204
-	DATA	>05FF,>FF00,>0484,>0000
-	DATA	>1100,>4070,>E000,>000A
-	DATA	>0070,>83E0,>0074,>D002
 

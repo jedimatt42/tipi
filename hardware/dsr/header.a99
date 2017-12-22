@@ -80,9 +80,9 @@ tipip
 ; Basic routine list ( name must be no more than 7 characters )
 basiclnk
 	DATA	>0000		; l2x0		; next list item.
-	DATA	btipimap
-	BYTE	7
-	TEXT	"TIPIMAP"
+	DATA	btipicfg
+	BYTE	4
+	TEXT	"TIPI"
 	EVEN
 
 l2x0

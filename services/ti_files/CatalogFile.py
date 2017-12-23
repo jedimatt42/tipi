@@ -82,7 +82,7 @@ class CatalogFile(object):
 
                 header = bytearray(fh.read()[:128])
 
-                ft = ti_files.dsrFileType(header)
+                ft = ti_files.catFileType(header)
                 sectors = ti_files.getSectors(header) + 1
                 recordlen = ti_files.recordLength(header)
                 return self.__encodeDirRecord(f, ft, sectors, recordlen)

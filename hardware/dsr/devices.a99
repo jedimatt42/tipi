@@ -143,6 +143,7 @@ reterr
 	MOVB	R1,@VDPWD	;   write the status byte
 	BL	@cleanup
 	MOV	@RET,R11
+	INCT	R11
 	RT
 
 ; RPi thinks it can handle this request :) Good news!

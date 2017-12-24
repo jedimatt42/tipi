@@ -1,6 +1,7 @@
 
 #include <Python.h>
 #include <wiringPi.h>
+#include <stdlib.h>
 
 // Serial output for RD & RC (BCM pin numbers)
 #define PIN_R_RT 13
@@ -18,11 +19,13 @@
 // volatile to force slow memory access.
 volatile long delmem = 55; 
 
+int delayloop = 50;
+
 inline void signalDelay(void)
 {
   // delayMicroseconds(1L);
   int i = 0;
-  for(i = 0; i < 50; i++) {
+  for(i = 0; i < delayloop; i++) {
     delmem *= i;
   }
 }
@@ -129,6 +132,14 @@ tipi_setRC(PyObject *self, PyObject *args)
 static PyObject* 
 tipi_initGpio(PyObject *self, PyObject *args)
 {
+  // get signalling delay from env
+  const char* tipiSigEnv = getenv("TIPI_SIG_DELAY");
+  if (tipiSigEnv==NULL) {
+    delayloop = 0;
+  } else {
+    delayloop = atoi(tipiSigEnv);
+  }
+
   wiringPiSetupGpio();
 
   pinMode(PIN_R_RT, OUTPUT);

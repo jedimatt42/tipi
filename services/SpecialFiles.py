@@ -6,6 +6,8 @@ from TcpFile import TcpFile
 from CurlFile import CurlFile
 from ConfigFile import ConfigFile
 from UpgradeFile import UpgradeFile
+from ShutdownFile import ShutdownFile
+from RebootFile import RebootFile
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +21,9 @@ class SpecialFiles(object):
             StatusFile.filename(): StatusFile(self.tipi_io),
             CurlFile.filename(): CurlFile(self.tipi_io),
             ConfigFile.filename(): ConfigFile(self.tipi_io),
-            UpgradeFile.filename(): UpgradeFile(self.tipi_io)
+            UpgradeFile.filename(): UpgradeFile(self.tipi_io),
+            RebootFile.filename(): RebootFile(self.tipi_io),
+            ShutdownFile.filename(): ShutdownFile(self.tipi_io)
         }
 
     def handle(self, pab, devname):

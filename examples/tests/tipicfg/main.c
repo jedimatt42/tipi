@@ -16,6 +16,8 @@
 #define PI_CONFIG "PI.CONFIG"
 #define PI_STATUS "PI.STATUS"
 #define PI_UPGRADE "PI.UPGRADE"
+#define PI_SHUTDOWN "PI.SHUTDOWN"
+#define PI_REBOOT "PI.REBOOT"
 
 unsigned char dsr_openDV(struct PAB* pab, char* fname, int vdpbuffer, unsigned char flags);
 unsigned char dsr_close(struct PAB* pab);
@@ -34,6 +36,8 @@ void loadPiConfig();
 void savePiConfig();
 
 void upgrade();
+void shutdown();
+void reboot();
 
 void getstr(int x, int y, char* var);
 
@@ -71,16 +75,18 @@ void showValue(int x, int y, const char* val) {
 }
 
 void showQMenu() {
-  gotoxy(6,23);
-  cputs("Q) quit");
+  gotoxy(0,22);
+  cputs("CFG: Q)uit, ");
+  cputs("R)eload");  
   if (disks_dirty || wifi_dirty) {
-    gotoxy(15,23);
-    cputs("W) write");
+    gotoxy(19,22);
+    cputs(", W)rite");
   } else {
-    cclearxy(15,23,8);
+    cclearxy(19,22,8);
   }
-  gotoxy(25,23);
-  cputs("R) reload");  
+  gotoxy(0,23);
+  cputs(" PI: H)alt, ");  
+  cputs("re(B)oot");  
 }
 
 void initGlobals() {
@@ -140,7 +146,7 @@ void layoutScreen() {
   gotoxy(0,13);
   chline(40);
 
-  gotoxy(0,22);
+  gotoxy(0,21);
   chline(40);
   showQMenu();
 }
@@ -207,6 +213,14 @@ void main()
       case 'U':
       case 'u':
         upgrade();
+        break;
+      case 'H':
+      case 'h':
+        shutdown();
+        break;
+      case 'B':
+      case 'b':
+        reboot();
         break;
     }
 
@@ -466,6 +480,48 @@ void upgrade() {
 
   gotoxy(0,3);
   cputs("Upgrading... reload to check version");
+}
+
+void shutdown() {
+  struct PAB pab;
+
+  unsigned char ferr = dsr_openDV(&pab, PI_SHUTDOWN, FBUF, DSR_TYPE_INPUT);
+  if (ferr) {
+    cprintf(" ERROR: %x", ferr);
+    return;
+  }
+
+  ferr = dsr_close(&pab);
+  if (ferr) {
+    cprintf("Close ERROR: %x", ferr);
+    halt();
+  }
+
+  gotoxy(0,3);
+  cclear(40);
+  gotoxy(0,3);
+  cputs("Halt command issued to PI");
+}
+
+void reboot() {
+  struct PAB pab;
+
+  unsigned char ferr = dsr_openDV(&pab, PI_REBOOT, FBUF, DSR_TYPE_INPUT);
+  if (ferr) {
+    cprintf(" ERROR: %x", ferr);
+    return;
+  }
+
+  ferr = dsr_close(&pab);
+  if (ferr) {
+    cprintf("Close ERROR: %x", ferr);
+    halt();
+  }
+
+  gotoxy(0,3);
+  cclear(40);
+  gotoxy(0,3);
+  cputs("Reboot command issued to PI");
 }
 
 //---- the following are meant to be easy, not fast ----

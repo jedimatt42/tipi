@@ -12,7 +12,7 @@
 
 #define GPLWS ((unsigned int*)0x83E0)
 
-#define TIPICFG_VER "2"
+#define TIPICFG_VER "3"
 #define PI_CONFIG "PI.CONFIG"
 #define PI_STATUS "PI.STATUS"
 #define PI_UPGRADE "PI.UPGRADE"

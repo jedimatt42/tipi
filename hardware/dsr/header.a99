@@ -71,10 +71,31 @@ tipid
 	EVEN
 
 tipip
-	DATA	>0000		; terminate dsr list.
+	DATA	tipiu1		; terminate dsr list.
 	DATA	tipidsr		; tipi dsr routine pointer
 	BYTE	2		; TIPI Drive name length
 	TEXT	"PI"		; name of tipi drive
+	EVEN
+
+tipiu1
+	DATA	tipiu2		; terminate dsr list.
+	DATA	tipidsr		; tipi dsr routine pointer
+	BYTE	4		; TIPI Drive name length
+	TEXT	"URI1"		; name of tipi drive
+	EVEN
+
+tipiu2
+	DATA	tipiu3		; terminate dsr list.
+	DATA	tipidsr		; tipi dsr routine pointer
+	BYTE	4		; TIPI Drive name length
+	TEXT	"URI2"		; name of tipi drive
+	EVEN
+
+tipiu3
+	DATA	>0000		; terminate dsr list.
+	DATA	tipidsr		; tipi dsr routine pointer
+	BYTE	4		; TIPI Drive name length
+	TEXT	"URI3"		; name of tipi drive
 	EVEN
 
 ; Basic routine list ( name must be no more than 7 characters )

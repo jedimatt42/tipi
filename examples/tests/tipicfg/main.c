@@ -51,6 +51,9 @@ char dsk2_dir[79];
 char dsk3_dir[79];
 char wifi_ssid[79];
 char wifi_psk[79];
+char uri1[79];
+char uri2[79];
+char uri3[79];
 
 int wifi_dirty;
 int disks_dirty;
@@ -97,6 +100,9 @@ void initGlobals() {
   strcpy(dsk3_dir,"");
   strcpy(wifi_ssid,"");
   strcpy(wifi_psk,"");
+  strcpy(uri1,"");
+  strcpy(uri2,"");
+  strcpy(uri3,"");
   crubase = 0;
 
   wifi_dirty = 0;
@@ -134,16 +140,22 @@ void layoutScreen() {
   cputs("2) DSK2=");
   gotoxy(2,8);
   cputs("3) DSK3=");
-
-  gotoxy(0,9);
-  chline(40);
-  gotoxy(0,10);
-  cputs("WiFi Settings");
+  gotoxy(2,9);
+  cputs("J) URI1=");
+  gotoxy(2,10);
+  cputs("K) URI2=");
   gotoxy(2,11);
-  cputs("S) SSID=");
-  gotoxy(2,12);
-  cputs("P)  PSK=");
+  cputs("L) URI3=");
+
+  gotoxy(0,12);
+  chline(40);
   gotoxy(0,13);
+  cputs("WiFi Settings");
+  gotoxy(2,14);
+  cputs("S) SSID=");
+  gotoxy(2,15);
+  cputs("P)  PSK=");
+  gotoxy(0,16);
   chline(40);
 
   gotoxy(0,21);
@@ -185,17 +197,35 @@ void main()
         getstr(10,8,dsk3_dir);
         showValue(10,8,dsk3_dir);
         break;
+      case 'J':
+      case 'j':
+        disks_dirty = 1;
+        getstr(10,9,uri1);
+        showValue(10,9,uri1);
+        break;
+      case 'K':
+      case 'k':
+        disks_dirty = 1;
+        getstr(10,10,uri2);
+        showValue(10,10,uri2);
+        break;
+      case 'L':
+      case 'l':
+        disks_dirty = 1;
+        getstr(10,11,uri3);
+        showValue(10,11,uri3);
+        break;
       case 'S':
       case 's':
         wifi_dirty = 1;
-        getstr(10,11,wifi_ssid);
-        showValue(10,11,wifi_ssid);
+        getstr(10,14,wifi_ssid);
+        showValue(10,14,wifi_ssid);
         break;
       case 'P':
       case 'p':
         wifi_dirty = 1;
-        getstr(10,12,wifi_psk);
-        showValue(10,12,wifi_psk);
+        getstr(10,15,wifi_psk);
+        showValue(10,15,wifi_psk);
         break;
       case 'R':
       case 'r':
@@ -262,24 +292,22 @@ void loadPiStatus() {
       processStatusLine(cbuf);
     }
   }
+  ferr = dsr_close(&pab);
 
   showValue(25, 0, version);
   showValue(25, 1, ipaddress);
   if (0 != strcmp(version, latest)) {
-    gotoxy(6, 15);
+    gotoxy(6, 3);
     cputs("U) upgrade to ");
     cputs(latest);
   } else {
-    cclearxy(0,15,40);
+    cclearxy(0,3,40);
   }
 
-  ferr = dsr_close(&pab);
   if (ferr) {
     cprintf("Close ERROR: %x", ferr);
     halt();
   }
-  gotoxy(0,3);
-  cclear(40);
 }
 
 void processStatusLine(char* cbuf) {
@@ -329,8 +357,11 @@ void loadPiConfig() {
   showValue(10, 6, dsk1_dir);
   showValue(10, 7, dsk2_dir);
   showValue(10, 8, dsk3_dir);
-  showValue(10, 11, wifi_ssid);
-  showValue(10, 12, wifi_psk);
+  showValue(10, 9, uri1);
+  showValue(10, 10, uri2);
+  showValue(10, 11, uri3);
+  showValue(10, 14, wifi_ssid);
+  showValue(10, 15, wifi_psk);
 
   ferr = dsr_close(&pab);
   if (ferr) {
@@ -354,6 +385,12 @@ void processConfigLine(char* cbuf) {
     strcpy(dsk2_dir, val);
   } else if (0 == strcmp(cbuf, "DSK3_DIR")) {
     strcpy(dsk3_dir, val);
+  } else if (0 == strcmp(cbuf, "URI1")) {
+    strcpy(uri1, val);
+  } else if (0 == strcmp(cbuf, "URI2")) {
+    strcpy(uri2, val);
+  } else if (0 == strcmp(cbuf, "URI3")) {
+    strcpy(uri3, val);
   } else if (0 == strcmp(cbuf, "WIFI_SSID")) {
     strcpy(wifi_ssid, val);
   } else if (0 == strcmp(cbuf, "WIFI_PSK")) {
@@ -393,6 +430,19 @@ void getstr(int x, int y, char* var) {
   var[idx] = 0;
 }
 
+void writeConfigItem(struct PAB* pab, const char* key, const char* value) {
+  unsigned char line[81];
+  int lenkey = strlen(key);
+  strcpy(line, key);
+  strcpy(line+lenkey, "=");
+  strcpy(line+lenkey+1, value);
+  unsigned char ferr = dsr_write(pab, line);
+  if (ferr) {
+    cprintf(" ERROR: %x", ferr);
+    halt();
+  }
+}
+
 void savePiConfig() {
   if (disks_dirty == 0 && wifi_dirty == 0) {
     gotoxy(0,3);
@@ -414,44 +464,17 @@ void savePiConfig() {
   unsigned char line[81];
 
   if (disks_dirty) {
-    strcpy(line, "DSK1_DIR=");
-    strcpy(line+9, dsk1_dir);
-    ferr = dsr_write(&pab, line);
-    if (ferr) {
-      cprintf(" ERROR: %x", ferr);
-      halt();
-    }
-    strcpy(line, "DSK2_DIR=");
-    strcpy(line+9, dsk2_dir);
-    ferr = dsr_write(&pab, line);
-    if (ferr) {
-      cprintf(" ERROR: %x", ferr);
-      halt();
-    }
-    strcpy(line, "DSK3_DIR=");
-    strcpy(line+9, dsk3_dir);
-    ferr = dsr_write(&pab, line);
-    if (ferr) {
-      cprintf(" ERROR: %x", ferr);
-      halt();
-    }
+    writeConfigItem(&pab, "DSK1_DIR", dsk1_dir);
+    writeConfigItem(&pab, "DSK2_DIR", dsk2_dir);
+    writeConfigItem(&pab, "DSK3_DIR", dsk3_dir);
+    writeConfigItem(&pab, "URI1", uri1);
+    writeConfigItem(&pab, "URI2", uri2);
+    writeConfigItem(&pab, "URI3", uri3);
   }
 
   if (wifi_dirty) {
-    strcpy(line, "WIFI_SSID=");
-    strcpy(line+10, wifi_ssid);
-    ferr = dsr_write(&pab, line);
-    if (ferr) {
-      cprintf(" ERROR: %x", ferr);
-      halt();
-    }
-    strcpy(line, "WIFI_PSK=");
-    strcpy(line+9, wifi_psk);
-    ferr = dsr_write(&pab, line);
-    if (ferr) {
-      cprintf(" ERROR: %x", ferr);
-      halt();
-    }
+    writeConfigItem(&pab, "WIFI_SSID", wifi_ssid);
+    writeConfigItem(&pab, "WIFI_PSK", wifi_psk);
   }
 
   ferr = dsr_close(&pab);

@@ -16,6 +16,9 @@ CONFIG_DEFAULTS = {
     "DSK1_DIR": "",
     "DSK2_DIR": "",
     "DSK3_DIR": "",
+    "URI1": "",
+    "URI2": "",
+    "URI3": "",
     "TIPI_NAME": "TIPI",
     "WIFI_SSID": "",
     "WIFI_PSK": ""

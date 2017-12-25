@@ -30,9 +30,10 @@ class SpecialFiles(object):
         }
 
     def handle(self, pab, devname):
-        if devname.startswith("URI[1-3]".):
+        logger.debug("Matching special file handler for: %s", devname)
+        if devname.startswith(("URI1.","URI2.","URI3.")):
             uriShortcut = str(devname[:4])
-            link = tipi_config.get(uriShortCut)
+            link = tipi_config.get(uriShortcut)
             if link != "":
                 devname = "PI." + link + "/" + devname[5:]
                 logger.debug("using %s to map to %s", uriShortcut, devname)

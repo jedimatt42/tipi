@@ -87,7 +87,7 @@ class TipiDisk(object):
         if os.path.isdir(localPath):
             try:
                 self.sendSuccess()
-                cat_file = CatalogFile.load(localPath, pab)
+                cat_file = CatalogFile.load(localPath, pab, devname)
                 self.tipi_io.send([cat_file.getRecordLength()])
                 self.openFiles[localPath] = cat_file
                 return

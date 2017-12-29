@@ -6,8 +6,13 @@ from TcpFile import TcpFile
 from CurlFile import CurlFile
 from ConfigFile import ConfigFile
 from UpgradeFile import UpgradeFile
+from ShutdownFile import ShutdownFile
+from RebootFile import RebootFile
+from TipiConfig import TipiConfig
 
 logger = logging.getLogger(__name__)
+
+tipi_config = TipiConfig.instance()
 
 class SpecialFiles(object):
 
@@ -19,10 +24,19 @@ class SpecialFiles(object):
             StatusFile.filename(): StatusFile(self.tipi_io),
             CurlFile.filename(): CurlFile(self.tipi_io),
             ConfigFile.filename(): ConfigFile(self.tipi_io),
-            UpgradeFile.filename(): UpgradeFile(self.tipi_io)
+            UpgradeFile.filename(): UpgradeFile(self.tipi_io),
+            RebootFile.filename(): RebootFile(self.tipi_io),
+            ShutdownFile.filename(): ShutdownFile(self.tipi_io)
         }
 
     def handle(self, pab, devname):
+        logger.debug("Matching special file handler for: %s", devname)
+        if devname.startswith(("URI1.","URI2.","URI3.")):
+            uriShortcut = str(devname[:4])
+            link = tipi_config.get(uriShortcut)
+            if link != "":
+                devname = "PI." + link + "/" + devname[5:]
+                logger.debug("using %s to map to %s", uriShortcut, devname)
         if devname.startswith("PI."):
             fname = str(devname[3:])
             logger.debug("Looking for special file handler: %s", fname)

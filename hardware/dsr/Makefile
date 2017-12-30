@@ -22,4 +22,8 @@ tipi_emu.bin: $(sources)
 	xas99.py -R -b -L tipi_emu.list -o $@ rom.a99 -D emulation nowaitwrite 
 	mv $@_4000 $@
 
+.PHONY: burn
+
+burn: tipi.bin
+	minipro -p "AM27C256 @DIP28" -w tipi.bin -y
 

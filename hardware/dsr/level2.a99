@@ -103,6 +103,20 @@ createdir			; create a subdirectory
 	BL	@vsendmsg	; send new directory name
 	B	@getl2resp
 
+deldir				; delete a directory
+	LIMI	0
+	MOV	R11,R7
+	LI	R0,1
+	LI	R1,DDIR_MSG
+	BL	@sendmsg	; send set path request header
+	LI	R0,1
+	LI	R1,UNITNO
+	BL	@sendmsg	; send unit number
+	LI	R0,10
+	MOV	@WFILNAM,R1
+	BL	@vsendmsg	; send new directory name
+	B	@getl2resp
+
 getl2resp
 	LI	R0,1
 	LI	R1,L2STAT

@@ -128,9 +128,16 @@ l2x7
 	EVEN
 
 l2x8
-	DATA	>0000
+	DATA	l2x9
 	DATA	createdir
 	BYTE	1
 	BYTE	>18		; lvl2 create a sub directory
+	EVEN
+
+l2x9
+	DATA	>0000
+	DATA	deldir
+	BYTE	1
+	BYTE	>19		; lvl2 delete directory
 	EVEN
 

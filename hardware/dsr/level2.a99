@@ -1,16 +1,75 @@
 
 ; These routines are called by DSRLNK. RT to cascade to the next controller. INCT R11, and then RT to indicate it is handled.
 
+; Custom single byte messages to send TIPI and get into handling the given routines
+;  I have lots of rom, so I'm going to abuse it.
+PROT_MSG
+	BYTE	>12
+
+FREN_MSG
+	BYTE	>13
+
+DINP_MSG
+	BYTE	>14
+
+DOUT_MSG
+	BYTE	>15
+
+PATH_MSG
+	BYTE	>17
+
+CDIR_MSG
+	BYTE	>18
+
+DDIR_MSG
+	BYTE	>19
+
+RDIR_MSG
+	BYTE	>1A
+
+	EVEN
+
 ; Error codes must go in >8350
 L2STAT	EQU	>8350
 
-
-
-sectorrw
-	RT
+; Common addresses
+UNITNO	EQU	>834C
+PROTVAL	EQU	>834D
+WFILNAM	EQU	>834E
 
 protect
-	RT
+	LIMI	0
+	MOV	R11,R7
+	LI	R0,1
+	LI	R1,PROT_MSG
+	BL	@sendmsg	; send protect file request type
+	CLR	R9
+	MOVB	@PROTVAL,R9
+	LI	R0,2
+	LI	R1,UNITNO
+	BL	@sendmsg	; send unit number and protect value
+	LI	R0,10
+	MOV	@WFILNAM,R1
+	BL	@vsendmsg	; send filename to modify
+
+	LI	R0,1
+	LI	R1,L2STAT
+	BL	@recvmsg	; receive error code into >8350
+	MOVB	@L2STAT,@L2STAT
+	JEQ	retl2sk		; PI didn't handled request
+	CLR	R0
+	MOVB	@L2STAT,@R0LB(R10)
+	CI	R0,SUCCESS
+	JNE	retl2err
+	MOVB	R0,@L2STAT	; clear special PI success code and proceed to return
+	; falls through to retl2err
+	
+retl2err
+	MOV	R7,R11
+	INCT	R11
+	RT			; error already stored in L2STAT
+
+retl2sk
 
 rename
 	RT

@@ -107,10 +107,16 @@ basiclnk
 	EVEN
 
 l2x2
-	DATA	>0000
+	DATA	l2x3
 	DATA	protect
 	BYTE	1
 	BYTE	>12		; lvl2 modify protection
 	EVEN
 
+l2x3
+	DATA	>0000
+	DATA	frename
+	BYTE	1
+	BYTE	>13		; lvl2 file rename
+	EVEN
 

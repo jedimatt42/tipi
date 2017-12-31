@@ -36,6 +36,7 @@ L2STAT	EQU	>8350
 UNITNO	EQU	>834C
 PROTVAL	EQU	>834D
 WFILNAM	EQU	>834E		; note, filenames are 10 characters... space padded in this context.
+WOLDNAM	EQU	>8350		; if two names are used, this is the original
 
 protect				; Set or unset protect bit on a file
 	LIMI	0
@@ -43,14 +44,29 @@ protect				; Set or unset protect bit on a file
 	LI	R0,1
 	LI	R1,PROT_MSG
 	BL	@sendmsg	; send protect file request type
-	CLR	R9
-	MOVB	@PROTVAL,R9
 	LI	R0,2
 	LI	R1,UNITNO
 	BL	@sendmsg	; send unit number and protect value
 	LI	R0,10
 	MOV	@WFILNAM,R1
 	BL	@vsendmsg	; send filename to modify
+	B	@getl2resp
+
+frename				; rename a file on a device in the current path
+	LIMI	0
+	MOV	R11,R7
+	LI	R0,1
+	LI	R1,FREN_MSG
+	BL	@sendmsg	; send rename request header
+	LI	R0,1
+	LI	R1,UNITNO
+	BL	@sendmsg	; send unit number
+	LI	R0,10
+	MOV	@WFILNAM,R1
+	BL	@vsendmsg	; send new filename
+	LI	R0,10
+	MOV	@WOLDNAM,R1
+	BL	@vsendmsg	; send old filename
 	B	@getl2resp
 
 getl2resp

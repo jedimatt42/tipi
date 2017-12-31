@@ -35,9 +35,9 @@ L2STAT	EQU	>8350
 ; Common addresses
 UNITNO	EQU	>834C
 PROTVAL	EQU	>834D
-WFILNAM	EQU	>834E
+WFILNAM	EQU	>834E		; note, filenames are 10 characters... space padded in this context.
 
-protect
+protect				; Set or unset protect bit on a file
 	LIMI	0
 	MOV	R11,R7
 	LI	R0,1
@@ -51,7 +51,9 @@ protect
 	LI	R0,10
 	MOV	@WFILNAM,R1
 	BL	@vsendmsg	; send filename to modify
+	B	@getl2resp
 
+getl2resp
 	LI	R0,1
 	LI	R1,L2STAT
 	BL	@recvmsg	; receive error code into >8350
@@ -70,26 +72,10 @@ retl2err
 	RT			; error already stored in L2STAT
 
 retl2sk
-
-rename
+	MOV	R7,R11
 	RT
 
-directrd
-	RT
-
-directwr
-	RT
-
-setpath
-	RT
-
-createdir
-	RT
-
-deldir
-	RT
-
-rendir
+setpath				; Set current path (subdir) to use for a drive unit
 	RT
 
 

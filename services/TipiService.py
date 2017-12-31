@@ -7,6 +7,7 @@ from tipi.TipiMessage import TipiMessage
 from SpecialFiles import SpecialFiles
 from Pab import *
 from RawExtensions import RawExtensions
+from LevelTwo import LevelTwo
 from ResetHandler import createResetListener
 from TipiDisk import TipiDisk
 
@@ -42,17 +43,23 @@ try:
     tipi_io = TipiMessage()
     specialFiles = SpecialFiles(tipi_io)
     rawExtensions = RawExtensions(tipi_io)
+    levelTwo = LevelTwo(tipi_io)
     tipiDisk = TipiDisk(tipi_io)
 
     oled.info("TIPI Ready")
 
     while True:
-        logger.info("waiting for PAB request...")
+        logger.info("waiting for request...")
 
-        pab = tipi_io.receive()
-        if rawExtensions.handle(pab):
+        msg = tipi_io.receive()
+        if rawExtensions.handle(msg):
             continue
 
+        if levelTwo.handle(msg):
+            continue
+
+        # if not already handled, assume this is a PAB
+        pab = msg
         logger.debug("PAB received.")
 
         logger.debug("waiting for devicename...")

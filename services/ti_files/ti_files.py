@@ -45,6 +45,13 @@ class ti_files(object):
         return ti_files.flags(bytes) & ti_files.PROTECTED
 
     @staticmethod
+    def setProtected(bytes,value):
+        if value != 0:
+            bytes[10] = bytes[10] | ti_files.PROTECTED
+        else:
+            bytes[10] = bytes[10] ^ ti_files.PROTECTED
+
+    @staticmethod
     def isVariable(bytes):
         return ti_files.flags(bytes) & ti_files.VARIABLE
 

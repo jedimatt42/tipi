@@ -35,8 +35,9 @@ L2STAT	EQU	>8350
 ; Common addresses
 UNITNO	EQU	>834C
 PROTVAL	EQU	>834D
-WFILNAM	EQU	>834E		; note, filenames are 10 characters... space padded in this context.
-WOLDNAM	EQU	>8350		; if two names are used, this is the original
+WFILNAM	EQU	>834E		; (vdp addr) note, filenames are 10 characters... space padded in this context.
+WOLDNAM	EQU	>8350		; (vdp addr) if two names are used, this is the original
+PATHNAM EQU	WFILNAM		; (vdp addr) path name for set path operation.
 
 protect				; Set or unset protect bit on a file
 	LIMI	0
@@ -69,6 +70,25 @@ frename				; rename a file on a device in the current path
 	BL	@vsendmsg	; send old filename
 	B	@getl2resp
 
+setpath				; set current directory for a unit/drive
+	LIMI	0
+	MOV	R11,R7
+	LI	R0,1
+	LI	R1,PATH_MSG
+	BL	@sendmsg	; send set path request header
+	LI	R0,1
+	LI	R1,UNITNO
+	BL	@sendmsg	; send unit number
+	MOV	@PATHNAM,R1
+	.setvdpra R1
+	CLR	R0
+	MOV	@VDPRD,R0
+	SWPB	R0		; get length of string
+	MOV	@PATHNAM,R1
+	INC	R1
+	BL	@vsendmsg	; send path string 
+	B	@getl2resp
+
 getl2resp
 	LI	R0,1
 	LI	R1,L2STAT
@@ -89,9 +109,6 @@ retl2err
 
 retl2sk
 	MOV	R7,R11
-	RT
-
-setpath				; Set current path (subdir) to use for a drive unit
 	RT
 
 

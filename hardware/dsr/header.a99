@@ -114,9 +114,16 @@ l2x2
 	EVEN
 
 l2x3
-	DATA	>0000
+	DATA	l2x7
 	DATA	frename
 	BYTE	1
 	BYTE	>13		; lvl2 file rename
+	EVEN
+
+l2x7
+	DATA	>0000
+	DATA	setpath
+	BYTE	1
+	BYTE	>17		; lvl2 set current directory
 	EVEN
 

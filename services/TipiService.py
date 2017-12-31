@@ -52,10 +52,11 @@ try:
         logger.info("waiting for request...")
 
         msg = tipi_io.receive()
-        if rawExtensions.handle(msg):
-            continue
 
         if levelTwo.handle(msg):
+            continue
+
+        if rawExtensions.handle(msg):
             continue
 
         # if not already handled, assume this is a PAB

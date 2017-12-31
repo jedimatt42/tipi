@@ -26,7 +26,8 @@ class LevelTwo(object):
           0x13: self.handleFileRename,
           0x17: self.handleSetPath,
           0x18: self.handleCreateDir,
-          0x19: self.handleDeleteDir
+          0x19: self.handleDeleteDir,
+          0x1A: self.handleDirRename
         }
 
     def handle(self, msg):
@@ -78,6 +79,10 @@ class LevelTwo(object):
         logger.debug("file renamed to: %s", newlocalname)
         self.tipi_io.send([SUCCESS])
         return True
+
+    def handleDirRename(self):
+        logger.debug("dir rename request - delegating to file rename")
+	return self.handleFileRename()
 
     def handleSetPath(self):
         logger.debug("set path request")

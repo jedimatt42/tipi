@@ -23,7 +23,8 @@ class LevelTwo(object):
         }
 	self.handlers = {
           0x12: self.handleProtect,
-          0x13: self.handleFileRename
+          0x13: self.handleFileRename,
+          0x17: self.handleSetPath
         }
 
     def handle(self, msg):
@@ -75,12 +76,21 @@ class LevelTwo(object):
         logger.debug("file renamed to: %s", newlocalname)
         self.tipi_io.send([SUCCESS])
         return True
+
+    def handleSetPath(self):
+        logger.debug("set path request")
+        unit = self.tipi_io.receive()[0]
+        pathname = str(self.tipi_io.receive()).strip()
+        logger.debug("unit: %d, path: %s", unit, pathname)
+        self.unitpath[unit] = pathname
+        self.tipi_io.send([SUCCESS])
+        return True
         
     def getLocalName(self,unit,filename):
-        devname = "DSK" + str(unit)
         if self.unitpath[unit] != "":
-            devname = devname + "." + self.unitpath[unit]
-        devname = devname + "." + filename
+            devname = self.unitpath[unit] + filename
+        else:
+            devname = "DSK" + str(unit) + "." + filename
         return tinames.devnameToLocal(devname)
 
     def getFileBytes(self,localname):

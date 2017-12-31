@@ -89,6 +89,20 @@ setpath				; set current directory for a unit/drive
 	BL	@vsendmsg	; send path string 
 	B	@getl2resp
 
+createdir			; create a subdirectory
+	LIMI	0
+	MOV	R11,R7
+	LI	R0,1
+	LI	R1,CDIR_MSG
+	BL	@sendmsg	; send set path request header
+	LI	R0,1
+	LI	R1,UNITNO
+	BL	@sendmsg	; send unit number
+	LI	R0,10
+	MOV	@WFILNAM,R1
+	BL	@vsendmsg	; send new directory name
+	B	@getl2resp
+
 getl2resp
 	LI	R0,1
 	LI	R1,L2STAT

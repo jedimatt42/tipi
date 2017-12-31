@@ -121,9 +121,16 @@ l2x3
 	EVEN
 
 l2x7
-	DATA	>0000
+	DATA	l2x8
 	DATA	setpath
 	BYTE	1
 	BYTE	>17		; lvl2 set current directory
+	EVEN
+
+l2x8
+	DATA	>0000
+	DATA	createdir
+	BYTE	1
+	BYTE	>18		; lvl2 create a sub directory
 	EVEN
 

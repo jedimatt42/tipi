@@ -24,7 +24,8 @@ class LevelTwo(object):
 	self.handlers = {
           0x12: self.handleProtect,
           0x13: self.handleFileRename,
-          0x17: self.handleSetPath
+          0x17: self.handleSetPath,
+          0x18: self.handleCreateDir
         }
 
     def handle(self, msg):
@@ -84,6 +85,20 @@ class LevelTwo(object):
         logger.debug("unit: %d, path: %s", unit, pathname)
         self.unitpath[unit] = pathname
         self.tipi_io.send([SUCCESS])
+        return True
+
+    def handleCreateDir(self):
+        logger.debug("create directory request")
+        unit = self.tipi_io.receive()[0]
+        dirname = str(self.tipi_io.receive()).strip()
+        logger.debug("unit: %d, dir: %s", unit, dirname)
+        localname = self.getLocalName(unit,dirname)
+        try:
+            os.makedirs(localname)
+            self.tipi_io.send([SUCCESS])
+        except Exception as e:
+            logger.error("Error creating dir", exc_info=True)
+            self.tipi_io.send([EDEVERR])
         return True
         
     def getLocalName(self,unit,filename):

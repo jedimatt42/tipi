@@ -298,8 +298,18 @@ class TipiDisk(object):
     def handleDelete(self, pab, devname):
         logger.info("Opcode 7 Delete - %s", devname)
         logPab(pab)
-        logger.info("Delete not implemented yet")
-        self.sendErrorCode(EDVNAME)
+
+        unix_name = tinames.devnameToLocal(devname)
+        if unix_name is None:
+            self.sendErrorCode(EDVNAME)
+
+        logger.debug("deleting file %s", unix_name)
+        try:
+            os.unlink(unix_name)
+            self.sendSuccess()
+        except Exception as e:
+            logger.exception("failed to delete a file")
+            self.sendErrorCode(EDEVERR)
 
     def handleScratch(self, pab, devname):
         logger.info("Opcode 8 Scratch - %s", devname)

@@ -25,7 +25,8 @@ class LevelTwo(object):
           0x12: self.handleProtect,
           0x13: self.handleFileRename,
           0x17: self.handleSetPath,
-          0x18: self.handleCreateDir
+          0x18: self.handleCreateDir,
+          0x19: self.handleDeleteDir
         }
 
     def handle(self, msg):
@@ -98,6 +99,20 @@ class LevelTwo(object):
             self.tipi_io.send([SUCCESS])
         except Exception as e:
             logger.error("Error creating dir", exc_info=True)
+            self.tipi_io.send([EDEVERR])
+        return True
+        
+    def handleDeleteDir(self):
+        logger.debug("delete directory request")
+        unit = self.tipi_io.receive()[0]
+        dirname = str(self.tipi_io.receive()).strip()
+        logger.debug("unit: %d, dir: %s", unit, dirname)
+        localname = self.getLocalName(unit,dirname)
+        try:
+            os.rmdir(localname)
+            self.tipi_io.send([SUCCESS])
+        except Exception as e:
+            logger.error("Error deleting dir", exc_info=True)
             self.tipi_io.send([EDEVERR])
         return True
         

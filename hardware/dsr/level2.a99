@@ -117,6 +117,24 @@ deldir				; delete a directory
 	BL	@vsendmsg	; send new directory name
 	B	@getl2resp
 
+drename				; directory rename
+	LIMI	0
+	MOV	R11,R7
+	LI	R0,1
+	LI	R1,RDIR_MSG
+	BL	@sendmsg	; send rename request header
+	LI	R0,1
+	LI	R1,UNITNO
+	BL	@sendmsg	; send unit number
+	LI	R0,10
+	MOV	@WFILNAM,R1
+	BL	@vsendmsg	; send new name
+	LI	R0,10
+	MOV	@WOLDNAM,R1
+	BL	@vsendmsg	; send old name
+	B	@getl2resp
+
+
 getl2resp
 	LI	R0,1
 	LI	R1,L2STAT

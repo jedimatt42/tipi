@@ -57,10 +57,17 @@ tipi2
 	EVEN
 
 tipi3
-	DATA	tipid		; next dsr list entry
+	DATA	tipi4		; next dsr list entry
 	DATA	tipidsr		; tipi dsr routine pointer
 	BYTE	4		; TIPI Drive name length
 	TEXT	"DSK3"		; name of tipi drive
+	EVEN
+
+tipi4
+	DATA	tipid		; next dsr list entry
+	DATA	tipidsr
+	BYTE	4
+	TEXT	"DSK4"
 	EVEN
 
 tipid
@@ -135,9 +142,15 @@ l2x8
 	EVEN
 
 l2x9
-	DATA	>0000
+	DATA	l2xA
 	DATA	deldir
 	BYTE	1
 	BYTE	>19		; lvl2 delete directory
 	EVEN
 
+l2xA
+	DATA	>0000
+	DATA	drename
+	BYTE	1
+	BYTE	>1A		; lvl2 directory rename
+	EVEN

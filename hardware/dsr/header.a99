@@ -121,10 +121,24 @@ l2x2
 	EVEN
 
 l2x3
-	DATA	l2x7
+	DATA	l2x4
 	DATA	frename
 	BYTE	1
 	BYTE	>13		; lvl2 file rename
+	EVEN
+
+l2x4
+	DATA	l2x5
+	DATA	directinp
+	BYTE	1
+	BYTE	>14		; lvl2 file direct input
+	EVEN
+
+l2x5
+	DATA	l2x7
+	DATA	directout
+	BYTE	1
+	BYTE	>15		; lvl2 file direct output
 	EVEN
 
 l2x7

@@ -121,8 +121,55 @@ directinp			; read file bytes
 	B	@l2derr		; return as handled
 
 directout			; write file bytes
-	RT
+	LIMI	0
+	MOV	R11,R7
+	LI	R0,1
+	LI	R1,DOUT_MSG
+	BL	@sendmsg	; send direct output header
+	LI	R0,2
+	LI	R1,UNITNO
+	BL	@sendmsg	; send unit number and number of blocks to write
+	LI	R0,10
+	MOV	@WFILNAM,R1
+	BL	@vsendmsg	; send name of file to write
+	CLR	R8
+	MOVB	@L2STAT,R8
+	SWPB	R8
+	AI	R8,>8300	; capture info address
+	LI	R0,8
+	MOV	R8,R1
+	INCT	R1
+	BL	@sendmsg	; send start block and file info
 
+	LI	R0,1
+	LI	R1,L2STAT
+	BL	@recvmsg	; receive error code into >8350
+
+	CLR	R3
+	MOVB	@L2STAT,R3
+	SWPB	R3
+	CI	R3,SUCCESS
+	JNE	l2derr		; return now if there was error
+
+	CLR	R0
+	MOVB	@BLOCKCNT,R0	; block count * 256 ( by being in the MSB )
+	JEQ	l2done		; skip sending blocks if block count was 0
+	MOV	*R8,R1
+	BL	@vsendmsg	; send the data blocks
+	
+	LI	R0,1
+	LI	R1,L2STAT
+	BL	@recvmsg	; get data received confirmation
+l2done
+	CLR	R3
+	MOVB	@L2STAT,R3
+	SWPB	R3
+	CI	R3,SUCCESS
+	JNE	l2derr
+	MOVB	R3,@L2STAT	; turn success into 0
+
+	B	@l2derr
+	
 
 l2derr				; handle errors from direct input or direct output
 	MOV	R7,R11

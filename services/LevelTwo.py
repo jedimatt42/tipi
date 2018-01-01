@@ -24,6 +24,7 @@ class LevelTwo(object):
 	self.handlers = {
           0x12: self.handleProtect,
           0x13: self.handleFileRename,
+          0x14: self.handleDirectInput,
           0x17: self.handleSetPath,
           0x18: self.handleCreateDir,
           0x19: self.handleDeleteDir,
@@ -119,6 +120,59 @@ class LevelTwo(object):
         except Exception as e:
             logger.error("Error deleting dir", exc_info=True)
             self.tipi_io.send([EDEVERR])
+        return True
+
+    def handleDirectInput(self):
+        logger.debug("direct input")
+        bytes = self.tipi_io.receive()
+        unit = bytes[0]
+        blocks = bytes[1]
+        filename = str(self.tipi_io.receive()).strip()
+        bytes = self.tipi_io.receive()
+        startblock = bytes[1] + (bytes[0] << 8)
+        logger.debug("unit: %d, blocks: %d, filename: %s, startblock %d", unit, blocks, filename, startblock)
+        
+        localfilename = self.getLocalName(unit,filename)
+        if not os.path.exists(localfilename):
+            logger.error("file doesn't exist")
+            self.tipi_io.send([EDEVERR])
+            return True
+
+        if blocks != 0:
+            logger.error("actual file data not supported yet")
+            self.tipi_io.send([EDEVERR])
+            return True
+            
+        fbytes = self.getFileBytes(localfilename)
+        bytestart = 128 + (startblock * 256)
+        byteend = bytestart + (blocks * 256)
+        total = len(fbytes)
+        if bytestart > total or byteend > total:
+            logger.error("request exceeds file size")
+            self.tipi_io.send([EDEVERR])
+            return True
+        logger.debug("Request is good!")
+        self.tipi_io.send([SUCCESS])
+
+	finfo = bytearray(8)
+	if blocks == 0:
+            startblock = (total - 128) / 256
+        finfo[0] = startblock >> 8
+        finfo[1] = startblock & 0xff
+        finfo[2:] = fbytes[10:16]
+        logger.debug("Sending finfo")
+	self.tipi_io.send(finfo)
+
+	# blocks is max blocks... we could read less, and 
+        # have to adjust if we do.
+        logger.debug("Sending adjusted block count")
+        self.tipi_io.send([blocks & 0xFF])
+
+	if blocks != 0:
+            blockdata = fbytes[bytestart:byteend]
+            logger.debug("Sending file data: %d bytes", len(blockdata))
+            self.tipi_io.send(blockdata)
+
         return True
         
     def getLocalName(self,unit,filename):

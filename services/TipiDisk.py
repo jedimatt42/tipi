@@ -320,30 +320,26 @@ class TipiDisk(object):
         logger.info("Opcode 9 Status - %s", devname)
         logPab(pab)
         statbyte = 0
-        localPath = tinames.devnameToLocal(devname)
+        localPath = str(tinames.devnameToLocal(devname))
         if not os.path.exists(localPath):
-            # TODO? Should we pass to other controllers here?
-            if devname.startswith(("TIPI.", "DSK0.")): 
-                statbyte |= STNOFILE
-            else:
-                self.sendErrorCode(EDVNAME)
-                return
+            statbyte |= STNOFILE
         else:
-            open_file = self.openFiles[localPath]
-            if open_file is not None:
-                statbyte = open_file.getStatusByte()
-            else:
-                if ti_files.isTiFile(localPath):
-                    fh = open(localPath, "rb")
-                    header = bytearray(fh.read())[:128]
-                    if ti_files.isVariable(header):
-                        statbyte |= STVARIABLE
-                    if ti_files.isProgram(header):
-                        statbyte |= STPROGRAM
-                    if ti_files.isInternal(header):
-                        statbyte |= STINTERNAL
+            if not os.path.isdir(localPath):
+                open_file = self.openFiles[localPath]
+                if open_file is not None:
+                    statbyte = open_file.getStatusByte()
                 else:
-                    statbyte = NativeFile.status(localPath)
+                    if ti_files.isTiFile(localPath):
+                        fh = open(localPath, "rb")
+                        header = bytearray(fh.read())[:128]
+                        if ti_files.isVariable(header):
+                            statbyte |= STVARIABLE
+                        if ti_files.isProgram(header):
+                            statbyte |= STPROGRAM
+                        if ti_files.isInternal(header):
+                            statbyte |= STINTERNAL
+                    else:
+                        statbyte = NativeFile.status(localPath)
 
         self.tipi_io.send([SUCCESS])
         self.tipi_io.send([statbyte])

@@ -1,6 +1,7 @@
 
 #include <vdp.h>
 #include <system.h>
+#include <kscan.h>
 
 #include "patterns.h"
 #include "tipi_mouse.h"
@@ -33,8 +34,7 @@ void plotBit(unsigned int x, unsigned int y) {
 
 void main() {
 
-  int unblank = set_bitmap(VDP_SPR_16x16);
-  // VDP_SET_REGISTER(VDP_REG_COL, SCREEN_COLOR);
+  set_bitmap(VDP_SPR_16x16);
   vdpwriteinc(gImage,0,768);
   vdpmemset(gColor,SCREEN_COLOR,768*8);  
   vdpmemset(gPattern,0,768*8);
@@ -49,14 +49,15 @@ void main() {
   sprite(SPR_MOUSE0, 0, COLOR_BLACK, pointery - 1, pointerx);
   sprite(SPR_MOUSE1, 4, COLOR_WHITE, pointery - 1, pointerx);
 
-  VDP_SET_REGISTER(VDP_REG_MODE1, unblank);
-
   tipiMouseOn();
 
   while(true) {
     VDP_WAIT_VBLANK_CRU
-
-    tipiMouseRead();
+    
+    unsigned char k = kscan(0);
+    if (k == 6) {
+        tipiMouseRead();
+    }
 
     pointerx += (2 * mousex) / 3;
     pointery += (2 * mousey) / 3;

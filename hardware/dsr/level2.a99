@@ -159,7 +159,7 @@ directout			; write file bytes
 	
 	LI	R0,1
 	LI	R1,L2STAT
-	BL	@recvmsg	; get data received confirmation
+	BL	@recvmsg	; get data write confirmation
 l2done
 	CLR	R3
 	MOVB	@L2STAT,R3

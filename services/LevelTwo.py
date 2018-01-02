@@ -19,12 +19,14 @@ class LevelTwo(object):
           0: "",
           1: "",
           2: "",
-          3: ""
+          3: "",
+          4: ""
         }
 	self.handlers = {
           0x12: self.handleProtect,
           0x13: self.handleFileRename,
           0x14: self.handleDirectInput,
+          0x15: self.handleDirectOutput,
           0x17: self.handleSetPath,
           0x18: self.handleCreateDir,
           0x19: self.handleDeleteDir,
@@ -91,7 +93,12 @@ class LevelTwo(object):
         pathname = str(self.tipi_io.receive()).strip()
         logger.debug("unit: %d, path: %s", unit, pathname)
         self.unitpath[unit] = pathname
-        self.tipi_io.send([SUCCESS])
+
+        localname = self.getLocalName(unit,"")
+        if not os.path.exists(localname):
+            self.tipi_io.send([EDEVERR])
+        else:
+            self.tipi_io.send([SUCCESS])
         return True
 
     def handleCreateDir(self):
@@ -138,16 +145,11 @@ class LevelTwo(object):
             self.tipi_io.send([EDEVERR])
             return True
 
-        if blocks != 0:
-            logger.error("actual file data not supported yet")
-            self.tipi_io.send([EDEVERR])
-            return True
-            
         fbytes = self.getFileBytes(localfilename)
         bytestart = 128 + (startblock * 256)
         byteend = bytestart + (blocks * 256)
         total = len(fbytes)
-        if bytestart > total or byteend > total:
+        if blocks != 0 and (bytestart > total or byteend > total):
             logger.error("request exceeds file size")
             self.tipi_io.send([EDEVERR])
             return True
@@ -156,7 +158,9 @@ class LevelTwo(object):
 
 	finfo = bytearray(8)
 	if blocks == 0:
-            startblock = (total - 128) / 256
+            startblock = ti_files.getSectors(fbytes)
+            logger.debug("setting total sectors: %d", startblock)
+
         finfo[0] = startblock >> 8
         finfo[1] = startblock & 0xff
         finfo[2:] = fbytes[10:16]
@@ -173,6 +177,46 @@ class LevelTwo(object):
             logger.debug("Sending file data: %d bytes", len(blockdata))
             self.tipi_io.send(blockdata)
 
+        return True
+
+    def handleDirectOutput(self):
+        logger.debug("direct output")
+        bytes = self.tipi_io.receive()
+        unit = bytes[0]
+        blocks = bytes[1]
+        filename = str(self.tipi_io.receive()).strip()
+        bytes = self.tipi_io.receive()
+        startblock = bytes[1] + (bytes[0] << 8)
+        finfo = bytes[2:]
+        
+        logger.debug("unit: %d, blocks: %d, filename: %s, startblock %d", unit, blocks, filename, startblock)
+
+        localfilename = self.getLocalName(unit,filename)
+
+        if os.path.exists(localfilename):
+            fbytes = self.getFileBytes(localfilename)
+        else:
+            raw = bytearray(startblock * 256)
+            header = ti_files.createHeader(0, filename, raw)
+            fbytes = header + raw
+
+	if blocks == 0:
+            fbytes[10:16] = finfo
+            self.saveFile(localfilename, fbytes)
+
+        logger.debug("Accepting request")
+        self.tipi_io.send([SUCCESS])
+
+        if blocks == 0:
+            return True
+
+        blockdata = self.tipi_io.receive()
+        startbyte = 128 + (startblock * 256)
+        endbyte = startbyte + (blocks * 256)
+        fbytes[startbyte:endbyte] = blockdata
+        self.saveFile(localfilename, fbytes)
+
+	self.tipi_io.send([SUCCESS])
         return True
         
     def getLocalName(self,unit,filename):

@@ -11,16 +11,10 @@
 	DATA	>0000		; interrupt list
 	DATA	>0000		; something for groms... can't find docs.
 
-; BLWP Vectors for utilities
-
-; RECVMSG EQU >4000 + 16
-	DATA	>83E0
-	DATA	utrcvmsg
-
-; SENDMSG EQU >4000 + 20
-	DATA	>83E0
-	DATA	utsndmsg
-
+; TIPI routine list - well known addresses for some custom exposure
+	DATA	recvmsg		; MOV @>4010,R0   BL *R0   to invoke recvmsg.
+	DATA	sendmsg		; MOV @>4012,R0   BL *R0   to invoke sendmsg. 
+	DATA	>0000
 
 ; Power up header list.
 pwrlnk

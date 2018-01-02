@@ -7,7 +7,7 @@
 
 all: tipi.bin
 
-sources = rom.a99 header.a99 vdp-io.a99 tipi-io.a99 powerup.a99 devices.a99 loadea5.a99 opt5.a99 basic.a99 level2.a99 blwpvec.a99
+sources = rom.a99 header.a99 vdp-io.a99 tipi-io.a99 powerup.a99 devices.a99 loadea5.a99 opt5.a99 basic.a99 level2.a99
 
 clean:
 	-rm *.list >/dev/null 2>&1

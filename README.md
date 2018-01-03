@@ -6,8 +6,6 @@ Turn a Raspberry PI and some glue hardware into a TI Disk Drive and Network inte
 
 Keep it open for further device extension.
 
-# Level 2 IO (sector like) is not yet supported. You cannot use apps like DM2K to copy files yet.
-
 What can we do:
 
 DSR for file READ support:
@@ -40,7 +38,15 @@ DSR devices:
 * DSK1. 
 * DSK2. 
 * DSK3. 
+* DSK4.
 * DSK.
+* WDS1. ( If in HFDC mode )
+
+DSK Mode, and HFDC mode supported to support Level 2 IO in the company of other 
+controller cards. Switchable via EASY BUG, C1006=1 for HFDC mode, C1006=0 for DSK mode.
+
+>x0 (sector read/write) is not supported. All other Level 2 routines are, for copying
+files, or making directories, etc...
 
 Special files:
 

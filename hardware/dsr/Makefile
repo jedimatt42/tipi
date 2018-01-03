@@ -7,20 +7,24 @@
 
 all: tipi.bin
 
-sources = rom.a99 header.a99 vdp-io.a99 tipi-io.a99 powerup.a99 devices.a99 loadea5.a99 opt5.a99 basic.a99 level2.a99 blwpvec.a99
+sources = rom.a99 header.a99 vdp-io.a99 tipi-io.a99 powerup.a99 devices.a99 loadea5.a99 opt5.a99 basic.a99 level2.a99 dsrlist.a99
 
 clean:
 	-rm *.list >/dev/null 2>&1
 	-rm tipi*.bin >/dev/null 2>&1
 
-tipi.bin: $(sources)
-	xas99.py -R -b -L tipi.list -o $@ rom.a99
+tipi0.bin: $(sources)
+	xas99.py -R -b -L tipi0.list -o $@ rom.a99 -DA14=0
 	mv $@_4000 $@
-	dd if=/dev/null of=$@ bs=1 count=0 seek=32768
+	dd if=/dev/null of=$@ bs=1 count=0 seek=16384
 
-tipi_emu.bin: $(sources)
-	xas99.py -R -b -L tipi_emu.list -o $@ rom.a99 -D emulation nowaitwrite 
+tipi1.bin: $(sources)
+	xas99.py -R -b -L tipi1.list -o $@ rom.a99 -DA14=1
 	mv $@_4000 $@
+	dd if=/dev/null of=$@ bs=1 count=0 seek=16384
+
+tipi.bin: tipi0.bin tipi1.bin
+	cat tipi0.bin tipi1.bin >$@
 
 .PHONY: burn
 

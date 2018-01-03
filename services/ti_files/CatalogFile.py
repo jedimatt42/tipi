@@ -63,7 +63,7 @@ class CatalogFile(object):
 
     def __createVolumeData(self):
         volumeName = os.path.basename(self.localpath)
-        if self.devname.startswith(("DSK0.","TIPI.")):
+        if self.devname.startswith(("WDS1.","DSK4.","DSK0.","TIPI.")):
             volumeName = "TIPI"
         else:
             drive = self.devname.split('.')[0]

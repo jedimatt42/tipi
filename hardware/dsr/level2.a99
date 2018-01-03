@@ -100,7 +100,11 @@ directinp			; read file bytes
 	MOVB	@L2STAT,R3
 	SWPB	R3
 	CI	R3,SUCCESS
-	JNE	l2derr
+	JEQ	disuc
+	SRC	R3,3
+	MOVB	R3,@L2STAT
+	B	@l2derr
+disuc
 	MOVB	R3,@L2STAT	; clear error status on success
 
 	LI	R0,8
@@ -149,8 +153,11 @@ directout			; write file bytes
 	MOVB	@L2STAT,R3
 	SWPB	R3
 	CI	R3,SUCCESS
-	JNE	l2derr		; return now if there was error
-
+	JEQ	dosuc
+	SRC	R3,3
+	MOVB	R3,@L2STAT
+	B	@l2derr		; return now if there was error
+dosuc
 	CLR	R0
 	MOVB	@BLOCKCNT,R0	; block count * 256 ( by being in the MSB )
 	JEQ	l2done		; skip sending blocks if block count was 0
@@ -165,7 +172,11 @@ l2done
 	MOVB	@L2STAT,R3
 	SWPB	R3
 	CI	R3,SUCCESS
-	JNE	l2derr
+	JEQ	dosuc2
+	SRC	R3,3
+	MOVB	R3,@L2STAT
+	B	@l2derr
+dosuc2
 	MOVB	R3,@L2STAT	; turn success into 0
 
 	B	@l2derr
@@ -241,7 +252,6 @@ drename				; directory rename
 	B	@getl2resp
 
 retl2err
-	
 	MOV	R7,R11
 	INCT	R11
 	RT			; error already stored in L2STAT
@@ -259,7 +269,11 @@ getl2resp
 	CLR	R0
 	MOVB	@L2STAT,@R0LB(R10)
 	CI	R0,SUCCESS
-	JNE	retl2err
+	JEQ	l2suc
+	SRC	R0,3
+	MOVB	R0,@L2STAT
+	B	@retl2err
+l2suc
 	MOVB	R0,@L2STAT	; clear special PI success code and proceed to return
 	B	@retl2err	
 

@@ -68,7 +68,7 @@ tipi0
 	DATA	tipip		; next dsr list entry
 	DATA	tipidsr		; tipi dsr routine pointer
 	BYTE	4		; TIPI Drive name length
-	TEXT	"WSD1"		; name of tipi drive
+	TEXT	"WDS1"		; name of tipi drive
 	EVEN
 	.endif
 

@@ -20,7 +20,7 @@ all: $(FNAME)
 
 $(FNAME): $(FNAME).bin
 	$(EA5SPLIT) $(FNAME).bin
-	cp TIPICF? ../../../setup/bin/
+	cp TIPICF? ../../setup/bin/
 
 $(FNAME).bin: $(FNAME).elf
 	$(ELF2EA5) $(FNAME).elf $(FNAME).bin

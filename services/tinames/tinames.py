@@ -27,6 +27,8 @@ def devnameToLocal(devname):
         path = TIPI_DIR
     elif parts[0] == "DSK0":
         path = TIPI_DIR
+    elif parts[0] == "WDS1":
+        path = TIPI_DIR
     elif parts[0] == "DSK4":
         path = TIPI_DIR
     elif parts[0] == "DSK1":

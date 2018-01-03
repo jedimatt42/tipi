@@ -8,5 +8,7 @@
 	COPY	'loadea5.a99'
 	COPY	'opt5.a99'
 	COPY	'basic.a99'
+; variable addressed items below here.
+	COPY	'dsrlist.a99'
 
 	END

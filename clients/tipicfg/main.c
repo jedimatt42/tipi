@@ -77,6 +77,24 @@ void showValue(int x, int y, const char* val) {
   cputs(val);
 }
 
+void showMode() {
+  int statusbits = 0;
+  if (crubase != 0) {
+    __asm__("mov %1,r12\n\ttb 3\n\tstst %0" : "=r"(statusbits) : "r"(crubase) : "r12"); 
+  }
+  if (statusbits & 0x2000) {
+    gotoxy(13,18);
+    cputs("        ");
+    gotoxy(13,19);
+    cputs("- active");
+  } else {
+    gotoxy(13,18);
+    cputs("- active");
+    gotoxy(13,19);
+    cputs("        ");
+  }
+}
+
 void showQMenu() {
   gotoxy(0,22);
   cputs("CFG: Q)uit, ");
@@ -90,6 +108,18 @@ void showQMenu() {
   gotoxy(0,23);
   cputs(" PI: H)alt, ");  
   cputs("re(B)oot");  
+}
+
+void tiMode() {
+  if (crubase != 0) {
+    __asm__("mov %0,r12\n\tsbz 3" : : "r"(crubase) : "r12");
+  }
+}
+
+void myarcMode() {
+  if (crubase != 0) {
+    __asm__("mov %0,r12\n\tsbo 3" : : "r"(crubase) : "r12");
+  }
 }
 
 void initGlobals() {
@@ -158,8 +188,16 @@ void layoutScreen() {
   gotoxy(0,16);
   chline(40);
 
+  gotoxy(0,17);
+  cputs("Emulation Mode");
+  gotoxy(2,18);
+  cputs("T)I DSK");
+  gotoxy(2,19);
+  cputs("M)yarc WSD");
+
   gotoxy(0,21);
   chline(40);
+  showMode();
   showQMenu();
 }
 
@@ -252,8 +290,17 @@ void main()
       case 'b':
         reboot();
         break;
+      case 'T':
+      case 't':
+	tiMode();
+	break;
+      case 'M':
+      case 'm':
+	myarcMode();
+	break;
     }
 
+    showMode();
     showQMenu();
   } while(key != 'Q' && key != 'q');
 

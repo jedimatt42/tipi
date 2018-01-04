@@ -147,39 +147,29 @@ reterr
 	RT
 
 ; RPi thinks it can handle this request :) Good news!
+
+; routines have gotten too far away for JMP instructions, so I need to 
+; compute a branch target
+
+handlers			; 2x opcode + handlers is address to branch to.
+	DATA	hopen
+	DATA	hclose
+	DATA	hread
+	DATA	hwrite
+	DATA	hrestore
+	DATA	hload
+	DATA	hsave
+	DATA	hdelete
+	DATA	retdone		; scratch opcode not implemented.
+	DATA	hstatus
+
 hresponse
 	CLR	R1		; switch on opcode in R1
-	MOVB	@OPCODE(R10),R1
-
-	CI	R1,OPOPEN
-	JEQ	hopen
-
-	CI	R1,OPCLOSE
-	JEQ	hclose
-
-	CI	R1,OPREAD
-	JEQ	hread
-
-	CI	R1,OPWRITE
-	JEQ	hwrite
-
-	CI	R1,OPLOAD
-	JEQ	hload
-
-	CI	R1,OPSAVE
-	JEQ	hsave
-
-	CI	R1,OPSTAT
-	JEQ	hstatus
-
-	CI	R1,OPREST
-	JEQ	hrestore
-
-	CI	R1,OPDEL
-	JEQ	hdelete
-
-	LI	R1,EDEVERR	;   default: return device error
-	JMP	reterr
+	MOVB	@OPCODE(R10),@R1LB(R10)
+	SLA	R1,1		; multiply by 2
+	AI	R1,handlers	; R1 now has address of handler reference
+	MOV	*R1,R1
+	B	*R1		; goto handler for opcode...
 
 ; Handle OPCODE 0 - OPEN
 hopen
@@ -208,12 +198,20 @@ hread
 	AI	R3,CHRCNT-OPCODE
 	.setvdpwa R3
 	MOVB	R0,@VDPWD
+
+updaterec	; if RELATIVE mode, then we have to increment the record number
+	MOV	@OPCODE(R10),R1	; we'll only look at the 2nd byte @FLGSTS
+	ANDI	R1,1		; file-type 1 is RELATIVE
+	JEQ	retdone		; if SEQUENTIAL, then we are done.
+
 	MOV 	@RECNUM(R10),R1	; increment the VDP PAB record number
 	INC	R1
 	MOV	@VPAB,R3
 	AI	R3,RECNUM-OPCODE
 	.setvdpwa R3
 	MOVB	R1,@VDPWD
+	MOVB	@R1LB(R10),@VDPWD
+
 	JMP	retdone
 
 ; Handle OPCODE 3 - WRITE
@@ -230,12 +228,14 @@ hwrite
 	CLR	R9		; clear value in R9 so MSB is 0.
 	BL	@recvmsg	; receive single byte response from TIPI into R9
 	CI	R9,SUCCESS
-	JEQ	retdone
+	JEQ	updaterec
 	MOV	R9,R1
 	B	@reterr
 
 ; Handle OPCODE 4 - Restore
 hrestore
+	; If a RELATIVE access mode is used, then the request has updated the PAB
+	; If a SEQUENTIAL access mode is used, the PI just needs to reset the incrementor
 	JMP	retdone		; No further work on TI side.
 
 ; Handle response for OPCODE 5 - LOAD

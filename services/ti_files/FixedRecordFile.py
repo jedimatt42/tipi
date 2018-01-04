@@ -15,12 +15,14 @@ class FixedRecordFile(object):
         self.dirty = False
         self.header = bytes[:128]
         self.mode = mode(pab)
+        self.filetype = fileType(pab)
         self.recordLength = ti_files.recordLength(self.header)
         self.records = self.__loadRecords(bytes[128:])
         if self.mode == APPEND:
             self.currentRecord = len(self.records)
         else:
             self.currentRecord = 0
+        logger.debug("records loaded: %d, currentRecord: %d, recordLength: %d", len(self.records), self.currentRecord, self.recordLength)
 
     @staticmethod
     def create(devname, localpath, pab):
@@ -73,10 +75,16 @@ class FixedRecordFile(object):
             statByte |= STLEOF
         return statByte
 
+    def restore(self, pab):
+        if self.filetype == RELATIVE:
+            self.currentRecord = recordNumber(pab)
+        else:
+            self.currentRecord = 0
+
     def writeRecord(self, rdata, pab):
         self.dirty = True
         recNo = recordNumber(pab)
-        if recNo != 0:
+        if self.filetype == RELATIVE:
             self.currentRecord = recNo
         if self.currentRecord >= len(self.records):
             self.records += [bytearray(self.recordLength)] * (1 + self.currentRecord - len(self.records))
@@ -85,8 +93,9 @@ class FixedRecordFile(object):
         self.currentRecord += 1
 
     def readRecord(self, idx):
-        if idx != 0:
+        if self.filetype == RELATIVE:
             self.currentRecord = idx
+        logger.debug("reading currentRecord: %d", self.currentRecord)
         record = self.getRecord(self.currentRecord)
         self.currentRecord += 1
         return record

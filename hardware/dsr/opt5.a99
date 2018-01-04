@@ -1,0 +1,222 @@
+*
+* Modified XB scratchpad loader code from harmlesslion.com 
+* - http://www.harmlesslion.com/cgi-bin/onesoft.cgi?59
+*
+* I purged all the DSR related stuff to rewrite as optimized code
+* when stuck in the TIPI DSR. No need for DSR lookup and search.
+
+***************************************************************
+***************************************************************
+* E/A#5 loader for Extended BASIC - 9/13/2013
+* --  based on --
+* E/A#5 loader for TI BASIC -- 26 Apr 09
+* Uses scratchpad RAM to load anywhere in the 32k space
+*
+* Original by Mark Wills
+* Tweaks by Mike Brent
+* Support from the SWPB group, particularly Bill, Tim and Ben
+*
+* ...
+* Will reset to master title page if FILE1 is not found
+* ...
+*
+***************************************************************
+
+VDPADR	EQU	>1380 		address to load the file(s) in vdp ram (EA uses >1380)
+VDPPAB	EQU	VDPADR-740		address of the first pab in vdp ram (10 PABs at 74 bytes each)
+
+WS	EQU	>8300
+
+* VDPCLR - Write the same value to a set of VDP addresses
+* R0 - count, R1 (MSB) - Value, R2 - VDP address
+* Destroys R0,R15
+VDPCLR	
+	MOV	R11,R15		Save return address
+	BL	@GVDPST			
+		
+!	MOVB	R1,@VDPWD	Write the byte
+	DEC	R0
+	JNE	-!
+	B	*R15
+
+* Second label used by main RAM code during init
+GVDPST
+	SWPB	R2
+	MOVB	R2,@VDPWA
+	SWPB	R2
+	MOVB	R2,@VDPWA
+	B	*R11
+
+
+***********************************************
+* GROM routines - from Tursi's Multicart code *
+***********************************************
+
+* Set GROM address
+GPLSET
+	MOVB	R0,@>9C02
+	SWPB	R0
+	MOVB	R0,@>9C02
+	B	*R11
+
+* Get a word from GPL
+GETGPL
+	MOVB	@>9800,R0
+	SWPB	R0
+	MOVB	@>9800,R0
+	SWPB	R0
+	B	*R11
+
+* Copy R2 characters from a GPL copy function vectored at
+* R0 to VDP R1. GPL vector must be a B or BR and
+* the first actual instruction must be a DEST with an
+* immediate operand. Set R3 to 7 for a 99/4A (7 byte characters)
+GPLVDP
+	MOV	R11,R10		* save return address
+	BL	@GPLSET		* set GROM address
+	BL	@GETGPL		* Get branch instruction (not verified!)
+	ANDI	R0,>1FFF	* mask out instruction part
+	AI	R0,3		* skip instruction and destination
+	BL	@GPLSET		* set new GROM address
+	BL	@GETGPL		* get actual address of the table
+	BL	@GPLSET		* and set that GROM address - GROM is now ready!
+
+	SWPB	R1		* assume VDP is already prepared for write to save space
+	MOVB	R1,@>8C02
+	SWPB	R1
+	MOVB	R1,@>8C02 	* VDP is now ready!
+
+	CLR	R0
+LP8
+	MOVB	R0,@>8C00 	* pad the top of the char with a space
+	MOV	R3,R0      	* then copy 7 (or 6) bytes
+
+LP9
+	MOVB	@>9800,@>8C00  	* copy a byte (both sides autoincrement)
+	DEC	R0
+	JNE	LP9
+
+	DEC	R2		* next character
+	JNE	LP8
+
+	B	*R10
+
+
+* Start preparing the environment for EA5 programs
+; Assumes the Address of the loaded program is in GPLWS R4
+OPT5
+* set up most of the EA environment before we start loading things
+	LI	R1,EAREGS	address of register data
+	LI	R2,8 		8 bytes to write
+	CLR	R0 		vdp register
+NXTREG
+	MOVB	*R1+,R0 	get a byte from the list
+	SWPB	R0 		rotate register value into lsb
+	BLWP	@VWTR 		write to vdp register
+	AI	R0,>0100 	next register
+	SWPB	R0 		get reg value in msb
+	DEC	R2 		finished?
+	JNE	NXTREG 		loop if not
+		
+* Fix TI BASIC screen - TI BASIC has an offset of >60 bytes,
+* if we offset it back down, we can let BASIC display whatever
+* text it had up before. We also turn edge characters (31) into spaces
+	LI	R2,767		start at end of screen and work down
+	CLR	R1		make compares easier
+FIXUP
+	BL	@GVDPST		Set VDP address for read
+	MOVB	@VDPRD,R1	Get data (don't care about LSB)
+	AI	R1,>A000	Subtract >60 by adding >A0
+	CI	R1,>1F00	Is it an edge character?
+	JNE	NOTEDGE
+	AI	R1,>0100	Make it a space so we don't see cursors
+NOTEDGE		
+	ORI	R2,>4000	Make a write address
+	BL	@GVDPST		Set it
+	MOVB	R1,@VDPWD	Write it back
+	ANDI	R2,>3FFF	Turn R2 back into a read address
+	DEC	R2		Next one!
+	JOC	FIXUP		Keep going till we wrap to >FFFF
+		
+* Clear VDP
+* The E/A cart also clears the screen at >0000 (with >20 bytes), but 
+* we start at >300 that so BASIC can leave something up if it likes. 
+	LI	R2,>4000	VDP write address of >0300
+	LI	R1,>2000	Write 'space'
+	LI	R0,>1000	4k - console only clears the first 4k!
+	BL	@VDPCLR
+
+* Go through the GPL data - bring in the character sets
+	LI	R3,7
+		
+*	* 'lowercase' letters
+	LI	R0,>004A	* GPL vector address (not available for 99/4)
+	LI	R1,>4B00	* dest in VDP - must OR with >4000 for write
+	LI	R2,>001F	* how many chars
+	BL	@GPLVDP
+		
+*	* main set - uppercase
+	LI	R0,>0018	* GPL vector address
+	LI	R1,>4900	* dest in VDP - must OR with >4000 for write
+	LI	R2,>0040	* how many chars
+	BL	@GPLVDP
+		
+* E/A loads 3 special chars - copyright and two cursors, so do that
+	LI	R0,>0850
+	LI	R1,COPYR
+	LI	R2,8
+	BLWP	@VMBW
+	LI	R0,>08F0
+	LI	R1,CURSOR
+	LI	R2,16
+	BLWP	@VMBW
+		
+* And last, the E/A cart sets a pretty simple color table, we'll do that too
+	LI	R2,>4380	VDP Write address of >0380
+	LI	R1,>1300	Every byte is >13
+	LI	R0,32		and there are 32 entries
+	BL	@VDPCLR
+
+	LWPI	GPLWS
+	LI	R1,>8300
+	LI	R2,>C0
+!	CLR	R1
+	INCT	R1
+	DECT	R2
+	JNE	-!
+
+JUMPMAN	EQU	>8320
+
+	; copy a little code to scratchpad
+	LI	R1,ENDPAD-GOPAD
+	LI	R2,JUMPMAN
+	CLR	R3
+!	MOV	@GOPAD(R3),*R2+
+	INCT	R3
+	DECT	R1
+	JNE	-!
+
+	MOV	@GPLWS+R4MB,@>8300	; EA leaves the launch value here.
+	
+	; goto code in scratchpad
+	B	@JUMPMAN
+
+; code to copy to scratchpad so we can turn off DSR ROM before running loaded program
+GOPAD
+	SBZ	0		; turn off the tipi board
+	CLR	R12		; clear crubase.
+	LI	R13,>9800
+	LI	R14,>0108
+	LI	R15,>8C02
+	B	*R4		; uses vector in pad to avoid ISR messing with destination address.
+ENDPAD
+
+	
+EAREGS
+	DATA	>00E0,>000E,>0106,>00F3 	vdp register values
+COPYR
+	DATA	>3C42,>99A1,>A199,>423C
+CURSOR
+	DATA	>7070,>7070,>7070,>7070
+	DATA	>007E,>4242,>4242,>7E00
+

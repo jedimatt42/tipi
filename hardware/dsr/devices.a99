@@ -1,0 +1,294 @@
+; DSR Notes:
+; --
+; Available WP Registers: R0-R10
+;  R11 == Return address
+;  R12 == CRUBASE of current device
+; Available Scratchpad: >834A - >836D (inclusive) (except?? >8354 and >8356 are preset to locate PAB in VDP)
+;  TIPI will pass to other controllers, so the DSRLNK setup must be preserved. Top of FAC is device name
+;  If TIPI is responding, that is 4 bytes at most. However, 8355 is the name length. Leaving only 7 bytes
+;  So I've chosen CPAB (>8364->836D) and the rest of the code must operate with the R0-R10 of the GPLWS
+ 
+
+; This will be all about interacting with PABs in VDP and IO to the Raspberry PI
+
+; So, PAB: Appears to be handed off in a fixed address in scratchpad. The DSR must work backwards from the end.
+PABNAM	EQU	>8356		; Address in VDP of Device Name
+PABNLE	EQU	>8354		; Length of name (?only trust the LSB?)
+; PAB begins at VDP address pointed to by: @>8356 - @>8354 - >0A
+
+; There is room in PAD for the 10 byte header at CPAB
+;   These equates are relative to WP at DSR entry. (We store that in R10)
+PAD	EQU	->E0		; Beginning of scratchpad ram
+FAC	EQU	PAD+>4A		; Some of this must be preserved for DSRLNK, some is available
+CPAB	EQU	PAD+>64		; Supposedly memory up to 836D is available ( 15 bytes )
+
+OPCODE	EQU	CPAB+>0		; PAB - location of opcode after copied
+FLGSTS	EQU	CPAB+>1		; PAB - [blah][blah]
+BUFADR	EQU	CPAB+>2		; PAB - address of read or write buffer
+RECLEN	EQU	CPAB+>4		; PAB - logical record length
+CHRCNT	EQU	CPAB+>5		; PAB - character count
+RECNUM	EQU	CPAB+>6		; PAB - record number
+SCNOFF	EQU	CPAB+>8		; PAB - screen offset
+STATB 	EQU	SCNOFF		; Alias for when SCNOFF makes no sense.
+
+; Error codes - RPi will return one of these or SUCCESS after evaluating PAB and device name.
+EDVNAME	EQU	>00		; Bad device name
+EWPROT	EQU	>01		; Device write protected
+EOPATTR	EQU	>02		; Bad open attribute
+EILLOP	EQU	>03		; Illegal Operation
+ENOSPAC	EQU	>04		; Out of table/buffer space
+EEOF	EQU	>05		; Attempt to read past eof
+EDEVERR	EQU	>06		; Any device failure
+EFILERR	EQU	>07		; Any file failure
+
+; Success code
+SUCCESS	EQU	>FF		; Returned from RPi if PAB will be handled.
+
+; Opcodes
+OPOPEN	EQU	>0000		; Open file
+OPCLOSE	EQU	>0100		; Close file
+OPREAD	EQU	>0200		; Read file
+OPWRITE	EQU	>0300		; Write file
+OPREST	EQU	>0400		; Restore/rewind record
+OPLOAD	EQU	>0500		; Load program image file
+OPSAVE	EQU	>0600		; Save program image file
+OPDEL	EQU	>0700		; Delete file
+OPSCRAT	EQU	>0800		; Scratch Record
+OPSTAT	EQU	>0900		; Status (varies if file is open or not, RPi should keep state)
+
+
+; Macros
+; Function calling support, such as a alt return address
+RET	EQU	>835C		; stash place for previous R11:  MOV R11,@RET   BL sendmsg  MOV @RET,R11
+VPAB	EQU	>835A		; once we compute the beginning of PAB in VDP we'll reuse this value.
+
+; Pattern of Register Usage - 
+;  R15 - VDPWA
+;  R10 - Base address of Workspace, many EQUs are relative to R10
+
+; TIPI Cleanup - used before exit
+cleanup
+	CLR	R0		; clean up output latches before we go.
+	MOVB	R0,@TDOUT
+	MOVB	R0,@TCOUT
+	RT
+
+; Handle requests to TIPI device
+tipidsr
+	LIMI	0		; I/O plays with VDP registers and relies on them
+	MOV	R11,@RET	; Stash the dsrlnk Return address
+	STWP	R10		; PAB equates are relative to R10, don't mess with R10
+	LI	R4,PABNAM	; Begin computing beginning of PAB
+	CLR	R9
+	A	*R4,R9
+	S	@PABNLE,R9	;   rewind to beginning of device name
+	LI	R2,>0A
+	S	R2,R9		;   rewind over PAB header
+; NOW R9 == V@PAB - beginning of VDP PAB, we will preserve that.
+	MOV	R9,@VPAB
+
+
+; Set VDP to read from beginning of PAB that is now in R0 and copy to scratchpad
+	.setvdpra R9
+	LI	R1,>09		; while r1 ne 0; do  (PAB is 10 bytes, but we never use the last OPTLEN)
+	MOV	R10,R2		;   R2 will be index relative to scratchpad
+!	MOVB	@VDPRD,@OPCODE(R2)	;   load from PAB in vdp
+	INC	R2		;   inc index... 
+	DEC	R1		;   r1 is our loop counter
+	JNE	-!		;   copy more bytes if R1 is not 0
+
+; Send request to RPi
+	LI	R0,>0A		; PAB is 10 bytes
+	MOV	R10,R1
+	AI	R1,OPCODE
+	BL	@sendmsg	; send the 10 byte PAB from scratchpad
+
+	MOV	@PABNAM,R1	; Begin computing beginning of PAB device name
+	S	@PABNLE,R1	;   rewind to beginning of device name (might need to only consume the LSB of PABNLE
+	DEC	R1		;   and back one more to get full device name length
+	.setvdpra R1
+	MOVB	@VDPRD,R0	; Initialize character counter
+	SRL	R0,8		;   just a byte
+	INC	R1		; Set address of beginning device name data.
+	BL	@vsendmsg	; send the full devicename
+
+; Handle result
+	LI	R0,1		; Set expectation to read 1 byte
+	MOV	R10,R1		; Set receive address to Workspace
+	AI	R1,R9LB		; add low byte address of R9 to receive address
+	CLR	R9		; clear value in R9 so MSB is 0.
+	BL	@recvmsg	; receive single byte response from TIPI into R9
+
+	CI	R9,EDVNAME	; If device name error ( such as we don't handle it )
+	JEQ	retskip
+	CI	R9,SUCCESS	; If not success, we'll pass the code back to the PAB
+	JEQ	hresponse
+
+	MOV	R9,R1
+	JNE	reterr
+
+; Return without handling device
+retskip
+	BL	@cleanup
+	MOV	@RET,R11
+	RT
+
+; Exit and return an error status back to OS, status expected in R1
+reterr
+	SRC	R1,3		;   move status to top 3 bits.
+	SOCB	@FLGSTS(R10),R1	;   merge with file flags so we don't overwrite them
+	MOV	@VPAB,R3	;   compose the address of status byte 
+	INC	R3		;   second byte in PAB
+	.setvdpwa R3
+	MOVB	R1,@VDPWD	;   write the status byte
+	BL	@cleanup
+	MOV	@RET,R11
+	INCT	R11
+	RT
+
+; RPi thinks it can handle this request :) Good news!
+
+; routines have gotten too far away for JMP instructions, so I need to 
+; compute a branch target
+
+handlers			; 2x opcode + handlers is address to branch to.
+	DATA	hopen
+	DATA	hclose
+	DATA	hread
+	DATA	hwrite
+	DATA	hrestore
+	DATA	hload
+	DATA	hsave
+	DATA	hdelete
+	DATA	retdone		; scratch opcode not implemented.
+	DATA	hstatus
+
+hresponse
+	CLR	R1		; switch on opcode in R1
+	MOVB	@OPCODE(R10),@R1LB(R10)
+	SLA	R1,1		; multiply by 2
+	AI	R1,handlers	; R1 now has address of handler reference
+	MOV	*R1,R1
+	B	*R1		; goto handler for opcode...
+
+; Handle OPCODE 0 - OPEN
+hopen
+	; quick hack, supposed to return record length if it is zero in the pab request...
+	LI	R0,1
+	MOV	R10,R1
+	AI	R1,R9MB		; Set recv buffer to address of R9 to read an int.
+	BL	@recvmsg	; R9 MSB now has record length of open file.
+	MOV	@VPAB,R3
+	AI	R3,RECLEN-OPCODE
+	.setvdpwa R3
+	MOVB	R9,@VDPWD
+	B	@retdone
+
+; Handle OPCODE 1 - CLOSE
+hclose
+	JMP	retdone
+
+; Handle OPCODE 2 - READ
+hread
+	MOV	@RECNUM(R10),R0
+	MOV	@BUFADR(R10),R1
+	BL	@vrecvmsg	; R0 is now number of bytes read in record
+	SWPB	R0
+	MOV	@VPAB,R3
+	AI	R3,CHRCNT-OPCODE
+	.setvdpwa R3
+	MOVB	R0,@VDPWD
+
+updaterec	; if RELATIVE mode, then we have to increment the record number
+	MOV	@OPCODE(R10),R1	; we'll only look at the 2nd byte @FLGSTS
+	ANDI	R1,1		; file-type 1 is RELATIVE
+	JEQ	retdone		; if SEQUENTIAL, then we are done.
+
+	MOV 	@RECNUM(R10),R1	; increment the VDP PAB record number
+	INC	R1
+	MOV	@VPAB,R3
+	AI	R3,RECNUM-OPCODE
+	.setvdpwa R3
+	MOVB	R1,@VDPWD
+	MOVB	@R1LB(R10),@VDPWD
+
+	JMP	retdone
+
+; Handle OPCODE 3 - WRITE
+hwrite
+	CLR	R0
+	MOVB	@CHRCNT(R10),R0
+	SWPB	R0
+	MOV	@BUFADR(R10),R1
+	BL	@vsendmsg
+	
+	LI	R0,1		; Set expectation to read 1 byte
+	MOV	R10,R1		; Set receive address to Workspace
+	AI	R1,R9LB		; add low byte address of R9 to receive address
+	CLR	R9		; clear value in R9 so MSB is 0.
+	BL	@recvmsg	; receive single byte response from TIPI into R9
+	CI	R9,SUCCESS
+	JEQ	updaterec
+	MOV	R9,R1
+	B	@reterr
+
+; Handle OPCODE 4 - Restore
+hrestore
+	; If a RELATIVE access mode is used, then the request has updated the PAB
+	; If a SEQUENTIAL access mode is used, the PI just needs to reset the incrementor
+	JMP	retdone		; No further work on TI side.
+
+; Handle response for OPCODE 5 - LOAD
+hload
+	MOV	@RECNUM(R10),R0	; VPD space left is limited
+	MOV	@BUFADR(R10),R1	; Set VDP location to load in to.
+	BL	@vrecvmsg 	; Load image data
+	JMP	retdone
+
+; Handle response for OPCODE 6 - OPSAVE
+hsave
+	MOV	@RECNUM(R10),R0
+	MOV	@BUFADR(R10),R1
+	BL	@vsendmsg
+
+	LI	R0,1		; Set expectation to read 1 byte
+	MOV	R10,R1		; Set receive address to Workspace
+	AI	R1,R9LB		; add low byte address of R9 to receive address
+	CLR	R9		; clear value in R9 so MSB is 0.
+	BL	@recvmsg	; receive single byte response from TIPI into R9
+	CI	R9,SUCCESS
+	JEQ	retdone
+	MOV	R9,R1
+	B	@reterr
+
+; Handle response for OPCODE 7 - OPDEL
+hdelete
+	JMP	retdone		; no further work for the TI side
+
+; Handle OPCODE 9 - STATUS
+hstatus
+	; Fetch status byte from TIPI and update in VDP PAB
+	LI	R0,1
+	MOV	R10,R1
+	AI	R1,R9MB		; Set recv buffer to address of R9 to read an int.
+	BL	@recvmsg	; R9 MSB now has status byte
+	MOV	@VPAB,R3
+	AI	R3,STATB-OPCODE
+	.setvdpwa R3
+	MOVB	R9,@VDPWD
+	JMP	retdone
+
+; 
+; Support 3 possible exit modes:
+;   tipi skips the device request
+;   tipi experiences an error
+;   tipi completes the request
+
+
+; Exit request complete
+retdone
+	BL	@cleanup
+	MOV	@RET,R11
+	INCT	R11
+	RT
+

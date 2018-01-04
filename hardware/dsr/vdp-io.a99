@@ -1,0 +1,133 @@
+
+; VDP IO Ports
+VDPRD	EQU	>8800		; VDP Read Data
+VDPST	EQU	>8802		; VDP Read Status
+VDPWA	EQU	>8C02		; VDP Write Address/Register
+VDPWD	EQU	>8C00		; VDP Write Data
+
+; VDP Flag for setting Write address
+VDWRITE	EQU	>4000		; ORI w/register holder target vdp write address.
+
+; Useful values if you have the WP in a register since VDP requires byte addressing
+; these can be used with offset addressing, like @R9LB(R10) after preparing R10 with STWP R10
+R0MB	EQU	>00
+R0LB	EQU	>01
+R1MB	EQU	>02
+R1LB	EQU	>03
+R2MB	EQU	>04
+R2LB	EQU	>05
+R3MB	EQU	>06
+R3LB	EQU	>07
+R4MB	EQU	>08
+R4LB	EQU	>09
+R5MB	EQU	>0A
+R5LB	EQU	>0B
+R6MB	EQU	>0C
+R6LB	EQU	>0D
+R7MB	EQU	>0E
+R7LB	EQU	>0F
+R8MB	EQU	>10
+R8LB	EQU	>11
+R9MB	EQU	>12
+R9LB	EQU	>13
+; R10 is where I store current WP
+; R11 is return usually
+; R12 is crubase usually
+; R13 is rtwp
+; R14 is ???
+; R15 is VDPWA
+
+
+
+; Macro - Set VDP read address
+        .defm setvdpra
+        SWPB    #1
+        MOVB    #1,@VDPWA
+        SWPB    #1
+        MOVB    #1,@VDPWA
+        .endm
+
+; Macro - Set VDP write address
+        .defm setvdpwa
+        ORI     #1,VDWRITE
+        SWPB    #1
+        MOVB    #1,@VDPWA
+        SWPB    #1
+        MOVB    #1,@VDPWA
+        .endm
+
+
+; BLWP routines for VDP operations like in EA
+
+; VDP Write To Register
+; R0 - MSB - Register to modify
+; R0 - LSB - Value to write
+VWTR
+	DATA	>83E0		Workspace 
+	DATA	uvmtr
+
+uvmtr
+	MOV	@R0MB(R13),R0
+	ORI	R0,>8000
+	.setvdpra R0
+	RTWP
+
+; VDP Multiple Byte Write 
+; R0 - VDP RAM desitination address
+; R1 - CPU RAM source address
+; R2 - number of bytes to write
+VMBW
+	DATA	>83E0		Workspace 
+	DATA	uvmbw
+
+uvmbw
+	MOV	@R0MB(R13),R0
+	MOV	@R1MB(R13),R1
+	MOV	@R2MB(R13),R2
+	.setvdpwa R0
+!	MOVB	*R1+,@VDPWD
+	DEC	R2
+	JNE	-!
+	RTWP
+
+; VDP Multiple Byte Read
+; R0 - CPU Destination
+; R1 - VDP Source address
+; R2 - number of bytes to read
+VMBR
+	DATA	>83E0		Workspace
+	DATA	uvmbr
+
+uvmbr
+	MOV	@R0MB(R13),R0
+	MOV	@R1MB(R13),R1
+	MOV	@R2MB(R13),R2
+	.setvdpra R1
+!	MOVB	@VDPRD,*R0+
+	DEC	R2
+	JNE	-!
+	RTWP
+	
+
+; VDP Copy
+; R0 - VDP RAM desitination address
+; R1 - CPU RAM source address
+; R2 - number of bytes to write
+VDPCPY
+	DATA	>83E0		Workspace 
+	DATA	uvdpcpy
+
+uvdpcpy
+	MOV	@R0MB(R13),R0
+	MOV	@R1MB(R13),R1
+	MOV	@R2MB(R13),R2
+!	.setvdpra R1
+	MOVB	@VDPRD,R4
+	.setvdpwa R0
+	MOVB	R4,@VDPWD
+	INC	R0
+	INC	R1
+	DEC	R2
+	JNE	-!
+	RTWP
+

@@ -1,0 +1,67 @@
+
+GPLWS	EQU	>83E0
+
+TIPICFG	BYTE	12
+	TEXT	"TIPI.TIPICFG"
+
+btipicfg
+	LIMI	0
+	; MOV	R11,@RET	; stash the return to basic
+	LWPI	WS		; We will eventually be using this workspace any, lets us use GPLWS for BLWP routines.
+	MOV	@>832C,R8	; get token pointer to play with
+
+	; create a PAB
+	LI	R0,VDPPAB	; destination: PAB in VDP
+	LI	R1,PAB		; source: PAB template in ROM
+	LI	R2,10		; length: 10 bytes.
+	BLWP	@VMBW		; copy LOAD pab template to VDP
+	AI	R0,9		; destination: length byte in VDP PAB
+	MOV	R8,R1		; source: string parameter to call tipi("
+	AI	R1,7		;   source is 7 bytes after call token as long as CALL is TIPI
+	.setvdpra R1
+	CLR	R9
+	MOV	@VDPRD,R9
+	CI	R9,0
+	JNE	copyname 
+	; otherwise use default name
+	LI	R1,TIPICFG
+	LI	R2,13
+	BLWP	@VMBW
+	JMP	loadfiles
+
+copyname
+	; R0 and R1 should still be set from above activity
+	MOV	R9,R2
+	SWPB	R2
+	INC	R2
+	BLWP	@VDPCPY		; copy VDP call param to VDP pab filename
+
+loadfiles
+	; Load and run the program images
+	B	@DOLOAD
+
+	; and return
+	; JMP	bok
+
+; bok
+;	SZCB	@>8342,@>8342	; clear byte for current token, terminates line
+;	JMP	bdone
+	
+; berror	
+;	LI	R0,>0700
+;	MOVB	R0,@>8342
+
+; bdone
+;	AI	R8,>08		; 'finish' parsing the sendtest command
+;	MOV	R8,@>832C
+;	SWPB	R8		; write new token pointer to vram for basic
+;	MOVB	R8,@VDPWA
+;	SWPB	R8
+;	MOVB	R8,@VDPWA
+;	MOV	R8,@>832C
+;	MOV	@RET,R11
+;	INCT	R11
+;	LI	R8,>4000
+;	SZCB	R8,@>8354
+;	RT
+

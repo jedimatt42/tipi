@@ -74,19 +74,17 @@ class VariableRecordFile(object):
             statByte |= STLEOF
         return statByte
 
+    def restore(self, pab):
+        self.currentRecord = 0
+
     def writeRecord(self, rdata, pab):
         self.dirty = True
-        recNo = recordNumber(pab)
-        if recNo != 0:
-            self.currentRecord = recNo
         if self.currentRecord >= len(self.records):
             self.records += [bytearray(0)] * (1 + self.currentRecord - len(self.records))
         self.records[self.currentRecord] = bytearray(rdata)
         self.currentRecord += 1
 
     def readRecord(self, idx):
-        if idx != 0:
-            self.currentRecord = idx
         record = self.getRecord(self.currentRecord)
         self.currentRecord += 1
         return record

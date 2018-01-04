@@ -12,7 +12,7 @@ class ti_files(object):
 
     PROGRAM = 0x01
     INTERNAL = 0x02
-    PROTECTED = 0x04
+    PROTECTED = 0x08
     VARIABLE = 0x80
 
     @staticmethod
@@ -43,6 +43,13 @@ class ti_files(object):
     @staticmethod
     def isProtected(bytes):
         return ti_files.flags(bytes) & ti_files.PROTECTED
+
+    @staticmethod
+    def setProtected(bytes,value):
+        if value != 0:
+            bytes[10] = bytes[10] | ti_files.PROTECTED
+        else:
+            bytes[10] = bytes[10] ^ ti_files.PROTECTED
 
     @staticmethod
     def isVariable(bytes):
@@ -123,20 +130,23 @@ class ti_files(object):
         return ((ti_files.getSectors(bytes) - 1) * 256) + eofsize
 
     @staticmethod
-    def dsrFileType(bytes):
+    def catFileType(bytes):
+        protected = 1
+	if ti_files.isProtected(bytes):
+            protected = -1
         if ti_files.isProgram(bytes):
-            return 5
+            return 5 * protected
 
         if ti_files.isInternal(bytes):
             if ti_files.isVariable(bytes):
-                return 4
+                return 4 * protected
             else:
-                return 3
+                return 3 * protected
         else:
             if ti_files.isVariable(bytes):
-                return 2
+                return 2 * protected
             else:
-                return 1
+                return 1 * protected
 
         return 0
 

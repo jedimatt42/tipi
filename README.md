@@ -6,8 +6,6 @@ Turn a Raspberry PI and some glue hardware into a TI Disk Drive and Network inte
 
 Keep it open for further device extension.
 
-# Level 2 IO (sector like) is not yet supported. You cannot use apps like DM2K to copy files yet.
-
 What can we do:
 
 DSR for file READ support:
@@ -40,14 +38,24 @@ DSR devices:
 * DSK1. 
 * DSK2. 
 * DSK3. 
+* DSK4.
 * DSK.
+* WDS1. ( If in HFDC mode )
+
+DSK Mode, and HFDC mode supported to support Level 2 IO in the company of other 
+controller cards. Switchable via EASY BUG, C1006=1 for HFDC mode, C1006=0 for DSK mode.
+
+>x0 (sector read/write) is not supported. All other Level 2 routines are, for copying
+files, or making directories, etc...
 
 Special files:
 
-* TIPI.CLOCK - reading a DISPLAY 24 record returns asctime (time & date as string)
-* TIPI.STATUS - virtual D/V 80 file with list of network device info on PI. (mac addresses, and ip addresses for each network device )
-* TIPI.HTTP://... - GETs an HTTP url and let you access it like a normal file.
-* TIPI.TCP=hostname:port - open a socket, write opcode supported to write, read to read... 
+* PI.CLOCK - reading a DISPLAY 24 record returns asctime (time & date as string)
+* PI.STATUS - virtual D/V 80 file with list of network device info on PI. (mac addresses, and ip addresses for each network device )
+* PI.HTTP://... - GETs an HTTP url and let you access it like a normal file.
+* PI.TCP=hostname:port - open a socket, write opcode supported to write, read to read... 
+* PI.STATUS - virtual D/V 80 file with version and network information.
+* PI.CONFIG - virtual D/V 80 file for configuration of TIPI services.
 
 File name transformation:
 

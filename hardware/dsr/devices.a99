@@ -4,6 +4,10 @@
 ;  R11 == Return address
 ;  R12 == CRUBASE of current device
 ; Available Scratchpad: >834A - >836D (inclusive) (except?? >8354 and >8356 are preset to locate PAB in VDP)
+;  TIPI will pass to other controllers, so the DSRLNK setup must be preserved. Top of FAC is device name
+;  If TIPI is responding, that is 4 bytes at most. However, 8355 is the name length. Leaving only 7 bytes
+;  So I've chosen CPAB (>8364->836D) and the rest of the code must operate with the R0-R10 of the GPLWS
+ 
 
 ; This will be all about interacting with PABs in VDP and IO to the Raspberry PI
 
@@ -12,19 +16,20 @@ PABNAM	EQU	>8356		; Address in VDP of Device Name
 PABNLE	EQU	>8354		; Length of name (?only trust the LSB?)
 ; PAB begins at VDP address pointed to by: @>8356 - @>8354 - >0A
 
-; There is room in PAD for the 10 byte header at FAC (floating point accumulator)
+; There is room in PAD for the 10 byte header at CPAB
 ;   These equates are relative to WP at DSR entry. (We store that in R10)
 PAD	EQU	->E0		; Beginning of scratchpad ram
-FAC	EQU	PAD+>4A		; 36 bytes available to DSR We'll copy the PAB header here.
-OPCODE	EQU	FAC+>0		; PAB - location of opcode after copied
-FLGSTS	EQU	FAC+>1		; PAB - [blah][blah]
-BUFADR	EQU	FAC+>2		; PAB - address of read or write buffer
-RECLEN	EQU	FAC+>4		; PAB - logical record length
-CHRCNT	EQU	FAC+>5		; PAB - character count
-RECNUM	EQU	FAC+>6		; PAB - record number
-SCNOFF	EQU	FAC+>8		; PAB - screen offset
+FAC	EQU	PAD+>4A		; Some of this must be preserved for DSRLNK, some is available
+CPAB	EQU	PAD+>64		; Supposedly memory up to 836D is available ( 15 bytes )
+
+OPCODE	EQU	CPAB+>0		; PAB - location of opcode after copied
+FLGSTS	EQU	CPAB+>1		; PAB - [blah][blah]
+BUFADR	EQU	CPAB+>2		; PAB - address of read or write buffer
+RECLEN	EQU	CPAB+>4		; PAB - logical record length
+CHRCNT	EQU	CPAB+>5		; PAB - character count
+RECNUM	EQU	CPAB+>6		; PAB - record number
+SCNOFF	EQU	CPAB+>8		; PAB - screen offset
 STATB 	EQU	SCNOFF		; Alias for when SCNOFF makes no sense.
-OPTLEN	EQU	FAC+>9		; PAB - option length
 
 ; Error codes - RPi will return one of these or SUCCESS after evaluating PAB and device name.
 EDVNAME	EQU	>00		; Bad device name
@@ -73,7 +78,6 @@ tipidsr
 	LIMI	0		; I/O plays with VDP registers and relies on them
 	MOV	R11,@RET	; Stash the dsrlnk Return address
 	STWP	R10		; PAB equates are relative to R10, don't mess with R10
-
 	LI	R4,PABNAM	; Begin computing beginning of PAB
 	CLR	R9
 	A	*R4,R9
@@ -86,7 +90,7 @@ tipidsr
 
 ; Set VDP to read from beginning of PAB that is now in R0 and copy to scratchpad
 	.setvdpra R9
-	LI	R1,>0A		; while r1 ne 0; do
+	LI	R1,>09		; while r1 ne 0; do  (PAB is 10 bytes, but we never use the last OPTLEN)
 	MOV	R10,R2		;   R2 will be index relative to scratchpad
 !	MOVB	@VDPRD,@OPCODE(R2)	;   load from PAB in vdp
 	INC	R2		;   inc index... 
@@ -116,7 +120,7 @@ tipidsr
 	BL	@recvmsg	; receive single byte response from TIPI into R9
 
 	CI	R9,EDVNAME	; If device name error ( such as we don't handle it )
-	JEQ	tipipass
+	JEQ	retskip
 	CI	R9,SUCCESS	; If not success, we'll pass the code back to the PAB
 	JEQ	hresponse
 
@@ -124,7 +128,7 @@ tipidsr
 	JNE	reterr
 
 ; Return without handling device
-tipipass
+retskip
 	BL	@cleanup
 	MOV	@RET,R11
 	RT
@@ -137,42 +141,35 @@ reterr
 	INC	R3		;   second byte in PAB
 	.setvdpwa R3
 	MOVB	R1,@VDPWD	;   write the status byte
-	B	@retdone
+	BL	@cleanup
+	MOV	@RET,R11
+	INCT	R11
+	RT
 
 ; RPi thinks it can handle this request :) Good news!
+
+; routines have gotten too far away for JMP instructions, so I need to 
+; compute a branch target
+
+handlers			; 2x opcode + handlers is address to branch to.
+	DATA	hopen
+	DATA	hclose
+	DATA	hread
+	DATA	hwrite
+	DATA	hrestore
+	DATA	hload
+	DATA	hsave
+	DATA	hdelete
+	DATA	retdone		; scratch opcode not implemented.
+	DATA	hstatus
+
 hresponse
 	CLR	R1		; switch on opcode in R1
-	MOVB	@OPCODE(R10),R1
-
-	CI	R1,OPOPEN
-	JEQ	hopen
-
-	CI	R1,OPCLOSE
-	JEQ	hclose
-
-	CI	R1,OPREAD
-	JEQ	hread
-
-	CI	R1,OPWRITE
-	JEQ	hwrite
-
-	CI	R1,OPLOAD
-	JEQ	hload
-
-	CI	R1,OPSAVE
-	JEQ	hsave
-
-	CI	R1,OPSTAT
-	JEQ	hstatus
-
-	CI	R1,OPREST
-	JEQ	hrestore
-
-	CI	R1,OPDEL
-	JEQ	hdelete
-
-	LI	R1,EDEVERR	;   default: return device error
-	JMP	reterr
+	MOVB	@OPCODE(R10),@R1LB(R10)
+	SLA	R1,1		; multiply by 2
+	AI	R1,handlers	; R1 now has address of handler reference
+	MOV	*R1,R1
+	B	*R1		; goto handler for opcode...
 
 ; Handle OPCODE 0 - OPEN
 hopen
@@ -201,12 +198,20 @@ hread
 	AI	R3,CHRCNT-OPCODE
 	.setvdpwa R3
 	MOVB	R0,@VDPWD
+
+updaterec	; if RELATIVE mode, then we have to increment the record number
+	MOV	@OPCODE(R10),R1	; we'll only look at the 2nd byte @FLGSTS
+	ANDI	R1,1		; file-type 1 is RELATIVE
+	JEQ	retdone		; if SEQUENTIAL, then we are done.
+
 	MOV 	@RECNUM(R10),R1	; increment the VDP PAB record number
 	INC	R1
 	MOV	@VPAB,R3
 	AI	R3,RECNUM-OPCODE
 	.setvdpwa R3
 	MOVB	R1,@VDPWD
+	MOVB	@R1LB(R10),@VDPWD
+
 	JMP	retdone
 
 ; Handle OPCODE 3 - WRITE
@@ -223,12 +228,14 @@ hwrite
 	CLR	R9		; clear value in R9 so MSB is 0.
 	BL	@recvmsg	; receive single byte response from TIPI into R9
 	CI	R9,SUCCESS
-	JEQ	retdone
+	JEQ	updaterec
 	MOV	R9,R1
 	B	@reterr
 
 ; Handle OPCODE 4 - Restore
 hrestore
+	; If a RELATIVE access mode is used, then the request has updated the PAB
+	; If a SEQUENTIAL access mode is used, the PI just needs to reset the incrementor
 	JMP	retdone		; No further work on TI side.
 
 ; Handle response for OPCODE 5 - LOAD

@@ -29,7 +29,7 @@ def configureWifi(wificonfig):
                     fh_out.write(line)
 
         # reload the new wpa_supplicant.conf
-        callargs = ["/sbin/wpa_cli", "reconfigure"]
+        callargs = ["/sbin/reboot", "now"]
         if call(callargs) != 0:
             raise Exception("failed to reload configuration")
 

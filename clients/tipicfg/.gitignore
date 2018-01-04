@@ -1,0 +1,10 @@
+.idea
+*.o
+*.i
+*.s
+*.bin
+*.elf
+mapfile
+TIPICFG
+TIPICFH
+TIPICFG.*

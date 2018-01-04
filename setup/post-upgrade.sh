@@ -1,5 +1,8 @@
 #!/bin/bash
 
+su tipi -c "/home/tipi/tipi/services/libtipi/rebuild.sh"
+su tipi -c "cp /home/tipi/tipi/setup/bin/* /home/tipi/tipi_disk/"
+
 cd /home/tipi/tipi/setup/
 
 systemctl stop tipiwatchdog.service

@@ -9,25 +9,29 @@ from ti_files import ti_files
 from tinames import tinames
 from tifloat import tifloat
 from Pab import *
+from TipiConfig import TipiConfig
 
 logger = logging.getLogger(__name__)
 
+tipi_config = TipiConfig.instance()
+
 class CatalogFile(object):
 
-    def __init__(self, localpath):
+    def __init__(self, localpath, devname):
         self.recNum = 0
         self.localpath = localpath
+        self.devname = devname
         self.records = self.__loadRecords()
 
     @staticmethod
-    def load(path, pab):
+    def load(path, pab, devname):
         if mode(pab) == INPUT and dataType(pab) == INTERNAL and recordType(pab) == FIXED:
             # since it is a directory the recordlength is 38, often it is opened with no value.
             # TODO: if they specify the longer filename record length, and recordType, then this will be different
             #       for implementation of long file name handling
             if recordLength(pab) == 0 or recordLength(pab) == 38:
                 # TODO: load all the directory records upfront
-                return CatalogFile(path)
+                return CatalogFile(path, devname)
 
     def getRecordLength(self):
         return 38
@@ -58,7 +62,15 @@ class CatalogFile(object):
         return recs
 
     def __createVolumeData(self):
-        return self.__encodeDirRecord("TIPI", 0, 1440, 1438)
+        volumeName = os.path.basename(self.localpath)
+        if self.devname.startswith(("WDS1.","DSK4.","DSK0.","TIPI.")):
+            volumeName = "TIPI"
+        else:
+            drive = self.devname.split('.')[0]
+            parts = tipi_config.get(drive + "_DIR").split('.')
+            volumeName = parts[-1]
+            
+        return self.__encodeDirRecord(volumeName, 0, 1440, 1438)
 
     def __createFileCatRecords(self):
         files = sorted(list(filter(lambda x: 
@@ -82,7 +94,7 @@ class CatalogFile(object):
 
                 header = bytearray(fh.read()[:128])
 
-                ft = ti_files.dsrFileType(header)
+                ft = ti_files.catFileType(header)
                 sectors = ti_files.getSectors(header) + 1
                 recordlen = ti_files.recordLength(header)
                 return self.__encodeDirRecord(f, ft, sectors, recordlen)

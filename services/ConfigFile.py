@@ -29,6 +29,8 @@ class ConfigFile(object):
             self.read(pab, devname)
         elif op == WRITE:
             self.write(pab, devname)
+        elif op == STATUS:
+            self.status(pab, devname)
         else:
             self.tipi_io.send([EOPATTR])
 
@@ -67,3 +69,11 @@ class ConfigFile(object):
         value = msg.split('=')[1].strip()
         self.tipi_config.set(key, value)
         self.tipi_io.send([SUCCESS])
+
+    def status(self, pab, devname):
+        self.tipi_io.send([SUCCESS])
+	if len(self.tipi_config.keys()) < (self.currentRecord + 1):
+            self.tipi_io.send([STVARIABLE | STLEOF])
+            return
+        self.tipi_io.send([STVARIABLE])
+

@@ -14,11 +14,12 @@ dv80suffixes = (".txt", ".a99", ".b99", ".bas", ".xb")
 
 class NativeFile(object):
 
-    def __init__(self, records, recordLength, statByte):
+    def __init__(self, records, recordLength, statByte,pab):
         self.records = records
         self.currentRecord = 0
         self.recordLength = recordLength
         self.statByte = statByte
+        self.filetype = fileType(pab)
 
     @staticmethod
     def load(unix_file_name, pab):
@@ -40,7 +41,7 @@ class NativeFile(object):
                 statByte = 0
                 if dataType(pab):
                     statByte |= STINTERNAL
-            return NativeFile(records, recLen, statByte)
+            return NativeFile(records, recLen, statByte,pab)
 
         except Exception as e:
             logger.exception("not a valid NativeFile %s", unix_file_name)
@@ -86,8 +87,14 @@ class NativeFile(object):
             statByte |= STLEOF
         return statByte
 
+    def restore(self, pab):
+        if filetype == RELATIVE:
+            self.currentRecord = recordNumber(pab)
+        else:
+            self.currentRecord = 0
+
     def readRecord(self, idx):
-        if idx != 0:
+        if filetype == RELATIVE:
             self.currentRecord = idx
         record = self.getRecord(self.currentRecord)
         self.currentRecord += 1

@@ -233,6 +233,30 @@ class TipiDisk(object):
     def handleRestore(self, pab, devname):
         logger.info("Opcode 4 Restore - %s", devname)
         logPab(pab)
+        localPath = tinames.devnameToLocal(devname)
+        if localPath is None:
+            logger.info("Passing to other controllers")
+            self.sendErrorcode(EDVNAME)
+            return
+
+        if localPath not in self.openFiles:
+            # pass as well
+            self.sendErrorCode(EDVNAME)
+            return
+
+        try:
+            open_file = self.openFiles[localPath]
+            if open_file == None:
+                self.sendErrorCode(EFILERR)
+                return
+
+            open_file.restore(pab)
+            self.sendSuccess()
+
+        except Exception as e:
+            traceback.print_exc()
+            self.sendErrorCode(EFILERR)
+
         self.sendErrorCode(EDEVERR)
 
     def handleLoad(self, pab, devname):

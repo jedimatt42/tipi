@@ -76,6 +76,7 @@ class FixedRecordFile(object):
         return statByte
 
     def restore(self, pab):
+        logger.debug("restore for file type: %d", self.filetype)
         if self.filetype == RELATIVE:
             self.currentRecord = recordNumber(pab)
         else:

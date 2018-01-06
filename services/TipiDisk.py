@@ -257,8 +257,6 @@ class TipiDisk(object):
             traceback.print_exc()
             self.sendErrorCode(EFILERR)
 
-        self.sendErrorCode(EDEVERR)
-
     def handleLoad(self, pab, devname):
         logger.info("Opcode 5 LOAD - %s", devname)
         logPab(pab)

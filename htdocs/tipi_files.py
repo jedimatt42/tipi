@@ -87,14 +87,12 @@ def catalog(path):
             edit_link = ''
             dl_link = '<a href="/files/' + path + '/' + item + '?action=download">Download</a>'
             
-            if ti_files.isTIBasicPrg(item_path):
-                icon = '<img src="/images/BASIC.png" width=36>'
-                type = 'TI'
-                edit_link = '<a href="/edit_basic_file?file_name=' + path + '/' + item + '&rp=/files/' + path + '">Edit</a>'
-            
-            elif ti_files.isTiFile(item_path):
+            if ti_files.isTiFile(item_path):
                 icon = '<img src="/images/ti_logo_icon.jpg" width=22>'
                 type = 'TI'
+                if ti_files.isTIBasicPrg(item_path):
+                    icon = '<img src="/images/BASIC.png" width=36>'
+                    edit_link = '<a href="/edit_basic_file?file_name=' + path + '/' + item + '&rp=/files/' + path + '">Edit</a>'
                 
             else:
                 icon = '<img src="/images/clearpixel.gif" width=30>'

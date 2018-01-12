@@ -42,11 +42,18 @@ class ti_files(object):
     def isTIBasicPrg(filename):     # Returns true if file is a PRG file and is detected to be BASIC.
         # First let's see if it's in FIAD format format or not.
         #
+        if not ti_files.isTiFile(filename):
+            return False
+
         try:
             prg_tmp_file = '/tmp/' + str(uuid.uuid4()) + '.tmp'
             bas_tmp_file = '/tmp/' + str(uuid.uuid4()) + '.tmp'
 
-            call(['xdm99.py', '-P', filename, '-o', prg_tmp_file])
+            with open(filename, "rb") as tifile:
+                with open(prg_tmp_file, "wb") as program:
+                    bytes = bytearray(tifile.read())[128:]
+                    program.write(bytes)
+
             call(['xbas99.py', '-d', prg_tmp_file, '-o', bas_tmp_file])         
             
             with open(bas_tmp_file, 'r') as f:
@@ -56,29 +63,10 @@ class ti_files(object):
                 return True
 
         except Exception as e:
-            pass
+            return False
             
-        try:
-            bas_tmp_file = '/tmp/' + str(uuid.uuid4()) + '.tmp'
-        
-            call(['xbas99.py', '-d', filename, '-o', bas_tmp_file])
-            
-            with open(bas_tmp_file, 'r') as f:
-                line = f.readline()
-            
-            if re.match(r"^\d+\s(\w+|\!)", line) is not None:
-                return True
-
-        except Exception as e:
-            traceback.print_exc()
-            pass
 
         return False
-
-
-
-
-
 
 
 

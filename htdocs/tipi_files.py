@@ -10,17 +10,27 @@ import os
 import time
 import errno
 import logging
+import tipi_cache
 
 logger = logging.getLogger(__name__)
 
 tipi_disk_base = '/home/tipi/tipi_disk' 
 
-def newDir(path,dir):
-    logger.debug("creating directory %s/%s", path, dir)
-    if dir.contains("."):
+icons = { 'basic': '<img src="/images/basic_icon.png" width=22 title="BASIC PROGRAM">',
+          'tifile': '<img src="/images/ti_logo_icon.jpg" width=22 title="TIFILES">',
+          'native': '<img src="/images/badfile_icon.png" width=22 title="OS Native File">'
+}
+
+download_template = '<a href="/files/%s/%s?action=download"><img src="/images/download_icon.png" width=32 title="Download File"/></a>'
+
+editlink_template = '<a href="/edit_basic_file?file_name=%s/%s&rp=/files/%s"><img src="/images/edit_icon.png" width=22 title="Edit File"/></a>'
+
+def newdir(path,newdir):
+    logger.debug("creating directory %s/%s", path, newdir)
+    if '.' in newdir:
         raise
     try:
-        os.makedirs(tipi_disk_base + filePath + '/' + newDir)
+        os.makedirs(tipi_disk_base + path + '/' + newdir)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
@@ -34,6 +44,7 @@ def download(path):
 
 
 def catalog(path):
+    logger.debug("generating catalog for: %s", path)
     tipi_subdirs = []
     tipi_files = []
 
@@ -54,6 +65,8 @@ def catalog(path):
             new_path = '/' + new_path
     
         tipi_subdirs.append( { 'icon' : '<div class="tooltip"><a href="/files%s"><img src="/images/dots.png" width=16 border=0 alt="Go to parent directory"></a> &nbsp; <span class="tooltiptext">Return to parent directory</span></div>' % new_path,
+                               'name' : '&lt;parent&gt;',
+                               'longname' : None,
                              }
                            )
    
@@ -73,47 +86,42 @@ def catalog(path):
 
             item = '/' + item
         
-            tipi_subdirs.append( { 'name'      : item_display_path,
-                                   #'type'      : 'subdir',
-                                   'icon'   : '<a href="/files%s"><img src="/images/folder_icon.png" width=22 border=0></a>' %item,
+            tipi_subdirs.append( { 'name': item_display_path,
+                                   'type': 'DIR',
+                                   'icon': '<a href="/files%s"><img src="/images/folder_icon.png" width=22 border=0></a>' %item,
+                                   'longname': None,
                                  }
                                )
 
         else:
             # Determine file type:
             #
-            icon = ''
-            type = ''
+            fileInfo = tipi_cache.lookupFileInfo(item_path)
+            icon = icons[fileInfo['icon']]
+            type = fileInfo['type']
+            tiname = fileInfo['tiname']
             edit_link = ''
-            dl_link = '<a href="/files/' + path + '/' + item + '?action=download">Download</a>'
-            
-            if ti_files.isTiFile(item_path):
-                icon = '<img src="/images/ti_logo_icon.jpg" width=22>'
-                type = 'TI'
-                if ti_files.isTIBasicPrg(item_path):
-                    icon = '<img src="/images/BASIC.png" width=36>'
-                    edit_link = '<a href="/edit_basic_file?file_name=' + path + '/' + item + '&rp=/files/' + path + '">Edit</a>'
-                
+            date = time.strftime("%b %d %Y %H:%M:%S", time.gmtime(os.path.getmtime(item_path)))
+
+            dl_link = download_template % (path, item)
+            if fileInfo['icon'] == 'basic':
+                edit_link = editlink_template % (path, item, path)
+          
+
+            if tiname != item:
+                longname = item
             else:
-                icon = '<img src="/images/clearpixel.gif" width=30>'
-                type = ' '
-            
-            
-            if item_path.endswith('.b99'):
-                edit_link = '<a href="/edit_b99_file?file_name=' + path + '/' + item + '&rp=/files/' + path + '">Edit</a>'
+                longname = None
         
-            tipi_files.append( { 'name'      : item,
+            tipi_files.append( { 'icon'      : icon,
+                                 'name'      : tiname,
                                  'size'      : os.stat(item_path).st_size,
-                                 # 'date'      : time.ctime(os.path.getmtime(item_path)),
-                                 'date'      : time.strftime("%b %d %Y %H:%M:%S", time.gmtime(os.path.getmtime(item_path))),
-                                 'icon'      : icon,
+                                 'date'      : date,
                                  'edit_link' : edit_link,
                                  'dl_link'   : dl_link,
-                                 
                                  'type'      : type,
-                               #  'full_path' : os.path.join(root, file_name),
-                               }
-                             )
+                                 'longname'  : longname,
+                               } )
 
     tipi_dir_listing = tipi_subdirs
     tipi_dir_listing.extend(tipi_files)

@@ -152,7 +152,7 @@ def files(path):
             edit_link = ''
             dl_link = ''
             
-            if ti_files.isTIBasicPrg(item_path):
+            if ti_files.isTiBasicPrg(item_path):
                 icon = '<img src="/images/BASIC.png" width=36>'
                 type = 'TI'
                 edit_link = '<a href="/edit_basic_file?file_name=' + path + '/' + item + '&rp=/files/' + path + '">Edit</a>'

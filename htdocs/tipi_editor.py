@@ -21,6 +21,12 @@ def load(file_name):
     edit_file_path = os.path.join(tipi_disk_base, file_name)
     file_contents = basicContents(edit_file_path)
 
+    # If it isn't a BASIC PROGRAM IMAGE, then try plain file
+    if not file_contents:
+        if file_name.lower().endswith(basicSuffixes):
+            with open(edit_file_path, "rb") as fh:
+                file_contents = fh.read()
+
     editor_data = { 'file_contents': file_contents, 
                     'file_name': file_name,
                     'status_message': '' }

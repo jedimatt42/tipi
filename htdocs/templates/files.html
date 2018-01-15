@@ -93,8 +93,7 @@ function checkFields(f) {
     <tr>
         <td nowrap>
                     <form name="f" action="/uploadFile" method=post enctype="multipart/form-data" onSubmit="return checkFields(this);">
-                    <input type=hidden name="rp" value="{{ rp }}">
-                    <input type=hidden name="path" value="{{ path }}">
+                    <input type=hidden name="path" value="{{ display_path }}">
                     Upload File to {{ display_path }}: <input type="file" name="upload_file" onClick="f.uploadFileSubmit.value=' Upload ';f.uploadFileSubmit.disabled=false;"> 
                     <input name="uploadFileSubmit" id="uploadFileSubmit" type=submit value=" Upload ">
                     </form>

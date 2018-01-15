@@ -12,7 +12,7 @@ from tinames import tinames
 # to speed up web management
 #
 
-logger = logging.getLogger('TipiMonitor')
+logger = logging.getLogger('tipi_monitor')
 tipi_disk = '/home/tipi/tipi_disk'
 
 

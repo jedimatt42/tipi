@@ -77,13 +77,11 @@
 
 
 <!-- <form method=post name="BASIC" onSubmit="return checkChangeFlag();">-->
-<form method=post name="BASIC">
+<form method=post name="BASIC" action="/save_basic_file">
 
-<input type=hidden name=action value="save_basic_file">
 <input type=hidden name=file_name value="{{ file_name }}">
 <input type=hidden name="changeFlag" value="0">
-
-<input type=hidden name=rp value="{{ rp }}">
+<input type=hidden name="rp" value="{{ rp }}">
 
 <table align=center>
 <tr><td> <div class="ti99">Editing: {{ file_name }}</div> </td></tr>

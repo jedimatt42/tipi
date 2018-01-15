@@ -80,10 +80,8 @@ function checkFields(f) {
          <td> 
                         <input id="newBasicFileButton" type=button value=" Create new BASIC file in: {{ display_path }} " onClick="document.getElementById('newBasicFileButton').style.display='none'; document.getElementById('newBasicFileForm').style.display='block';document.getElementById('file').focus();"> 
                         <div id="newBasicFileForm" style="display:none">
-                        <form method=post action="/edit_basic_file">
-                        <input type=hidden name="action" value="create_new_basic_file">
-                        <input type=hidden name="rp" value="{{ rp }}">
-                        <input type=hidden name="path" value="{{ path }}">
+                        <form method=post action="/new_basic_file">
+                        <input type=hidden name="path" value="{{ display_path }}">
                         <input type="text" id="file" size=32 name="file" placeholder="New BASIC Filename">
                         <input type=submit value=" Create ">
                         </form>

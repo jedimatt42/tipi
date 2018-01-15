@@ -74,10 +74,22 @@ def edit_basic_file():
 
 @app.route('/save_basic_file', methods=['POST'])
 def save_basic_file():
-    # probably wrong... files is attachements, and the big text box is problably
-    # just a form field....
-    rp = editor.save(request.form.get('path'), request.files['upload_file'])
-    return redirect(rp)
+    logger.debug("save basic request: %s", request)
+    file_data = tipi_editor.save(request.form.get('file_name'), request.form.get('file_contents'))
+    rp = request.form.get('rp')
+    if request.form.get('saveAndExit'):
+        return redirect(rp)
+    else:
+        file_data['rp'] = rp
+        return render_template('edit_basic_file.html', **file_data)
+
+@app.route('/new_basic_file', methods=['POST'])
+def new_basic_file():
+    path = request.form.get('path')
+    filename = request.form.get('file')
+    file_data = tipi_editor.new(path + '/' + filename)
+    file_data['rp'] = createFileUrl(path)
+    return render_template('edit_basic_file.html', **file_data)
 
 #
 # Tipi Admin

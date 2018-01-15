@@ -30,7 +30,8 @@ def send_image(path):
     
 @app.route('/')
 def home():
-    return render_template('home.html')
+    rp = createFileUrl('/')
+    return redirect(rp)
 
 @app.route('/css/<path:path>')
 def send_css(path):
@@ -41,7 +42,7 @@ def send_css(path):
 #
 
 @app.route('/files', defaults = {'path': ''}, methods=['GET'])
-@app.route('/files/<path:path>')
+@app.route('/files/<path:path>', methods=['GET'])
 def files(path):
     catalog = tipi_files.catalog(path)
     return render_template('files.html', **catalog)
@@ -69,7 +70,7 @@ def newdir():
 @app.route('/edit_basic_file', methods=['GET'])
 def edit_basic_file():
     file_data = tipi_editor.load(request.args.get('file_name'))
-    file_data['rp'] = request.args.get('rp')
+    file_data['rp'] = createFileUrl(request.args.get('path'))
     return render_template('edit_basic_file.html', **file_data)
 
 @app.route('/save_basic_file', methods=['POST'])
@@ -110,7 +111,7 @@ def shutdownnow():
     return render_template('shutdown.html')
 
 def createFileUrl(path):
-    if path == '/':
+    if path == '/' or path == '':
         return '/files'
     else:
-        return '/files' + path
+        return '/files' + '/' + path

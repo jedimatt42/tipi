@@ -18,7 +18,7 @@ basicSuffixes = ('.b99', '.bas', '.xb')
 tipi_disk_base = '/home/tipi/tipi_disk' 
 
 def load(file_name):
-    edit_file_path = os.path.join(tipi_disk_base, file_name)
+    edit_file_path = tipi_disk_base + '/' + file_name
     file_contents = basicContents(edit_file_path)
 
     # If it isn't a BASIC PROGRAM IMAGE, then try plain file

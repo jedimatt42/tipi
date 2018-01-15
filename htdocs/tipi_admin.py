@@ -1,5 +1,3 @@
-# route.py
-#
 # TIPI web administration
 #
 # Corey J. Anderson ElectricLab.com 2017

@@ -1,5 +1,3 @@
-# file_manager.py
-#
 # TIPI web administration
 #
 # Corey J. Anderson ElectricLab.com 2017

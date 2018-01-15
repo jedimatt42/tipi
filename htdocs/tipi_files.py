@@ -23,7 +23,7 @@ icons = { 'basic': '<img src="/images/basic_icon.png" width=22 title="BASIC PROG
 
 download_template = '<a href="/files/%s/%s?action=download"><img src="/images/download_icon.png" width=32 title="Download File"/></a>'
 
-editlink_template = '<a href="/edit_basic_file?file_name=%s/%s&rp=/files/%s"><img src="/images/edit_icon.png" width=22 title="Edit File"/></a>'
+editlink_template = '<a href="/edit_basic_file?file_name=%s/%s&path=%s"><img src="/images/edit_icon.png" width=22 title="Edit File"/></a>'
 
 def newdir(path,newdir):
     logger.debug("creating directory %s/%s", path, newdir)

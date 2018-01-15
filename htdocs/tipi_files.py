@@ -100,6 +100,7 @@ def catalog(path):
             icon = icons[fileInfo['icon']]
             type = fileInfo['type']
             tiname = fileInfo['tiname']
+            size = fileInfo['size']
             edit_link = ''
             date = time.strftime("%b %d %Y %H:%M:%S", time.gmtime(os.path.getmtime(item_path)))
 
@@ -115,7 +116,7 @@ def catalog(path):
         
             tipi_files.append( { 'icon'      : icon,
                                  'name'      : tiname,
-                                 'size'      : os.stat(item_path).st_size,
+                                 'size'      : size,
                                  'date'      : date,
                                  'edit_link' : edit_link,
                                  'dl_link'   : dl_link,

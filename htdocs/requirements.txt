@@ -1,10 +1,8 @@
+Flask==0.12.2
+Jinja2==2.9.6
+MarkupSafe==1.0
+Werkzeug==0.12.2
 click==6.7
 crccheck==0.6
-Flask==0.12.2
-itsdangerous==0.24
-Jinja2==2.10
-MarkupSafe==1.0
-Pillow==4.0.0
-RPi.GPIO==0.6.3
-virtualenv==15.1.0
-Werkzeug==0.12.2
+inotify==0.2.9
+pysqlite==2.8.3

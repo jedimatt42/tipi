@@ -47,22 +47,23 @@ def deleteMissing():
     conn.commit()
     sql.close()
 
-    logger.debug("finding all existing files")
-    for root, subdirs, files in os.walk(tipi_disk):
-        for filename in files:
-            cachedFiles.remove(os.path.join(root.decode('utf-8'), filename.decode('utf-8')))
-
-    logger.debug("purging %d cache entries", len(cachedFiles))
     for name in cachedFiles:
-        deleteFileInfo(name)
+        if not os.path.exists(os.path.join(tipi_disk, name)):
+            deleteFileInfo(name)
 
 def deleteFileInfo(name):
-    logger.info("Deleted %s", name)
+    logger.info("Deleting cache for %s", name)
     sql = conn.cursor()
-    sqlargs = (name,)
-    sql.execute('DELETE FROM fileheader WHERE name == ?', sqlargs)
-    conn.commit()
-    sql.close()
+    try: 
+        sql = conn.cursor()
+        sqlargs = (name,)
+        sql.execute('DELETE FROM fileheader WHERE name == ?', sqlargs)
+        conn.commit()
+    except Exception as e:
+        logger.error("failed to delete %s", name)
+    finally:
+        sql.close()
+        
 
 def lookupFileInfo(name):
     logger.debug("looking up file info for %s", name)
@@ -89,11 +90,15 @@ def updateFileInfo(name):
     if os.path.isdir(name):
         logger.debug("skipping directory")
         return
-    sql = conn.cursor()
     sqlargs = _getFileInfo(name)
-    sql.execute('REPLACE INTO fileheader VALUES (?, ?, ?, ?, ?, ?)', sqlargs)
-    conn.commit()
-    sql.close()
+    sql = conn.cursor()
+    try:
+        sql.execute('REPLACE INTO fileheader VALUES (?, ?, ?, ?, ?, ?)', sqlargs)
+        conn.commit()
+    except Exception as e:
+        logger.error("could not update info for %s", name)
+    finally:
+        sql.close()
     return sqlargs
 
 def _getFileInfo(name):

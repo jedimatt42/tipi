@@ -19,7 +19,7 @@ tipi_disk = '/home/tipi/tipi_disk'
 def main():
     ConfigLogging.configure_logging()
     tipi_cache.setupSchema()
-    # tipi_cache.deleteMissing()
+    tipi_cache.deleteMissing()
 
     i = inotify.adapters.InotifyTree(tipi_disk)
 

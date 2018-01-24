@@ -16,7 +16,7 @@ tipi_disk_base = '/home/tipi/tipi_disk'
 
 icons = { 'basic': '<img src="/images/basic_icon.png" width=22 title="BASIC PROGRAM">',
           'tifile': '<img src="/images/ti_logo_icon.jpg" width=22 title="TIFILES">',
-          'native': '<img src="/images/badfile_icon.png" width=22 title="OS Native File">'
+          'native': '<img src="/images/native_icon.png" width=22 title="OS Native File">'
 }
 
 download_template = '<a href="/files/%s/%s?action=download"><img src="/images/download_icon.png" width=32 title="Download File"/></a>'

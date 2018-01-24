@@ -343,7 +343,7 @@ void loadPiStatus() {
 
   showValue(25, 0, version);
   showValue(25, 1, ipaddress);
-  if (0 != strcmp(version, latest)) {
+  if (strcmp(latest, version) > 0) {
     gotoxy(6, 3);
     cputs("U) upgrade to ");
     cputs(latest);

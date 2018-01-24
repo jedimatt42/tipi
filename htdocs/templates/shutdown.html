@@ -1,17 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
 
-{% extends "page_template.html"%}
-{% block content %}
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
+    <title>TIPI</title>
 
 
+    <link rel="stylesheet" href="/css/style.css"></link>
 
-<div class="panel panel-default">
+    <script>
+        function startTimer(duration, display) {
+            var timer = duration, minutes, seconds;
+            setInterval(function () {
+                minutes = parseInt(timer / 60, 10)
+                seconds = parseInt(timer % 60, 10);
+        
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+        
+                display.textContent = minutes + ":" + seconds;
+        
+                if (--timer < 0) {
+                    document.getElementById("wait").style.display = "none"
+                    document.getElementById("unplug").style.display = "block"
+                }
+            }, 1000);
+        }
+    
+        window.onload = function () {
+	    document.getElementById("unplug").style.display = "none"
+            display = document.querySelector('#time');
+            startTimer(15, display);
+        };
+    </script>
 
-<h1>Shutting down now...</h1>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="panel panel-default">
+    
+    <h1>&nbsp; Halting Raspberry PI...</h1>
+    
+    <div id="wait">&nbsp; &nbsp; &nbsp; You may power it off in <span id="time">00:15</span> seconds</div>
+    <div id="unplug">&nbsp; &nbsp; &nbsp; You may power it off now</div>
+    
+    </div>
 
 </div>
 
 
 
 
-{% endblock %}
+</body>
+
+</html>
 

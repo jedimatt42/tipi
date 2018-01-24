@@ -327,6 +327,10 @@ class TipiDisk(object):
 
         logger.debug("deleting file %s", unix_name)
         try:
+            del self.openFiles[localPath]
+        except Exception as e:
+            logger.debug("removing open file on delete: file was not open! Good")
+        try:
             os.unlink(unix_name)
             self.sendSuccess()
         except Exception as e:

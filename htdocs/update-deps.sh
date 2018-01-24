@@ -1,10 +1,8 @@
 #!/bin/bash
 
-if [ -d ENV ]; then
-  rm -r ENV
+if [ ! -d ENV ]; then
+  virtualenv --system-site-packages ENV
 fi
-
-virtualenv --system-site-packages ENV
 
 . ./ENV/bin/activate
 

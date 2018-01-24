@@ -1,5 +1,8 @@
 #!/bin/bash
 
+apt-get update
+apt-get install -y libsqlite3-dev
+
 su tipi -c "/home/tipi/tipi/services/update-deps.sh"
 su tipi -c "/home/tipi/tipi/htdocs/update-deps.sh"
 su tipi -c "cp /home/tipi/tipi/setup/bin/* /home/tipi/tipi_disk/"

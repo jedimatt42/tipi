@@ -22,12 +22,12 @@ function checkFields(f) {
 
 <div class="files_container">
 <table cellspacing=4 cellpadding=0 border=0>
-    <tr><td colspan=8> Total files: {{ total_files }} </td></tr>
-    <tr><td colspan=8> Displaying contents of &nbsp; <b>{{ display_path }}</b> 
+    <tr><td colspan=9> Total files: {{ total_files }} </td></tr>
+    <tr><td colspan=9> Displaying contents of &nbsp; <b>{{ display_path }}</b> 
                        &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="{{ request.path }}">refresh</a>
         </td>
     </tr>
-  <tr><td colspan=8> &nbsp; </td></tr>
+  <tr><td colspan=9> &nbsp; </td></tr>
 
   <tr>
     <td> &nbsp; </td>
@@ -35,6 +35,7 @@ function checkFields(f) {
     <td><b>type</td>
     <td><b>size</td>
     <td> &nbsp; &nbsp; <b>datestamp</td>
+    <td> &nbsp; </td>
     <td> &nbsp; </td>
     <td> &nbsp; </td>
     <td><b>native name</b></td>
@@ -49,6 +50,7 @@ function checkFields(f) {
     <td valign=center> &nbsp; &nbsp; {{ tipi_file.date }} </td>
     <td valign=center> &nbsp; &nbsp; {{ tipi_file.edit_link|safe }} </td>
     <td valign=center> &nbsp; &nbsp; {{ tipi_file.dl_link|safe }} </td>
+    <td valign=center> &nbsp; &nbsp; {{ tipi_file.conv_link|safe }} </td>
 {% if tipi_file.longname != None %}
     <td valign=center> {{ tipi_file.longname|safe }} </td>
 {% else %}

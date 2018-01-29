@@ -16,7 +16,11 @@ class VariableRecordFile(object):
         self.mode = mode(pab)
         self.header = bytes[:128]
         self.recordLength = ti_files.recordLength(self.header)
-        self.records = self.__loadRecords(bytes[128:])
+        if self.mode != OUTPUT:
+            self.records = self.__loadRecords(bytes[128:])
+        else:
+            self.dirty = True
+            self.records = [ ]
         if self.mode == APPEND:
             self.currentRecord = len(self.records)
         else:

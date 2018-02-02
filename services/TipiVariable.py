@@ -91,7 +91,7 @@ class TipiVariable(object):
             self.store(caller_guid)   # Write our vars to our local file
 
 
-        if action == 'T':    #   TX via TCP
+        elif action == 'T':    #   TX via TCP
             if 'REMOTE_HOST' not in self.ti_vars or 'REMOTE_PORT' not in self.ti_vars:
                 return bytearray("!ERROR!")
 

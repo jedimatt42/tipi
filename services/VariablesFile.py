@@ -50,12 +50,17 @@ class VariablesFile(object):
         lastResponse = None
         self.tipi_io.send([SUCCESS])
         msg = self.tipi_io.receive()
-        lastResponse = self.vars.handle(msg)
+        try:
+            self.lastResponse = self.vars.processRequest(msg)
+            self.tipi_io.send([SUCCESS])
+        except Exception as e:
+            logger.error("Failure in TipiVariable processing")
+            self.tipi_io.send([EFILERR])
 
     def read(self, pab, devname):
         logger.debug("read devname: %s", devname)
-        if not lastResponse is None:
-            fdata = bytearray(lastResponse)
+        if not self.lastResponse is None:
+            fdata = bytearray(self.lastResponse)
             self.tipi_io.send([SUCCESS])
             self.tipi_io.send(fdata)
             return

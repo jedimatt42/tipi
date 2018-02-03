@@ -1,10 +1,13 @@
 #!/usr/bin/env python2
 
 import os
+import sys
 import errno
 import time
 import Adafruit_SSD1306
 import re
+import logging
+import ConfigLogging
 
 from PIL import Image
 from PIL import ImageDraw
@@ -12,15 +15,25 @@ from PIL import ImageFont
 
 from pygtail import Pygtail
 
+ConfigLogging.configure_logging()
+logger = logging.getLogger(__name__)
+
 pat = re.compile(r"^.*oled.*: INFO     (.*)$")
 
 fontpath = "/home/tipi/tipi/services/TI99Basic.ttf"
 
-# 128x32 oledlay with hardware I2C:
-oled = Adafruit_SSD1306.SSD1306_128_32(rst=None)
+oled = None
 
-# Initialize library.
-oled.begin()
+try:
+    # 128x32 oledlay with hardware I2C:
+    oled = Adafruit_SSD1306.SSD1306_128_32(rst=None)
+
+    # Initialize library.
+    oled.begin()
+    logger.info("TIPI Attached to I2C Oled Display")
+except Exception as e:
+    logger.error("No I2C Oled Display attached")
+    sys.exit(1)
 
 # Clear oledlay.
 oled.clear()

@@ -15,7 +15,7 @@ class CurlFile(object):
     def filename():
         # open file in "input" for GET, "output" for POST
         #   PI.HTTP://ti994a.cwfk.net/tipi.html
-        return "HTTP:"
+        return ("HTTP:", "http:")
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io

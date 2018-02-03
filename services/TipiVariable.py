@@ -8,19 +8,24 @@
 import struct
 import fcntl
 import os
+import errno
 import re
 import sys
 import socket
+import logging
 
-runtime_dir = '/home/tipi/tipi/.tipivars/'
+logger = logging.getLogger(__name__)
+
+runtime_dir = '/home/tipi/.tipivars/'
 
 class TipiVariable(object):
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
         
-
-    def getTipiVariableEvent(self):
+    
+    def processRequest(self, message):
+        logger.debug("request: %s", message)
      
         # Fields:
         # caller_guid        Program's GUID
@@ -39,7 +44,6 @@ class TipiVariable(object):
         # CHATTI     W   MESSAGE         [myPasswd]  0   AUTHPASS    NULL
         # CHATTI     W   MESSAGE         TESTING123  0   MESSAGE     [session_id]
 
-        message = self.tipi_io.receive()
 
         # Now that we have message, let's parse it:
         ti_message = message.split("\t")
@@ -163,8 +167,6 @@ class TipiVariable(object):
         return bytearray()
                 
 
-
-        
     def store(self, caller_guid):
 
         # Create runtime directory if it doesn't exist:
@@ -184,11 +186,11 @@ class TipiVariable(object):
             
         f.close()        
         
-        
-        
 
     def handle(self, bytes):
-        self.tipi_io.send(self.getTipiVariableEvent())
+        # Handle all tipi_io here, so main logic is just dealing with bytes in and out
+        message = self.tipi_io.receive()
+        self.tipi_io.send(self.processRequest(message))
 
         return True
 

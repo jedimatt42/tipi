@@ -12,6 +12,7 @@ import re
 import sys
 import socket
 
+runtime_dir = '/home/tipi/tipi/.tipivars/'
 
 class TipiVariable(object):
 
@@ -58,7 +59,7 @@ class TipiVariable(object):
         # Load our existing variables into a dict:
         self.ti_vars = {}
         
-        guid_file = '/home/tipi/tipi/RUN/' + caller_guid
+        guid_file = runtime_dir + caller_guid
         
         if os.path.isfile(str(guid_file)):
             with open(str(guid_file), "r") as f:
@@ -90,7 +91,7 @@ class TipiVariable(object):
             self.store(caller_guid)   # Write our vars to our local file
 
 
-        if action == 'T':    #   TX via TCP
+        elif action == 'T':    #   TX via TCP
             if 'REMOTE_HOST' not in self.ti_vars or 'REMOTE_PORT' not in self.ti_vars:
                 return bytearray("!ERROR!")
 
@@ -165,9 +166,18 @@ class TipiVariable(object):
 
         
     def store(self, caller_guid):
+
+        # Create runtime directory if it doesn't exist:
+        if not os.path.exists(runtime_dir):
+            try:
+                os.makedirs(runtime_dir)
+            except OSError as e:
+                if e.errno != errno.EEXIST:
+                    raise
+
         # Write out the variables file
 
-        f = open('/home/tipi/tipi/RUN/' + str(caller_guid), "w")
+        f = open(runtime_dir + str(caller_guid), "w")
         
         for key, val in self.ti_vars.items():
             f.write(key + "\t" + str(val) + "\n")

@@ -12,7 +12,7 @@
 
 #define GPLWS ((unsigned int*)0x83E0)
 
-#define TIPICFG_VER "3"
+#define TIPICFG_VER "4"
 #define PI_CONFIG "PI.CONFIG"
 #define PI_STATUS "PI.STATUS"
 #define PI_UPGRADE "PI.UPGRADE"
@@ -343,7 +343,7 @@ void loadPiStatus() {
 
   showValue(25, 0, version);
   showValue(25, 1, ipaddress);
-  if (strcmp(latest, version) > 0) {
+  if (strcmp(version, latest) > 0) {
     gotoxy(6, 3);
     cputs("U) upgrade to ");
     cputs(latest);

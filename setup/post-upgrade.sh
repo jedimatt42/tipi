@@ -7,6 +7,13 @@ su tipi -c "/home/tipi/tipi/services/update-deps.sh"
 su tipi -c "/home/tipi/tipi/htdocs/update-deps.sh"
 su tipi -c "cp /home/tipi/tipi/setup/bin/* /home/tipi/tipi_disk/"
 
+# temporary... 
+if [ -e /home/tipi/tipi/RUN/CHATTI ]; then
+  su tipi -c "mkdir /home/tipi/.tipivars"
+  su tipi -c "mv /home/tipi/tipi/RUN/* /home/tipi/.tipivars/"
+  su tipi -c "rm -fr /home/tipi/tipi/RUN"
+fi
+
 cd /home/tipi/tipi/setup/
 
 systemctl stop tipiwatchdog.service

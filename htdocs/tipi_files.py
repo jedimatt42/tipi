@@ -19,9 +19,12 @@ icons = { 'basic': '<img src="/images/basic_icon.png" width=22 title="BASIC PROG
           'native': '<img src="/images/native_icon.png" width=22 title="OS Native File">'
 }
 
-download_template = '<a href="/files/%s/%s?action=download"><img src="/images/download_icon.png" width=32 title="Download File"/></a>'
+download_template = '<a href="%s"><img src="/images/download_icon.png" width=32 title="Download File"/></a>'
 
 editlink_template = '<a href="/edit_basic_file?file_name=%s/%s&path=%s"><img src="/images/edit_icon.png" width=22 title="Edit File"/></a>'
+
+# this should be a form.
+convlink_template = '<img src="/images/convert_icon.png" width=32 title="Convert to TIFILES"/>'
 
 def newdir(path,newdir):
     logger.debug("creating directory %s/%s", path, newdir)
@@ -37,8 +40,8 @@ def download(path):
     logger.debug("download request for %s", path)
 
     file_path = tipi_disk_base + '/' + path
-    return { directory: os.path.dirname(file_path), 
-             filename: os.path.basename(file_path) }
+    return { 'directory': os.path.dirname(file_path), 
+             'filename': os.path.basename(file_path) }
 
 
 def catalog(path):
@@ -100,11 +103,17 @@ def catalog(path):
             tiname = fileInfo['tiname']
             size = fileInfo['size']
             edit_link = ''
+            conv_link = ''
             date = time.strftime("%b %d %Y %H:%M:%S", time.gmtime(os.path.getmtime(item_path)))
 
-            dl_link = download_template % (path, item)
+            dlpath = item_path.replace(tipi_disk_base,'')
+            dl_link = download_template % (dlpath)
             if fileInfo['icon'] == 'basic':
                 edit_link = editlink_template % (path, item, path)
+
+            if fileInfo['icon'] == 'native':
+                conv_link = convlink_template 
+                # % (path, item)
           
 
             if tiname != item:
@@ -118,6 +127,7 @@ def catalog(path):
                                  'date'      : date,
                                  'edit_link' : edit_link,
                                  'dl_link'   : dl_link,
+                                 'conv_link' : conv_link,
                                  'type'      : type,
                                  'longname'  : longname,
                                } )

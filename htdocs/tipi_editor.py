@@ -76,7 +76,7 @@ def basicContents(filename):
 
         if ti_files.isTiBasicAscii(bas_tmp_file):
             with open(bas_tmp_file, 'rb') as content_file:
-                return content_file.read()
+                return content_file.read().decode("latin_1")
 
     finally:
         if os.path.exists(prg_tmp_file):
@@ -92,7 +92,7 @@ def writeBasicContents(edit_file_name, file_contents):
 
     try:
         with open(bas_tmp_file, 'wb') as file:
-            file.write(file_contents)
+            file.write(file_contents.encode("latin_1"))
             
         # Encode ASCII file to TI's binary BASIC format:
         #

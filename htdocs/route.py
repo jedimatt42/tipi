@@ -103,7 +103,8 @@ def new_basic_file():
 
 @app.route('/about', methods=['GET', 'POST'])
 def about():
-    return render_template('about.html')
+    version = tipi_admin.version()
+    return render_template('about.html', **version)
 
 @app.route('/rebootnow', methods=['GET'])
 def rebootnow():

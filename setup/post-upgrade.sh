@@ -16,11 +16,12 @@ fi
 
 cd /home/tipi/tipi/setup/
 
-systemctl stop tipiwatchdog.service
 systemctl stop tipi.service
-systemctl stop tipioled.service
 systemctl stop tipiweb.service
 systemctl stop tipimon.service
+systemctl stop tipioled.service
+systemctl stop tipiwatchdog.service
+systemctl stop tipiboot.service
 
 cp *.service /lib/systemd/system/
 
@@ -32,12 +33,15 @@ systemctl enable tipiweb.service
 systemctl enable tipimon.service
 systemctl enable tipisuper.service
 
+# the order below matters
 systemctl restart tipiboot.service
 systemctl restart tipiwatchdog.service
-systemctl restart tipi.service
 systemctl restart tipioled.service
-systemctl restart tipiweb.service
 systemctl restart tipimon.service
+systemctl restart tipiweb.service
+systemctl restart tipi.service
+
+# last we'll restart the super service which is our parent process.
 systemctl restart tipisuper.service
 
 echo "upgrade complete"

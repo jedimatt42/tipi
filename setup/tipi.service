@@ -1,6 +1,6 @@
 [Unit]
 Description=TI-99/4A DSR Service
-After=network.target tipiboot.service
+After=network.target tipiboot.service tipimon.service tipiweb.service
 
 [Service]
 Type=simple

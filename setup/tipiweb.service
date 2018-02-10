@@ -1,6 +1,6 @@
 [Unit]
 Description=TI-99/4A Web UI Service
-After=network.target tipiboot.service
+After=network.target tipimon.service
 
 [Service]
 Type=simple

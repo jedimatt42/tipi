@@ -135,6 +135,9 @@ a {
     border: 1px solid black;
 }
 
+.about_container {
+    padding: 40px;
+}
 
 .tooltip {
     position: relative;

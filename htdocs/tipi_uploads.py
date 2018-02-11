@@ -8,6 +8,7 @@
 import os
 import logging
 from ti_files import ti_files
+from ti_files import v9t9_files
 
 logger = logging.getLogger(__name__)
 
@@ -18,5 +19,6 @@ def save(path, fileset):
         localfilename = os.path.join(tipi_disk_base + path, filedata.filename)
         logger.debug("saving upload to: %s", localfilename)
         filedata.save(localfilename)
+        v9t9_files.convert(localfilename)
     
 

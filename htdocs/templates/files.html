@@ -21,6 +21,7 @@ function getSelectAction(form) {
 
 function newDirOnClick() {
   document.getElementById('newBasicFileForm').style.display='none';
+  document.getElementById('uploadForm').style.display='none';
 
   document.getElementById('newDirForm').style.display='block';
   document.getElementById('newDir').focus();
@@ -28,9 +29,18 @@ function newDirOnClick() {
 
 function newFileOnClick() {
   document.getElementById('newDirForm').style.display='none';
+  document.getElementById('uploadForm').style.display='none';
 
   document.getElementById('newBasicFileForm').style.display='block';
   document.getElementById('file').focus();
+}
+
+function uploadOnClick() {
+  document.getElementById('newDirForm').style.display='none';
+  document.getElementById('newBasicFileForm').style.display='none';
+
+  document.getElementById('uploadForm').style.display='block';
+  document.getElementById('selectfiles').focus();
 }
 
 </script>
@@ -41,7 +51,7 @@ function newFileOnClick() {
 
 <div class="files_container">
 
-<table cellspacing=4 cellpadding=0 border=0 width="100%">
+<table cellspacing=4 cellpadding=0 border=0 width="80%">
     <tr><td colspan=9> Total files: {{ total_files }} </td></tr>
     <tr>
         <td colspan=9> Displaying contents of &nbsp; <b>{{ display_path }}</b> 
@@ -64,6 +74,13 @@ function newFileOnClick() {
                     <input type=submit value=" Create ">
                 </form>
             </div>
+            <div id="uploadForm" style="display:none">
+                <form name="f" action="/uploadFile" method=post enctype="multipart/form-data" onSubmit="return checkFields(this);">
+                    <input type=hidden name="path" value="{{ display_path }}">
+                    <input type="file" id="selectfiles" name="upload_file" onClick="f.uploadFileSubmit.value=' Upload ';f.uploadFileSubmit.disabled=false;" multiple=""> 
+                    <input name="uploadFileSubmit" id="uploadFileSubmit" type=submit value=" Upload ">
+                </form>
+            </div>
             <button id="newDirButton" title="new directory" 
                    onClick="newDirOnClick();" class="tool_button">
                 <img src="/images/new_folder_icon.png" height="28px"/>
@@ -71,6 +88,10 @@ function newFileOnClick() {
             <button id="newBasicFileButton" title="new BASIC file"
                    onClick="newFileOnClick();" class="tool_button">
                 <img src="/images/new_file_icon.png" height="28px"/>
+            </button>
+            <button id="uploadFileButton" title="uploads files"
+                   onClick="uploadOnClick();" class="tool_button">
+                <img src="/images/upload_icon.png" height="28px"/>
             </button>
             <a href="{{ request.path }}">
                 <button id="refresh" title="refresh" class="tool_button">
@@ -131,22 +152,6 @@ function newFileOnClick() {
 </form>
 </div>
 
-
-
-<div class="files_container">
-<table cellpadding=4 cellspacing=0 border=0>
-    <tr>
-        <td nowrap>
-                    <form name="f" action="/uploadFile" method=post enctype="multipart/form-data" onSubmit="return checkFields(this);">
-                    <input type=hidden name="path" value="{{ display_path }}">
-                    Upload File to {{ display_path }}: <input type="file" name="upload_file" onClick="f.uploadFileSubmit.value=' Upload ';f.uploadFileSubmit.disabled=false;" multiple=""> 
-                    <input name="uploadFileSubmit" id="uploadFileSubmit" type=submit value=" Upload ">
-                    </form>
-        </td>
-        <td nowrap> &nbsp; </td>
-    </tr>
-</table>
-</div>
 
 <BR><BR>  
 

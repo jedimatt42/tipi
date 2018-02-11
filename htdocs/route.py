@@ -77,6 +77,14 @@ def deleteSelected():
     rp = createFileUrl(path)
     return redirect(rp)
 
+@app.route('/tifiles', methods=['POST'])
+def convert():
+    path = request.form.get('path')
+    files = request.form.getlist('selected')
+    tipi_files.convert(path, files)
+    rp = createFileUrl(path)
+    return redirect(rp)
+
 #
 # Text editor
 #

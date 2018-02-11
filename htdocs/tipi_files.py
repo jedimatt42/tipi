@@ -4,6 +4,7 @@
 # et al.
 
 from ti_files import ti_files
+from ti_files import v9t9_files
 from tinames import tinames
 import os
 import shutil
@@ -60,6 +61,21 @@ def deleteAll(path, files):
             logger.debug("Deleted %s", file_path)
         except Exception as e:
             logger.warn("Failed to delete: %s/%s", base_path, f, exc_info=1)
+
+def convert(path, files):
+    logger.debug("converting v9t9 to tifiles %s from %s", files, path)
+
+    base_path = os.path.abspath( tipi_disk_base + '/' + path )
+    for f in files:
+        try:
+            fname = tinames.findpath(base_path, f)
+            file_path = base_path + '/' + fname
+            if v9t9_files.convert(file_path):
+                logger.debug("Converted %s", file_path)
+            else:
+                logger.debug("Did not convert %s", file_path)
+        except Exception as e:
+            logger.warn("Failed to convert: %s/%s", base_path, f, exc_info=1)
 
 def catalog(path):
     logger.debug("generating catalog for: %s", path)

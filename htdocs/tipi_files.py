@@ -4,6 +4,7 @@
 # et al.
 
 from ti_files import ti_files
+from tinames import tinames
 import os
 import shutil
 import time
@@ -50,7 +51,8 @@ def deleteAll(path, files):
     base_path = os.path.abspath( tipi_disk_base + '/' + path )
     for f in files:
         try:
-            file_path = base_path + '/' + f
+            fname = tinames.findpath(base_path, f)
+            file_path = base_path + '/' + fname
             if os.path.isfile(file_path):
                 os.remove(file_path)
             else:

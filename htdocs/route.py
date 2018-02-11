@@ -6,6 +6,7 @@
 # et al.
 
 import logging
+import string
 import tipi_admin
 import tipi_editor
 import tipi_files
@@ -128,4 +129,5 @@ def createFileUrl(path):
     if path == '/' or path == '':
         return '/files'
     else:
-        return '/files' + '/' + path
+        return string.replace('/files' + '/' + path, '//', '/')
+        

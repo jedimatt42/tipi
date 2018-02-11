@@ -85,23 +85,36 @@ function getSelectAction(form) {
 </div>
 
 
+<script>
 
+function newDirOnClick() {
+  document.getElementById('newDirButton').style.display='none'; 
+  document.getElementById('newDirForm').style.display='block';
+  document.getElementById('newDir').focus();
+}
+
+</script>
 
 
 <div class="files_container">
 <table cellpadding=4 cellspacing=0 border=0>
-    <tr> <td>           
-                        <input id="newDirButton" type=button value=" Create a New Directory in: {{ display_path }}" onClick="document.getElementById('newDirButton').style.display='none'; document.getElementById('newDirForm').style.display='block';document.getElementById('newDir').focus();"> 
-                        <div id="newDirForm" style="display:none">
-                        <form method=post action="/newdir">
-                        <input type=hidden name="path" value="{{ display_path }}">
-                        <input type="text" id="newDir" size=32 name="newdir" placeholder="New Directory Name">
-                        <input type=submit value=" Create ">
-                        </form>
-                        </div>
-         </td> 
-         <td> 
-                        <input id="newBasicFileButton" type=button value=" Create new BASIC file in: {{ display_path }} " onClick="document.getElementById('newBasicFileButton').style.display='none'; document.getElementById('newBasicFileForm').style.display='block';document.getElementById('file').focus();"> 
+    <tr> 
+        <td>           
+            <input id="newDirButton" type=button title="new directory" 
+                   onClick="newDirOnClick();">
+                <img src="/images/new_folder_icon.png" width="60px"/>
+            </input> 
+            <div id="newDirForm" style="display:none">
+                <form method=post action="/newdir">
+                    <input type=hidden name="path" value="{{ display_path }}">
+                    <input type="text" id="newDir" size=10 name="newdir" placeholder="New Name">
+                    <input type=submit value="Create">
+                </form>
+            </div>
+       </td> 
+
+       <td> 
+           <input id="newBasicFileButton" type=button value=" Create new BASIC file in: {{ display_path }} " onClick="document.getElementById('newBasicFileButton').style.display='none'; document.getElementById('newBasicFileForm').style.display='block';document.getElementById('file').focus();"> 
                         <div id="newBasicFileForm" style="display:none">
                         <form method=post action="/new_basic_file">
                         <input type=hidden name="path" value="{{ display_path }}">

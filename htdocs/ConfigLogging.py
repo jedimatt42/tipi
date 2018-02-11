@@ -2,7 +2,7 @@ import logging
 
 def configure_logging():
     logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
     ch = logging.StreamHandler()
 

@@ -68,6 +68,14 @@ def newdir():
     rp = createFileUrl(path)
     return redirect(rp)
 
+@app.route('/delete', methods=['POST'])
+def deleteSelected():
+    path = request.form.get('path')
+    files = request.form.getlist('selected')
+    tipi_files.deleteAll(path, files)
+    rp = createFileUrl(path)
+    return redirect(rp)
+
 #
 # Text editor
 #

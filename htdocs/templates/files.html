@@ -14,6 +14,11 @@ function checkFields(f) {
     f.uploadFileSubmit.value = ' Uploading, Please Wait ... ';
     f.uploadFileSubmit.disabled = true;
 }
+
+function getSelectAction(form) {
+  form.action = "/" + document.getElementById("select-op").value;
+}
+
 </script>
 
 <div class="alert alert-info" role="alert">
@@ -21,7 +26,9 @@ function checkFields(f) {
 </div>
 
 <div class="files_container">
-<form method="post" action="/update">
+<form id="select-form" method="post" onsubmit="getSelectAction(this);">
+    <input type=hidden name="path" value="{{ display_path }}">
+
 <table cellspacing=4 cellpadding=0 border=0>
     <tr><td colspan=9> Total files: {{ total_files }} </td></tr>
     <tr><td colspan=9> Displaying contents of &nbsp; <b>{{ display_path }}</b> 
@@ -32,16 +39,14 @@ function checkFields(f) {
   <tr><td colspan=9> &nbsp; </td></tr>
 
   <tr>
-    <td colspan=3>
-      <select name="operation">
+    <td colspan=9>
+      <select id="select-op" name="operation">
+        <option value="">Select Action</option>
         <option value="delete">Delete</option>
         <option value="tifiles">Convert</option>
       </select>
-    </td>
-    <td colspan=1>
       <input type="submit" value="Submit"/>
     </td>
-    <td colspan=5/>
   </tr>
 
   <tr>
@@ -58,7 +63,7 @@ function checkFields(f) {
 
 {% for tipi_file in tipi_dir_listing %}
   <tr>
-    <td valign=center align=center> <input type="checkbox" name="select" value=" {{ tipi_file.name }} "/> </td>
+    <td valign=center align=center> <input type="checkbox" name="selected" value="{{ tipi_file.name }}"/> </td>
     <td valign=center align=center> {{ tipi_file.icon|safe }} </td>
     <td valign=center> {{ tipi_file.name|safe }} </td>
     <td valign=center align=left> {{ tipi_file.type }} </td>

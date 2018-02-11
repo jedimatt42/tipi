@@ -5,6 +5,7 @@
 
 from ti_files import ti_files
 import os
+import shutil
 import time
 import errno
 import logging
@@ -43,6 +44,20 @@ def download(path):
     return { 'directory': os.path.dirname(file_path), 
              'filename': os.path.basename(file_path) }
 
+def deleteAll(path, files):
+    logger.debug("deleting %s from %s", files, path)
+
+    base_path = os.path.abspath( tipi_disk_base + '/' + path )
+    for f in files:
+        try:
+            file_path = base_path + '/' + f
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+            else:
+                shutil.rmtree(file_path)
+            logger.debug("Deleted %s", file_path)
+        except Exception as e:
+            logger.warn("Failed to delete: %s/%s", base_path, f, exc_info=1)
 
 def catalog(path):
     logger.debug("generating catalog for: %s", path)

@@ -19,6 +19,12 @@ function getSelectAction(form) {
   form.action = "/" + document.getElementById("select-op").value;
 }
 
+function newDirOnClick() {
+  document.getElementById('newDirButton').style.display='none'; 
+  document.getElementById('newDirForm').style.display='block';
+  document.getElementById('newDir').focus();
+}
+
 </script>
 
 <div class="alert alert-info" role="alert">
@@ -26,28 +32,50 @@ function getSelectAction(form) {
 </div>
 
 <div class="files_container">
+
+<table cellspacing=4 cellpadding=0 border=0 width="100%">
+    <tr><td colspan=9> Total files: {{ total_files }} </td></tr>
+    <tr>
+        <td colspan=9> Displaying contents of &nbsp; <b>{{ display_path }}</b> 
+        </td>
+    </tr>
+
+    <tr>
+        <td colspan=9 align="right">
+            <button id="newDirButton" title="new directory" 
+                   onClick="newDirOnClick();" class="tool_button">
+                <img src="/images/new_folder_icon.png" height="28px"/>
+            </button> 
+            <div id="newDirForm" style="display:none">
+                <form method=post action="/newdir">
+                    <input type=hidden name="path" value="{{ display_path }}">
+                    <input type="text" id="newDir" size=10 name="newdir" placeholder="New Name">
+                    <input type=submit value="Create">
+                </form>
+            </div>
+            <a href="{{ request.path }}">
+                <button id="refresh" title="refresh" class="tool_button">
+                    <img src="/images/refresh_icon.png" height="28px"/>
+                </button>
+            </a>
+        </td> 
+    </tr>
+</table>
+
 <form id="select-form" method="post" onsubmit="getSelectAction(this);">
     <input type=hidden name="path" value="{{ display_path }}">
 
 <table cellspacing=4 cellpadding=0 border=0>
-    <tr><td colspan=9> Total files: {{ total_files }} </td></tr>
-    <tr><td colspan=9> Displaying contents of &nbsp; <b>{{ display_path }}</b> 
-                       &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="{{ request.path }}">refresh</a>
+    <tr>
+        <td colspan=9>
+            <select id="select-op" name="operation">
+                <option value="">Select Action</option>
+                <option value="delete">Delete</option>
+                <option value="tifiles">Convert v9t9 to TIFILES</option>
+            </select>
+            <input type="submit" value="Submit"/>
         </td>
     </tr>
-
-  <tr><td colspan=9> &nbsp; </td></tr>
-
-  <tr>
-    <td colspan=9>
-      <select id="select-op" name="operation">
-        <option value="">Select Action</option>
-        <option value="delete">Delete</option>
-        <option value="tifiles">Convert v9t9 to TIFILES</option>
-      </select>
-      <input type="submit" value="Submit"/>
-    </td>
-  </tr>
 
   <tr>
     <td> &nbsp; </td>
@@ -85,33 +113,10 @@ function getSelectAction(form) {
 </div>
 
 
-<script>
-
-function newDirOnClick() {
-  document.getElementById('newDirButton').style.display='none'; 
-  document.getElementById('newDirForm').style.display='block';
-  document.getElementById('newDir').focus();
-}
-
-</script>
-
 
 <div class="files_container">
 <table cellpadding=4 cellspacing=0 border=0>
     <tr> 
-        <td>           
-            <input id="newDirButton" type=button title="new directory" 
-                   onClick="newDirOnClick();">
-                <img src="/images/new_folder_icon.png" width="60px"/>
-            </input> 
-            <div id="newDirForm" style="display:none">
-                <form method=post action="/newdir">
-                    <input type=hidden name="path" value="{{ display_path }}">
-                    <input type="text" id="newDir" size=10 name="newdir" placeholder="New Name">
-                    <input type=submit value="Create">
-                </form>
-            </div>
-       </td> 
 
        <td> 
            <input id="newBasicFileButton" type=button value=" Create new BASIC file in: {{ display_path }} " onClick="document.getElementById('newBasicFileButton').style.display='none'; document.getElementById('newBasicFileForm').style.display='block';document.getElementById('file').focus();"> 

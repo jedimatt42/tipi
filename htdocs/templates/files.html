@@ -115,7 +115,7 @@ function getSelectAction(form) {
         <td nowrap>
                     <form name="f" action="/uploadFile" method=post enctype="multipart/form-data" onSubmit="return checkFields(this);">
                     <input type=hidden name="path" value="{{ display_path }}">
-                    Upload File to {{ display_path }}: <input type="file" name="upload_file" onClick="f.uploadFileSubmit.value=' Upload ';f.uploadFileSubmit.disabled=false;"> 
+                    Upload File to {{ display_path }}: <input type="file" name="upload_file" onClick="f.uploadFileSubmit.value=' Upload ';f.uploadFileSubmit.disabled=false;" multiple=""> 
                     <input name="uploadFileSubmit" id="uploadFileSubmit" type=submit value=" Upload ">
                     </form>
         </td>

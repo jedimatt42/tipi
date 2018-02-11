@@ -56,7 +56,7 @@ def files(path):
 @app.route('/uploadFile', methods=['POST'])
 def upload_file():
     path = request.form.get('path')
-    tipi_uploads.save(path, request.files['upload_file'])
+    tipi_uploads.save(path, request.files.getlist('upload_file'))
     rp = createFileUrl(path)
     return redirect(rp)
 

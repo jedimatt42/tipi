@@ -6,6 +6,7 @@
 # et al.
 
 import logging
+import string
 import tipi_admin
 import tipi_editor
 import tipi_files
@@ -55,7 +56,7 @@ def files(path):
 @app.route('/uploadFile', methods=['POST'])
 def upload_file():
     path = request.form.get('path')
-    tipi_uploads.save(path, request.files['upload_file'])
+    tipi_uploads.save(path, request.files.getlist('upload_file'))
     rp = createFileUrl(path)
     return redirect(rp)
 
@@ -65,6 +66,22 @@ def newdir():
     newdir = request.form.get('newdir')
     logger.debug("newdir - path: %s, newdir: %s", path, newdir)
     tipi_files.newdir(path, newdir)
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+@app.route('/delete', methods=['POST'])
+def deleteSelected():
+    path = request.form.get('path')
+    files = request.form.getlist('selected')
+    tipi_files.deleteAll(path, files)
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+@app.route('/tifiles', methods=['POST'])
+def convert():
+    path = request.form.get('path')
+    files = request.form.getlist('selected')
+    tipi_files.convert(path, files)
     rp = createFileUrl(path)
     return redirect(rp)
 
@@ -103,7 +120,8 @@ def new_basic_file():
 
 @app.route('/about', methods=['GET', 'POST'])
 def about():
-    return render_template('about.html')
+    version = tipi_admin.version()
+    return render_template('about.html', **version)
 
 @app.route('/rebootnow', methods=['GET'])
 def rebootnow():
@@ -119,4 +137,5 @@ def createFileUrl(path):
     if path == '/' or path == '':
         return '/files'
     else:
-        return '/files' + '/' + path
+        return string.replace('/files' + '/' + path, '//', '/')
+        

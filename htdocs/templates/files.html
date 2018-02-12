@@ -14,6 +14,35 @@ function checkFields(f) {
     f.uploadFileSubmit.value = ' Uploading, Please Wait ... ';
     f.uploadFileSubmit.disabled = true;
 }
+
+function getSelectAction(form) {
+  form.action = "/" + document.getElementById("select-op").value;
+}
+
+function newDirOnClick() {
+  document.getElementById('newBasicFileForm').style.display='none';
+  document.getElementById('uploadForm').style.display='none';
+
+  document.getElementById('newDirForm').style.display='block';
+  document.getElementById('newDir').focus();
+}
+
+function newFileOnClick() {
+  document.getElementById('newDirForm').style.display='none';
+  document.getElementById('uploadForm').style.display='none';
+
+  document.getElementById('newBasicFileForm').style.display='block';
+  document.getElementById('file').focus();
+}
+
+function uploadOnClick() {
+  document.getElementById('newDirForm').style.display='none';
+  document.getElementById('newBasicFileForm').style.display='none';
+
+  document.getElementById('uploadForm').style.display='block';
+  document.getElementById('selectfiles').focus();
+}
+
 </script>
 
 <div class="alert alert-info" role="alert">
@@ -21,15 +50,75 @@ function checkFields(f) {
 </div>
 
 <div class="files_container">
-<table cellspacing=4 cellpadding=0 border=0>
+
+<table cellspacing=4 cellpadding=0 border=0 width="80%">
     <tr><td colspan=9> Total files: {{ total_files }} </td></tr>
-    <tr><td colspan=9> Displaying contents of &nbsp; <b>{{ display_path }}</b> 
-                       &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a href="{{ request.path }}">refresh</a>
+    <tr>
+        <td colspan=9> Displaying contents of &nbsp; <b>{{ display_path }}</b> 
         </td>
     </tr>
-  <tr><td colspan=9> &nbsp; </td></tr>
+
+    <tr>
+        <td colspan=9 align="right">
+            <div id="newDirForm" style="display:none">
+                <form method=post action="/newdir">
+                    <input type=hidden name="path" value="{{ display_path }}">
+                    <input type="text" id="newDir" size=32 name="newdir" placeholder="New Dir">
+                    <input type=submit value=" Create ">
+                </form>
+            </div>
+            <div id="newBasicFileForm" style="display:none">
+                <form method=post action="/new_basic_file">
+                    <input type=hidden name="path" value="{{ display_path }}">
+                    <input type="text" id="file" size=32 name="file" placeholder="New BASIC Filename">
+                    <input type=submit value=" Create ">
+                </form>
+            </div>
+            <div id="uploadForm" style="display:none">
+                <form name="f" action="/uploadFile" method=post enctype="multipart/form-data" onSubmit="return checkFields(this);">
+                    <input type=hidden name="path" value="{{ display_path }}">
+                    <input type="file" id="selectfiles" name="upload_file" onClick="f.uploadFileSubmit.value=' Upload ';f.uploadFileSubmit.disabled=false;" multiple=""> 
+                    <input name="uploadFileSubmit" id="uploadFileSubmit" type=submit value=" Upload ">
+                </form>
+            </div>
+            <button id="newDirButton" title="new directory" 
+                   onClick="newDirOnClick();" class="tool_button">
+                <img src="/images/new_folder_icon.png" height="28px"/>
+            </button> 
+            <button id="newBasicFileButton" title="new BASIC file"
+                   onClick="newFileOnClick();" class="tool_button">
+                <img src="/images/new_file_icon.png" height="28px"/>
+            </button>
+            <button id="uploadFileButton" title="uploads files"
+                   onClick="uploadOnClick();" class="tool_button">
+                <img src="/images/upload_icon.png" height="28px"/>
+            </button>
+            <a href="{{ request.path }}">
+                <button id="refresh" title="refresh" class="tool_button">
+                    <img src="/images/refresh_icon.png" height="28px"/>
+                </button>
+            </a>
+        </td> 
+    </tr>
+</table>
+
+<form id="select-form" method="post" onsubmit="getSelectAction(this);">
+    <input type=hidden name="path" value="{{ display_path }}">
+
+<table cellspacing=4 cellpadding=0 border=0>
+    <tr>
+        <td colspan=9>
+            <select id="select-op" name="operation">
+                <option value="">Select Action</option>
+                <option value="delete">Delete</option>
+                <option value="tifiles">Convert v9t9 to TIFILES</option>
+            </select>
+            <input type="submit" value="Submit"/>
+        </td>
+    </tr>
 
   <tr>
+    <td> &nbsp; </td>
     <td> &nbsp; </td>
     <td><b>filename</td>
     <td><b>type</td>
@@ -37,12 +126,12 @@ function checkFields(f) {
     <td> &nbsp; &nbsp; <b>datestamp</td>
     <td> &nbsp; </td>
     <td> &nbsp; </td>
-    <td> &nbsp; </td>
     <td><b>native name</b></td>
   </tr>
 
 {% for tipi_file in tipi_dir_listing %}
   <tr>
+    <td valign=center align=center> <input type="checkbox" name="selected" value="{{ tipi_file.name }}"/> </td>
     <td valign=center align=center> {{ tipi_file.icon|safe }} </td>
     <td valign=center> {{ tipi_file.name|safe }} </td>
     <td valign=center align=left> {{ tipi_file.type }} </td>
@@ -50,7 +139,6 @@ function checkFields(f) {
     <td valign=center> &nbsp; &nbsp; {{ tipi_file.date }} </td>
     <td valign=center> &nbsp; &nbsp; {{ tipi_file.edit_link|safe }} </td>
     <td valign=center> &nbsp; &nbsp; {{ tipi_file.dl_link|safe }} </td>
-    <td valign=center> &nbsp; &nbsp; {{ tipi_file.conv_link|safe }} </td>
 {% if tipi_file.longname != None %}
     <td valign=center> {{ tipi_file.longname|safe }} </td>
 {% else %}
@@ -61,47 +149,9 @@ function checkFields(f) {
 {% endfor %}
 
 </table>
+</form>
 </div>
 
-
-
-
-
-<div class="files_container">
-<table cellpadding=4 cellspacing=0 border=0>
-    <tr> <td>           
-                        <input id="newDirButton" type=button value=" Create a New Directory in: {{ display_path }}" onClick="document.getElementById('newDirButton').style.display='none'; document.getElementById('newDirForm').style.display='block';document.getElementById('newDir').focus();"> 
-                        <div id="newDirForm" style="display:none">
-                        <form method=post action="/newdir">
-                        <input type=hidden name="path" value="{{ display_path }}">
-                        <input type="text" id="newDir" size=32 name="newdir" placeholder="New Directory Name">
-                        <input type=submit value=" Create ">
-                        </form>
-                        </div>
-         </td> 
-         <td> 
-                        <input id="newBasicFileButton" type=button value=" Create new BASIC file in: {{ display_path }} " onClick="document.getElementById('newBasicFileButton').style.display='none'; document.getElementById('newBasicFileForm').style.display='block';document.getElementById('file').focus();"> 
-                        <div id="newBasicFileForm" style="display:none">
-                        <form method=post action="/new_basic_file">
-                        <input type=hidden name="path" value="{{ display_path }}">
-                        <input type="text" id="file" size=32 name="file" placeholder="New BASIC Filename">
-                        <input type=submit value=" Create ">
-                        </form>
-                        </div>
-         </td>
-    </tr>
-    <tr>
-        <td nowrap>
-                    <form name="f" action="/uploadFile" method=post enctype="multipart/form-data" onSubmit="return checkFields(this);">
-                    <input type=hidden name="path" value="{{ display_path }}">
-                    Upload File to {{ display_path }}: <input type="file" name="upload_file" onClick="f.uploadFileSubmit.value=' Upload ';f.uploadFileSubmit.disabled=false;"> 
-                    <input name="uploadFileSubmit" id="uploadFileSubmit" type=submit value=" Upload ">
-                    </form>
-        </td>
-        <td nowrap> &nbsp; </td>
-    </tr>
-</table>
-</div>
 
 <BR><BR>  
 

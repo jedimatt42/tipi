@@ -88,13 +88,13 @@ class NativeFile(object):
         return statByte
 
     def restore(self, pab):
-        if filetype == RELATIVE:
+        if self.filetype == RELATIVE:
             self.currentRecord = recordNumber(pab)
         else:
             self.currentRecord = 0
 
     def readRecord(self, idx):
-        if filetype == RELATIVE:
+        if self.filetype == RELATIVE:
             self.currentRecord = idx
         record = self.getRecord(self.currentRecord)
         self.currentRecord += 1

@@ -1,19 +1,11 @@
-# License and Attribution
-
-## Thirdparty Attribution
+# Thirdparty Attribution
 
 ### Dreamcodex Fonts
 
 The TrueType font file TI99Basic.ttf is ©2004-2017 Howard Kistler/Dream
 Codex http://www.dreamcodex.com/fonts.php
 
-### Bootstrap 
-
-Bootstrap web ui framework distribution is Copyright (c) Twitter, Inc.
-
-https://github.com/twbs/bootstrap/blob/master/LICENSE
-
-## TIPI License
+# TIPI License
 
 The source code, design files, and software are licensed 
 under the following GPL3 license:

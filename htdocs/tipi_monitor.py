@@ -23,6 +23,8 @@ def main():
 
     i = inotify.adapters.InotifyTree(tipi_disk)
 
+    logger.info("File change monitor ready")
+
     for event in i.event_gen():
         if event is not None:
             (header, type_names, watch_path, filename) = event

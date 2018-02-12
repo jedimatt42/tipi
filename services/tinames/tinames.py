@@ -36,6 +36,7 @@ def __scanForVolume(volume):
 def devnameToLocal(devname):
     parts = str(devname).split('.')
     path = None
+    startpart = 1
     if parts[0] == "TIPI":
         path = TIPI_DIR
     elif parts[0] == "DSK0":
@@ -52,11 +53,12 @@ def devnameToLocal(devname):
         path = __driveMapping("DSK3_DIR")
     elif parts[0] == "DSK":
         path = __scanForVolume(parts[1])
+        startpart = 2
 
     if path == None:
         return None
 
-    for part in parts[1:]:
+    for part in parts[startpart:]:
         if part != "":
             logger.debug("matching path part: %s", part)
             path += "/" + findpath(path, part)

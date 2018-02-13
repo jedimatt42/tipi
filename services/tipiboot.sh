@@ -18,3 +18,6 @@ if [ ! -e /home/tipi/tipi.uuid ]; then
     python - >/home/tipi/tipi.uuid
 fi
 
+# disable power management for the wifi
+iwconfig wlan0 power off
+

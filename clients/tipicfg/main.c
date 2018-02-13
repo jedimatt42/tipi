@@ -12,7 +12,7 @@
 
 #define GPLWS ((unsigned int*)0x83E0)
 
-#define TIPICFG_VER "4"
+#define TIPICFG_VER "5"
 #define PI_CONFIG "PI.CONFIG"
 #define PI_STATUS "PI.STATUS"
 #define PI_UPGRADE "PI.UPGRADE"
@@ -41,6 +41,8 @@ void reboot();
 
 void getstr(int x, int y, char* var);
 
+const char spinner[4] = { '-', 92, '|', '/' };
+
 char ipaddress[79]; // generically k=v values from files would be at most 78 characters. 
 char version[79];
 char latest[79];
@@ -62,6 +64,12 @@ void waitForDebugger(const char* msg) {
   int x = 0;
   gotoxy(20,23); cprintf("wfd! %s", msg);
   while (x == 0) {
+  }
+}
+
+void waitjiffies(int jiffies) {
+  for(int i=0; i < jiffies; i++) {
+    VDP_WAIT_VBLANK_CRU;
   }
 }
 
@@ -208,9 +216,8 @@ void main()
 
   layoutScreen();
 
-
-  loadPiStatus();
   loadPiConfig();
+  loadPiStatus();
 
   unsigned char key = 0;
   do {
@@ -269,8 +276,8 @@ void main()
       case 'r':
         disks_dirty = 0;
         wifi_dirty = 0;
-        loadPiStatus();
         loadPiConfig();
+        loadPiStatus();
         break;
       case 'W':
       case 'w':
@@ -289,19 +296,26 @@ void main()
       case 'B':
       case 'b':
         reboot();
+        disks_dirty = 0;
+        wifi_dirty = 0;
+        loadPiConfig();
+        loadPiStatus();
         break;
       case 'T':
       case 't':
-	tiMode();
-	break;
+        tiMode();
+        break;
       case 'M':
       case 'm':
-	myarcMode();
-	break;
+        myarcMode();
+        break;
     }
 
     showMode();
     showQMenu();
+
+    VDP_INT_POLL;
+
   } while(key != 'Q' && key != 'q');
 
   gotoxy(0,3);
@@ -343,8 +357,8 @@ void loadPiStatus() {
 
   showValue(25, 0, version);
   showValue(25, 1, ipaddress);
-  if (strcmp(version, latest) > 0) {
-    gotoxy(6, 3);
+  if (strcmp(latest, version) > 0) {
+    gotoxy(0, 3);
     cputs("U) upgrade to ");
     cputs(latest);
   } else {
@@ -446,35 +460,73 @@ void processConfigLine(char* cbuf) {
 }
 
 void getstr(int x, int y, char* var) {
+  // need to add maxlen... so we know how big var is.
   gotoxy(x,y);
-  cclear(30);
+  cclear(40-x);
   gotoxy(x,y);
-  for(int i=0; i<79; i++) {
-    var[i] = 0;
-  }
+  cputs(var);
+
   unsigned char key = 0;
-  int idx = 0;
+  int idx = strlen(var);
   while(key != 13) {
+    // should set cursor to current char
+    conio_cursorChar = var[idx];
+    if (conio_cursorChar == 32 || conio_cursorChar == 0) {
+      conio_cursorChar = 30;
+    }
+    gotoxy(x+idx,y);
     key = cgetc();
+    int delidx = 0;
     switch(key) {
-      case 13:
+      case 3: // F1 - delete
+        delidx = idx;
+        while(var[delidx] != 0) {
+          var[delidx] = var[delidx+1];
+          delidx++;
+        }
+        delidx = strlen(var) - 1;
+        var[delidx] = 0;
+        gotoxy(x,y);
+        cputs(var);
         break;
-      case 8:
+      case 7: // F3 - erase line
+        var[idx] = 0;
+        delidx = idx + 1;
+        while(var[delidx] != 0) {
+          var[delidx] = 0;
+          delidx++;
+        }
+        gotoxy(x+idx,y);
+        cclear(40-(x+idx));
+        break;
+      case 8: // left arrow
         if (idx > 0) {
-          var[--idx] = 0;
           gotoxy(x+idx,y);
-          cputc(' ');
+          cputc(var[idx]);
+          idx--;
           gotoxy(x+idx,y);
         }
         break;
-      default:
+      case 9: // right arrow
+        if (var[idx] != 0) {
+          cputc(var[idx]);
+          idx++;
+        }
+        break;
+      case 13: // return
+        break;
+      default: // alpha numeric
         if (key >= 32 && key <= 122) {
           var[idx++] = key;
           cputc(key);
         }
     }
   }
-  var[idx] = 0;
+  int i=0;
+  while(var[i] != 32) {
+    i++;
+  }
+  var[i] = 0;
 }
 
 void writeConfigItem(struct PAB* pab, const char* key, const char* value) {
@@ -591,7 +643,16 @@ void reboot() {
   gotoxy(0,3);
   cclear(40);
   gotoxy(0,3);
-  cputs("Reboot command issued to PI");
+  cputs("  Reboot command issued to PI");
+  for (int i=0; i<(37 * 4); i++) {
+     waitjiffies(15);
+     int c = i % 4;
+     gotoxy(0,3);
+     cputc(spinner[c]);
+     VDP_INT_POLL;
+  }
+  gotoxy(0,3);
+  cclear(40);
 }
 
 //---- the following are meant to be easy, not fast ----

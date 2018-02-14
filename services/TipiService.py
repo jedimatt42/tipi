@@ -47,7 +47,6 @@ try:
     tipiDisk = TipiDisk(tipi_io)
 
     oled.info("TIPI Ready")
-
     while True:
         logger.info("waiting for request...")
 
@@ -75,4 +74,5 @@ try:
 
         logger.info("Request completed.")
 except Exception as e:
+    oled.info("Device Error")
     logger.error("Unhandled exception in main", exc_info=True)

@@ -32,7 +32,7 @@ try:
     oled.begin()
     logger.info("TIPI Attached to I2C Oled Display")
 except Exception as e:
-    logger.error("No I2C Oled Display attached")
+    logger.exception("No I2C Oled Display attached")
     sys.exit(1)
 
 # Clear oledlay.
@@ -97,6 +97,7 @@ else:
     line = ""
 
 
+idleCounter = 0
 while True:
     for line in pygtail:
         if "oled" in line:
@@ -104,3 +105,7 @@ while True:
             msg = m.group(1)
             displayLine(msg)
     time.sleep(0.100)
+    idleCounter += 1
+    if idleCounter > 1000:
+        displayLine("192.168.1.48")
+        idleConter = 0

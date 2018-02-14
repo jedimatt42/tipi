@@ -71,6 +71,7 @@ class TipiDisk(object):
 
     def handleOpen(self, pab, devname):
         logger.debug("Opcode 0 Open - %s", devname)
+        oled.info("OPEN: %s", devname)
         logPab(pab)
         localPath = tinames.devnameToLocal(devname)
         if localPath is None:
@@ -139,6 +140,7 @@ class TipiDisk(object):
 
     def handleClose(self, pab, devname):
         logger.debug("Opcode 1 Close - %s", devname)
+        oled.info("CLOSE: %s", devname)
         logPab(pab)
         localPath = tinames.devnameToLocal(devname)
 
@@ -165,6 +167,8 @@ class TipiDisk(object):
         logger.debug("Opcode 2 Read - %s", devname)
         logPab(pab)
         localPath = tinames.devnameToLocal(devname)
+        recNum = recordNumber(pab)
+        oled.info("READ %d: %s", recNum, devname)
 
         if localPath is None:
             logger.info("Passing to other controllers")
@@ -179,7 +183,6 @@ class TipiDisk(object):
         try:
             open_file = self.openFiles[localPath]
 
-            recNum = recordNumber(pab)
             if not open_file.isLegal(pab):
                 logger.error("illegal read mode for %s", devname)
                 self.sendErrorCode(EFILERR)
@@ -201,6 +204,8 @@ class TipiDisk(object):
         logger.info("Opcode 3 Write - %s", devname)
         logPab(pab)
         localPath = tinames.devnameToLocal(devname)
+        recNum = recordNumber(pab)
+        oled.info("WRITE %d: %s", recNum, devname)
 
         if localPath is None:
             logger.info("Passing to other controllers")
@@ -234,6 +239,10 @@ class TipiDisk(object):
         logger.info("Opcode 4 Restore - %s", devname)
         logPab(pab)
         localPath = tinames.devnameToLocal(devname)
+
+        recNum = recordNumber(pab)
+        oled.info("RESTORE %d: %s", recNum, devname)
+
         if localPath is None:
             logger.info("Passing to other controllers")
             self.sendErrorcode(EDVNAME)
@@ -268,6 +277,7 @@ class TipiDisk(object):
             self.sendErrorCode(EDVNAME)
             return
         try:
+            oled.info("LOAD: %s", devname)
             if (not ti_files.isTiFile(unix_name)) and unix_name.lower().endswith(basicSuffixes):
                 prog_file = BasicFile.load(unix_name)
             else:
@@ -297,6 +307,8 @@ class TipiDisk(object):
         if unix_name is None:
             self.sendErrorCode(EDVNAME)
 
+        oled.info("SAVE: %s", devname)
+
         logger.debug("saving program to %s", unix_name)
         if self.parentExists(unix_name):
             self.sendSuccess()
@@ -324,6 +336,8 @@ class TipiDisk(object):
         unix_name = tinames.devnameToLocal(devname)
         if unix_name is None:
             self.sendErrorCode(EDVNAME)
+
+        oled.info("DELETE: %s", devname)
 
         logger.debug("deleting file %s", unix_name)
         try:
@@ -366,6 +380,8 @@ class TipiDisk(object):
                             statbyte |= STINTERNAL
                     else:
                         statbyte = NativeFile.status(localPath)
+
+        oled.info("STATUS %d: %s", statbyte, devname)
 
         self.tipi_io.send([SUCCESS])
         self.tipi_io.send([statbyte])

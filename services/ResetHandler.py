@@ -36,5 +36,5 @@ def waitForReset():
         pass
 
     logger.info("terminating...")
-    oled.info("   TIPI   Restarting")
+    oled.info("TIPI/Restarting")
     os.kill(os.getpid(), signal.SIGTERM)

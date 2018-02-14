@@ -50,23 +50,22 @@ draw = ImageDraw.Draw(image)
 
 # Load TI Basic short caps font.
 font = ImageFont.truetype(fontpath, 32)
+fontsmall = ImageFont.truetype(fontpath, 24)
 
 
 def displayLine(line):
-    ll = len(line)
-    l1s = 0
-    l1e = min(ll, 10)
-    l2s = min(ll, 10)
-    l2e = min(ll, 20)
-
-    line1 = line[l1s:l1e]
-    line2 = line[l2s:l2e]
+    lineparts = line.split('/')
+    line1 = lineparts[0]
+    if len(lineparts) == 2:
+        line2 = lineparts[1]
+    else:
+        line2 = line[min(len(line),10):]
 
     # Draw a black filled box to clear the image.
     draw.rectangle((0, 0, width, height), outline=0, fill=0)
 
     draw.text((0, 0), line1, font=font, fill=255)
-    draw.text((0, 16), line2, font=font, fill=255)
+    draw.text((0, 16), line2, font=fontsmall, fill=255)
 
     # Display image.
     oled.image(image)
@@ -106,6 +105,6 @@ while True:
             displayLine(msg)
     time.sleep(0.100)
     idleCounter += 1
-    if idleCounter > 1000:
-        displayLine("192.168.1.48")
+    if idleCounter > 200:
+        displayLine("TIPI IP:/192.168.1.48")
         idleConter = 0

@@ -74,5 +74,5 @@ try:
 
         logger.info("Request completed.")
 except Exception as e:
-    oled.info("Device Error")
+    oled.info("Crash/Device Error")
     logger.error("Unhandled exception in main", exc_info=True)

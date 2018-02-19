@@ -13,6 +13,7 @@ import re
 import sys
 import socket
 import logging
+from Oled import oled
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +57,7 @@ class TipiVariable(object):
         remote_var_key = ti_message[5] if len(ti_message) >= 6 else ''  # The name of the remote variable, if we're transmitting this var/val.
         remote_id      = ti_message[6] if len(ti_message) >= 7 else ''  # Remote ID to present, if we're transmitting this var/val. We're going to use session_id for the remote_id
 
+        oled.info("VAR:%s/%s %s", caller_guid, action, var_key)
 
         # Our response will be stored in "remote_var_key.RESP"
         response = str(remote_var_key) + '.RESP' if (len(remote_var_key)) else ''

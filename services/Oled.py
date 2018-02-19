@@ -58,7 +58,7 @@ class Oled(object):
         self.draw.rectangle((0, 0, self.width, self.height), outline=0, fill=0)
 
         self.draw.text((0, 0), line1, font=self.font, fill=255)
-        self.draw.text((0, 16), line2, font=self.fontsmall, fill=255)
+        self.draw.text((1, 16), line2, font=self.fontsmall, fill=255)
 
         # Display image.
         self.device.image(self.image.rotate(180))

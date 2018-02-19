@@ -4,10 +4,9 @@ import time
 import socket
 import threading
 import logging
+from Oled import oled
 
 logger = logging.getLogger(__name__)
-oled = logging.getLogger("oled")
-
 
 def createResetListener():
     t = threading.Thread(target=waitForReset)

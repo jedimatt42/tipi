@@ -8,8 +8,6 @@ sudo systemctl enable tipiboot.service
 sudo systemctl restart tipiboot.service
 sudo systemctl enable tipiwatchdog.service
 sudo systemctl restart tipiwatchdog.service
-sudo systemctl enable tipioled.service
-sudo systemctl restart tipioled.service
 sudo systemctl enable tipi.service
 sudo systemctl restart tipi.service
 sudo systemctl enable tipisuper.service

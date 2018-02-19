@@ -10,6 +10,7 @@ from TcpFile import TcpFile
 from TipiConfig import TipiConfig
 from UpgradeFile import UpgradeFile
 from VariablesFile import VariablesFile
+from Oled import oled
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +45,7 @@ class SpecialFiles(object):
             logger.debug("Looking for special file handler: %s", fname)
             for prefix in self.specreg.keys():
                 if fname.startswith(prefix):
+                    oled.info("Accessing/%s", fname)
                     handler = self.specreg.get(prefix, None)
                     handler.handle(pab, devname)
                     return True

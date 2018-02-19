@@ -17,10 +17,10 @@ from tipi.TipiMessage import TipiMessage
 from tifloat import tifloat
 from tinames import tinames
 from SpecialFiles import SpecialFiles
+from Oled import oled
 from Pab import *
 
 logger = logging.getLogger(__name__)
-oled = logging.getLogger('oled')
 
 basicSuffixes = (".b99", ".bas", ".xb")
 

@@ -153,6 +153,11 @@ class LevelTwo(object):
             return True
 
         fbytes = self.getFileBytes(localfilename)
+        if fbytes is None:
+            logger.error("not TIFILES")
+            self.tipi_io.send([EDEVERR])
+            return True
+
         bytestart = 128 + (startblock * 256)
         byteend = bytestart + (blocks * 256)
         total = len(fbytes)

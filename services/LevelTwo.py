@@ -7,6 +7,7 @@ from Pab import *
 from ti_files.ti_files import ti_files
 from TipiConfig import TipiConfig
 from tinames import tinames
+from Oled import oled
 
 logger = logging.getLogger(__name__)
 tipiConfig = TipiConfig.instance()
@@ -47,6 +48,7 @@ class LevelTwo(object):
         protvalue = bytes[1]
         filename = str(self.tipi_io.receive()).strip()
         logger.debug("unit: %d, filename: %s, prot: %d", unit, filename, protvalue )
+        oled.info("lvl2 protect/%d: %s", unit, filename)
 
         localname = self.getLocalName(unit,filename)
 
@@ -66,6 +68,7 @@ class LevelTwo(object):
         newfilename = str(self.tipi_io.receive()).strip()
         filename = str(self.tipi_io.receive()).strip()
         logger.debug("unit: %d, filename: %s, newname: %s", unit, filename, newfilename)
+        oled.info("lvl2 rename/%d: %s", unit, filename)
 
         origlocalname = self.getLocalName(unit,filename)
         newlocalname = self.getLocalName(unit,newfilename)
@@ -92,6 +95,7 @@ class LevelTwo(object):
         unit = self.tipi_io.receive()[0]
         pathname = str(self.tipi_io.receive()).strip()
         logger.debug("unit: %d, path: %s", unit, pathname)
+        oled.info("lvl2 path:/%d: %s", unit, pathname)
         self.unitpath[unit] = pathname
 
         localname = self.getLocalName(unit,"")
@@ -106,6 +110,7 @@ class LevelTwo(object):
         unit = self.tipi_io.receive()[0]
         dirname = str(self.tipi_io.receive()).strip()
         logger.debug("unit: %d, dir: %s", unit, dirname)
+        oled.info("lvl2 mkdir:/%d: %s", unit, pathname)
         localname = self.getLocalName(unit,dirname)
         try:
             os.makedirs(localname)
@@ -120,6 +125,7 @@ class LevelTwo(object):
         unit = self.tipi_io.receive()[0]
         dirname = str(self.tipi_io.receive()).strip()
         logger.debug("unit: %d, dir: %s", unit, dirname)
+        oled.info("lvl2 rmdir:/%d: %s", unit, dirname)
         localname = self.getLocalName(unit,dirname)
         try:
             os.rmdir(localname)
@@ -138,6 +144,7 @@ class LevelTwo(object):
         bytes = self.tipi_io.receive()
         startblock = bytes[1] + (bytes[0] << 8)
         logger.debug("unit: %d, blocks: %d, filename: %s, startblock %d", unit, blocks, filename, startblock)
+        oled.info("lvl2 read:/%d: %d %s", unit, startblock, filename)
         
         localfilename = self.getLocalName(unit,filename)
         if not os.path.exists(localfilename):
@@ -146,6 +153,11 @@ class LevelTwo(object):
             return True
 
         fbytes = self.getFileBytes(localfilename)
+        if fbytes is None:
+            logger.error("not TIFILES")
+            self.tipi_io.send([EDEVERR])
+            return True
+
         bytestart = 128 + (startblock * 256)
         byteend = bytestart + (blocks * 256)
         total = len(fbytes)
@@ -190,6 +202,7 @@ class LevelTwo(object):
         finfo = bytes[2:]
         
         logger.debug("unit: %d, blocks: %d, filename: %s, startblock %d", unit, blocks, filename, startblock)
+        oled.info("lvl2 write:/%d: %d %s", unit, startblock, filename)
 
         localfilename = self.getLocalName(unit,filename)
 

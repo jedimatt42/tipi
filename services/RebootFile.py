@@ -3,6 +3,7 @@ import time
 import logging
 
 from Pab import *
+from Oled import oled
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,7 @@ class RebootFile(object):
     def close(self, pab, devname):
         logger.info("close %s", devname)
         self.tipi_io.send([SUCCESS])
+        oled.info("Reboot/PENDING...")
         with open("/tmp/tipireboot", 'w') as fh_out:
             fh_out.write("woot")
 

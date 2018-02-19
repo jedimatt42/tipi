@@ -16,10 +16,15 @@ fi
 
 cd /home/tipi/tipi/setup/
 
+if [ -e /lib/systemd/system/tipioled.service ]; then
+  systemctl stop tipioled.service
+  systemctl disable tipioled.service
+  rm /lib/systemd/system/tipioled.service
+fi
+
 systemctl stop tipi.service
 systemctl stop tipiweb.service
 systemctl stop tipimon.service
-systemctl stop tipioled.service
 systemctl stop tipiwatchdog.service
 systemctl stop tipiboot.service
 
@@ -28,7 +33,6 @@ cp *.service /lib/systemd/system/
 systemctl enable tipiboot.service
 systemctl enable tipiwatchdog.service
 systemctl enable tipi.service
-systemctl enable tipioled.service
 systemctl enable tipiweb.service
 systemctl enable tipimon.service
 systemctl enable tipisuper.service
@@ -36,7 +40,6 @@ systemctl enable tipisuper.service
 # the order below matters
 systemctl restart tipiboot.service
 systemctl restart tipiwatchdog.service
-systemctl restart tipioled.service
 systemctl restart tipimon.service
 systemctl restart tipiweb.service
 systemctl restart tipi.service

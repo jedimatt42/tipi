@@ -4,10 +4,9 @@ import time
 import socket
 import threading
 import logging
+from Oled import oled
 
 logger = logging.getLogger(__name__)
-oled = logging.getLogger("oled")
-
 
 def createResetListener():
     t = threading.Thread(target=waitForReset)
@@ -36,5 +35,5 @@ def waitForReset():
         pass
 
     logger.info("terminating...")
-    oled.info("   TIPI   Restarting")
+    oled.info("Restart/PENDING...")
     os.kill(os.getpid(), signal.SIGTERM)

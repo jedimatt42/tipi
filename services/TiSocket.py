@@ -3,6 +3,7 @@ import logging
 import errno
 import socket
 import fcntl
+from Oled import oled
 
 # Represent socket access from Raw extensions. This is registered as 0x22 in RawExtensions.py
 #  usage: send a message starting with 0x22 as the first byte. 
@@ -77,6 +78,7 @@ class TiSocket(object):
             sock.connect(server)
             fcntl.fcntl(sock, fcntl.F_SETFL, os.O_NONBLOCK)
             logger.info("connected")
+            oled.info("Socket %d/Connected", handleId)
             return GOOD
         except Exception as e:
             logger.info("failed to connect socket: %d", handleId, exc_info=True)
@@ -91,6 +93,7 @@ class TiSocket(object):
             del(self.handles[handleId])
             self.safeClose(existing)
             logger.info("closed socket: %d", handleId)
+            oled.info("Socket %d/Closed", handleId)
         return GOOD
 
     # bytes: 0x22, handleId, write-cmd, <bytes to write>
@@ -102,6 +105,7 @@ class TiSocket(object):
         try:
             existing.sendall(bytes[3:])
             logger.info("wrote %d bytes to socket: %d", len(bytes[3:]), handleId)
+            oled.info("Socket %d/Wrote %d bytes", handleId, len(bytes[3:]))
             return GOOD
         except Exception as e:
             del(self.handles[handleId])
@@ -121,6 +125,7 @@ class TiSocket(object):
             limit = (bytes[3] << 8) + bytes[4]
             data = bytearray(existing.recv(limit))
             logger.info("read %d bytes from %d", len(data), handleId)
+            oled.info("Socket %d/Read %d bytes", handleId, len(data))
             return data
         except socket.error as e:
             err = e.args[0]

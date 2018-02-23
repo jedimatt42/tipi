@@ -16,13 +16,13 @@ btipicfg
 	LI	R2,10		; length: 10 bytes.
 	BLWP	@VMBW		; copy LOAD pab template to VDP
 	AI	R0,9		; destination: length byte in VDP PAB
-	MOV	R8,R1		; source: string parameter to call tipi("
-	AI	R1,7		;   source is 7 bytes after call token as long as CALL is TIPI
+	MOV	R8,R1		; source: string parameter to " TIPI" in CALL TIPI...
+	AI	R1,5		;   check if '(' is present for parameters
 	.setvdpra R1
 	CLR	R9
 	MOV	@VDPRD,R9
-	CI	R9,0
-	JNE	copyname 
+	CI	R9,>B700	; compare with string parameter tokens are present
+	JEQ	copyname 
 	; otherwise use default name
 	LI	R1,TIPICFG
 	LI	R2,13
@@ -30,7 +30,13 @@ btipicfg
 	JMP	loadfiles
 
 copyname
-	; R0 and R1 should still be set from above activity
+	; R0 is still set to PAB destination for devicename
+	; Reload string source location
+	MOV	R8,R1
+	AI	R1,7		; skip to after the TIPI("
+	.setvdpra R1
+	CLR	R9
+	MOV	@VDPRD,R9
 	MOV	R9,R2
 	SWPB	R2
 	INC	R2

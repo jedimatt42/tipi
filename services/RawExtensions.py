@@ -1,5 +1,6 @@
 from Mouse import Mouse
 from TipiVariable import TipiVariable
+from TiSocket import TiSocket
 
 import sys
 
@@ -10,6 +11,7 @@ class RawExtensions(object):
         #
         self.__reg = {0x20: Mouse(tipi_io),
                       0x21: TipiVariable(tipi_io),
+                      0x22: TiSocket(tipi_io)
                      }
 
     def handle(self, bytes):

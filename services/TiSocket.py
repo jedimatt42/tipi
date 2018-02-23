@@ -1,3 +1,4 @@
+import os
 import logging
 import errno
 import socket
@@ -56,24 +57,29 @@ class TiSocket(object):
     # bytes: 0x22, handleId, open-cmd, <hostname:port>
     def handleOpen(self, bytes):
         handleId = bytes[1]
+        params = str(bytes[3:]).split(':')
+        hostname = params[0]
+        port = int(params[1])
+        logger.info("open socket(%d) %s:%d", handleId, hostname, port)
+
         existing = self.handles.get(handleId, None)
         # close the socket if we already had one for this handle.
         if not existing is None:
-            self.handles.remove(handleId)
+            del(self.handles[handleId])
             self.safeClose(existing)
             existing = None
+            logger.debug("closed leftover socket: %d", handleId)
         # need to get the target host and port
-        params = str(bytes[3:]).split(':')
-        hostname = params[0]
-        port = params[1]
         server = (hostname, port)
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.handles[handleId] = sock
         try:
             sock.connect(server)
             fcntl.fcntl(sock, fcntl.F_SETFL, os.O_NONBLOCK)
+            logger.info("connected")
             return GOOD
         except Exception as e:
+            logger.info("failed to connect socket: %d", handleId, exc_info=True)
             self.safeClose(sock)
             return BAD
 
@@ -82,8 +88,9 @@ class TiSocket(object):
         handleId = bytes[1]
         existing = self.handles.get(handleId, None)
         if not existing is None:
-            self.handles.remove(handleId)
+            del(self.handles[handleId])
             self.safeClose(existing)
+            logger.info("closed socket: %d", handleId)
         return GOOD
 
     # bytes: 0x22, handleId, write-cmd, <bytes to write>
@@ -94,21 +101,36 @@ class TiSocket(object):
             return BAD
         try:
             existing.sendall(bytes[3:])
+            logger.info("wrote %d bytes to socket: %d", len(bytes[3:]), handleId)
             return GOOD
         except Exception as e:
-            self.handles.remove(handleId)
+            del(self.handles[handleId])
             self.safeClose(existing)
+            logger.info("failed to write to socket: %d", handleId, exc_info=True)
             return BAD
 
     # bytes: 0x22, handleId, read-cmd, MSB, LSB
     def handleRead(self, bytes):
-        handleId = bytes[1]
-        existing = self.handles.get(handleId, None)
-        if existing is None:
-            return BAD
-        limit = (bytes[3] << 8) + bytes[4]
-        data = bytearray(existing.recv(limit))
-        return data
+        try:
+            handleId = bytes[1]
+            logger.info("read socket: %d", handleId)
+            existing = self.handles.get(handleId, None)
+            if existing is None:
+                logger.info("socket not open: %d", handleId)
+                return BAD
+            limit = (bytes[3] << 8) + bytes[4]
+            data = bytearray(existing.recv(limit))
+            logger.info("read %d bytes from %d", len(data), handleId)
+            return data
+        except socket.error as e:
+            err = e.args[0]
+            if err == errno.EAGAIN or err == errno.EWOULDBLOCK:
+                logger.info("no data ready: %d", handleId)
+                return bytearray(0)
+        except Exception as e:
+            logger.error(e, exc_info=True)
+        return BAD
+
 
     def safeClose(self, socket):
         try:

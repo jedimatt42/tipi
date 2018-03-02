@@ -94,7 +94,6 @@ vsnext
 	
 
 ;;; REQUEST a message from the RPi - expects a word containing the length of the message followed by the payload.
-;   error checking and retries are performed
 ; Register usage:
 ;   R0 - receive buffer size. Result is number of bytes loaded into buffer.
 ;   R1 - cpu address of buffer
@@ -108,10 +107,10 @@ recvmsg
 	.transmit TSRB		; wait for byte ready
 	MOVB	@RDIN,R4	; read LSB of data size
 	SWPB	R4
+	CLR	R0		; reset byte counter
 	CI	R4,>0000	; if size is 0, then be done
 	JEQ	rrt
 
-	CLR	R0		; reset byte counter
 rnext
 	.transmit TSRB		; wait for byte ready
 	MOVB	@RDIN,*R1+	; copy byte from tipi to RAM
@@ -135,10 +134,10 @@ vrecvmsg
 	.transmit TSRB		; wait for next byte
 	MOVB	@RDIN,R4	; read LSB of data size
 	SWPB	R4
+	CLR	R0		; set counter for read data
 	CI	R4,>0000	; if size is 0, then be done.
 	JEQ	vrrt
 
-	CLR	R0		; set counter for read data
 	.setvdpwa R1		; set destination for the data we read
 vrnext
 	.transmit TSRB		; wait for byte ready

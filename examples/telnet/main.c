@@ -18,6 +18,11 @@ unsigned char port[10];
 unsigned char buffer[128];
 unsigned char output[10];
 
+// state machine variables
+int mode;
+unsigned char command;
+unsigned char param;
+
 #define TI_SOCKET_REQUEST 0x22
 #define TI_SOCKET_OPEN 0x01
 #define TI_SOCKET_CLOSE 0x02
@@ -136,13 +141,28 @@ unsigned char connect(unsigned char* hostname, unsigned char* port) {
   return buffer[0];
 }
 
-int send_socket(unsigned char byte) {
+int send_char(unsigned char byte) {
   output[0] = TI_SOCKET_REQUEST;
   output[1] = socketId;
   output[2] = TI_SOCKET_WRITE;
   output[3] = byte;
   tipi_on();
   tipi_sendmsg(4, output);
+  int bufsize = 0;
+  tipi_recvmsg(&bufsize, buffer);
+  tipi_off();
+  return buffer[0];
+}
+
+int send_cmd(unsigned char req, unsigned char param) {
+  output[0] = TI_SOCKET_REQUEST;
+  output[1] = socketId;
+  output[2] = TI_SOCKET_WRITE;
+  output[3] = CMD;
+  output[4] = req;
+  output[5] = param;
+  tipi_on();
+  tipi_sendmsg(6, output);
   int bufsize = 0;
   tipi_recvmsg(&bufsize, buffer);
   tipi_off();
@@ -163,14 +183,48 @@ int read_socket() {
   return bufsize;
 }
 
+void clearState() {
+  mode = 0;
+  command = 0;
+  param = 0;
+}
+
 void process(int bufsize, unsigned char* buffer) {
   for(int i=0; i<bufsize; i++) {
-    cputc(buffer[i]);
+    unsigned char current = buffer[i];
+    if (mode == CMD) {
+      if (command == 0) {
+        command = current;
+      } else {
+        switch (command) {
+          case DO:
+            send_cmd(WONT, current);
+            break;
+          case DONT:
+            send_cmd(WONT, current);
+            break;
+          case WILL:
+            break;
+          case WONT:
+            break;
+          default:
+            break;
+        }
+        clearState();
+      }
+    } else {
+      if (current == CMD) {
+        mode = CMD;
+      } else {
+        cputc(current);
+      }
+    }
   }
 }
 
 void term() {
   setupScreen();
+  clearState();
   clearbuf(32, hostname);
   clearbuf(10, port);
   clearbuf(128, buffer);
@@ -193,6 +247,7 @@ void term() {
     gotoxy(0,4);
     cputs("Press any key to continue...");
     cgetc();
+    return;
   } else {
     gotoxy(0,3);
     cputs("Connected.");
@@ -207,7 +262,7 @@ void term() {
     if (kbhit()) {
       unsigned char key = cgetc();
       cputc(key);
-      if (!send_socket(key)) {
+      if (!send_char(key)) {
         cputs("Disconnected. Press any key.");
         cgetc();
 	return;
@@ -216,8 +271,8 @@ void term() {
     } else {
       idle++;
       if (idle > 100) {
-	int bufsize = read_socket();
-	process(bufsize, buffer);
+        int bufsize = read_socket();
+        process(bufsize, buffer);
       }
     }  
   }

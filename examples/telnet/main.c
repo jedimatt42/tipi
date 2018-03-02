@@ -38,10 +38,28 @@ void clearbuf(int len, unsigned char *buf) {
 
 void setupScreen() {
   set_text();
-  charset();
+  charsetlc();
   bgcolor(COLOR_CYAN);
   textcolor(COLOR_BLACK);
   clrscr();
+  gotoxy(0,0);
+  cputs("1: 40 Column");
+  gotoxy(0,1);
+  cputs("2: 80 Column");
+  while(1) {
+    unsigned char key = cgetc();
+    if (key == 50) {
+      set_text80();
+      charsetlc();
+      clrscr();
+      return;
+    } else if (key == 49) {
+      set_text();
+      charsetlc();
+      clrscr();
+      return;
+    }
+  }
 }
 
 void getstr(int x, int y, unsigned char* var, int maxlen) {
@@ -261,7 +279,7 @@ void term() {
 
     if (kbhit()) {
       unsigned char key = cgetc();
-      cputc(key);
+      // cputc(key);
       if (!send_char(key)) {
         cputs("Disconnected. Press any key.");
         cgetc();

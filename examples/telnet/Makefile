@@ -14,8 +14,10 @@ LDFLAGS=\
 
 OBJECT_LIST=\
   crt0.o\
+  main.o\
   tipi_msg.o\
-  main.o
+  oem_low_chars.o\
+  oem_high_chars.o
 
 all: $(FNAME)
 

@@ -4,6 +4,9 @@
 #include <conio.h>
 #include "tipi_msg.h"
 
+extern unsigned char PAT0;
+extern unsigned char PAT127;
+
 #define DO 0xfd
 #define WONT 0xfc
 #define WILL 0xfb
@@ -36,9 +39,15 @@ void clearbuf(int len, unsigned char *buf) {
   }
 }
 
+void defineChars() {
+  charsetlc();
+  vdpmemcpy(gPattern, &PAT0, 32 * 8);
+  vdpmemcpy(gPattern + (127 * 8), &PAT127, 129 * 8);
+}
+
 void setupScreen() {
   set_text();
-  charsetlc();
+  defineChars();
   bgcolor(COLOR_CYAN);
   textcolor(COLOR_BLACK);
   clrscr();
@@ -47,17 +56,20 @@ void setupScreen() {
   gotoxy(0,1);
   cputs("2: 80 Column");
   while(1) {
-    unsigned char key = cgetc();
-    if (key == 50) {
-      set_text80();
-      charsetlc();
-      clrscr();
-      return;
-    } else if (key == 49) {
-      set_text();
-      charsetlc();
-      clrscr();
-      return;
+    __asm__("limi 2\n\tlimi 0");
+    if (kbhit()) {
+      unsigned char key = cgetc();
+      if (key == 50) {
+	set_text80();
+	defineChars();
+	clrscr();
+	return;
+      } else if (key == 49) {
+	set_text();
+	defineChars();
+	clrscr();
+	return;
+      }
     }
   }
 }
@@ -77,57 +89,60 @@ void getstr(int x, int y, unsigned char* var, int maxlen) {
       conio_cursorChar = 30;
     }
     gotoxy(x+idx,y);
-    key = cgetc();
-    int delidx = 0;
-    switch(key) {
-      case 3: // F1 - delete
-        delidx = idx;
-        while(var[delidx] != 0) {
-          var[delidx] = var[delidx+1];
-          delidx++;
-        }
-        delidx = strlen(var) - 1;
-        var[delidx] = 0;
-        gotoxy(x,y);
-        cputs(var);
-        break;
-      case 7: // F3 - erase line
-        var[idx] = 0;
-        delidx = idx + 1;
-        while(var[delidx] != 0) {
-          var[delidx] = 0;
-          delidx++;
-        }
-        gotoxy(x+idx,y);
-        cclear(40-(x+idx));
-        break;
-      case 8: // left arrow
-        if (idx > 0) {
-          gotoxy(x+idx,y);
-          cputc(var[idx]);
-          idx--;
-          gotoxy(x+idx,y);
-        }
-        break;
-      case 9: // right arrow
-        if (var[idx] != 0) {
-          cputc(var[idx]);
-          idx++;
-          if (idx == maxlen) {
-            idx--;
-          }
-        }
-        break;
-      case 13: // return
-        break;
-      default: // alpha numeric
-        if (key >= 32 && key <= 122) {
-          var[idx++] = key;
-          cputc(key);
-          if (idx == maxlen) {
-            idx--;
-          }
-        }
+    __asm__("limi 2\n\tlimi 0");
+    if (kbhit()) {
+      key = cgetc();
+      int delidx = 0;
+      switch(key) {
+	case 3: // F1 - delete
+	  delidx = idx;
+	  while(var[delidx] != 0) {
+	    var[delidx] = var[delidx+1];
+	    delidx++;
+	  }
+	  delidx = strlen(var) - 1;
+	  var[delidx] = 0;
+	  gotoxy(x,y);
+	  cputs(var);
+	  break;
+	case 7: // F3 - erase line
+	  var[idx] = 0;
+	  delidx = idx + 1;
+	  while(var[delidx] != 0) {
+	    var[delidx] = 0;
+	    delidx++;
+	  }
+	  gotoxy(x+idx,y);
+	  cclear(40-(x+idx));
+	  break;
+	case 8: // left arrow
+	  if (idx > 0) {
+	    gotoxy(x+idx,y);
+	    cputc(var[idx]);
+	    idx--;
+	    gotoxy(x+idx,y);
+	  }
+	  break;
+	case 9: // right arrow
+	  if (var[idx] != 0) {
+	    cputc(var[idx]);
+	    idx++;
+	    if (idx == maxlen) {
+	      idx--;
+	    }
+	  }
+	  break;
+	case 13: // return
+	  break;
+	default: // alpha numeric
+	  if (key >= 32 && key <= 122) {
+	    var[idx++] = key;
+	    cputc(key);
+	    if (idx == maxlen) {
+	      idx--;
+	    }
+	  }
+      }
     }
   }
   int i=0;
@@ -246,7 +261,6 @@ void term() {
   clearbuf(32, hostname);
   clearbuf(10, port);
   clearbuf(128, buffer);
-  setupScreen();
   gotoxy(0,0);
   cputs("HOST: ");
   getstr(6,0, hostname, 32);
@@ -279,7 +293,7 @@ void term() {
 
     if (kbhit()) {
       unsigned char key = cgetc();
-      // cputc(key);
+      // cputc(key); // unless local echo of
       if (!send_char(key)) {
         cputs("Disconnected. Press any key.");
         cgetc();

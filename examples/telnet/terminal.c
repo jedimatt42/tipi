@@ -7,6 +7,9 @@ int stage;
 unsigned char bytestr[20];
 int bs_idx;
 
+unsigned char cursor_store_x;
+unsigned char cursor_store_y;
+
 #define STAGE_OPEN 0
 #define STAGE_ESC 1
 #define STAGE_CSI 2
@@ -17,6 +20,9 @@ void resetState() {
 }
 
 void initTerminal() {
+  cursor_store_x = 0;
+  cursor_store_y = 0;
+
   resetState();
 }
 
@@ -113,6 +119,60 @@ void cursorGoto(int x, int y) {
   gotoxy(x, y);
 }
 
+void eraseDisplay(int opt) {
+  unsigned char scx;
+  unsigned char scy;
+  screensize(&scx, &scy);
+  int oldx = wherex();
+  int oldy = wherey();
+  int cursorAddr = gImage + (oldx + (oldy + scy));
+
+  switch (opt) {
+    case 0: // clear from cursor to end of screen, remain at location
+      vdpmemset(cursorAddr, 0x20, (scx * scy) + gImage - cursorAddr);
+      gotoxy(oldx, oldy);
+      break;
+    case 1: // clear from cursor to beginning of screen, remain at location
+      vdpmemset(gImage, 0x20, cursorAddr - gImage);
+      gotoxy(oldx, oldy);
+      break;
+    case 3: // TODO: if we add scroll back buffer, 3 should clear that too.
+    case 2: // clear full screen, return to top
+      clrscr();
+      gotoxy(0,0);
+      break;
+  }
+}
+
+void eraseLine(int opt) {
+  unsigned char scx;
+  unsigned char scy;
+  screensize(&scx, &scy);
+  int oldx = wherex();
+  int oldy = wherey();
+  switch (opt) {
+    case 0: // to end of line
+      cclear(scx - oldx);
+      break;
+    case 1: // to beginning of line
+      gotox(0);
+      cclear(oldx);
+      break;
+    case 2: // entire line
+      gotox(0);
+      cclear(scx);
+      break;
+  }
+  gotoxy(oldx, oldy);
+}
+
+void scrollUp(int lc) {
+  gotoxy(0,23);
+  for (int i = 0; i < lc; i++) {
+    cputc('\n');
+  }
+}
+
 void doCommand(unsigned char c) {
   // Note, ANSI cursor locations (1,1) upper left corner.
   switch (c) {
@@ -144,14 +204,24 @@ void doCommand(unsigned char c) {
       cursorGoto(getParamB(1), getParamA(1));
       break;
     case 'J': // erase in display, 1 param, default 0
+      eraseDisplay(getParamA(0));
       break;
     case 'K': // erase in line, 1 param, default 0
+      eraseLine(getParamA(0));
       break;
     case 'S': // scroll up lines, 1 param, default 1
+      scrollUp(getParamA(1));
       break;
     case 'T': // scroll down lines, 1 param, default 1
       break;
     case 'm': // color (SGR), n params
+      break;
+    case 's': // store cursor, no params
+      cursor_store_x = wherex();
+      cursor_store_y = wherey();
+      break;
+    case 'u': // restore cursor, no params.
+      gotoxy(cursor_store_x, cursor_store_y);
       break;
   }
 }

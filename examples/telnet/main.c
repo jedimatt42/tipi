@@ -52,6 +52,8 @@ void setupScreen() {
   bgcolor(COLOR_CYAN);
   textcolor(COLOR_BLACK);
   clrscr();
+  cursor(1);
+  conio_cursorChar = 219;
   gotoxy(0,0);
   cputs("1: 40 Column");
   gotoxy(0,1);

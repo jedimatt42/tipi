@@ -16,6 +16,7 @@ OBJECT_LIST=\
   crt0.o\
   main.o\
   tipi_msg.o\
+  terminal.o\
   oem_low_chars.o\
   oem_high_chars.o
 

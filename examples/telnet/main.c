@@ -3,6 +3,7 @@
 #include <system.h>
 #include <conio.h>
 #include "tipi_msg.h"
+#include "terminal.h"
 
 extern unsigned char PAT0;
 extern unsigned char PAT127;
@@ -56,7 +57,7 @@ void setupScreen() {
   gotoxy(0,1);
   cputs("2: 80 Column");
   while(1) {
-    __asm__("limi 2\n\tlimi 0");
+    VDP_INT_POLL;
     if (kbhit()) {
       unsigned char key = cgetc();
       if (key == 50) {
@@ -89,7 +90,7 @@ void getstr(int x, int y, unsigned char* var, int maxlen) {
       conio_cursorChar = 30;
     }
     gotoxy(x+idx,y);
-    __asm__("limi 2\n\tlimi 0");
+    VDP_INT_POLL;
     if (kbhit()) {
       key = cgetc();
       int delidx = 0;
@@ -220,6 +221,7 @@ void clearState() {
   mode = 0;
   command = 0;
   param = 0;
+  initTerminal();
 }
 
 void process(int bufsize, unsigned char* buffer) {
@@ -249,7 +251,7 @@ void process(int bufsize, unsigned char* buffer) {
       if (current == CMD) {
         mode = CMD;
       } else {
-        cputc(current);
+        terminalDisplay(current);
       }
     }
   }
@@ -289,7 +291,7 @@ void term() {
   int idle = 0;
 
   while( 1 ) {
-    __asm__("limi 2\n\tlimi 0");
+    VDP_INT_POLL;
 
     if (kbhit()) {
       unsigned char key = cgetc();

@@ -191,7 +191,7 @@ int send_chars(unsigned char* buf, int size) {
     output[i] = buf[i-3];
   }
   tipi_on();
-  tipi_sendmsg(4 + size, output);
+  tipi_sendmsg(3 + size, output);
   int bufsize = 0;
   tipi_recvmsg(&bufsize, buffer);
   tipi_off();

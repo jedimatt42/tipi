@@ -260,5 +260,38 @@ void terminalDisplay(unsigned char c) {
 }
 
 void terminalKey(unsigned char* buf, int* len) {
-  // todo, translate output keys into correct terminal keyboard commands
+  // translate output keys into correct terminal keyboard commands
+  switch (buf[0]) {
+    case 136: // ctrl-h
+      buf[0] = 8; // backspace
+      *len = 1;
+      break;
+    case 8: // left-arrrow
+      buf[0] = 27; // esc
+      buf[1] = 'D';
+      *len = 2;
+      break;
+    case 11: // up-arrow
+      buf[0] = 27;
+      buf[1] = 'A';
+      *len = 2;
+      break;
+    case 10: // down-arrow
+      buf[0] = 27;
+      buf[1] = 'B';
+      *len = 2;
+      break;
+    case 9: // right-arrow
+      buf[0] = 27;
+      buf[1] = 'C';
+      *len = 2;
+      break;
+    case 1: // tab
+      buf[0] = 9;
+      *len = 1;
+      break;
+    default:
+      *len = 1;
+      break;
+  }
 }

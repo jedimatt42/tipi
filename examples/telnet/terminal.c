@@ -258,3 +258,7 @@ void terminalDisplay(unsigned char c) {
     }
   }
 }
+
+void terminalKey(unsigned char* buf, int* len) {
+  // todo, translate output keys into correct terminal keyboard commands
+}

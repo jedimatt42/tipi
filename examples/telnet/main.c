@@ -44,6 +44,7 @@ void defineChars() {
   charsetlc();
   vdpmemcpy(gPattern, &PAT0, 32 * 8);
   vdpmemcpy(gPattern + (127 * 8), &PAT127, 129 * 8);
+  conio_cursorChar = 219;
 }
 
 void setupScreen() {
@@ -53,28 +54,26 @@ void setupScreen() {
   textcolor(COLOR_BLACK);
   clrscr();
   cursor(1);
-  conio_cursorChar = 219;
   gotoxy(0,0);
   cputs("1: 40 Column");
   gotoxy(0,1);
   cputs("2: 80 Column");
-  while(1) {
+  int waiting = 1;
+  while(waiting) {
     VDP_INT_POLL;
     if (kbhit()) {
       unsigned char key = cgetc();
       if (key == 50) {
-	set_text80();
-	defineChars();
-	clrscr();
-	return;
+        set_text80();
+        waiting = 0;
       } else if (key == 49) {
-	set_text();
-	defineChars();
-	clrscr();
-	return;
+        set_text();
+        waiting = 0;
       }
     }
   }
+  defineChars();
+  clrscr();
 }
 
 void getstr(int x, int y, unsigned char* var, int maxlen) {
@@ -83,68 +82,70 @@ void getstr(int x, int y, unsigned char* var, int maxlen) {
   gotoxy(x,y);
   cputs(var);
 
+  unsigned char normal_cursorChar = conio_cursorChar;
+
   unsigned char key = 0;
   int idx = strlen(var);
   while(key != 13) {
     // should set cursor to current char
     conio_cursorChar = var[idx];
     if (conio_cursorChar == 32 || conio_cursorChar == 0) {
-      conio_cursorChar = 30;
+      conio_cursorChar = normal_cursorChar;
     }
     gotoxy(x+idx,y);
     VDP_INT_POLL;
-    if (kbhit()) {
+    if (1 || kbhit()) {
       key = cgetc();
       int delidx = 0;
       switch(key) {
-	case 3: // F1 - delete
-	  delidx = idx;
-	  while(var[delidx] != 0) {
-	    var[delidx] = var[delidx+1];
-	    delidx++;
-	  }
-	  delidx = strlen(var) - 1;
-	  var[delidx] = 0;
-	  gotoxy(x,y);
-	  cputs(var);
-	  break;
-	case 7: // F3 - erase line
-	  var[idx] = 0;
-	  delidx = idx + 1;
-	  while(var[delidx] != 0) {
-	    var[delidx] = 0;
-	    delidx++;
-	  }
-	  gotoxy(x+idx,y);
-	  cclear(40-(x+idx));
-	  break;
-	case 8: // left arrow
-	  if (idx > 0) {
-	    gotoxy(x+idx,y);
-	    cputc(var[idx]);
-	    idx--;
-	    gotoxy(x+idx,y);
-	  }
-	  break;
-	case 9: // right arrow
-	  if (var[idx] != 0) {
-	    cputc(var[idx]);
-	    idx++;
-	    if (idx == maxlen) {
-	      idx--;
-	    }
-	  }
-	  break;
-	case 13: // return
-	  break;
-	default: // alpha numeric
-	  if (key >= 32 && key <= 122) {
-	    var[idx++] = key;
-	    cputc(key);
-	    if (idx == maxlen) {
-	      idx--;
-	    }
-	  }
+        case 3: // F1 - delete
+          delidx = idx;
+          while(var[delidx] != 0) {
+            var[delidx] = var[delidx+1];
+            delidx++;
+          }
+          delidx = strlen(var) - 1;
+          var[delidx] = 0;
+          gotoxy(x,y);
+          cputs(var);
+          break;
+        case 7: // F3 - erase line
+          var[idx] = 0;
+          delidx = idx + 1;
+          while(var[delidx] != 0) {
+            var[delidx] = 0;
+            delidx++;
+          }
+          gotoxy(x+idx,y);
+          cclear(40-(x+idx));
+          break;
+        case 8: // left arrow
+          if (idx > 0) {
+            gotoxy(x+idx,y);
+            cputc(var[idx]);
+            idx--;
+            gotoxy(x+idx,y);
+          }
+          break;
+        case 9: // right arrow
+          if (var[idx] != 0) {
+            cputc(var[idx]);
+            idx++;
+            if (idx == maxlen) {
+              idx--;
+            }
+          }
+          break;
+        case 13: // return
+          break;
+        default: // alpha numeric
+          if (key >= 32 && key <= 122) {
+            var[idx++] = key;
+            cputc(key);
+            if (idx == maxlen) {
+              idx--;
+            }
+          }
       }
     }
   }
@@ -177,28 +178,20 @@ unsigned char connect(unsigned char* hostname, unsigned char* port) {
   return buffer[0];
 }
 
-int send_char(unsigned char byte) {
+// will send at most 6 byte character sequences (cause output is only 10 bytes right now)
+int send_chars(unsigned char* buf, int size) {
   output[0] = TI_SOCKET_REQUEST;
   output[1] = socketId;
   output[2] = TI_SOCKET_WRITE;
-  output[3] = byte;
-  tipi_on();
-  tipi_sendmsg(4, output);
-  int bufsize = 0;
-  tipi_recvmsg(&bufsize, buffer);
-  tipi_off();
-  return buffer[0];
-}
 
-int send_cmd(unsigned char req, unsigned char param) {
-  output[0] = TI_SOCKET_REQUEST;
-  output[1] = socketId;
-  output[2] = TI_SOCKET_WRITE;
-  output[3] = CMD;
-  output[4] = req;
-  output[5] = param;
+  if (size > 6) {
+    size = 6;
+  }
+  for(int i=3; i<(3+size); i++) {
+    output[i] = buf[i-3];
+  }
   tipi_on();
-  tipi_sendmsg(6, output);
+  tipi_sendmsg(4 + size, output);
   int bufsize = 0;
   tipi_recvmsg(&bufsize, buffer);
   tipi_off();
@@ -217,6 +210,14 @@ int read_socket() {
   tipi_recvmsg(&bufsize, buffer);
   tipi_off();
   return bufsize;
+}
+
+int send_cmd(unsigned char req, unsigned char param) {
+  unsigned char cmdbuf[3];
+  cmdbuf[0] = CMD;
+  cmdbuf[1] = req;
+  cmdbuf[2] = param;
+  return send_chars(cmdbuf, 3);
 }
 
 void clearState() {
@@ -296,12 +297,14 @@ void term() {
     VDP_INT_POLL;
 
     if (kbhit()) {
-      unsigned char key = cgetc();
-      // cputc(key); // unless local echo of
-      if (!send_char(key)) {
+      unsigned char keybuf[4];
+      keybuf[0] = cgetc();
+      int keylen = 1;
+      terminalKey(keybuf, &keylen);
+      if (!send_chars(keybuf, keylen)) {
         cputs("Disconnected. Press any key.");
         cgetc();
-	return;
+        return;
       }
       idle = 0;
     } else {

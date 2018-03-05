@@ -2,7 +2,7 @@
 #include <string.h>
 #include <system.h>
 #include <conio.h>
-#include "tipi_msg.h"
+#include "ti_socket.h"
 #include "terminal.h"
 
 extern unsigned char PAT0;
@@ -19,20 +19,12 @@ extern unsigned char PAT127;
 unsigned char hostname[32];
 unsigned char port[10];
 
-unsigned char buffer[128];
-unsigned char output[10];
 
 // state machine variables
 int mode;
 unsigned char command;
 unsigned char param;
 
-#define TI_SOCKET_REQUEST 0x22
-#define TI_SOCKET_OPEN 0x01
-#define TI_SOCKET_CLOSE 0x02
-#define TI_SOCKET_WRITE 0x03
-#define TI_SOCKET_READ 0x04
-#define socketId 0x00
 
 void clearbuf(int len, unsigned char *buf) {
   for (int i=0; i<len; i++) {
@@ -156,62 +148,6 @@ void getstr(int x, int y, unsigned char* var, int maxlen) {
   var[i] = 0;
 }
 
-unsigned char connect(unsigned char* hostname, unsigned char* port) {
-  buffer[0] = TI_SOCKET_REQUEST;
-  buffer[1] = socketId;
-  buffer[2] = TI_SOCKET_OPEN;
-  unsigned char* cursor = buffer + 3;
-  strcpy(cursor, hostname);
-  cursor += strlen(hostname);
-  *cursor = ':';
-  cursor++;
-  strcpy(cursor, port);
-  cursor += strlen(port);
-  int bufsize = cursor - buffer;
-
-  tipi_on();
-  tipi_sendmsg(bufsize, buffer);
-  bufsize = 0;
-  tipi_recvmsg(&bufsize, buffer);
-  tipi_off();
-
-  return buffer[0];
-}
-
-// will send at most 6 byte character sequences (cause output is only 10 bytes right now)
-int send_chars(unsigned char* buf, int size) {
-  output[0] = TI_SOCKET_REQUEST;
-  output[1] = socketId;
-  output[2] = TI_SOCKET_WRITE;
-
-  if (size > 6) {
-    size = 6;
-  }
-  for(int i=3; i<(3+size); i++) {
-    output[i] = buf[i-3];
-  }
-  tipi_on();
-  tipi_sendmsg(3 + size, output);
-  int bufsize = 0;
-  tipi_recvmsg(&bufsize, buffer);
-  tipi_off();
-  return buffer[0];
-}
-
-int read_socket() {
-  output[0] = TI_SOCKET_REQUEST;
-  output[1] = socketId;
-  output[2] = TI_SOCKET_READ;
-  output[3] = 0; // buffer size is just 128 bytes.
-  output[4] = 128;
-  tipi_on();
-  tipi_sendmsg(5, output);
-  int bufsize = 0;
-  tipi_recvmsg(&bufsize, buffer);
-  tipi_off();
-  return bufsize;
-}
-
 int send_cmd(unsigned char req, unsigned char param) {
   unsigned char cmdbuf[3];
   cmdbuf[0] = CMD;
@@ -265,7 +201,6 @@ void term() {
   clearState();
   clearbuf(32, hostname);
   clearbuf(10, port);
-  clearbuf(128, buffer);
   gotoxy(0,0);
   cputs("HOST: ");
   getstr(6,0, hostname, 32);

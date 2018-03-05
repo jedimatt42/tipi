@@ -173,7 +173,7 @@ void scrollUp(int lc) {
   }
 }
 
-void doCommand(unsigned char c) {
+void doCsiCommand(unsigned char c) {
   // Note, ANSI cursor locations (1,1) upper left corner.
   switch (c) {
     case 'A': // cursor UP, 1 param, default 1
@@ -226,6 +226,10 @@ void doCommand(unsigned char c) {
   }
 }
 
+void doEscCommand(unsigned char c) {
+  
+}
+
 void terminalDisplay(unsigned char c) {
   if (stage == STAGE_OPEN) {
     if (c == 27) {
@@ -239,14 +243,13 @@ void terminalDisplay(unsigned char c) {
       stage = STAGE_CSI;
       bs_idx = 0;
     } else {
+      doEscCommand(c);
       stage = STAGE_OPEN;
-      cputc(27);
-      cputc(c);
     }
   } else if (stage == STAGE_CSI) { 
     if (c >= 0x40 && c <= 0x7E) {
       // command complete
-      doCommand(c);
+      doCsiCommand(c);
       stage = STAGE_OPEN;
     } else if (c >= 0x30 && c <= 0x3F) {
       // capture params. 

@@ -13,7 +13,6 @@ import re
 import sys
 import socket
 import logging
-from Oled import oled
 
 logger = logging.getLogger(__name__)
 
@@ -23,44 +22,39 @@ class TipiVariable(object):
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
-        
     
     def processRequest(self, message):
-        logger.debug("request: %s", message)
-     
         # Fields:
         # caller_guid        Program's GUID
-        # action             'R', 'W', 'T'   read, write, transmit
-        # var_key            Key
-        # var_val            Value
+        # action             'R', 'W', 'U', 'T'   read, write, transmit via UDP to REMOTE_HOST, transmit via TCP to REMOTE_HOST
         # queue              Allow values to queue for these variables. (only locally for now)
-        # remote_var_key     The name of the remote variable, if we're transmitting this var/val.
-        # remote_id          Remote ID to present, if we're transmitting this var/val. We're going to use session_id for the remote_id
-
+        # results_var        results_var (optional)
+        # var_key1
+        # var_val1
+        # var_key2
+        # var_val2
+        # var_key3
+        # var_val3
+        # var_key4
+        # var_val4
         
-        # Messages look like: (Tab-delimited)
-        #
-        # CHATTI     R   REMOTE_HOST     NULL        0   NULL        NULL
-        # CHATTI     W   REMOTE_PORT     9900        0   NULL        NULL
-        # CHATTI     W   MESSAGE         [myPasswd]  0   AUTHPASS    NULL
-        # CHATTI     W   MESSAGE         TESTING123  0   MESSAGE     [session_id]
-
-
         # Now that we have message, let's parse it:
-        ti_message = message.split("\t")
+        ti_message = message.split( chr(0x1e) )
 
-        caller_guid    = ti_message[0] if len(ti_message) >= 1 else ''  # Program's GUID
-        action         = ti_message[1] if len(ti_message) >= 2 else ''  # 'R', 'W', 'U', 'T'   read, write, transmit via UDP, transmit via TCP
-        var_key        = ti_message[2] if len(ti_message) >= 3 else ''  # Key
-        var_val        = ti_message[3] if len(ti_message) >= 4 else ''
-        queue          = ti_message[4] if len(ti_message) >= 5 else ''  # Allow values to queue for these variables. (only locally for now)
-        remote_var_key = ti_message[5] if len(ti_message) >= 6 else ''  # The name of the remote variable, if we're transmitting this var/val.
-        remote_id      = ti_message[6] if len(ti_message) >= 7 else ''  # Remote ID to present, if we're transmitting this var/val. We're going to use session_id for the remote_id
+        caller_guid     = ti_message[0] if len(ti_message) >= 1 else ''    # Program's GUID
+        action          = ti_message[1] if len(ti_message) >= 2 else ''    # 'R', 'W', 'U', 'T'   read, write, transmit via UDP, transmit via TCP
+        queue           = ti_message[2] if len(ti_message) >= 3 else ''    # Allow values to queue for these variables. (only locally for now)
+        results_var     = ti_message[3] if len(ti_message) >= 4 else ''    # results_var (optional)
+        var_key1        = ti_message[4] if len(ti_message) >= 5 else ''    # var key
+        var_val1        = ti_message[5] if len(ti_message) >= 6 else ''    # var val
+        var_key2        = ti_message[6] if len(ti_message) >= 7 else ''    # var key
+        var_val2        = ti_message[7] if len(ti_message) >= 8 else ''    # var val
+        var_key3        = ti_message[8] if len(ti_message) >= 9 else ''    # var key
+        var_val3        = ti_message[9] if len(ti_message) >= 10 else ''   # var val
+        var_key4        = ti_message[10] if len(ti_message) >= 11 else ''  # var key
+        var_val4        = ti_message[11] if len(ti_message) >= 12 else ''  # var val
 
-        oled.info("VAR:%s/%s %s", caller_guid, action, var_key)
-
-        # Our response will be stored in "remote_var_key.RESP"
-        response = str(remote_var_key) + '.RESP' if (len(remote_var_key)) else ''
+        response = str(results_var) if len(results_var) else ''
 
         # Load our existing variables into a dict:
         self.ti_vars = {}
@@ -71,7 +65,7 @@ class TipiVariable(object):
             with open(str(guid_file), "r") as f:
                 for line in f:
                     line = line.rstrip("\n\r")   # Strip newlines, but not whitespace (which is what rstrip() alone will do)
-                    data = line.split("\t")
+                    data = line.split( chr(0x1d) )
                     
                     if len(data) > 1:
                         self.ti_vars[data[0]] = data[1]
@@ -81,14 +75,22 @@ class TipiVariable(object):
         if action == 'W' or action == 'U' or action == 'T':   # Write!
             self.ti_vars[response] = ''  # Blank out our old response
         
-            var_val = var_val.rstrip()
+            var_val1 = var_val1.rstrip()
+            self.ti_vars[str(var_key1)] = str(var_val1)
+            
+            var_val2 = var_val2.rstrip()
+            self.ti_vars[str(var_key2)] = str(var_val2)
+            
+            var_val3 = var_val3.rstrip()
+            self.ti_vars[str(var_key3)] = str(var_val3)
+            
+            var_val4 = var_val4.rstrip()
+            self.ti_vars[str(var_key4)] = str(var_val4)
 
-            self.ti_vars[str(var_key)] = str(var_val)
-                
             self.store(caller_guid)   # Write our vars to our local file
 
 
-        if action == 'U':    #   TX via UDP    NOT COMPLETE! FIX!!!
+        if action == 'U':    #   TX via UDP    NOT COMPLETE!
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             server_address = (self.ti_vars['REMOTE_HOST'], int(self.ti_vars['REMOTE_PORT']))
 
@@ -99,12 +101,39 @@ class TipiVariable(object):
 
         elif action == 'T':    #   TX via TCP
             if 'REMOTE_HOST' not in self.ti_vars or 'REMOTE_PORT' not in self.ti_vars:
-                return bytearray("!ERROR!")
+                return bytearray('0' + chr(0x1e) + "ERROR")
 
             self.ti_vars[response] = ''  # Blank out our old response
 
-            message = str(remote_id) + "\t" + str(remote_var_key) + "\t" + str(var_val)
+            # listener on 9918 expects:
+            # prog_guid 
+            # session_id
+            # app_id
+            # action
+            # var
+            # val
+            #
+            try:
+                tmp = [str(caller_guid), self.ti_vars['SESSION_ID'], "", str(action)]
+                
+            except:
+                logger.debug("SESSION_ID isn't defined?")
 
+            if len(var_key1):
+                tmp.append(str(var_key1))
+                tmp.append(str(var_val1))
+            if len(var_key2):
+                tmp.append(str(var_key2))
+                tmp.append(str(var_val2))
+            if len(var_key3):
+                tmp.append(str(var_key3))
+                tmp.append(str(var_val3))
+            if len(var_key4):
+                tmp.append(str(var_key4))
+                tmp.append(str(var_val4))
+                
+            message = chr(0x1e).join(tmp)
+            
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             
             try:
@@ -119,13 +148,15 @@ class TipiVariable(object):
                 sock.sendall(message + "\n")
             
                 data = sock.recv(1024)
+                
+                if 'File "' in data or 'Traceback' in data:  # BAD! Usually means compilation error on far end, esp when running via inetd.
+                    return bytearray('0' + chr(0x1e) + "ERROR")
 
             except:
-                self.ti_vars[response] = '_FAIL_'
+                self.ti_vars[response] = 'ERROR'
 
                 self.store(caller_guid)
-                return bytearray("!ERROR!")
-                
+                return bytearray('0' + chr(0x1e) + "ERROR")
                 
             finally:
                 sock.close()
@@ -134,43 +165,41 @@ class TipiVariable(object):
 
             self.store(caller_guid)   # Write our vars to our local file
 
-            return bytearray(self.ti_vars[response])
+            return bytearray('1' + chr(0x1e) + self.ti_vars[response])
 
         elif action == 'R':   # Read!
-            if str(var_key) in self.ti_vars and len(str(self.ti_vars[str(var_key)])):  # str() is necessary because var_key is an unhashable bytearray. If not forced to string: "TypeError: unhashable type: 'bytearray'"
+            if str(var_key1) in self.ti_vars and len(str(self.ti_vars[str(var_key1)])):  # str() is necessary because var_key is an unhashable bytearray. If not forced to string: "TypeError: unhashable type: 'bytearray'"
                 
-                # Need to check to see if variable is queued, uses ASCII 30 (Record Separator) to delimit.
+                # Need to check to see if variable is queued, uses ASCII 31 (Unit Separator) to delimit.
                 # If so, we want to pop off the first one and return it.
-
-                if chr(0x1e) in str(self.ti_vars[str(var_key)]):
-                    items = str(self.ti_vars[str(var_key)]).split(chr(0x1e))
+                if chr(0x1e) in str(self.ti_vars[str(var_key1)]):
+                    items = str(self.ti_vars[str(var_key1)]).split(chr(0x1e))
                     
                     first_item = items.pop(0)
                     
-                    self.ti_vars[str(var_key)] = chr(0x1e).join(items)
+                    self.ti_vars[str(var_key1)] = chr(0x1e).join(items)
 
                     self.store(caller_guid)
                     
-                    return bytearray(first_item)
+                    return bytearray("1" + chr(0x1e) + first_item)
                     
                 else:                    
-                    response = self.ti_vars[str(var_key)]
+                    response = self.ti_vars[str(var_key1)]
                     
-                    if '.RESP' in str(var_key):
-                        self.ti_vars[str(var_key)] = ''
+                    if '.RESP' in str(var_key1):
+                        self.ti_vars[str(var_key1)] = ''
                     
                     self.store(caller_guid)
     
-                    return bytearray(response)
+                    return bytearray("1" + chr(0x1e) + response)
 
             else:
-                return bytearray("!ERROR!")
+                return bytearray("0" + chr(0x1e) + "ERROR")
             
         return bytearray()
                 
 
     def store(self, caller_guid):
-
         # Create runtime directory if it doesn't exist:
         if not os.path.exists(runtime_dir):
             try:
@@ -184,15 +213,20 @@ class TipiVariable(object):
         f = open(runtime_dir + str(caller_guid), "w")
         
         for key, val in self.ti_vars.items():
-            f.write(key + "\t" + str(val) + "\n")
+        
+#            if not len(key):
+#                logger.debug("STORE ERROR, key not specified?   key: " + key + "    val: " + val)   # This happens due to something extra being added to the end of self.ti_vars.items ?
+#            else:    
+            if len(key):
+                # logger.debug("Storing: " + key + " = " + val)
+                f.write(key + chr(0x1d) + str(val) + "\n")
             
         f.close()        
-        
 
     def handle(self, bytes):
         # Handle all tipi_io here, so main logic is just dealing with bytes in and out
         message = self.tipi_io.receive()
-        self.tipi_io.send(self.processRequest(message))
+        self.tipi_io.send(self.processRequest(str(message)))
 
         return True
 

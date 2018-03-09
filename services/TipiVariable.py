@@ -180,6 +180,9 @@ class TipiVariable(object):
                 else:                    
                     response = self.ti_vars[str(var_key1)]
                     
+                    if '.RESP' in str(var_key1):
+                        self.ti_vars[str(var_key1)] = ''                    
+                    
                     self.store(caller_guid)
 
                     if action == 'R':

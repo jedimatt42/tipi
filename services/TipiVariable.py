@@ -25,25 +25,11 @@ class TipiVariable(object):
         self.tipi_io = tipi_io
     
     def processRequest(self, message):
-        # Fields:
-        # caller_guid        Program's GUID
-        # action             'R', 'W', 'U', 'T'   read, write, transmit via UDP to REMOTE_HOST/REMOTE_PORT, transmit via TCP to REMOTE_HOST/REMOTE_PORT
-        # queue              Allow values to queue for these variables. (only locally for now)
-        # results_var        results_var (optional)
-        # var_key1
-        # var_val1
-        # var_key2
-        # var_val2
-        # var_key3
-        # var_val3
-        # var_key4
-        # var_val4
-        
         # Now that we have message, let's parse it:
         ti_message = message.split( chr(0x1e) )
         
         caller_guid     = ti_message[0] if len(ti_message) >= 1 else ''    # Program's GUID
-        action          = ti_message[1] if len(ti_message) >= 2 else ''    # 'R', 'W', 'U', 'T'   read, write, transmit via UDP, transmit via TCP
+        action          = ti_message[1] if len(ti_message) >= 2 else ''    # 'R', 'RS', 'W', 'U', 'T'   read, read-simple, write, transmit via UDP, transmit via TCP
         queue           = ti_message[2] if len(ti_message) >= 3 else ''    # Allow values to queue for these variables. (only locally for now)
         results_var     = ti_message[3] if len(ti_message) >= 4 else ''    # results_var (optional)
         var_key1        = ti_message[4] if len(ti_message) >= 5 else ''    # var key

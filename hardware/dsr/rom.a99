@@ -1,5 +1,6 @@
 ; DSR ROM composition
 	COPY	'header.a99'
+	COPY	'timestamp.gen'
 	COPY	'vdp-io.a99'
 	COPY	'tipi-io.a99'
 	COPY	'powerup.a99'

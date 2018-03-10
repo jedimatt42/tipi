@@ -14,5 +14,7 @@
 ; TIPI routine list - well known addresses for some custom exposure
 	DATA	recvmsg		; MOV @>4010,R0   BL *R0   to invoke recvmsg.
 	DATA	sendmsg		; MOV @>4012,R0   BL *R0   to invoke sendmsg. 
+	DATA	vrecvmsg	; MOV @>4014,R0   BL *R0   to invoke recvmsg.
+	DATA	vsendmsg	; MOV @>4016,R0   BL *R0   to invoke sendmsg. 
 	DATA	>0000
 

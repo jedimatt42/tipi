@@ -18,31 +18,18 @@ logger = logging.getLogger(__name__)
 
 runtime_dir = '/home/tipi/.tipivars/'
 
+
 class TipiVariable(object):
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
     
     def processRequest(self, message):
-        # Fields:
-        # caller_guid        Program's GUID
-        # action             'R', 'W', 'U', 'T'   read, write, transmit via UDP to REMOTE_HOST, transmit via TCP to REMOTE_HOST
-        # queue              Allow values to queue for these variables. (only locally for now)
-        # results_var        results_var (optional)
-        # var_key1
-        # var_val1
-        # var_key2
-        # var_val2
-        # var_key3
-        # var_val3
-        # var_key4
-        # var_val4
-        
         # Now that we have message, let's parse it:
         ti_message = message.split( chr(0x1e) )
-
+        
         caller_guid     = ti_message[0] if len(ti_message) >= 1 else ''    # Program's GUID
-        action          = ti_message[1] if len(ti_message) >= 2 else ''    # 'R', 'W', 'U', 'T'   read, write, transmit via UDP, transmit via TCP
+        action          = ti_message[1] if len(ti_message) >= 2 else ''    # 'R', 'RS', 'W', 'U', 'T'   read, read-simple, write, transmit via UDP, transmit via TCP
         queue           = ti_message[2] if len(ti_message) >= 3 else ''    # Allow values to queue for these variables. (only locally for now)
         results_var     = ti_message[3] if len(ti_message) >= 4 else ''    # results_var (optional)
         var_key1        = ti_message[4] if len(ti_message) >= 5 else ''    # var key
@@ -113,16 +100,20 @@ class TipiVariable(object):
             # var
             # val
             #
-            try:
-                tmp = [str(caller_guid), self.ti_vars['SESSION_ID'], "", str(action)]
-                
-            except:
-                logger.debug("SESSION_ID isn't defined?")
 
-            if len(var_key1):
+            tmp = []
+        
+            try:
+                session_id = self.ti_vars['SESSION_ID']
+            except:
+                session_id = ""
+            
+            tmp = [str(caller_guid), session_id, str(caller_guid), str(action)]
+
+            if var_key1:
                 tmp.append(str(var_key1))
                 tmp.append(str(var_val1))
-            if len(var_key2):
+            if var_key2:
                 tmp.append(str(var_key2))
                 tmp.append(str(var_val2))
             if len(var_key3):
@@ -131,7 +122,7 @@ class TipiVariable(object):
             if len(var_key4):
                 tmp.append(str(var_key4))
                 tmp.append(str(var_val4))
-                
+
             message = chr(0x1e).join(tmp)
             
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -167,7 +158,7 @@ class TipiVariable(object):
 
             return bytearray('1' + chr(0x1e) + self.ti_vars[response])
 
-        elif action == 'R':   # Read!
+        elif action == 'R' or action == 'RS':   # Read!   'RS' is "READ SIMPLE" which will just return the value, not preceeded by return code. Better for BASIC!
             if str(var_key1) in self.ti_vars and len(str(self.ti_vars[str(var_key1)])):  # str() is necessary because var_key is an unhashable bytearray. If not forced to string: "TypeError: unhashable type: 'bytearray'"
                 
                 # Need to check to see if variable is queued, uses ASCII 31 (Unit Separator) to delimit.
@@ -181,20 +172,29 @@ class TipiVariable(object):
 
                     self.store(caller_guid)
                     
-                    return bytearray("1" + chr(0x1e) + first_item)
+                    if action == 'R':
+                        return bytearray("1" + chr(0x1e) + first_item)
+                    else:                        
+                        return bytearray(first_item)
                     
                 else:                    
                     response = self.ti_vars[str(var_key1)]
                     
                     if '.RESP' in str(var_key1):
-                        self.ti_vars[str(var_key1)] = ''
+                        self.ti_vars[str(var_key1)] = ''                    
                     
                     self.store(caller_guid)
-    
-                    return bytearray("1" + chr(0x1e) + response)
+
+                    if action == 'R':
+                        return bytearray("1" + chr(0x1e) + response)
+                    else:
+                        return bytearray(response)
 
             else:
-                return bytearray("0" + chr(0x1e) + "ERROR")
+                if action == 'R':
+                    return bytearray("0" + chr(0x1e) + "ERROR")
+                else:
+                    return bytearray("ERROR")
             
         return bytearray()
                 
@@ -209,16 +209,10 @@ class TipiVariable(object):
                     raise
 
         # Write out the variables file
-
         f = open(runtime_dir + str(caller_guid), "w")
         
         for key, val in self.ti_vars.items():
-        
-#            if not len(key):
-#                logger.debug("STORE ERROR, key not specified?   key: " + key + "    val: " + val)   # This happens due to something extra being added to the end of self.ti_vars.items ?
-#            else:    
             if len(key):
-                # logger.debug("Storing: " + key + " = " + val)
                 f.write(key + chr(0x1d) + str(val) + "\n")
             
         f.close()        

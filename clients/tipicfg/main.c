@@ -11,8 +11,9 @@
 #define FBUF 0x3200
 
 #define GPLWS ((unsigned int*)0x83E0)
+#define DSRTS ((unsigned char*)0x401A)
 
-#define TIPICFG_VER "5"
+#define TIPICFG_VER "6"
 #define PI_CONFIG "PI.CONFIG"
 #define PI_STATUS "PI.STATUS"
 #define PI_UPGRADE "PI.UPGRADE"
@@ -91,14 +92,14 @@ void showMode() {
     __asm__("mov %1,r12\n\ttb 3\n\tstst %0" : "=r"(statusbits) : "r"(crubase) : "r12"); 
   }
   if (statusbits & 0x2000) {
-    gotoxy(13,18);
-    cputs("        ");
     gotoxy(13,19);
+    cputs("        ");
+    gotoxy(13,20);
     cputs("- active");
   } else {
-    gotoxy(13,18);
-    cputs("- active");
     gotoxy(13,19);
+    cputs("- active");
+    gotoxy(13,20);
     cputs("        ");
   }
 }
@@ -116,6 +117,20 @@ void showQMenu() {
   gotoxy(0,23);
   cputs(" PI: H)alt, ");  
   cputs("re(B)oot");  
+}
+
+void printDsrTimestamp() {
+  gotoxy(11,2);
+  if (crubase != 0) {
+    // enable the ROM
+    __asm__("mov %0,r12\n\tsbo 0" : : "r"(crubase) : "r12");
+    // copy from the ROM to screen
+    if (*(DSRTS) == '2') { // good for almost 100 years
+      cputs(DSRTS);
+    }
+    // disable the ROM
+    __asm__("mov %0,r12\n\tsbz 0" : : "r"(crubase) : "r12");
+  }
 }
 
 void tiMode() {
@@ -157,50 +172,53 @@ void setupScreen() {
 void layoutScreen() {
   clrscr();
   gotoxy(0,0);
-  cputs("TIPI Config v");
+  cputs("TIPICFG v");
   cputs(TIPICFG_VER);
   showCrubase(crubase);
-
-  gotoxy(16,0);
-  cputs("Version: ");
-  gotoxy(16,1);
-  cputs("     IP: ");
   gotoxy(0,2);
+  cputs("DSR Build: ");
+  printDsrTimestamp();
+
+  gotoxy(13,0);
+  cputs("PI-Version: ");
+  gotoxy(21,1);
+  cputs("IP: ");
+  gotoxy(0,3);
   chline(40);
-  gotoxy(0,4);
+  gotoxy(0,5);
   chline(40);
 
-  gotoxy(0,5);
+  gotoxy(0,6);
   cputs("Drive Mappings");
-  gotoxy(2,6);
-  cputs("1) DSK1=");
   gotoxy(2,7);
-  cputs("2) DSK2=");
+  cputs("1) DSK1=");
   gotoxy(2,8);
-  cputs("3) DSK3=");
+  cputs("2) DSK2=");
   gotoxy(2,9);
-  cputs("J) URI1=");
+  cputs("3) DSK3=");
   gotoxy(2,10);
-  cputs("K) URI2=");
+  cputs("J) URI1=");
   gotoxy(2,11);
+  cputs("K) URI2=");
+  gotoxy(2,12);
   cputs("L) URI3=");
 
-  gotoxy(0,12);
-  chline(40);
   gotoxy(0,13);
+  chline(40);
+  gotoxy(0,14);
   cputs("WiFi Settings");
-  gotoxy(2,14);
-  cputs("S) SSID=");
   gotoxy(2,15);
+  cputs("S) SSID=");
+  gotoxy(2,16);
   cputs("P)  PSK=");
-  gotoxy(0,16);
+  gotoxy(0,17);
   chline(40);
 
-  gotoxy(0,17);
+  gotoxy(0,18);
   cputs("Emulation Mode");
-  gotoxy(2,18);
-  cputs("T)I DSK");
   gotoxy(2,19);
+  cputs("T)I DSK");
+  gotoxy(2,20);
   cputs("M)yarc WSD");
 
   gotoxy(0,21);
@@ -229,48 +247,48 @@ void main()
     switch(key) {
       case '1':
         disks_dirty = 1;
-        getstr(10,6,dsk1_dir);
-        showValue(10,6,dsk1_dir);
+        getstr(10,7,dsk1_dir);
+        showValue(10,7,dsk1_dir);
         break;
       case '2':
         disks_dirty = 1;
-        getstr(10,7,dsk2_dir);
-        showValue(10,7,dsk2_dir);
+        getstr(10,8,dsk2_dir);
+        showValue(10,8,dsk2_dir);
         break;
       case '3':
         disks_dirty = 1;
-        getstr(10,8,dsk3_dir);
-        showValue(10,8,dsk3_dir);
+        getstr(10,9,dsk3_dir);
+        showValue(10,9,dsk3_dir);
         break;
       case 'J':
       case 'j':
         disks_dirty = 1;
-        getstr(10,9,uri1);
-        showValue(10,9,uri1);
+        getstr(10,10,uri1);
+        showValue(10,10,uri1);
         break;
       case 'K':
       case 'k':
         disks_dirty = 1;
-        getstr(10,10,uri2);
-        showValue(10,10,uri2);
+        getstr(10,11,uri2);
+        showValue(10,11,uri2);
         break;
       case 'L':
       case 'l':
         disks_dirty = 1;
-        getstr(10,11,uri3);
-        showValue(10,11,uri3);
+        getstr(10,12,uri3);
+        showValue(10,12,uri3);
         break;
       case 'S':
       case 's':
         wifi_dirty = 1;
-        getstr(10,14,wifi_ssid);
-        showValue(10,14,wifi_ssid);
+        getstr(10,15,wifi_ssid);
+        showValue(10,15,wifi_ssid);
         break;
       case 'P':
       case 'p':
         wifi_dirty = 1;
-        getstr(10,15,wifi_psk);
-        showValue(10,15,wifi_psk);
+        getstr(10,16,wifi_psk);
+        showValue(10,16,wifi_psk);
         break;
       case 'R':
       case 'r':
@@ -318,7 +336,7 @@ void main()
 
   } while(key != 'Q' && key != 'q');
 
-  gotoxy(0,3);
+  gotoxy(0,4);
   cputs("quiting...");
   __asm__("clr r0\n\tblwp *r0");
 }
@@ -326,7 +344,7 @@ void main()
 void loadPiStatus() {
   struct PAB pab;
 
-  gotoxy(0,3);
+  gotoxy(0,4);
   cputs("Loading PI.STATUS");
   
   unsigned char ferr = dsr_openDV(&pab, PI_STATUS, FBUF, DSR_TYPE_INPUT);
@@ -339,6 +357,7 @@ void loadPiStatus() {
   // should work immediately after a dsrlnk if interrupts are off.
   crubase = GPLWS[12];
   showCrubase(crubase);
+  printDsrTimestamp();
 
   int recNo = 0;
   ferr = DSR_ERR_NONE;
@@ -358,11 +377,11 @@ void loadPiStatus() {
   showValue(25, 0, version);
   showValue(25, 1, ipaddress);
   if (strcmp(latest, version) > 0) {
-    gotoxy(0, 3);
+    gotoxy(0, 4);
     cputs("U) upgrade to ");
     cputs(latest);
   } else {
-    cclearxy(0,3,40);
+    cclearxy(0,4,40);
   }
 
   if (ferr) {
@@ -392,7 +411,7 @@ void processStatusLine(char* cbuf) {
 void loadPiConfig() {
   struct PAB pab;
 
-  gotoxy(0,3);
+  gotoxy(0,4);
   cputs("Loading PI.CONFIG");
   
   unsigned char ferr = dsr_openDV(&pab, PI_CONFIG, FBUF, DSR_TYPE_INPUT);
@@ -415,21 +434,21 @@ void loadPiConfig() {
     }
   }
 
-  showValue(10, 6, dsk1_dir);
-  showValue(10, 7, dsk2_dir);
-  showValue(10, 8, dsk3_dir);
-  showValue(10, 9, uri1);
-  showValue(10, 10, uri2);
-  showValue(10, 11, uri3);
-  showValue(10, 14, wifi_ssid);
-  showValue(10, 15, wifi_psk);
+  showValue(10, 7, dsk1_dir);
+  showValue(10, 8, dsk2_dir);
+  showValue(10, 9, dsk3_dir);
+  showValue(10, 10, uri1);
+  showValue(10, 11, uri2);
+  showValue(10, 12, uri3);
+  showValue(10, 15, wifi_ssid);
+  showValue(10, 16, wifi_psk);
 
   ferr = dsr_close(&pab);
   if (ferr) {
     cprintf("Close ERROR: %x", ferr);
     halt();
   }
-  gotoxy(0,3);
+  gotoxy(0,4);
   cclear(40);
 }
 
@@ -544,14 +563,14 @@ void writeConfigItem(struct PAB* pab, const char* key, const char* value) {
 
 void savePiConfig() {
   if (disks_dirty == 0 && wifi_dirty == 0) {
-    gotoxy(0,3);
+    gotoxy(0,4);
     cputs("No changes");
     return;
   }
 
   struct PAB pab;
 
-  gotoxy(0,3);
+  gotoxy(0,4);
   cputs("Saving PI.CONFIG");
   
   unsigned char ferr = dsr_openDV(&pab, PI_CONFIG, FBUF, DSR_TYPE_APPEND);
@@ -581,7 +600,7 @@ void savePiConfig() {
     cprintf("Close ERROR: %x", ferr);
     halt();
   }
-  gotoxy(0,3);
+  gotoxy(0,4);
   cclear(40);
 }
 
@@ -600,7 +619,7 @@ void upgrade() {
     halt();
   }
 
-  gotoxy(0,3);
+  gotoxy(0,4);
   cputs("Upgrading... reload to check version");
 }
 
@@ -619,9 +638,9 @@ void shutdown() {
     halt();
   }
 
-  gotoxy(0,3);
+  gotoxy(0,4);
   cclear(40);
-  gotoxy(0,3);
+  gotoxy(0,4);
   cputs("Halt command issued to PI");
 }
 
@@ -640,18 +659,18 @@ void reboot() {
     halt();
   }
 
-  gotoxy(0,3);
+  gotoxy(0,4);
   cclear(40);
-  gotoxy(0,3);
+  gotoxy(0,4);
   cputs("  Reboot command issued to PI");
   for (int i=0; i<(37 * 4); i++) {
      waitjiffies(15);
      int c = i % 4;
-     gotoxy(0,3);
+     gotoxy(0,4);
      cputc(spinner[c]);
      VDP_INT_POLL;
   }
-  gotoxy(0,3);
+  gotoxy(0,4);
   cclear(40);
 }
 

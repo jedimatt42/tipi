@@ -2,4 +2,5 @@ ENV
 *.bin
 *.hex
 *.list
+*.gen
 .idea

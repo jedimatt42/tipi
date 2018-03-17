@@ -62,7 +62,7 @@ File name transformation:
 Devices are mapped to unix filesystem locations:
 
 * TIPI. - /home/tipi/tipi_disk
-* DSK0. - /home/tipi/tipi_disk ( alias for TIPI. for disk unit 0 support )
+* DSK4. - /home/tipi/tipi_disk ( alias for TIPI. for disk unit 0 support )
 * DSK1. - /home/tipi/tipi_disk/DSK1
 * DSK2. - /home/tipi/tipi_disk/DSK2
 * DSK3. - /home/tipi/tipi_disk/DSK3

@@ -10,7 +10,48 @@ BACKOFF_DELAY = 10000
 
 logger = logging.getLogger(__name__)
 
-
+# Low Level
+# ---------
+#
+# Control bits in TC or RC are used to indicate the status of the data byte. 
+#
+# All communication is driven from the TI. The PI polls the TC (TI Control)
+# register to see wait for it to indicate the expected state. This is always
+# in lock-step. If waiting for a byte receive request, the PI will do nothing
+# other than wait for a that request. If trying send a byte, it will wait
+# until the TI indicates that it wants a byte. 
+#
+# A total value of 0x00 is never used for control registers as that is the
+# powerup state. 
+# 
+# Data transmission, sending strings of bytes, the TC and RC registers are
+# used to send something like syn - ack bytes. 
+# ( bit ordering 0 is LSB )
+#
+# * bit 0 is a single bit rolling counter. 
+# * bit 1 indicates the TI is writing a byte
+# * bit 2 indicates the TI is requesting a byte
+#
+# Data registers are always set first, and then control registers are set
+# to indicate that this data is ready for the purpose indicated. 
+#
+# RC should always equal TC
+# The next expected TC toggles bit 0, and the PI waits until it sees that
+# request.
+#
+# Messaging
+# ---------
+#
+# A byte string message is always prefixed by a word ( 16 bits ) of length,
+# then the sequence of bytes. If the TI is sending, then the PI receives
+# until gets all the bytes described by the length. As is true for the
+# inverse direction. The 'reset' handshake is performed at the beginning
+# of each message send. Then the message bytes are sent as:
+#
+# * msb(len)
+# * lsb(len)
+# * message
+#
 class TipiMessage(object):
 
     def __init__(self):
@@ -20,6 +61,8 @@ class TipiMessage(object):
     #
     # Block until both sides show control bits reset
     # The TI resets first, and then RPi responds
+    #
+    # TC -> 0xF1, RC -> 0xF1
     #
     def __resetProtocol(self):
         logger.info("waiting for handshake...")

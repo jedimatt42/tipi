@@ -47,4 +47,13 @@ systemctl restart tipi.service
 # last we'll restart the super service which is our parent process.
 systemctl restart tipisuper.service
 
+# screw with .tipivars/CHATTI
+if [ ! -f /home/tipi/.tipivars/GLOBAL ]; then
+  cat /home/tipi/.tipivars/CHATTI | egrep "(REMOTE_HOST|SESSION_ID|PASSWORD|REMOTE_PORT)" >/home/tipi/.tipivars/GLOBAL
+  mv /home/tipi/.tipivars/CHATTI /tmp/CHATTI
+  cat /tmp/CHATTI | egrep -v "(REMOTE_HOST|SESSION_ID|PASSWORD|REMOTE_PORT)" >>/home/tipi/.tipivars/CHATTI
+  sudo chown tipi.tipi /home/tipi/.tipivars/CHATTI
+  sudo chown tipi.tipi /home/tipi/.tipivars/GLOBAL
+fi
+
 echo "upgrade complete"

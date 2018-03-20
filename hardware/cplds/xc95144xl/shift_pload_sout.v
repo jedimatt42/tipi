@@ -14,14 +14,14 @@ module shift_pload_sout (
     output sout
 );
 
-reg [7:0]tmp;
+reg [8:0]tmp;
 
 always @(posedge clk) begin
-  if (aload && select) tmp = data;
-  else if (select) tmp = { tmp[6:0], 1'b0 };
+  if (aload && select) tmp = { data, ^data };
+  else if (select) tmp = { tmp[7:0], 1'b0 };
 end
 
-assign sout = tmp[7];
+assign sout = tmp[8];
 
 endmodule
 

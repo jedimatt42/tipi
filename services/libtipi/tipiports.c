@@ -44,22 +44,41 @@ inline unsigned char readByte(int reg)
   setSelect(reg);
   signalDelay();
 
-  digitalWrite(PIN_R_LE, 1);
-  signalDelay();
-  digitalWrite(PIN_R_CLK, 1);
-  signalDelay();
-  digitalWrite(PIN_R_CLK, 0);
-  signalDelay();
-  digitalWrite(PIN_R_LE, 0);
-  signalDelay();
+  bool ok = 0;
+  while(! ok) {
 
-  int i;
-  for (i=7; i>=0; i--) {
+    digitalWrite(PIN_R_LE, 1);
+    signalDelay();
     digitalWrite(PIN_R_CLK, 1);
     signalDelay();
     digitalWrite(PIN_R_CLK, 0);
     signalDelay();
-    value |= digitalRead(PIN_R_DIN) << i;
+    digitalWrite(PIN_R_LE, 0);
+    signalDelay();
+
+    int i;
+    for (i=7; i>=0; i--) {
+      digitalWrite(PIN_R_CLK, 1);
+      signalDelay();
+      digitalWrite(PIN_R_CLK, 0);
+      signalDelay();
+      value |= digitalRead(PIN_R_DIN) << i;
+    }
+
+    // read the parity bit
+    digitalWrite(PIN_R_CLK, 1);
+    signalDelay();
+    digitalWrite(PIN_R_CLK, 0);
+    signalDelay();
+    unsigned char tipiParity = digitalRead(PIN_R_DIN);
+
+    unsigned char piParity = value;
+    piParity ^= piParity >> 4;
+    piParity ^= piParity >> 2;
+    piParity ^= piParity >> 1;
+    piParity &= 0x01;
+
+    ok = piParity == tipiParity;
   }
 
   return value;

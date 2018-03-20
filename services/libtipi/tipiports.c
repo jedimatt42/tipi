@@ -37,6 +37,14 @@ inline void setSelect(int reg)
   signalDelay();
 }
 
+inline unsigned char parity(unsigned char input) {
+    unsigned char piParity = input;
+    piParity ^= piParity >> 4;
+    piParity ^= piParity >> 2;
+    piParity ^= piParity >> 1;
+    return piParity & 0x01;
+}
+
 inline unsigned char readByte(int reg)
 {
   unsigned char value = 0;
@@ -44,7 +52,7 @@ inline unsigned char readByte(int reg)
   setSelect(reg);
   signalDelay();
 
-  bool ok = 0;
+  int ok = 0;
   while(! ok) {
 
     digitalWrite(PIN_R_LE, 1);
@@ -72,11 +80,7 @@ inline unsigned char readByte(int reg)
     signalDelay();
     unsigned char tipiParity = digitalRead(PIN_R_DIN);
 
-    unsigned char piParity = value;
-    piParity ^= piParity >> 4;
-    piParity ^= piParity >> 2;
-    piParity ^= piParity >> 1;
-    piParity &= 0x01;
+    unsigned char piParity = parity(value);
 
     ok = piParity == tipiParity;
   }
@@ -104,14 +108,26 @@ inline void writeByte(unsigned char value, int reg)
 {
   setSelect(reg);
 
-  int i;
-  for (i=7; i>=0; i--) {
-    digitalWrite(PIN_R_DOUT, (value >> i) & 0x01);
+  int ok = 0;
+  while (!ok) {
+
+    int i;
+    for (i=7; i>=0; i--) {
+      digitalWrite(PIN_R_DOUT, (value >> i) & 0x01);
+      signalDelay();
+      digitalWrite(PIN_R_CLK, 1);
+      signalDelay();
+      digitalWrite(PIN_R_CLK, 0);
+      signalDelay();
+    }
+
+    // read the parity bit
     signalDelay();
-    digitalWrite(PIN_R_CLK, 1);
-    signalDelay();
-    digitalWrite(PIN_R_CLK, 0);
-    signalDelay();
+    unsigned char tipiParity = digitalRead(PIN_R_DIN);
+
+    unsigned char piParity = parity(value);
+
+    ok = piParity == tipiParity;
   }
 
   digitalWrite(PIN_R_LE, 1);

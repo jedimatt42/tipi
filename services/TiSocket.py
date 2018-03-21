@@ -110,7 +110,7 @@ class TiSocket(object):
         except Exception as e:
             del(self.handles[handleId])
             self.safeClose(existing)
-            logger.info("failed to write to socket: %d", handleId, exc_info=True)
+            logger.info("failed to write to socket: %d", handleId)
             return BAD
 
     # bytes: 0x22, handleId, read-cmd, MSB, LSB
@@ -132,6 +132,8 @@ class TiSocket(object):
             if err == errno.EAGAIN or err == errno.EWOULDBLOCK:
                 logger.info("no data ready: %d", handleId)
                 return bytearray(0)
+            else:
+                logger.error(e, exc_info=True)
         except Exception as e:
             logger.error(e, exc_info=True)
         return BAD

@@ -49,11 +49,11 @@ inline unsigned char readByte(int reg)
 {
   unsigned char value = 0;
 
-  setSelect(reg);
-  signalDelay();
-
   int ok = 0;
   while(! ok) {
+
+    setSelect(reg);
+    signalDelay();
 
     digitalWrite(PIN_R_LE, 1);
     signalDelay();

@@ -8,12 +8,6 @@ char mousedata[3];
 #define MB_RIGHT 0x02
 #define MB_MID 0x04
 
-void tipiMouseOn() {
-  mousedata[0] = 0;
-  mousedata[1] = 0;
-  mousedata[2] = 0;
-}
-
 void tipiMouseRead() {
   unsigned char mousecode = 0x20;
   int readcount = 0;

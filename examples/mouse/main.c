@@ -13,6 +13,10 @@
 #define true 1
 #define false 0
 
+#define FCTNERASE 7
+#define FCTNREDO 6
+#define FCTNQUIT 5
+
 unsigned int pointerx;
 unsigned int pointery;
 
@@ -49,33 +53,34 @@ void main() {
   sprite(SPR_MOUSE0, 0, COLOR_BLACK, pointery - 1, pointerx);
   sprite(SPR_MOUSE1, 4, COLOR_WHITE, pointery - 1, pointerx);
 
-  tipiMouseOn();
-
   while(true) {
-    VDP_WAIT_VBLANK_CRU
-    
     unsigned char k = kscan(0);
-    if (k == 6) {
-        tipiMouseRead();
+    if (k == FCTNQUIT) {
+      __asm__("blwp @>0000");
     }
+    VDP_WAIT_VBLANK_CRU;
+    
+    tipiMouseRead();
 
-    pointerx += (2 * mousex) / 3;
-    pointery += (2 * mousey) / 3;
+    if (mousex != 0 || mousey != 0) {
+      pointerx += (2 * mousex) / 3;
+      pointery += (2 * mousey) / 3;
 
-    if (pointerx > 0xF000) {
-      pointerx = 0;
-    } else if (pointerx > 255) {
-      pointerx = 255;
+      if (pointerx > 0xF000) {
+        pointerx = 0;
+      } else if (pointerx > 255) {
+        pointerx = 255;
+      }
+
+      if (pointery > 0xF000) {
+        pointery = 0;
+      } else if (pointery > 191) {
+        pointery = 191;
+      }
+
+      sprite_pos(SPR_MOUSE0, pointery - 1, pointerx);
+      sprite_pos(SPR_MOUSE1, pointery - 1, pointerx);
     }
-
-    if (pointery > 0xF000) {
-      pointery = 0;
-    } else if (pointery > 191) {
-      pointery = 191;
-    }
-
-    sprite_pos(SPR_MOUSE0, pointery - 1, pointerx);
-    sprite_pos(SPR_MOUSE1, pointery - 1, pointerx);
 
     if (mouseb & MB_LEFT) {
       plotBit(pointerx,pointery);

@@ -11,8 +11,6 @@ extern char mousedata[3];
 #define MB_RIGHT 0x02
 #define MB_MID 0x04
 
-void tipiMouseOn();
-
 void tipiMouseRead();
 
 #endif

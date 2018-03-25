@@ -32,6 +32,9 @@ RDIR_MSG
 ; Error codes must go in >8350
 L2STAT	EQU	>8350
 
+; Parameters
+BUFCNT	EQU	>834C
+
 ; Common addresses
 UNITNO	EQU	>834C
 PROTVAL	EQU	>834D
@@ -276,5 +279,59 @@ getl2resp
 l2suc
 	MOVB	R0,@L2STAT	; clear special PI success code and proceed to return
 	B	@retl2err	
+
+setfiles			; Buffer allocation routine
+	LIMI	0
+	MOV	R11,R7
+	CI	R12,>1100	; check if is filling in for floppy controller.
+	JNE	retl2sk		;   if not, skip, hoping real FDC will get called.
+	BL	@dofiles
+	B	@retl2err
+
+dofiles
+	CLR	R1
+	MOVB	@BUFCNT,R1
+	SWPB	R1
+	CI	R1,0		; check for bad Parameters
+	JEQ	fileserr
+	CI	R1,>0F
+	JGT	fileserr
+	MPY	@perfile,R1	; compute buffer
+	MOV	R2,R1		; result should be small enough for 1 word.
+	AI	R1,6		; subtract an addition 5 + 1
+	LI	R2,>3DEF
+	S	R1,R2		; compute new value
+	MOV	R2,@VDPSTACK
+	MOV	R2,R1
+	INC	R1
+	ORI	R1,VDWRITE
+	SWPB	R1
+	MOVB	R1,@VDPWA
+	SWPB	R1
+	MOVB	R1,@VDPWA
+
+	LI	R2,>AA3F
+	MOVB	R2,@VDPWD
+	SWPB	R2
+	MOVB	R2,@VDPWD
+
+	LI	R2,>FF11
+	MOVB	R2,@VDPWD
+	SWPB	R2
+	MOVB	R2,@VDPWD
+
+	MOVB	@BUFCNT,@VDPWD
+	CLR	R1
+	JMP	filesret
+
+fileserr
+	LI	R1,1
+filesret
+	MOVB	R1,@L2STAT
+	RT
+
+
+perfile	DATA 	518		; size of buffer per file
+basestk DATA	>3def
 
 

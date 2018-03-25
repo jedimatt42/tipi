@@ -1,7 +1,0 @@
-.idea
-*.o
-*.i
-*.s
-*.bin
-*.elf
-mapfile

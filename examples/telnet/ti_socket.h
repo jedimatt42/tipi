@@ -1,7 +1,7 @@
 #ifndef _ti_socket
 #define _ti_socket 1
 
-extern unsigned char buffer[128];
+extern unsigned char buffer[512];
 
 unsigned char connect(unsigned char* hostname, unsigned char* port);
 

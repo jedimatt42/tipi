@@ -34,7 +34,6 @@ int getParamA(int def) {
   if (i == 0) {
     return def;
   }
-  bytestr[i] = 0; // null terminate string
   return atoi(bytestr);
 }
 
@@ -47,15 +46,7 @@ int getParamB(int def) {
   if (i == 0 || i == bs_idx) {
     return def;
   }
-  unsigned char* paramb = bytestr + i;
-  if (paramb[0] == ';') {
-    paramb++;
-  }
-  i = 0;
-  while(i<bs_idx && paramb[i] != ';') {
-    i++;
-  }
-  paramb[i] = 0;
+  unsigned char* paramb = bytestr + i + 1;
   return atoi(paramb);
 }
 
@@ -103,20 +94,19 @@ void cursorGoto(int x, int y) {
   unsigned char scx;
   unsigned char scy;
   screensize(&scx, &scy);
-  scx--;
-  scy--;
   if (x > scx) {
     x = scx;
-  } else if (x < 0) {
-    x = 0;
+  } else if (x < 1) {
+    x = 1;
   }
   if (y > scy) {
     y = scy;
-  } else if (y < 0) {
-    y = 0;
+  } else if (y < 1) {
+    y = 1;
   }
-
-  gotoxy(x, y);
+  // zero based screen
+  gotox(x - 1);
+  gotoy(y - 1);
 }
 
 void eraseDisplay(int opt) {
@@ -139,7 +129,7 @@ void eraseDisplay(int opt) {
     case 3: // TODO: if we add scroll back buffer, 3 should clear that too.
     case 2: // clear full screen, return to top
       clrscr();
-      gotoxy(0,0);
+      gotoxy(oldx,oldy);
       break;
   }
 }
@@ -230,18 +220,41 @@ void doEscCommand(unsigned char c) {
   
 }
 
+void charout(unsigned char ch) {
+  switch (ch) {
+    case '\r':
+      conio_x=0;
+      break;
+    case '\n':
+      conio_x=0;
+      inc_row();
+      break;
+    default:
+      if (ch >= ' ') {
+        if (conio_x >= nTextEnd-nTextRow) {
+          conio_x=0;
+          inc_row();
+        }
+        vdpchar(conio_getvram(), ch);
+        ++conio_x;
+      }
+    break;
+  }
+}
+
 void terminalDisplay(unsigned char c) {
   if (stage == STAGE_OPEN) {
     if (c == 27) {
       stage = STAGE_ESC;
     } else {
-      cputc(c);
+      charout(c);
     }
   } else if (stage == STAGE_ESC) {
     if (c == '[') {
       // command begins
       stage = STAGE_CSI;
       bs_idx = 0;
+      bytestr[0] = 0;
     } else {
       doEscCommand(c);
       stage = STAGE_OPEN;
@@ -255,6 +268,7 @@ void terminalDisplay(unsigned char c) {
       // capture params. 
       bytestr[bs_idx] = c;
       bs_idx++;
+      bytestr[bs_idx] = 0;
     } else {
       // this is basically an error state... ignoring the command.
       stage = STAGE_OPEN;

@@ -9,7 +9,7 @@
 #define TI_SOCKET_READ 0x04
 #define socketId 0x00
 
-unsigned char buffer[128];
+unsigned char buffer[512];
 
 unsigned char output[128];
 
@@ -59,8 +59,8 @@ int read_socket() {
   output[0] = TI_SOCKET_REQUEST;
   output[1] = socketId;
   output[2] = TI_SOCKET_READ;
-  output[3] = 0; // buffer size is just 128 bytes.
-  output[4] = 128;
+  output[3] = 2; // buffer size is 512 bytes
+  output[4] = 0;
   tipi_on();
   tipi_sendmsg(5, output);
   int bufsize = 0;

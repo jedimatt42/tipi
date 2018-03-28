@@ -42,8 +42,8 @@ void defineChars() {
 void setupScreen() {
   set_text();
   defineChars();
-  bgcolor(COLOR_CYAN);
-  textcolor(COLOR_BLACK);
+  bgcolor(COLOR_BLACK);
+  textcolor(COLOR_MEDGREEN);
   clrscr();
   cursor(1);
   gotoxy(0,0);

@@ -10,7 +10,7 @@ if [ $? == 0 ]; then
   export TIPI_SIG_DELAY=0
 else
   # signalling delay for PI 3
-  export TIPI_SIG_DELAY=50
+  export TIPI_SIG_DELAY=100
 fi
 
 python ./TipiService.py

@@ -178,7 +178,7 @@ unsigned char colors[16] = {
   COLOR_CYAN,
   COLOR_GRAY,
   // now the BOLD variety
-  COLOR_BLACK,
+  COLOR_GRAY,
   COLOR_LTRED,
   COLOR_LTGREEN,
   COLOR_LTYELLOW,
@@ -193,7 +193,7 @@ unsigned char background = 0;
 
 void setColors() {
   bgcolor(colors[background]);
-  textcolor(colors[foreground & isBold]);
+  textcolor(colors[foreground | isBold]);
 }
 
 void doSGRCommand() {
@@ -251,7 +251,7 @@ void doSGRCommand() {
       case 95:
       case 96:
       case 97:
-        foreground = (sgr - 90) & 8;
+        foreground = (sgr - 90) | 8;
         break;
       case 100: // high intensity background
       case 101:
@@ -261,7 +261,7 @@ void doSGRCommand() {
       case 105:
       case 106:
       case 107:
-        background = (sgr - 100) & 8;
+        background = (sgr - 100) | 8;
         break;
     }
     setColors();

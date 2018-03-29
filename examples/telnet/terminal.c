@@ -162,6 +162,7 @@ void eraseLine(int opt) {
 void scrollUp(int lc) {
   gotoxy(0,23);
   for (int i = 0; i < lc; i++) {
+    VDP_WAIT_VBLANK_CRU;
     inc_row();
   }
 }
@@ -341,6 +342,7 @@ void charout(unsigned char ch) {
       break;
     case '\n': // line feed
       conio_x=0;
+      VDP_WAIT_VBLANK_CRU;
       inc_row();
       break;
     case '\b': // backspace
@@ -354,6 +356,7 @@ void charout(unsigned char ch) {
       if (ch >= ' ') {
         if (conio_x >= nTextEnd-nTextRow) {
           conio_x=0;
+          VDP_WAIT_VBLANK_CRU;
           inc_row();
         }
         vdpchar(conio_getvram(), ch);

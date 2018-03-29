@@ -42,8 +42,8 @@ void defineChars() {
 void setupScreen() {
   set_text();
   defineChars();
-  bgcolor(COLOR_CYAN);
-  textcolor(COLOR_BLACK);
+  bgcolor(COLOR_BLACK);
+  textcolor(COLOR_MEDGREEN);
   clrscr();
   cursor(1);
   gotoxy(0,0);
@@ -56,7 +56,7 @@ void setupScreen() {
     if (kbhit()) {
       unsigned char key = cgetc();
       if (key == 50) {
-        set_text80();
+        set_text80_ecm();
         waiting = 0;
       } else if (key == 49) {
         set_text();
@@ -66,6 +66,11 @@ void setupScreen() {
   }
   defineChars();
   clrscr();
+  // temp hack... 
+  cputs("old color");
+  textcolor(COLOR_CYAN);
+  cputs("new color");
+  halt();
 }
 
 void getstr(int x, int y, unsigned char* var, int maxlen) {

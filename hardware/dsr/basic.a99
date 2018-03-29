@@ -4,9 +4,8 @@ GPLWS	EQU	>83E0
 TIPICFG	BYTE	12
 	TEXT	"TIPI.TIPICFG"
 
-btipicfg
+btipicfg			; implementation of CALL TIPI
 	LIMI	0
-	; MOV	R11,@RET	; stash the return to basic
 	LWPI	WS		; We will eventually be using this workspace any, lets us use GPLWS for BLWP routines.
 	MOV	@>832C,R8	; get token pointer to play with
 
@@ -36,7 +35,7 @@ copyname
 	AI	R1,7		; skip to after the TIPI("
 	.setvdpra R1
 	CLR	R9
-	MOV	@VDPRD,R9
+	MOVB	@VDPRD,R9
 	MOV	R9,R2
 	SWPB	R2
 	INC	R2
@@ -49,25 +48,54 @@ loadfiles
 	; and return
 	; JMP	bok
 
-; bok
-;	SZCB	@>8342,@>8342	; clear byte for current token, terminates line
-;	JMP	bdone
+bok
+	SZCB	@>8342,@>8342	; clear byte for current token, terminates line
+	JMP	bdone
 	
-; berror	
-;	LI	R0,>0700
-;	MOVB	R0,@>8342
+berror	
+	LI	R0,>0700
+	MOVB	R0,@>8342
 
-; bdone
-;	AI	R8,>08		; 'finish' parsing the sendtest command
-;	MOV	R8,@>832C
-;	SWPB	R8		; write new token pointer to vram for basic
-;	MOVB	R8,@VDPWA
-;	SWPB	R8
-;	MOVB	R8,@VDPWA
-;	MOV	R8,@>832C
-;	MOV	@RET,R11
-;	INCT	R11
-;	LI	R8,>4000
-;	SZCB	R8,@>8354
-;	RT
+bdone
+	MOV	R8,@>832C
+	.setvdpra R8		; move vdp counter to new end of token
+	MOV	@RET,R11
+	INCT	R11
+	LI	R8,>4000
+	SZCB	R8,@>8354
+	RT
 
+bcallfiles			; implementation of CALL FILES(x)
+	LIMI	0
+	CI	R12,>1100
+	JNE	bskip		; if not using CRUBASE of TIFDC, then skip
+
+	MOV	R11,@RET
+	STWP	R9		; Get GPLWS for relative access
+	MOV	@>832C,R8	; get token pointer to play with
+
+	AI	R8,7		; skip over " FILES("
+	.setvdpra R8
+	MOVB	@VDPRD,R2
+	MOVB	@VDPRD,@R2LB(R9)
+	CI	R2,>C801	; is single byte unquoted string?
+	JNE	berror
+	CLR	R2
+	MOVB	@VDPRD,R2
+	SWPB	R2		; ascii value of argument
+	AI	R2,>00D0	; subtract 48 so we have 0-9
+	ANDI	R2,>00FF	; mask byte
+	JEQ	berror		; zero is illegal value.
+	CI	R2,9		; ensure it is a digit
+	JH	berror
+	MOVB	@R2LB(R9),@>834C
+	BL	@dofiles	; run the common part with subroutine >16
+	MOVB	@L2STAT,@L2STAT	; check for error
+	JNE	berror
+	MOV	@>832C,R8	; reload vdp token pointer
+	AI	R8,12		; adjust token pointer
+	B	@bok
+
+bskip
+	RT
+		

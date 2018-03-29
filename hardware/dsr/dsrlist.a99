@@ -102,10 +102,17 @@ tipiu3
 
 ; Basic routine list ( name must be no more than 7 characters )
 basiclnk
-	DATA	l2x2
+	DATA	cfilelnk
 	DATA	btipicfg
 	BYTE	4
 	TEXT	"TIPI"
+	EVEN
+
+cfilelnk
+	DATA	l2x2
+	DATA	bcallfiles
+	BYTE	5
+	TEXT	"FILES"
 	EVEN
 
 l2x2
@@ -130,10 +137,17 @@ l2x4
 	EVEN
 
 l2x5
-	DATA	l2x7
+	DATA	l2x6
 	DATA	directout
 	BYTE	1
 	BYTE	L2B+5		; lvl2 file direct output
+	EVEN
+
+l2x6
+	DATA	l2x7
+	DATA	setfiles
+	BYTE	1
+	BYTE	L2B+6		; lvl2 call files/buffer allocation
 	EVEN
 
 l2x7

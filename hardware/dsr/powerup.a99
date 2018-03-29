@@ -1,5 +1,11 @@
 ; Data used by routines in powerup
 
+VDPSTACK	EQU	>8370
+
+fbufheader
+	DATA	>AA3F,>FF11
+	BYTE	>03
+
 sndflg
 	BYTE	>01
 	EVEN
@@ -35,7 +41,8 @@ onreset				;
 
 	LI	R1,VDPWD	; port to write data into vdp
 	CLR	R3
-sndcpy	MOVB	@upsnd(R3),*R1
+sndcpy	
+	MOVB	@upsnd(R3),*R1
 	INC	R3
 	CI	R3,24
 	JNE	sndcpy
@@ -48,7 +55,25 @@ sndcpy	MOVB	@upsnd(R3),*R1
 ; turn off the reset signal so RPi service can finish starting
 	SBZ	1
 
+; setup disk buffers if crubase is that of floppy controller
+	CI	R12,>1100
+	JNE	done
+	LI	R2,>37D7	; room for 3 file buffers
+	MOV	R2,@VDPSTACK
+	LI	R1,VDPWA
+	INC	R2		; compose vdp write address
+	ORI	R2,VDWRITE
+	MOVB	@R2LB(R5),*R1
+	MOVB	R2,*R1		; write address for vdp is set
+	CLR	R2
+fheadcopy
+	MOVB	@fbufheader(R2),@VDPWD
+	INC	R2
+	CI	R2,5
+	JNE	fheadcopy
+
 ; Return to TI startup
+done
 	LIMI	2
 	RT			; return to console
 

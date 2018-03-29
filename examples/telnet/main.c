@@ -40,10 +40,13 @@ void defineChars() {
 }
 
 void setupScreen() {
+  VDP_SET_REGISTER(0x32, 0x80);
+  VDP_SET_REGISTER(0x02, 0x00);
+  set_graphics(0);
   set_text();
   defineChars();
   bgcolor(COLOR_BLACK);
-  textcolor(COLOR_MEDGREEN);
+  textcolor(COLOR_GRAY);
   clrscr();
   cursor(1);
   gotoxy(0,0);

@@ -235,6 +235,8 @@ void term() {
     VDP_INT_POLL;
 
     if (kbhit()) {
+      // terminal may need to transform this to
+      // multiple characters.
       unsigned char keybuf[4];
       keybuf[0] = cgetc();
       int keylen = 1;
@@ -247,7 +249,7 @@ void term() {
       idle = 0;
     } else {
       idle++;
-      if (idle > 100) {
+      if (idle > 300) {
         int bufsize = read_socket();
         process(bufsize, buffer);
       }

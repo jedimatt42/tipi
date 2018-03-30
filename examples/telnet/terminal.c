@@ -403,9 +403,16 @@ void terminalDisplay(unsigned char c) {
 
 void terminalKey(unsigned char* buf, int* len) {
   // translate output keys into correct terminal keyboard commands
+  // TI control keys ctrl-a = 129 ---> ctrl-z = 154
+  if (buf[0] >= 129 && buf[0] <= 154) {
+    buf[0] = buf[0] - 128;
+    *len = 1;
+    return;
+  }
+  
   switch (buf[0]) {
-    case 136: // ctrl-h
-      buf[0] = 8; // backspace
+    case 1: // tab
+      buf[0] = 9;
       *len = 1;
       break;
     case 8: // left-arrrow
@@ -416,9 +423,9 @@ void terminalKey(unsigned char* buf, int* len) {
       buf[0] = '\b';
       *len = 1;
       break;
-    case 11: // up-arrow
+    case 9: // right-arrow
       buf[0] = 27;
-      buf[1] = 'A';
+      buf[1] = 'C';
       *len = 2;
       break;
     case 10: // down-arrow
@@ -426,13 +433,13 @@ void terminalKey(unsigned char* buf, int* len) {
       buf[1] = 'B';
       *len = 2;
       break;
-    case 9: // right-arrow
+    case 11: // up-arrow
       buf[0] = 27;
-      buf[1] = 'C';
+      buf[1] = 'A';
       *len = 2;
       break;
-    case 1: // tab
-      buf[0] = 9;
+    case 15: // F-9
+      buf[0] = 27;
       *len = 1;
       break;
     default:

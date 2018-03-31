@@ -3,11 +3,10 @@
 #include <conio.h>
 #include <string.h>
 #include "ti_socket.h"
+#include "terminal.h"
 
 // Cheating, and reaching into conio_cputc.c
 void inc_row();
-
-void charout(unsigned char ch);
 
 #define COLOR_DEFAULT 7
 

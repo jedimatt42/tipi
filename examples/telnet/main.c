@@ -78,7 +78,7 @@ void getstr(int x, int y, unsigned char* var, int maxlen) {
   cputs(var);
 
   unsigned char normal_cursorChar = conio_cursorChar;
-
+  conio_cursorFlag = 1;
   unsigned char key = 0;
   int idx = strlen(var);
   while(key != 13) {
@@ -199,6 +199,29 @@ void process(int bufsize, unsigned char* buffer) {
   }
 }
 
+unsigned blinkenLights = 0;
+
+void unblink() {
+  if (conio_cursorChar != 0) {
+    vdpchar(conio_getvram(), conio_cursorChar);
+    conio_cursorChar = 0;
+  }
+}
+
+void blink() {
+  if ((blinkenLights % 100) < 50) {
+    if (conio_cursorChar == 0) {
+      int here = conio_getvram();
+      VDP_SET_ADDRESS(here);
+      __asm__("NOP");
+      conio_cursorChar = VDPRD;
+      vdpchar(here, 219);
+    }
+  } else {
+    unblink();
+  }
+}
+
 void term() {
   setupScreen();
   clearState();
@@ -214,6 +237,9 @@ void term() {
   getstr(6,1, port, 10);
   gotoxy(6,1);
   cputs(port);
+
+  conio_cursorFlag = 0;
+  conio_cursorChar = 219;
 
   unsigned char result = connect(hostname, port);
   if (result != 255) {
@@ -247,11 +273,19 @@ void term() {
         return;
       }
       idle = 0;
+      blinkenLights = 0;
     } else {
       idle++;
+      blinkenLights++;
       if (idle > 300) {
         int bufsize = read_socket();
-        process(bufsize, buffer);
+        if (bufsize) {
+          blinkenLights = 0;
+          unblink();
+          process(bufsize, buffer);
+        } else {
+          blink();
+        }
       }
     }  
   }

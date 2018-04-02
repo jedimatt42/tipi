@@ -96,3 +96,9 @@ create mask=0644
 directory mask=0755
 force user=tipi
 ```
+
+### Capture SD Card Image
+
+run dmesg to see what device sd card mounted as... /dev/sdb?
+dd if=/dev/sdb of=sdimage.img bs=4M
+

@@ -70,7 +70,15 @@ cd /home/tipi/tipi
 ## Other items to setup
 
 * change the password for user pi
+* change the hostname
 * install samba share for /home/tipi/tipi_disk
+* add telnetd for localhost access
+   /etc/hosts.allow: in.telnetd: localhost
+   /etc/hosts.deny: in.telnetd: ALL
+
+
+
+Changing hostname: /etc/hostname & /etc/hosts
 
 Recommended Samba configuration for /etc/samba/smb.conf:
 

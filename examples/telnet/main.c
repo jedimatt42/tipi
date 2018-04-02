@@ -19,7 +19,6 @@ extern unsigned char PAT127;
 unsigned char hostname[32];
 unsigned char port[10];
 
-
 // state machine variables
 int mode;
 unsigned char command;
@@ -40,10 +39,14 @@ void defineChars() {
 }
 
 void setupScreen() {
+  termWidth = 40;
+  VDP_SET_REGISTER(0x32, 0x80);
+  VDP_SET_REGISTER(0x02, 0x00);
+  set_graphics(0);
   set_text();
   defineChars();
   bgcolor(COLOR_BLACK);
-  textcolor(COLOR_MEDGREEN);
+  textcolor(COLOR_GRAY);
   clrscr();
   cursor(1);
   gotoxy(0,0);
@@ -56,7 +59,8 @@ void setupScreen() {
     if (kbhit()) {
       unsigned char key = cgetc();
       if (key == 50) {
-        set_text80_ecm();
+        set_text80_color();
+	termWidth = 80;
         waiting = 0;
       } else if (key == 49) {
         set_text();
@@ -66,11 +70,6 @@ void setupScreen() {
   }
   defineChars();
   clrscr();
-  // temp hack... 
-  cputs("old color");
-  textcolor(COLOR_CYAN);
-  cputs("new color");
-  halt();
 }
 
 void getstr(int x, int y, unsigned char* var, int maxlen) {
@@ -80,7 +79,7 @@ void getstr(int x, int y, unsigned char* var, int maxlen) {
   cputs(var);
 
   unsigned char normal_cursorChar = conio_cursorChar;
-
+  conio_cursorFlag = 1;
   unsigned char key = 0;
   int idx = strlen(var);
   while(key != 13) {
@@ -201,6 +200,29 @@ void process(int bufsize, unsigned char* buffer) {
   }
 }
 
+unsigned blinkenLights = 0;
+
+void unblink() {
+  if (conio_cursorChar != 0) {
+    vdpchar(conio_getvram(), conio_cursorChar);
+    conio_cursorChar = 0;
+  }
+}
+
+void blink() {
+  if ((blinkenLights % 100) < 50) {
+    if (conio_cursorChar == 0) {
+      int here = conio_getvram();
+      VDP_SET_ADDRESS(here);
+      __asm__("NOP");
+      conio_cursorChar = VDPRD;
+      vdpchar(here, 219);
+    }
+  } else {
+    unblink();
+  }
+}
+
 void term() {
   setupScreen();
   clearState();
@@ -216,6 +238,9 @@ void term() {
   getstr(6,1, port, 10);
   gotoxy(6,1);
   cputs(port);
+
+  conio_cursorFlag = 0;
+  conio_cursorChar = 219;
 
   unsigned char result = connect(hostname, port);
   if (result != 255) {
@@ -237,6 +262,8 @@ void term() {
     VDP_INT_POLL;
 
     if (kbhit()) {
+      // terminal may need to transform this to
+      // multiple characters.
       unsigned char keybuf[4];
       keybuf[0] = cgetc();
       int keylen = 1;
@@ -247,11 +274,19 @@ void term() {
         return;
       }
       idle = 0;
+      blinkenLights = 0;
     } else {
       idle++;
-      if (idle > 100) {
+      blinkenLights++;
+      if (idle > 300) {
         int bufsize = read_socket();
-        process(bufsize, buffer);
+        if (bufsize) {
+          blinkenLights = 0;
+          unblink();
+          process(bufsize, buffer);
+        } else {
+          blink();
+        }
       }
     }  
   }

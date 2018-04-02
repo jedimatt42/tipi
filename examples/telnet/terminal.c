@@ -2,13 +2,19 @@
 #include "terminal.h"
 #include <conio.h>
 #include <string.h>
+#include "ti_socket.h"
+#include "terminal.h"
 
 // Cheating, and reaching into conio_cputc.c
 void inc_row();
 
+#define COLOR_DEFAULT 7
+
 int stage;
 unsigned char bytestr[128];
 int bs_idx;
+
+int termWidth;
 
 unsigned char cursor_store_x;
 unsigned char cursor_store_y;
@@ -132,7 +138,7 @@ void eraseDisplay(int opt) {
     case 3: // TODO: if we add scroll back buffer, 3 should clear that too.
     case 2: // clear full screen, return to top
       clrscr();
-      gotoxy(oldx,oldy);
+      gotoxy(0,0);
       break;
   }
 }
@@ -166,6 +172,32 @@ void scrollUp(int lc) {
   }
 }
 
+void sendTermCoord() {
+  unsigned int x = wherex() + 1;
+  unsigned int y = wherey() + 1;
+  unsigned char buf[30];
+  buf[0] = 27;
+  buf[1] = '[';
+  unsigned char* cursor = buf + 2;
+  strcpy(cursor, int2str(y));
+  cursor = buf + strlen(buf);
+  *cursor = ';';
+  cursor++;
+  strcpy(cursor, int2str(x));
+  cursor = buf + strlen(buf);
+  *cursor = 'R';
+  cursor++;
+  *cursor = 0;
+  send_chars(buf, strlen(buf));
+}
+
+void sendTermType() {
+  unsigned char buf[8];
+  buf[0] = 27;
+  strcpy(buf + 1, "[?1;0c");
+  send_chars(buf, 7);
+}
+
 unsigned char isBold = 0;
 
 unsigned char colors[16] = {
@@ -178,7 +210,7 @@ unsigned char colors[16] = {
   COLOR_CYAN,
   COLOR_GRAY,
   // now the BOLD variety
-  COLOR_BLACK,
+  COLOR_GRAY,
   COLOR_LTRED,
   COLOR_LTGREEN,
   COLOR_LTYELLOW,
@@ -188,15 +220,20 @@ unsigned char colors[16] = {
   COLOR_WHITE
 };
 
-unsigned char foreground = 2;
+unsigned char foreground = COLOR_DEFAULT;
 unsigned char background = 0;
 
 void setColors() {
   bgcolor(colors[background]);
-  textcolor(colors[foreground & isBold]);
+  textcolor(colors[foreground | isBold]);
 }
 
 void doSGRCommand() {
+  // only support color in 80 column mode.
+  if (termWidth != 80) {
+    return;
+  }
+
   // each param ( there can be n ) is processed to set attributes
   // on all subsequent text. We'll only support foreground and
   // background color.
@@ -205,7 +242,7 @@ void doSGRCommand() {
   if (bs_idx == 0) {
     // set defaults and return
     isBold = 0;
-    foreground = 2;
+    foreground = COLOR_DEFAULT;
     background = 0;
     setColors();
     return;
@@ -217,7 +254,7 @@ void doSGRCommand() {
     switch(sgr) {
       case 0: // clear attrs
         isBold = 0;
-        foreground = 2;
+        foreground = COLOR_DEFAULT;
         background = 0;
         break;
       case 1: // bold
@@ -251,7 +288,7 @@ void doSGRCommand() {
       case 95:
       case 96:
       case 97:
-        foreground = (sgr - 90) & 8;
+        foreground = (sgr - 90) | 8;
         break;
       case 100: // high intensity background
       case 101:
@@ -261,7 +298,7 @@ void doSGRCommand() {
       case 105:
       case 106:
       case 107:
-        background = (sgr - 100) & 8;
+        background = (sgr - 100) | 8;
         break;
     }
     setColors();
@@ -303,6 +340,8 @@ void doCsiCommand(unsigned char c) {
       cursorGoto(getParamA(1),wherey() + 1);
       break;
     case 'H': // set position, 2 param, defaults 1, 1
+      cursorGoto(getParamB(1), getParamA(1));
+      break;
     case 'f': // synonym
       cursorGoto(getParamB(1), getParamA(1));
       break;
@@ -316,10 +355,17 @@ void doCsiCommand(unsigned char c) {
       scrollUp(getParamA(1));
       break;
     case 'T': // scroll down lines, 1 param, default 1
+      charout('^'); // just note that I didn't handle this.
       break;
     case 'm': // color (SGR), n params
       doSGRCommand();
       break;
+    case 'n': // some introspection
+      {
+        if (getParamA(0) == 6) {
+          sendTermCoord();
+        }
+      }
     case 's': // store cursor, no params
       cursor_store_x = wherex();
       cursor_store_y = wherey();
@@ -327,11 +373,77 @@ void doCsiCommand(unsigned char c) {
     case 'u': // restore cursor, no params.
       gotoxy(cursor_store_x, cursor_store_y);
       break;
+    case 'c': // identify term type.
+      sendTermType();
+      break;
   }
 }
 
-void doEscCommand(unsigned char c) {
-  
+#define ESC_OPEN 1
+#define ESC_CLOSED 0
+#define ESC_FIVE 5
+#define ESC_SIX 6
+#define ESC_Y 'Y'
+#define ESC_X 'X'
+
+unsigned char esc_state = ESC_OPEN;
+
+int doEscCommand(unsigned char c) {
+  if (esc_state == ESC_OPEN) {
+    switch (c) {
+      case '7': // save cursor
+        cursor_store_x = wherex();
+        cursor_store_y = wherey();
+        break;
+      case '8': // restore cursor
+        gotoxy(cursor_store_x, cursor_store_y);
+        break;
+      case '5': // possible status
+        esc_state = ESC_FIVE;
+        break;
+      case '6': // possible status
+        esc_state = ESC_SIX;
+        break;
+      case 'Z': // vt52 ident
+        {
+          unsigned char buf[4];
+          buf[0] = 27;
+          buf[1] = '/';
+          buf[2] = 'Z';
+          buf[3] = 0;
+          send_chars(buf, 3);
+        }
+        break;
+      case 'Y': // vt52 goto
+        esc_state = ESC_Y;
+        break;
+      default:
+        return 1; // done.
+    }
+  } else {
+    if (esc_state == ESC_Y) {
+      gotoy(c - 32);
+      esc_state == ESC_X;
+      return 0;
+    } else if (esc_state == ESC_X) {
+      gotox(c - 32);
+      return 1;
+    } else if (c == 'n') {
+      if (esc_state == ESC_FIVE) {
+        // send term ok   ^[0n
+        unsigned char buf[3];
+        buf[0] = 27;
+        buf[1] = '0';
+        buf[2] = 'n';
+        send_chars(buf, 3);
+        return 1;
+      } else if (esc_state == ESC_SIX) {
+        sendTermCoord();
+        return 1;
+      }
+    } 
+  }
+  return 0;
 }
 
 void charout(unsigned char ch) {
@@ -367,6 +479,7 @@ void terminalDisplay(unsigned char c) {
   if (stage == STAGE_OPEN) {
     if (c == 27) {
       stage = STAGE_ESC;
+      esc_state = ESC_OPEN;
     } else {
       charout(c);
     }
@@ -377,8 +490,12 @@ void terminalDisplay(unsigned char c) {
       bs_idx = 0;
       bytestr[0] = 0;
     } else {
-      doEscCommand(c);
-      stage = STAGE_OPEN;
+      // pass on to legacy state machine.
+      int escDone = doEscCommand(c);
+      if (escDone) {
+        stage = STAGE_OPEN;
+        esc_state = ESC_CLOSED;
+      }
     }
   } else if (stage == STAGE_CSI) { 
     if (c >= 0x40 && c <= 0x7E) {
@@ -400,23 +517,30 @@ void terminalDisplay(unsigned char c) {
 }
 
 void terminalKey(unsigned char* buf, int* len) {
+  // Length must be set to 1 before calling
+
   // translate output keys into correct terminal keyboard commands
+  // TI control keys ctrl-a = 129 ---> ctrl-z = 154
+  if (buf[0] >= 129 && buf[0] <= 154) {
+    buf[0] = buf[0] - 128;
+    return;
+  }
+  
   switch (buf[0]) {
-    case 136: // ctrl-h
-      buf[0] = 8; // backspace
-      *len = 1;
+    case 1: // tab
+      buf[0] = 9;
       break;
     case 8: // left-arrrow
-/*      buf[0] = 27; // esc
+      /*      
+      buf[0] = 27; // esc
       buf[1] = 'D';
       *len = 2;
       */
       buf[0] = '\b';
-      *len = 1;
       break;
-    case 11: // up-arrow
+    case 9: // right-arrow
       buf[0] = 27;
-      buf[1] = 'A';
+      buf[1] = 'C';
       *len = 2;
       break;
     case 10: // down-arrow
@@ -424,17 +548,15 @@ void terminalKey(unsigned char* buf, int* len) {
       buf[1] = 'B';
       *len = 2;
       break;
-    case 9: // right-arrow
+    case 11: // up-arrow
       buf[0] = 27;
-      buf[1] = 'C';
+      buf[1] = 'A';
       *len = 2;
       break;
-    case 1: // tab
-      buf[0] = 9;
-      *len = 1;
+    case 15: // F-9
+      buf[0] = 27;
       break;
     default:
-      *len = 1;
       break;
   }
 }

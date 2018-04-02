@@ -1,5 +1,5 @@
-#ifndef _ti_socket
-#define _ti_socket 1
+#ifndef _ti_socket_h
+#define _ti_socket_h 1
 
 extern unsigned char buffer[512];
 

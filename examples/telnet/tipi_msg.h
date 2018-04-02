@@ -1,5 +1,5 @@
-#ifndef _tipi_msg
-#define _tipi_msg
+#ifndef _tipi_msg_h
+#define _tipi_msg_h 1
 
 
 

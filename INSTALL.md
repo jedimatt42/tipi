@@ -39,9 +39,10 @@ sudo passwd tipi
 
 ## Install Software
 
-Make sure git is installed
+Make sure git is installed (after setting up tmpfs folders, update will be required)
 
 ```
+sudo apt-get update
 sudo apt-get install git
 ```
 

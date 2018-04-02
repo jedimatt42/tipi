@@ -14,6 +14,8 @@ int stage;
 unsigned char bytestr[128];
 int bs_idx;
 
+int termWidth;
+
 unsigned char cursor_store_x;
 unsigned char cursor_store_y;
 
@@ -227,6 +229,11 @@ void setColors() {
 }
 
 void doSGRCommand() {
+  // only support color in 80 column mode.
+  if (termWidth != 80) {
+    return;
+  }
+
   // each param ( there can be n ) is processed to set attributes
   // on all subsequent text. We'll only support foreground and
   // background color.

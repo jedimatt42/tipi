@@ -19,7 +19,6 @@ extern unsigned char PAT127;
 unsigned char hostname[32];
 unsigned char port[10];
 
-
 // state machine variables
 int mode;
 unsigned char command;
@@ -40,6 +39,7 @@ void defineChars() {
 }
 
 void setupScreen() {
+  termWidth = 40;
   VDP_SET_REGISTER(0x32, 0x80);
   VDP_SET_REGISTER(0x02, 0x00);
   set_graphics(0);
@@ -60,6 +60,7 @@ void setupScreen() {
       unsigned char key = cgetc();
       if (key == 50) {
         set_text80_color();
+	termWidth = 80;
         waiting = 0;
       } else if (key == 49) {
         set_text();

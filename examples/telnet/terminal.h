@@ -5,6 +5,8 @@ void initTerminal();
 void terminalDisplay(unsigned char c);
 void terminalKey(unsigned char* buf, int* len);
 
+extern int termWidth;
+
 void resetState();
 int getParamA(int def);
 int getParamB(int def);

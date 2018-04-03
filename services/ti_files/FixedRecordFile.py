@@ -17,7 +17,11 @@ class FixedRecordFile(object):
         self.mode = mode(pab)
         self.filetype = fileType(pab)
         self.recordLength = ti_files.recordLength(self.header)
-        self.records = self.__loadRecords(bytes[128:])
+        if self.mode == OUTPUT and self.filetype == SEQUENTIAL:
+            self.records = [ ]
+            self.dirty = True
+        else:
+            self.records = self.__loadRecords(bytes[128:])
         if self.mode == APPEND:
             self.currentRecord = len(self.records)
         else:
@@ -76,6 +80,7 @@ class FixedRecordFile(object):
         return statByte
 
     def restore(self, pab):
+        logger.debug("restore for file type: %d", self.filetype)
         if self.filetype == RELATIVE:
             self.currentRecord = recordNumber(pab)
         else:

@@ -11,14 +11,14 @@ sources = rom.a99 header.a99 vdp-io.a99 tipi-io.a99 powerup.a99 devices.a99 load
 
 clean:
 	-rm *.list >/dev/null 2>&1
-	-rm tipi*.bin >/dev/null 2>&1
+	-rm tipi*.bin timestamp.gen >/dev/null 2>&1
 
-tipi0.bin: $(sources)
+tipi0.bin: $(sources) timestamp.gen
 	xas99.py -R -b -L tipi0.list -o $@ rom.a99 -DA14=0
 	mv $@_4000 $@
 	dd if=/dev/null of=$@ bs=1 count=0 seek=16384
 
-tipi1.bin: $(sources)
+tipi1.bin: $(sources) timestamp.gen
 	xas99.py -R -b -L tipi1.list -o $@ rom.a99 -DA14=1
 	mv $@_4000 $@
 	dd if=/dev/null of=$@ bs=1 count=0 seek=16384
@@ -26,7 +26,10 @@ tipi1.bin: $(sources)
 tipi.bin: tipi0.bin tipi1.bin
 	cat tipi0.bin tipi1.bin >$@
 
-.PHONY: burn
+timestamp.gen:
+	TIMESTAMP=`date --iso-8601="seconds"`; ( echo "	TEXT	\"$$TIMESTAMP\""; echo "	BYTE	0"; echo "	EVEN" ) >timestamp.gen
+
+.PHONY: burn 
 
 burn: tipi.bin
 	minipro -p "AM27C256 @DIP28" -w tipi.bin -y

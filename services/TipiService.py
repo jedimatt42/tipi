@@ -10,6 +10,7 @@ from RawExtensions import RawExtensions
 from LevelTwo import LevelTwo
 from ResetHandler import createResetListener
 from TipiDisk import TipiDisk
+from Oled import oled
 
 #
 # Setup logging
@@ -19,18 +20,17 @@ if not os.path.isdir(logpath):
     os.makedirs(logpath)
 
 LOG_FILENAME = logpath + "/tipi.log"
-logging.getLogger('').setLevel(logging.DEBUG)
+logging.getLogger('').setLevel(logging.INFO)
 logging.getLogger('tipi.TipiMessage').setLevel(logging.INFO)
 loghandler = logging.handlers.RotatingFileHandler(
     LOG_FILENAME, maxBytes=(5000 * 1024), backupCount=5)
-logformatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+logformatter = logging.Formatter('%(asctime)-15s %(name)-12s: %(levelname)-8s %(message)s')
 loghandler.setFormatter(logformatter)
 logging.getLogger('').addHandler(loghandler)
 
 __name__ = "TipiService"
 
 logger = logging.getLogger(__name__)
-oled = logging.getLogger('oled')
 
 ##
 # MAIN
@@ -47,7 +47,6 @@ try:
     tipiDisk = TipiDisk(tipi_io)
 
     oled.info("TIPI Ready")
-
     while True:
         logger.info("waiting for request...")
 
@@ -75,4 +74,5 @@ try:
 
         logger.info("Request completed.")
 except Exception as e:
+    oled.info("Crash/Device Error")
     logger.error("Unhandled exception in main", exc_info=True)

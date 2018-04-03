@@ -10,10 +10,10 @@ sudo systemctl enable tipiwatchdog.service
 sudo systemctl restart tipiwatchdog.service
 sudo systemctl enable tipi.service
 sudo systemctl restart tipi.service
-sudo systemctl enable tipioled.service
-sudo systemctl restart tipioled.service
 sudo systemctl enable tipisuper.service
 sudo systemctl restart tipisuper.service
+sudo systemctl enable tipimon.service
+sudo systemctl restart tipimon.service
 sudo systemctl enable tipiweb.service
 sudo systemctl restart tipiweb.service
 

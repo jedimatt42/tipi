@@ -1,10 +1,10 @@
 [Unit]
-Description=TI-99/4A OLED Output Service
+Description=TI-99/4A Web UI Caching Service
 After=network.target tipiboot.service
 
 [Service]
 Type=simple
-ExecStart=/home/tipi/tipi/services/tipioled.sh
+ExecStart=/home/tipi/tipi/htdocs/tipimon.sh
 Restart=always
 User=tipi
 

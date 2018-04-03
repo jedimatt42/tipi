@@ -115,23 +115,29 @@ shift_pload_sout shift_td(r_clk, tipi_td, r_le, rpi_td, td_out);
 wire tc_out;
 shift_pload_sout shift_tc(r_clk, tipi_tc, r_le, rpi_tc, tc_out);
 
-// Select if output is from the data or control register
-reg r_din_mux;
-always @(posedge r_clk) begin
-  if (r_cd) r_din_mux <= td_out;
-  else r_din_mux <= tc_out;
-end
-assign r_din = r_din_mux;
 
 // Data from the RPi, to be read by the TI.
 
 // RD
 wire [0:7]tipi_db_rd;
-shift_sin_pout shift_rd(r_clk, tipi_rd, r_le, r_dout, tipi_db_rd);
+wire rd_parity;
+shift_sin_pout shift_rd(r_clk, tipi_rd, r_le, r_dout, tipi_db_rd, rd_parity);
 
 // RC
 wire [0:7]tipi_db_rc;
-shift_sin_pout shift_rc(r_clk, tipi_rc, r_le, r_dout, tipi_db_rc);
+wire rc_parity;
+shift_sin_pout shift_rc(r_clk, tipi_rc, r_le, r_dout, tipi_db_rc, rc_parity);
+
+// Select if output is from the data or control register
+reg r_din_mux;
+always @(posedge r_clk) begin
+  if (r_rt & r_cd) r_din_mux <= td_out;
+  else if (r_rt & ~r_cd) r_din_mux <= tc_out;
+  else if (~r_rt & r_cd) r_din_mux <= rd_parity;
+  else r_din_mux <= rc_parity;
+end
+assign r_din = r_din_mux;
+
 
 //-- Databus control
 wire tipi_read = cru_dev_en && ~ti_memen && ti_dbin;

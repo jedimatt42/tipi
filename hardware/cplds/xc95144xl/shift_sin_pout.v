@@ -12,7 +12,9 @@ module shift_sin_pout(
     // input
     input din,
     // output
-    output [0:7]dout
+    output [0:7]dout,
+	 // parity signal
+	 output parity
 );
 
 reg [0:7] latch_q;
@@ -26,6 +28,7 @@ always @(posedge clk) begin
 end
 
 assign dout = latch_q;
+assign parity = ^shift_q;
 
 endmodule
 

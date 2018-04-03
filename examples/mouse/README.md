@@ -8,7 +8,7 @@ Edit or comment out the part in the Makefile where it copies the rom into a plac
 
 run: make
 
-Produces an 8k cartridge rom.
+Produces an EA5 program image.
 
 ## License
 

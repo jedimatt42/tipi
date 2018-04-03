@@ -135,6 +135,9 @@ a {
     border: 1px solid black;
 }
 
+.about_container {
+    padding: 40px;
+}
 
 .tooltip {
     position: relative;
@@ -196,7 +199,14 @@ a {
    background-color : #5CCADC; 
 }
 
-
+.tool_button
+{
+    background-color: Transparent;
+    background-repeat: no-repeat;
+    border: none;
+    cursor: pointer;
+    overflow: hidden;
+}
 
 
 

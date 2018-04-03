@@ -13,7 +13,8 @@
 # Start of subprogram list (unused)
 # This doubles as the terminator of the program chain
 program_record:
-  data  0x0000    # Next program chain record
+  data  0x0000         # Next program chain record
   data  _start    # Entry point for program
-  nstring "TIPI EA5 LOADER"  # Name of program
+  nstring "TIPI DIAG"  # Name of program
   even
+

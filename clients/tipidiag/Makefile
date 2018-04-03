@@ -5,7 +5,7 @@ LIBTI99?=/home/matthew/dev/ti99/libti99
 
 ELF2CART=elf2cart
 
-FNAME=tipiea5
+FNAME=tipidia8
 
 LDFLAGS=\
   --section-start .text=6000 --section-start .data=2000
@@ -34,6 +34,6 @@ $(FNAME).elf: $(OBJECT_LIST)
 %.o: %.asm
 	$(GAS) $< -o $@
 
-%.o: %.c
-	$(CC) -c $< -std=c99 -Os --save-temp -I$(LIBTI99) -o $@
+%.o: %.c 
+	$(CC) -c $< -std=c99 -O2 --save-temp -I$(LIBTI99) -o $@
 

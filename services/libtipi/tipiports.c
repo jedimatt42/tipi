@@ -2,6 +2,11 @@
 #include <Python.h>
 #include <wiringPi.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 
 // Serial output for RD & RC (BCM pin numbers)
 #define PIN_R_RT 13
@@ -21,6 +26,10 @@ volatile long delmem = 55;
 
 int delayloop = 50;
 
+char* errorsFifo = "/tmp/tipierrors";
+
+void writeErrors(int errors);
+
 inline void signalDelay(void)
 {
   // delayMicroseconds(1L);
@@ -37,29 +46,62 @@ inline void setSelect(int reg)
   signalDelay();
 }
 
+inline unsigned char parity(unsigned char input) {
+    unsigned char piParity = input;
+    piParity ^= piParity >> 4;
+    piParity ^= piParity >> 2;
+    piParity ^= piParity >> 1;
+    return piParity & 0x01;
+}
+
 inline unsigned char readByte(int reg)
 {
   unsigned char value = 0;
 
-  setSelect(reg);
-  signalDelay();
+  int errors = 0;
 
-  digitalWrite(PIN_R_LE, 1);
-  signalDelay();
-  digitalWrite(PIN_R_CLK, 1);
-  signalDelay();
-  digitalWrite(PIN_R_CLK, 0);
-  signalDelay();
-  digitalWrite(PIN_R_LE, 0);
-  signalDelay();
+  int ok = 0;
+  while(! ok) {
+    value = 0;
 
-  int i;
-  for (i=7; i>=0; i--) {
+    setSelect(reg);
+    signalDelay();
+
+    digitalWrite(PIN_R_LE, 1);
+    signalDelay();
     digitalWrite(PIN_R_CLK, 1);
     signalDelay();
     digitalWrite(PIN_R_CLK, 0);
     signalDelay();
-    value |= digitalRead(PIN_R_DIN) << i;
+    digitalWrite(PIN_R_LE, 0);
+    signalDelay();
+
+    int i;
+    for (i=7; i>=0; i--) {
+      digitalWrite(PIN_R_CLK, 1);
+      signalDelay();
+      digitalWrite(PIN_R_CLK, 0);
+      signalDelay();
+      value |= digitalRead(PIN_R_DIN) << i;
+    }
+
+    // read the parity bit
+    digitalWrite(PIN_R_CLK, 1);
+    signalDelay();
+    digitalWrite(PIN_R_CLK, 0);
+    signalDelay();
+    unsigned char tipiParity = digitalRead(PIN_R_DIN);
+
+    unsigned char piParity = parity(value);
+
+    ok = piParity == tipiParity;
+    if (!ok) {
+      errors++;
+    }
+  }
+
+  if (errors != 0) {
+    writeErrors(errors);
   }
 
   return value;
@@ -83,16 +125,33 @@ tipi_getTC(PyObject *self, PyObject *args)
 
 inline void writeByte(unsigned char value, int reg) 
 {
-  setSelect(reg);
+  int errors = 0;
 
-  int i;
-  for (i=7; i>=0; i--) {
-    digitalWrite(PIN_R_DOUT, (value >> i) & 0x01);
+  int ok = 0;
+
+  while (!ok) {
+    setSelect(reg);
+
+    int i;
+    for (i=7; i>=0; i--) {
+      digitalWrite(PIN_R_DOUT, (value >> i) & 0x01);
+      signalDelay();
+      digitalWrite(PIN_R_CLK, 1);
+      signalDelay();
+      digitalWrite(PIN_R_CLK, 0);
+      signalDelay();
+    }
+
+    // read the parity bit
     signalDelay();
-    digitalWrite(PIN_R_CLK, 1);
-    signalDelay();
-    digitalWrite(PIN_R_CLK, 0);
-    signalDelay();
+    unsigned char tipiParity = digitalRead(PIN_R_DIN);
+
+    unsigned char piParity = parity(value);
+
+    ok = piParity == tipiParity;
+    if (!ok) {
+      errors++;
+    }
   }
 
   digitalWrite(PIN_R_LE, 1);
@@ -103,6 +162,16 @@ inline void writeByte(unsigned char value, int reg)
   signalDelay();
   digitalWrite(PIN_R_LE, 0);
   signalDelay();
+
+  if (errors != 0) {
+    writeErrors(errors);
+  }
+}
+
+void writeErrors(int errors) {
+  int fd = open(errorsFifo, O_WRONLY);
+  write(fd, (void*)&errors, 2);
+  close(fd);
 }
 
 static PyObject* 

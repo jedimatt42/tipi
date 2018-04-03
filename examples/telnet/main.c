@@ -53,17 +53,24 @@ void setupScreen() {
   cputs("1: 40 Column");
   gotoxy(0,1);
   cputs("2: 80 Column");
+  gotoxy(0,2);
+  cputs("3: 64 Column");
   int waiting = 1;
   while(waiting) {
     VDP_INT_POLL;
     if (kbhit()) {
       unsigned char key = cgetc();
-      if (key == 50) {
+      if (key == 51) {
+        set_text64_color();
+        termWidth = 64;
+        waiting = 0;
+      } else if (key == 50) {
         set_text80_color();
-	termWidth = 80;
+        termWidth = 80;
         waiting = 0;
       } else if (key == 49) {
         set_text();
+        termWidth = 40;
         waiting = 0;
       }
     }

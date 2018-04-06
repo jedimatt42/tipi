@@ -104,7 +104,7 @@ Low level support:
 
 ## Documentation
 
-Please refer to the wiki.
+Please refer to the [wiki](https://github.com/jedimatt42/tipi/wiki)
 
 ## License 
 

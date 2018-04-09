@@ -128,12 +128,11 @@ void eraseDisplay(int opt) {
 
   switch (opt) {
     case 0: // clear from cursor to end of screen, remain at location
-      vdpmemset(cursorAddr, 0x20, (scx * scy) + gImage - cursorAddr);
+      cclear(scx - oldx + scx*(scy - oldy - 1) - 1); // clear except last character - avoid scrolling
       gotoxy(oldx, oldy);
       break;
     case 1: // clear from cursor to beginning of screen, remain at location
-      vdpmemset(gImage, 0x20, cursorAddr - gImage);
-      gotoxy(oldx, oldy);
+      cclearxy(0,0, scx*oldy + oldx); // should end up at oldx,oldy
       break;
     case 3: // TODO: if we add scroll back buffer, 3 should clear that too.
     case 2: // clear full screen, return to top

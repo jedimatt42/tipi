@@ -1,0 +1,140 @@
+	REF	A,B,FIRE,SPACE,RBAND,ZOOM,ZOOM2
+	REF	XMIN,YMIN,XMAX,YMAX
+ 
+	JMP	MOUSE
+ 
+; TIPI Mouse driver for TI-Artist Plus
+
+********************************
+* USER-DEFINED POSITIONS       *
+********************************
+
+	EVEN
+MWS	BSS	>20	; MOUSE-WORKSPACE
+MWSR2	EQU	MWS+4
+MWSR3	EQU	MWS+6
+MWSR4	EQU	MWS+8
+
+********************************
+*                              *
+*    MOUSE SUBROUTINE          *
+*    ----------------          *
+*                              *
+*      MAIN PROGRAM            *
+*                              *
+*      .                       *
+*      .                       *
+* LOOP BLWP @MOUSE             *
+*      .                       *
+*      .                       *
+*      .                       *
+*      JMP  LOOP               *
+*                              *
+********************************
+ 
+; TIPI Info
+MBLEFT	EQU	>01
+MBRIGHT	EQU	>02
+MBMID	EQU	>04
+
+GPLWS	EQU	>83E0
+GPLWSR1	EQU	>83E2
+
+; Message code for mouse request
+MOUREQ	BYTE	>20
+EVEN
+
+SENDMSG	EQU	>4012
+RECVMSG	EQU	>4010
+
+; once discovered, will hold crubase to reduce lookup cost
+CRUBASE	DATA	>0000
+
+WORKSV	DATA	0
+ 
+MOUSE	STWP	R0		; record old WP
+	MOV	R0,@WORKSV
+	MOV	R15,@MWS+30	; record old BLWP return address
+	LWPI	MWS
+ 
+	CLR	@RBAND
+
+	MOV	@CRUBASE,@CRUBASE	; do we need to find the crubase?
+	JNE	READM
+	BL	@FINDCRU
+
+
+READM
+	MOV	@CRUBASE,R12	; enable tipi device
+	SBO	0
+
+	LI	R0,>0001	; send message requesting mouse DATA
+	MOV	R0,@GPLWS	; set R0 in GPLWS to length of message
+	LI	R0,MOUREQ
+	MOV	R0,@GPLWSR1	; set R1 to address of message data
+	LWPI	GPLWS
+	MOV	@SENDMSG,R4
+	BL	*R4
+	LWPI	MWS
+
+	CLR	R0		; receive mouse data back (using R3,R4 as buffer)
+	MOV	R0,@GPLWS
+	LI	R0,MWSR3	; set R3 as buffer location
+	MOV	R0,@GPLWSR1
+	LWPI	GPLWS
+	MOV	@RECVMSG,R4
+	BL	*R4
+	LWPI	MWS
+	MOV	@GPLWS,R2	; copy the receive length back into R2.
+
+	SBZ	0		; disable tipi device
+
+	CLR	R0
+	MOVB	R3,R0
+	SRA	R0,8		; convert signed byte to signed word
+	A	R0,@A(R15)	; set x
+
+	CLR	R0
+	MOVB	@MWS+7,R0
+	SRA	R0,8		; convert signed byte to signed word
+	A	R0,@B(R15)	; set y
+
+	C	@A(R15),@XMIN	; check limits
+	JGT	C1
+	MOV	@XMIN,@A(R15)
+C1
+	C	@A(R15),@XMAX
+	JLE	C2
+	MOV	@XMAX,@A(R15)
+C2
+	C	@B(R15),@YMIN
+	JGT	C3
+	MOV	@YMIN,@B(R15)
+C3
+	C	@B(R15),@YMAX
+	JLE	C4
+	MOV	@YMAX,@B(R15)
+ 
+C4
+	CLR	@FIRE
+	CLR	R0
+	MOVB	R4,@MWS+1
+	ANDI	R0,MBLEFT
+	JEQ	DONE
+	LI	R0,>FFFF
+	MOV	R0,@FIRE
+
+
+DONE
+	MOV	@WORKSV,@$+8
+	LWPI	>AAAA
+	MOV	R14,R14
+	RT
+
+FINDCRU
+	LI	R9,>1100
+	MOV	R9,@CRUBASE
+	RT
+ 
+	END
+

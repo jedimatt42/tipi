@@ -19,5 +19,11 @@ if [ $? == 0 ]; then
   export TIPI_SIG_DELAY=100
 fi
 
+cat /proc/device-tree/model | grep "Pi 3 Model B Plus Rev" >/dev/null 2>&1
+if [ $? == 0 ]; then
+  # signalling delay for PI 3
+  export TIPI_SIG_DELAY=100
+fi
+
 python ./TipiService.py
 

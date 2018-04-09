@@ -25,6 +25,7 @@ all: $(FNAME)
 
 $(FNAME): $(FNAME).bin
 	$(EA5SPLIT) $(FNAME).bin
+	cp TELNE? ../../setup/bin/NET/
 
 $(FNAME).bin: $(FNAME).elf
 	$(ELF2EA5) $(FNAME).elf $(FNAME).bin

@@ -21,7 +21,9 @@ CONFIG_DEFAULTS = {
     "URI3": "",
     "TIPI_NAME": "TIPI",
     "WIFI_SSID": "",
-    "WIFI_PSK": ""
+    "WIFI_PSK": "",
+    "MOUSE_SCALE": "50",
+    "OLED_ROTATE": "0"
 }
 
 

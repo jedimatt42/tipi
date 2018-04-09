@@ -5,12 +5,10 @@ import traceback
 import logging
 from Pab import *
 from ti_files.ti_files import ti_files
-from TipiConfig import TipiConfig
 from tinames import tinames
 from Oled import oled
 
 logger = logging.getLogger(__name__)
-tipiConfig = TipiConfig.instance()
 
 class LevelTwo(object):
 

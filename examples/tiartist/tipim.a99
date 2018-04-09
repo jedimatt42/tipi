@@ -15,6 +15,9 @@ MWSR2	EQU	MWS+4
 MWSR3	EQU	MWS+6
 MWSR4	EQU	MWS+8
 
+LBNOW	DATA	0
+LBLAST	DATA	0
+
 ********************************
 *                              *
 *    MOUSE SUBROUTINE          *
@@ -92,11 +95,13 @@ READM
 	CLR	R0
 	MOVB	R3,R0
 	SRA	R0,8		; convert signed byte to signed word
+	BL	@SCALE
 	A	R0,@A(R15)	; set x
 
 	CLR	R0
 	MOVB	@MWS+7,R0
 	SRA	R0,8		; convert signed byte to signed word
+	BL	@SCALE
 	A	R0,@B(R15)	; set y
 
 	C	@A(R15),@XMIN	; check limits
@@ -112,23 +117,53 @@ C2
 	MOV	@YMIN,@B(R15)
 C3
 	C	@B(R15),@YMAX
-	JLE	C4
+	JLE	BUTTONS
 	MOV	@YMAX,@B(R15)
  
-C4
-	CLR	@FIRE
+BUTTONS
+	CLR	R0		; look for middle button
+	MOVB	R4,@MWS+1
+	ANDI	R0,MBMID
+	JEQ	FIREBUT
+	SETO	@SPACE
+
+FIREBUT
+	MOV	@LBNOW,@LBLAST	; store left button state from previous cycle
+	CLR	@LBNOW
+	CLR	@FIRE		; look at left mouse button
 	CLR	R0
 	MOVB	R4,@MWS+1
 	ANDI	R0,MBLEFT
 	JEQ	DONE
-	LI	R0,>FFFF
-	MOV	R0,@FIRE
+	SETO	@LBNOW		; R6/LBNOW fresh left button state
+
 
 
 DONE
 	MOV	@WORKSV,@$+8
 	LWPI	>AAAA
-	MOV	R14,R14
+	MOV	R14,R14		; WTF? R14 seems to be undocumented
+	JEQ	FIREON		; magic interaction regarding if fire button should be set?
+	C	@LBNOW,@LBLAST	; compare latest lbutton state with last time 
+	JEQ	FIREOFF
+
+FIREON
+	MOV	@LBNOW,@FIRE
+FIREOFF
+	RT
+
+SCALE
+	MOV	@ZOOM,@ZOOM
+	JEQ	NOZOOM
+	CI	R0,0
+	JEQ	NOZOOM
+	JGT	POSI
+	LI	R0,-1
+	JMP	NOZOOM
+POSI	
+	LI	R0,1
+
+NOZOOM
 	RT
 
 FINDCRU

@@ -9,7 +9,11 @@ from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
 
+from TipiConfig import TipiConfig
+
 logger = logging.getLogger(__name__)
+
+tipi_config = TipiConfig.instance()
 
 fontpath = "/home/tipi/tipi/services/TI99Basic.ttf"
 
@@ -42,6 +46,8 @@ class Oled(object):
             self.font = ImageFont.truetype(fontpath, 32)
             self.fontsmall = ImageFont.truetype(fontpath, 24)
 
+            self.rotate = int(tipi_config.get("OLED_ROTATE", "0"))
+
         except Exception as e:
             self.device = None
             print "No I2C Oled Display attached"
@@ -61,7 +67,7 @@ class Oled(object):
         self.draw.text((1, 16), line2, font=self.fontsmall, fill=255)
 
         # Display image.
-        self.device.image(self.image.rotate(180))
+        self.device.image(self.image.rotate(self.rotate))
         self.device.display()
 
     def info(self, format, *args):

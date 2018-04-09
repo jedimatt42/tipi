@@ -22,7 +22,7 @@ CONFIG_DEFAULTS = {
     "TIPI_NAME": "TIPI",
     "WIFI_SSID": "",
     "WIFI_PSK": "",
-    "MOUSE_SCALE": "60",
+    "MOUSE_SCALE": "50",
     "OLED_ROTATE": "0"
 }
 

@@ -169,9 +169,40 @@ NOZOOM
 STILLPOS
 	RT
 
+TIPI
+	BYTE	>04,'T','I','P','I'
+	EVEN
+
 FINDCRU
-	LI	R9,>1100
-	MOV	R9,@CRUBASE
+	LI	R12,>1000
+ISDSR	
+	SBO	0
+	LI	R0,>AA00
+	CB	@>4000,R0
+	JNE	NEXTCARD	; no dsr rom header
+	MOV	@>4008,R0
+	JEQ	NEXTCARD	; end of DSR list
+	AI	R0,4		; R0 now points to DSR name
+	LI	R1,TIPI
+	LI	R2,5		; compare 5 bytes of name string
+TEST
+	CB	*R0+,*R1+
+	JNE	NEXTCARD
+	DEC	R2
+	JNE	TEST
+	SBZ	0		; Found TIPI!
+	MOV	R12,@CRUBASE
+	RT
+
+NEXTCARD
+	SBZ	0
+	AI	R12,>0100
+	CI	R12,>2000
+	JEQ	NOTIPI
+	JMP	ISDSR
+	
+NOTIPI
+	CLR	@CRUBASE
 	RT
  
 	END

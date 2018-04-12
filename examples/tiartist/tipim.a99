@@ -50,6 +50,9 @@ RECVMSG	EQU	>4010
 ; once discovered, will hold crubase to reduce lookup cost
 CRUBASE	DATA	>0000
 
+; so we can tell if we are releasing middle button
+WASMID	DATA	>0000
+
 WORKSV	DATA	0
  
 MOUSE	STWP	R0		; record old WP
@@ -120,8 +123,15 @@ BUTTONS
 	CLR	R0		; look for middle button
 	MOVB	R4,@MWS+1
 	ANDI	R0,MBMID
+	JEQ	MIDOFF
+	SETO	@WASMID
+	JMP	FIREBUT
+
+MIDOFF
+	MOV	@WASMID,@WASMID	; test for if middle button was pressed on previous cycle
 	JEQ	FIREBUT
-	SETO	@SPACE
+	CLR	@WASMID
+	SETO	@SPACE	
 
 FIREBUT
 	MOV	@LBNOW,@LBLAST	; store left button state from previous cycle

@@ -1,22 +1,19 @@
 	REF	A,B,FIRE,SPACE,RBAND,ZOOM,ZOOM2
 	REF	XMIN,YMIN,XMAX,YMAX
+	REF	DELAY,DELAY2,DELCNT,DELCN2
  
 	JMP	MOUSE
  
 ; TIPI Mouse driver for TI-Artist Plus
 
-********************************
-* USER-DEFINED POSITIONS       *
-********************************
+LBNOW	DATA	0
+LBLAST	DATA	0
 
-	EVEN
 MWS	BSS	>20	; MOUSE-WORKSPACE
 MWSR2	EQU	MWS+4
 MWSR3	EQU	MWS+6
 MWSR4	EQU	MWS+8
 
-LBNOW	DATA	0
-LBLAST	DATA	0
 
 ********************************
 *                              *
@@ -60,12 +57,9 @@ MOUSE	STWP	R0		; record old WP
 	MOV	R15,@MWS+30	; record old BLWP return address
 	LWPI	MWS
  
-	CLR	@RBAND
-
 	MOV	@CRUBASE,@CRUBASE	; do we need to find the crubase?
 	JNE	READM
 	BL	@FINDCRU
-
 
 READM
 	MOV	@CRUBASE,R12	; enable tipi device
@@ -91,6 +85,8 @@ READM
 	MOV	@GPLWS,R2	; copy the receive length back into R2.
 
 	SBZ	0		; disable tipi device
+
+	; Now MSB of R3 is x delta, LSB of R3 is y delta, and MSB of R4 is button states
 
 	CLR	R0
 	MOVB	R3,R0
@@ -153,17 +149,24 @@ FIREOFF
 	RT
 
 SCALE
+	CLR	R2
+	ABS	R0
+	JGT	POSITIVE
+	SETO	R2
+POSITIVE
+	LI	R5,5
+	MPY	R0,R5
+	LI	R0,8
+	DIV	R0,R5
+	MOV	R5,R0
 	MOV	@ZOOM,@ZOOM
 	JEQ	NOZOOM
-	CI	R0,0
-	JEQ	NOZOOM
-	JGT	POSI
-	LI	R0,-1
-	JMP	NOZOOM
-POSI	
-	LI	R0,1
-
+	ANDI	R0,1		; if zoom, move at most 1 pixel
 NOZOOM
+	CI	R2,0
+	JEQ	STILLPOS
+	NEG	R0
+STILLPOS
 	RT
 
 FINDCRU

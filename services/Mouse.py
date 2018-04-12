@@ -1,10 +1,9 @@
 import struct
 import fcntl
 import os
-from TipiConfig import TipiConfig
+import logging
 
-
-tipi_config = TipiConfig.instance()
+logger = logging.getLogger(__name__)
 
 class Mouse(object):
 
@@ -14,27 +13,17 @@ class Mouse(object):
         fd = self.file.fileno()
         flag = fcntl.fcntl(fd, fcntl.F_GETFL)
         fcntl.fcntl(fd, fcntl.F_SETFL, flag | os.O_NONBLOCK)
-        self.scale = float(tipi_config.get("MOUSE_SCALE", "60")) / 100.0
-        self.sf = 5
+        self.button = 0
 
     def getMouseEvent(self):
         try:
             buf = self.file.read(3)
-            button = ord(buf[0])
+            self.button = ord(buf[0])
             x, y = struct.unpack("bb", buf[1:]);
-            if abs(x) > self.sf:
-                if x > 0:
-                    x = max(self.sf,int(x * self.scale))
-                else:
-                    x = min(-1 * self.sf,int(x * self.scale))
-            if abs(y) > self.sf:
-                if y > 0:
-                    y = max(self.sf,int(y * self.scale))
-                else:
-                    y = min(-1 * self.sf,int(y * self.scale))
-            return bytearray(struct.pack('bbb', x, -1 * y, button))
+            logger.debug("x %d, y %d, b %d", x, y, self.button)
+            return bytearray(struct.pack('bbb', x, -1 * y, self.button))
         except IOError as e:
-            return bytearray([0, 0, 0])
+            return bytearray([0, 0, self.button])
 
     def handle(self, bytes):
         self.tipi_io.send(self.getMouseEvent())

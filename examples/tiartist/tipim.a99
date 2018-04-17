@@ -14,23 +14,6 @@ MWSR2	EQU	MWS+4
 MWSR3	EQU	MWS+6
 MWSR4	EQU	MWS+8
 
-
-********************************
-*                              *
-*    MOUSE SUBROUTINE          *
-*    ----------------          *
-*                              *
-*      MAIN PROGRAM            *
-*                              *
-*      .                       *
-*      .                       *
-* LOOP BLWP @MOUSE             *
-*      .                       *
-*      .                       *
-*      .                       *
-*      JMP  LOOP               *
-*                              *
-********************************
  
 ; TIPI Info
 MBLEFT	EQU	>01

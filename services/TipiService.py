@@ -21,7 +21,6 @@ if not os.path.isdir(logpath):
 
 LOG_FILENAME = logpath + "/tipi.log"
 logging.getLogger('').setLevel(logging.INFO)
-logging.getLogger('tipi.TipiMessage').setLevel(logging.INFO)
 loghandler = logging.handlers.RotatingFileHandler(
     LOG_FILENAME, maxBytes=(5000 * 1024), backupCount=5)
 logformatter = logging.Formatter('%(asctime)-15s %(name)-12s: %(levelname)-8s %(message)s')

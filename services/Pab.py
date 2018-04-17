@@ -99,7 +99,7 @@ def logPab(pab):
         APPEND: "Append"}
     dataTypes = {DISPLAY: "Display", INTERNAL: "Internal"}
     recordTypes = {FIXED: "Fixed", VARIABLE: "Variable"}
-    logger.debug("opcode: %s, fileType: %s, mode: %s, dataType: %s, recordType: %s, recordLength: %d, recordNumber: %d",
+    logger.info("opcode: %s, fileType: %s, mode: %s, dataType: %s, recordType: %s, recordLength: %d, recordNumber: %d",
                  opcodes[opcode(pab)],
                  fileTypes[fileType(pab)],
                  modes[mode(pab)],

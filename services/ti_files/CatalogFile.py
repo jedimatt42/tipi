@@ -17,27 +17,38 @@ tipi_config = TipiConfig.instance()
 
 class CatalogFile(object):
 
-    def __init__(self, localpath, devname):
+    def __init__(self, localpath, devname, long):
         self.recNum = 0
         self.localpath = localpath
         self.devname = devname
+        self.longnames = long
         self.records = self.__loadRecords()
 
     @staticmethod
     def load(path, pab, devname):
-        if mode(pab) == INPUT and dataType(pab) == INTERNAL and recordType(pab) == FIXED:
-            # since it is a directory the recordlength is 38, often it is opened with no value.
-            # TODO: if they specify the longer filename record length, and recordType, then this will be different
-            #       for implementation of long file name handling
-            if recordLength(pab) == 0 or recordLength(pab) == 38:
-                # TODO: load all the directory records upfront
-                return CatalogFile(path, devname)
+        if mode(pab) == INPUT and dataType(pab) == INTERNAL:
+            if recordType(pab) == FIXED:
+                # since it is a directory the recordlength is 38, often it is opened with no value.
+                # TODO: if they specify the longer filename record length, and recordType, then this will be different
+                #       for implementation of long file name handling
+                if recordLength(pab) == 0 or recordLength(pab) == 38:
+                    # TODO: load all the directory records upfront
+                    return CatalogFile(path, devname, False)
+            if recordType(pab) == VARIABLE and recordLength(pab) == 0:
+                return CatalogFile(path, devname, True)
+        raise Exception("bad record type")
 
     def getRecordLength(self):
-        return 38
+        if not self.longnames:
+            return 38
+        else:
+            reclen = 0
+            for rec in self.records:
+                reclen = max(reclen, len(rec))
+            return reclen
 
     def isLegal(self, pab):
-        return mode(pab) == INPUT and dataType(pab) == INTERNAL and recordType(pab) == FIXED
+        return mode(pab) == INPUT and dataType(pab) == INTERNAL
 
     def close(self, localPath):
         pass
@@ -122,14 +133,18 @@ class CatalogFile(object):
                 fh.close()
 
     def __encodeDirRecord(self, name, ftype, sectors, recordLength):
-        bytes = bytearray(38)
+        if self.longnames:
+            recname = name
+            bytes = bytearray(28 + len(recname))
+        else:
+            recname = tinames.asTiShortName(name)
+            bytes = bytearray(38)
+            
+        logger.debug("cat record: %s, %d, %d, %d", recname, ftype, sectors, recordLength)
 
-        shortname = tinames.asTiShortName(name)
-        logger.debug("cat record: %s, %d, %d, %d", shortname, ftype, sectors, recordLength)
-
-        bytes[0] = len(shortname)
+        bytes[0] = len(recname)
         i = 1
-        for c in shortname:
+        for c in recname:
             bytes[i] = c
             i += 1
         ft = tifloat.asFloat(ftype)
@@ -144,8 +159,10 @@ class CatalogFile(object):
         for b in rl:
             bytes[i] = b
             i += 1
-        for i in range(i, 38):
-            bytes[i] = 0
+        if not self.longnames:
+            # pad the rest of the fixed record length
+            for i in range(i, 38):
+                bytes[i] = 0
 
         return bytes
 

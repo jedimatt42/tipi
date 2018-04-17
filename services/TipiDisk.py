@@ -70,7 +70,7 @@ class TipiDisk(object):
         self.tipi_io.send(msg)
 
     def handleOpen(self, pab, devname):
-        logger.debug("Opcode 0 Open - %s", devname)
+        logger.info("Opcode 0 Open - %s", devname)
         oled.info("OPEN:/%s", devname)
         logPab(pab)
         localPath = tinames.devnameToLocal(devname)
@@ -87,8 +87,8 @@ class TipiDisk(object):
 
         if os.path.isdir(localPath):
             try:
-                self.sendSuccess()
                 cat_file = CatalogFile.load(localPath, pab, devname)
+                self.sendSuccess()
                 self.tipi_io.send([cat_file.getRecordLength()])
                 self.openFiles[localPath] = cat_file
                 return

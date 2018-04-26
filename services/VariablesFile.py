@@ -33,20 +33,21 @@ class VariablesFile(object):
             self.tipi_io.send([EOPATTR])
 
     def close(self, pab, devname):
-        logger.debug("close devname: %s", devname)
+        logger.info("close devname: %s", devname)
         self.lastResponse = None
         self.vars = None
         self.tipi_io.send([SUCCESS])
 
     def open(self, pab, devname):
-        logger.debug("open devname: %s", devname)
+        logger.info("open devname: %s", devname)
+        logPab(pab)
         self.lastResponse = None
         self.vars = TipiVariable(self.tipi_io)
         self.tipi_io.send([SUCCESS])
         self.tipi_io.send([254])
 
     def write(self, pab, devname):
-        logger.debug("write devname: %s", devname)
+        logger.info("write devname: %s", devname)
         lastResponse = None
         self.tipi_io.send([SUCCESS])
         msg = self.tipi_io.receive()
@@ -58,7 +59,7 @@ class VariablesFile(object):
             self.tipi_io.send([EFILERR])
 
     def read(self, pab, devname):
-        logger.debug("read devname: %s", devname)
+        logger.info("read devname: %s", devname)
         if not self.lastResponse is None:
             fdata = bytearray(self.lastResponse)
             self.tipi_io.send([SUCCESS])

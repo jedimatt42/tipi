@@ -40,12 +40,12 @@ class LevelTwo(object):
         return False
 
     def handleProtect(self):
-        logger.debug("protect request")
+        logger.info("protect request")
         bytes = self.tipi_io.receive()
         unit = bytes[0]
         protvalue = bytes[1]
         filename = str(self.tipi_io.receive()).strip()
-        logger.debug("unit: %d, filename: %s, prot: %d", unit, filename, protvalue )
+        logger.info("unit: %d, filename: %s, prot: %d", unit, filename, protvalue )
         oled.info("lvl2 protect/%d: %s", unit, filename)
 
         localname = self.getLocalName(unit,filename)
@@ -61,38 +61,38 @@ class LevelTwo(object):
         return True
 
     def handleFileRename(self):
-        logger.debug("file rename request")
+        logger.info("file rename request")
         unit = self.tipi_io.receive()[0]
         newfilename = str(self.tipi_io.receive()).strip()
         filename = str(self.tipi_io.receive()).strip()
-        logger.debug("unit: %d, filename: %s, newname: %s", unit, filename, newfilename)
+        logger.info("unit: %d, filename: %s, newname: %s", unit, filename, newfilename)
         oled.info("lvl2 rename/%d: %s", unit, filename)
 
         origlocalname = self.getLocalName(unit,filename)
         newlocalname = self.getLocalName(unit,newfilename)
 
         if not os.path.exists(origlocalname):
-            logger.debug("file doesn't exist: %s", origlocalname)
+            logger.info("file doesn't exist: %s", origlocalname)
             self.tipi_io.send([EDEVERR])
 
         if os.path.exists(newlocalname):
-            logger.debug("target file already exists: %s", newlocalname)
+            logger.info("target file already exists: %s", newlocalname)
             self.tipi_io.send([EDEVERR])
 
         os.rename(origlocalname,newlocalname)
-        logger.debug("file renamed to: %s", newlocalname)
+        logger.info("file renamed to: %s", newlocalname)
         self.tipi_io.send([SUCCESS])
         return True
 
     def handleDirRename(self):
-        logger.debug("dir rename request - delegating to file rename")
+        logger.info("dir rename request - delegating to file rename")
 	return self.handleFileRename()
 
     def handleSetPath(self):
-        logger.debug("set path request")
+        logger.info("set path request")
         unit = self.tipi_io.receive()[0]
         pathname = str(self.tipi_io.receive()).strip()
-        logger.debug("unit: %d, path: %s", unit, pathname)
+        logger.info("unit: %d, path: %s", unit, pathname)
         oled.info("lvl2 path:/%d: %s", unit, pathname)
         self.unitpath[unit] = pathname
 
@@ -104,10 +104,10 @@ class LevelTwo(object):
         return True
 
     def handleCreateDir(self):
-        logger.debug("create directory request")
+        logger.info("create directory request")
         unit = self.tipi_io.receive()[0]
         dirname = str(self.tipi_io.receive()).strip()
-        logger.debug("unit: %d, dir: %s", unit, dirname)
+        logger.info("unit: %d, dir: %s", unit, dirname)
         oled.info("lvl2 mkdir:/%d: %s", unit, pathname)
         localname = self.getLocalName(unit,dirname)
         try:
@@ -119,7 +119,7 @@ class LevelTwo(object):
         return True
         
     def handleDeleteDir(self):
-        logger.debug("delete directory request")
+        logger.info("delete directory request")
         unit = self.tipi_io.receive()[0]
         dirname = str(self.tipi_io.receive()).strip()
         logger.debug("unit: %d, dir: %s", unit, dirname)
@@ -134,14 +134,14 @@ class LevelTwo(object):
         return True
 
     def handleDirectInput(self):
-        logger.debug("direct input")
+        logger.info("direct input")
         bytes = self.tipi_io.receive()
         unit = bytes[0]
         blocks = bytes[1]
         filename = str(self.tipi_io.receive()).strip()
         bytes = self.tipi_io.receive()
         startblock = bytes[1] + (bytes[0] << 8)
-        logger.debug("unit: %d, blocks: %d, filename: %s, startblock %d", unit, blocks, filename, startblock)
+        logger.info("unit: %d, blocks: %d, filename: %s, startblock %d", unit, blocks, filename, startblock)
         oled.info("lvl2 read:/%d: %d %s", unit, startblock, filename)
         
         localfilename = self.getLocalName(unit,filename)
@@ -190,7 +190,7 @@ class LevelTwo(object):
         return True
 
     def handleDirectOutput(self):
-        logger.debug("direct output")
+        logger.info("direct output")
         bytes = self.tipi_io.receive()
         unit = bytes[0]
         blocks = bytes[1]
@@ -199,7 +199,7 @@ class LevelTwo(object):
         startblock = bytes[1] + (bytes[0] << 8)
         finfo = bytes[2:]
         
-        logger.debug("unit: %d, blocks: %d, filename: %s, startblock %d", unit, blocks, filename, startblock)
+        logger.info("unit: %d, blocks: %d, filename: %s, startblock %d", unit, blocks, filename, startblock)
         oled.info("lvl2 write:/%d: %d %s", unit, startblock, filename)
 
         localfilename = self.getLocalName(unit,filename)
@@ -215,7 +215,7 @@ class LevelTwo(object):
             fbytes[10:16] = finfo
             self.saveFile(localfilename, fbytes)
 
-        logger.debug("Accepting request")
+        logger.info("Accepting request")
         self.tipi_io.send([SUCCESS])
 
         if blocks == 0:

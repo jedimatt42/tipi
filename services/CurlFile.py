@@ -23,6 +23,7 @@ class CurlFile(object):
         self.record = {}
 
     def handle(self, pab, devname):
+        logPab(pab)
         op = opcode(pab)
         if op == OPEN:
             self.open(pab, devname)
@@ -53,8 +54,9 @@ class CurlFile(object):
             c.setopt(c.URL, url)
             c.setopt(c.WRITEDATA, buffer)
             c.perform()
-            c.close()
             body = bytearray(buffer.getvalue())
+            logger.info("retrieved %d bytes", len(body))
+            c.close()
             self.bodies[devname] = body
             self.record[devname] = 0
         except BaseException:
@@ -73,8 +75,11 @@ class CurlFile(object):
         try:
             body = self.bodies[devname]
             recLen = recordLength(pab)
-            record = self.record[devname]
+            record = recordNumber(pab)
+            if record == 0:
+                record = self.record[devname]
             lbody = len(body)
+            logger.info("length of data: %d", lbody)
             startOff = record * recLen
             if startOff >= lbody:
                 self.tipi_io.send([EEOF])
@@ -82,13 +87,15 @@ class CurlFile(object):
             endOff = (record + 1) * recLen
             if endOff >= lbody:
                 endOff = lbody
+            logger.info("taking chunk: %d - %d", startOff, endOff)
             fdata = body[startOff:endOff]
+            logger.info("record fdata len: %d", len(fdata))
             self.tipi_io.send([SUCCESS])
             self.tipi_io.send(fdata)
             self.record[devname] = record + 1
             return
-        except BaseException:
-            traceback.print_exc()
+        except Exception:
+            logger.error("issue forming record", print_exc=True)
         self.tipi_io.send([EEOF])
         return
 

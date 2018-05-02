@@ -26,7 +26,7 @@ class FixedRecordFile(object):
             self.currentRecord = len(self.records)
         else:
             self.currentRecord = 0
-        logger.debug("records loaded: %d, currentRecord: %d, recordLength: %d", len(self.records), self.currentRecord, self.recordLength)
+        logger.info("records loaded: %d, currentRecord: %d, recordLength: %d", len(self.records), self.currentRecord, self.recordLength)
 
     @staticmethod
     def create(devname, localpath, pab):
@@ -42,7 +42,9 @@ class FixedRecordFile(object):
         header = ti_files.createHeader(flags, tiname, bytearray(0))
         ti_files.setRecordLength(header, recLen)
         ti_files.setRecordsPerSector(header, int(256/recLen))
-        return FixedRecordFile(header, pab)
+        recordFile = FixedRecordFile(header, pab)
+        recordFile.dirty = True
+        return recordFile
 
     @staticmethod
     def load(unix_file_name, pab):
@@ -80,7 +82,7 @@ class FixedRecordFile(object):
         return statByte
 
     def restore(self, pab):
-        logger.debug("restore for file type: %d", self.filetype)
+        logger.info("restore for file type: %d", self.filetype)
         if self.filetype == RELATIVE:
             self.currentRecord = recordNumber(pab)
         else:
@@ -92,15 +94,17 @@ class FixedRecordFile(object):
         if self.filetype == RELATIVE:
             self.currentRecord = recNo
         if self.currentRecord >= len(self.records):
+            logger.info("growing records")
             self.records += [bytearray(self.recordLength)] * (1 + self.currentRecord - len(self.records))
-        self.records[self.currentRecord] = bytearray(rdata)
-        logger.debug("record data: %s", rdata)
+        record = self.records[self.currentRecord]
+        record[:len(rdata)] = bytearray(rdata)
+        logger.info("set record %d to bytes of length %d", self.currentRecord, len(rdata))
         self.currentRecord += 1
 
     def readRecord(self, idx):
         if self.filetype == RELATIVE:
             self.currentRecord = idx
-        logger.debug("reading currentRecord: %d", self.currentRecord)
+        logger.info("reading currentRecord: %d", self.currentRecord)
         record = self.getRecord(self.currentRecord)
         self.currentRecord += 1
         return record

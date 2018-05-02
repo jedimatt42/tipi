@@ -118,6 +118,7 @@ class TipiMessage(object):
     #
     # Receive a message, returned as a byte array
     def receive(self):
+        logger.info("waiting to receive message...")
         self.__resetProtocol()
         startTime = time.time()
         self.__modeRead()
@@ -136,6 +137,7 @@ class TipiMessage(object):
     #
     # Send an array of data as is... no length prefix or hash
     def send(self, bytes):
+        logger.info("waiting to send message...")
         startTime = time.time()
         self.__resetProtocol()
         self.__modeSend()

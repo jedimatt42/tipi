@@ -208,7 +208,7 @@ class ti_files(object):
         header[9] = sectors & 0xFF
         header[12] = eofOffset
 
-        header[0x10:0x1A] = bytearray(tiname)
+        header[0x10:0x1A] = bytearray(tiname.ljust(10,' '))
         return header
 
     @staticmethod

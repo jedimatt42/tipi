@@ -72,15 +72,15 @@ class LevelTwo(object):
         newlocalname = self.getLocalName(unit,newfilename)
 
         if not os.path.exists(origlocalname):
-            logger.debug("file doesn't exist: %s", origlocalname)
+            logger.info("file doesn't exist: %s", origlocalname)
             self.tipi_io.send([EDEVERR])
 
         if os.path.exists(newlocalname):
-            logger.debug("target file already exists: %s", newlocalname)
+            logger.info("target file already exists: %s", newlocalname)
             self.tipi_io.send([EDEVERR])
 
         os.rename(origlocalname,newlocalname)
-        logger.debug("file renamed to: %s", newlocalname)
+        logger.info("file renamed to: %s", newlocalname)
         self.tipi_io.send([SUCCESS])
         return True
 
@@ -89,7 +89,7 @@ class LevelTwo(object):
         return self.handleFileRename()
 
     def handleSetPath(self):
-        logger.debug("set path request")
+        logger.info("set path request")
         unit = self.tipi_io.receive()[0]
         pathname = str(self.tipi_io.receive()).strip()
         logger.info("unit: %d, path: %s", unit, pathname)
@@ -215,7 +215,7 @@ class LevelTwo(object):
             fbytes[10:16] = finfo
             self.saveFile(localfilename, fbytes)
 
-        logger.debug("Accepting request")
+        logger.info("Accepting request")
         self.tipi_io.send([SUCCESS])
 
         if blocks == 0:

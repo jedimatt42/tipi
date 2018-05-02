@@ -23,7 +23,7 @@ FAC	EQU	PAD+>4A		; Some of this must be preserved for DSRLNK, some is available
 CPAB	EQU	PAD+>64		; Supposedly memory up to 836D is available ( 15 bytes )
 
 OPCODE	EQU	CPAB+>0		; PAB - location of opcode after copied
-FLGSTS	EQU	CPAB+>1		; PAB - [blah][blah]
+FLGSTS	EQU	CPAB+>1		; PAB - [0-2 error][3 1=Variable][4 1=Internal][5-6 mode][7 1=Relative]
 BUFADR	EQU	CPAB+>2		; PAB - address of read or write buffer
 RECLEN	EQU	CPAB+>4		; PAB - logical record length
 CHRCNT	EQU	CPAB+>5		; PAB - character count
@@ -186,7 +186,7 @@ hopen
 
 ; Handle OPCODE 1 - CLOSE
 hclose
-	JMP	retdone
+	B	@retdone
 
 ; Handle OPCODE 2 - READ
 hread
@@ -217,7 +217,15 @@ updaterec	; if RELATIVE mode, then we have to increment the record number
 ; Handle OPCODE 3 - WRITE
 hwrite
 	CLR	R0
+	MOVB	@FLGSTS(R10),R1
+	ANDI	R1,>1000	; test for Relative/1 or Fixed/0
+	JNE	wrrel
+wrfix
+	MOVB	@RECLEN(R10),R0
+	JMP	finwrite
+wrrel
 	MOVB	@CHRCNT(R10),R0
+finwrite
 	SWPB	R0
 	MOV	@BUFADR(R10),R1
 	BL	@vsendmsg

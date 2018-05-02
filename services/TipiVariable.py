@@ -23,6 +23,7 @@ class TipiVariable(object):
         self.tipi_io = tipi_io
     
     def processRequest(self, message):
+        logger.info(message)
         # Now that we have message, let's parse it:
         ti_message = message.split( chr(0x1e) )
         

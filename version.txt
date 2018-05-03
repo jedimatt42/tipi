@@ -1,3 +1,3 @@
-version=1.0betav017
-reldate=2018-05-01
+version=1.0betav018
+reldate=2018-05-02
 branch=master

@@ -1,7 +1,15 @@
 #!/bin/bash
 
+systemctl stop tipi.service
+systemctl stop tipiweb.service
+systemctl stop tipimon.service
+systemctl stop tipiwatchdog.service
+systemctl stop tipiboot.service
+
 apt-get update
 apt-get install -y libsqlite3-dev
+
+raspi-config nonint do_i2c 0
 
 su tipi -c "/home/tipi/tipi/services/update-deps.sh"
 su tipi -c "/home/tipi/tipi/htdocs/update-deps.sh"
@@ -9,18 +17,6 @@ su tipi -c "cp /home/tipi/tipi/setup/bin/TIPI* /home/tipi/tipi_disk/"
 su tipi -c "mkdir /home/tipi/tipi_disk/NET; cp /home/tipi/tipi/setup/bin/NET/* /home/tipi/tipi_disk/NET/"
 
 cd /home/tipi/tipi/setup/
-
-if [ -e /lib/systemd/system/tipioled.service ]; then
-  systemctl stop tipioled.service
-  systemctl disable tipioled.service
-  rm /lib/systemd/system/tipioled.service
-fi
-
-systemctl stop tipi.service
-systemctl stop tipiweb.service
-systemctl stop tipimon.service
-systemctl stop tipiwatchdog.service
-systemctl stop tipiboot.service
 
 cp *.service /lib/systemd/system/
 

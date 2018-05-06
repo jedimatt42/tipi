@@ -13,7 +13,7 @@
 #define GPLWS ((unsigned int*)0x83E0)
 #define DSRTS ((unsigned char*)0x401A)
 
-#define TIPICFG_VER "6"
+#define TIPICFG_VER "7"
 #define PI_CONFIG "PI.CONFIG"
 #define PI_STATUS "PI.STATUS"
 #define PI_UPGRADE "PI.UPGRADE"
@@ -28,6 +28,8 @@ unsigned char dsr_write(struct PAB* pab, unsigned char* record);
 int strcmp(const char* a, const char* b);
 int indexof(const char* str, char c);
 
+void reload();
+
 void processStatusLine(char* cbuf);
 void loadPiStatus();
 
@@ -39,6 +41,8 @@ void savePiConfig();
 void upgrade();
 void shutdown();
 void reboot();
+void spinnerMessage(int seconds, const char* msg);
+void statusMessage(const char* msg);
 
 void getstr(int x, int y, char* var);
 
@@ -234,8 +238,7 @@ void main()
 
   layoutScreen();
 
-  loadPiConfig();
-  loadPiStatus();
+  reload();
 
   unsigned char key = 0;
   do {
@@ -292,10 +295,7 @@ void main()
         break;
       case 'R':
       case 'r':
-        disks_dirty = 0;
-        wifi_dirty = 0;
-        loadPiConfig();
-        loadPiStatus();
+        reload();
         break;
       case 'W':
       case 'w':
@@ -314,10 +314,6 @@ void main()
       case 'B':
       case 'b':
         reboot();
-        disks_dirty = 0;
-        wifi_dirty = 0;
-        loadPiConfig();
-        loadPiStatus();
         break;
       case 'T':
       case 't':
@@ -344,9 +340,6 @@ void main()
 void loadPiStatus() {
   struct PAB pab;
 
-  gotoxy(0,4);
-  cputs("Loading PI.STATUS");
-  
   unsigned char ferr = dsr_openDV(&pab, PI_STATUS, FBUF, DSR_TYPE_INPUT);
   if (ferr) {
     cprintf(" ERROR: %x", ferr);
@@ -410,9 +403,6 @@ void processStatusLine(char* cbuf) {
 
 void loadPiConfig() {
   struct PAB pab;
-
-  gotoxy(0,4);
-  cputs("Loading PI.CONFIG");
   
   unsigned char ferr = dsr_openDV(&pab, PI_CONFIG, FBUF, DSR_TYPE_INPUT);
   if (ferr) {
@@ -450,6 +440,13 @@ void loadPiConfig() {
   }
   gotoxy(0,4);
   cclear(40);
+}
+
+void reload() {
+  disks_dirty = 0;
+  wifi_dirty = 0;
+  loadPiConfig();
+  loadPiStatus();
 }
 
 void processConfigLine(char* cbuf) {
@@ -619,8 +616,10 @@ void upgrade() {
     halt();
   }
 
-  gotoxy(0,4);
-  cputs("Upgrading... reload to check version");
+  spinnerMessage(60, "  Upgrading...");
+  statusMessage("checking for completion...");
+  reload();
+  statusMessage("Upgrade complete!");
 }
 
 void shutdown() {
@@ -638,10 +637,8 @@ void shutdown() {
     halt();
   }
 
-  gotoxy(0,4);
-  cclear(40);
-  gotoxy(0,4);
-  cputs("Halt command issued to PI");
+  spinnerMessage(60, "Halting PI...");
+  statusMessage("It should be safe to poweroff PI");
 }
 
 void reboot() {
@@ -658,12 +655,25 @@ void reboot() {
     cprintf("Close ERROR: %x", ferr);
     halt();
   }
+  spinnerMessage(37, "Reboot command issued to PI");
+  statusMessage("checking for completion...");
+  reload();
+  statusMessage("PI reboot complete");
+}
 
+void statusMessage(const char* msg) {
   gotoxy(0,4);
   cclear(40);
   gotoxy(0,4);
-  cputs("  Reboot command issued to PI");
-  for (int i=0; i<(37 * 4); i++) {
+  cputs(msg);
+}
+
+void spinnerMessage(int seconds, const char* msg) {
+  gotoxy(0,4);
+  cclear(40);
+  gotoxy(2,4);
+  cputs(msg);
+  for (int i=0; i<(seconds * 4); i++) {
      waitjiffies(15);
      int c = i % 4;
      gotoxy(0,4);

@@ -500,10 +500,11 @@ void getstr(int x, int y, char* var) {
           var[delidx] = var[delidx+1];
           delidx++;
         }
-        delidx = strlen(var) - 1;
+        delidx = strlen(var);
         var[delidx] = 0;
         gotoxy(x,y);
         cputs(var);
+        cputs(" ");
         break;
       case 7: // F3 - erase line
         var[idx] = 0;

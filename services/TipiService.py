@@ -8,7 +8,6 @@ from SpecialFiles import SpecialFiles
 from Pab import *
 from RawExtensions import RawExtensions
 from LevelTwo import LevelTwo
-from ResetHandler import createResetListener
 from TipiDisk import TipiDisk
 from Oled import oled
 
@@ -36,8 +35,6 @@ logger = logging.getLogger(__name__)
 ##
 try:
     oled.info("TIPI Init")
-
-    createResetListener()
 
     tipi_io = TipiMessage()
     specialFiles = SpecialFiles(tipi_io)

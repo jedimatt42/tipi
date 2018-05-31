@@ -110,7 +110,7 @@ Text GLabel 14150 2800 0    60   Output ~ 0
 R_CLK
 Text GLabel 14650 3000 2    60   Output ~ 0
 R_DOUT
-Text GLabel 14650 3100 2    60   Input ~ 0
+Text GLabel 15050 3100 2    60   Input ~ 0
 R_DIN
 Text GLabel 14150 2900 0    60   Output ~ 0
 R_RT
@@ -805,7 +805,7 @@ Text Notes 15250 2850 0    60   ~ 0
 GPIO_12
 Text Notes 15100 3050 0    60   ~ 0
 GPIO_16
-Text Notes 15100 3150 0    60   ~ 0
+Text Notes 15400 3150 0    60   ~ 0
 GPIO_20
 Text Notes 15100 3250 0    60   ~ 0
 GPIO_21
@@ -1225,7 +1225,7 @@ Text GLabel 2300 4600 2    60   Output ~ 0
 TI_AMD
 Text GLabel 1200 4700 0    60   Output ~ 0
 TI_AME
-Text GLabel 900  9550 0    60   Input ~ 0
+Text GLabel 600  10050 3    60   Input ~ 0
 TI_AMD
 Text GLabel 900  9450 0    60   Input ~ 0
 TI_AME
@@ -1744,7 +1744,7 @@ Wire Wire Line
 Wire Wire Line
 	1200 9800 1200 9550
 Wire Wire Line
-	900  9550 1250 9550
+	600  9550 1250 9550
 Connection ~ 1200 9550
 Wire Wire Line
 	1250 9450 900  9450
@@ -1825,4 +1825,48 @@ Wire Wire Line
 Connection ~ 8850 7050
 Wire Wire Line
 	14650 2900 15100 2900
+$Comp
+L +3.3V #PWR053
+U 1 1 5B0C349D
+P 15150 3650
+F 0 "#PWR053" H 15150 3500 50  0001 C CNN
+F 1 "+3.3V" H 15150 3790 50  0000 C CNN
+F 2 "" H 15150 3650 50  0001 C CNN
+F 3 "" H 15150 3650 50  0001 C CNN
+	1    15150 3650
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	15050 3100 14650 3100
+Wire Wire Line
+	15000 3350 15000 3100
+Connection ~ 15000 3100
+$Comp
+L R R13
+U 1 1 5B0C3DBA
+P 15000 3500
+F 0 "R13" V 15080 3500 50  0000 C CNN
+F 1 "10k" V 15000 3500 50  0000 C CNN
+F 2 "Resistors_SMD:R_0805_HandSoldering" V 14930 3500 50  0001 C CNN
+F 3 "" H 15000 3500 50  0001 C CNN
+	1    15000 3500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	15000 3650 15150 3650
+$Comp
+L Jumper_NO_Small JP1
+U 1 1 5B106100
+P 600 9900
+F 0 "JP1" H 600 9980 50  0000 C CNN
+F 1 "Jumper_NO_Small" H 610 9840 50  0000 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_2x01_Pitch2.54mm" H 600 9900 50  0001 C CNN
+F 3 "" H 600 9900 50  0001 C CNN
+	1    600  9900
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	600  10050 600  10000
+Wire Wire Line
+	600  9800 600  9550
 $EndSCHEMATC

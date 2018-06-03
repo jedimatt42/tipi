@@ -39,6 +39,10 @@ class TipiVariable(object):
         var_val3        = ti_message[10] if len(ti_message) >= 11 else ''  # var val
         var_key4        = ti_message[11] if len(ti_message) >= 12 else ''  # var key
         var_val4        = ti_message[12] if len(ti_message) >= 13 else ''  # var val
+        var_key5        = ti_message[13] if len(ti_message) >= 14 else ''  # var key
+        var_val5        = ti_message[14] if len(ti_message) >= 15 else ''  # var val
+        var_key6        = ti_message[15] if len(ti_message) >= 16 else ''  # var key
+        var_val6        = ti_message[16] if len(ti_message) >= 17 else ''  # var val
 
         response = str(results_var) if len(results_var) else ''
 
@@ -87,6 +91,13 @@ class TipiVariable(object):
             
             var_val4 = var_val4.rstrip()
             self.ti_vars[str(var_key4)] = str(var_val4)
+
+            var_val5 = var_val5.rstrip()
+            self.ti_vars[str(var_key5)] = str(var_val5)
+
+            var_val6 = var_val6.rstrip()
+            self.ti_vars[str(var_key6)] = str(var_val6)
+
 
             self.store(caller_guid)   # Write our vars to our local file
 
@@ -137,6 +148,12 @@ class TipiVariable(object):
             if len(var_key4):
                 tmp.append(str(var_key4))
                 tmp.append(str(var_val4))
+            if len(var_key5):
+                tmp.append(str(var_key5))
+                tmp.append(str(var_val5))
+            if len(var_key5):
+                tmp.append(str(var_key6))
+                tmp.append(str(var_val6))                
 
             message = chr(0x1e).join(tmp)
             
@@ -227,7 +244,7 @@ class TipiVariable(object):
         f = open(runtime_dir + str(caller_guid), "w")
         
         for key, val in self.ti_vars.items():
-            if len(key):
+            if len(key) and len(val):
                 f.write(key + chr(0x1d) + str(val) + "\n")
 
             

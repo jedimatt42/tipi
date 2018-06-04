@@ -92,7 +92,7 @@ def baseN(num, b, numerals="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"):
 def findpath(path, part):
     part = part.replace("/", ".").replace("\\", ".")
     # if the file actually exists (or dir) then use literal name
-    if os.path.exists(str(os.path.join(path, part))):
+    if os.path.exists(os.path.join(path, part)):
         return part
     else:
         # if it doesn't exist, and the part has a short name hash, then search

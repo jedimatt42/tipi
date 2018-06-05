@@ -35,8 +35,7 @@ $(FNAME).elf: $(OBJECT_LIST)
 	rm -f *.i
 	rm -f *.s
 	rm -f mapfile
-	rm -f TIPICFG
-	rm -f TIPICFH
+	rm -f TIPICF?
 
 %.o: %.asm
 	$(GAS) $< -o $@

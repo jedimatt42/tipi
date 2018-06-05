@@ -42,6 +42,7 @@ void upgrade();
 void shutdown();
 void reboot();
 void spinnerMessage(int seconds, const char* msg);
+void spinnerPoll(const char* msg);
 void statusMessage(const char* msg);
 
 void getstr(int x, int y, char* var);
@@ -65,11 +66,19 @@ char uri3[79];
 int wifi_dirty;
 int disks_dirty;
 
-void waitForDebugger(const char* msg) {
-  int x = 0;
-  gotoxy(20,23); cprintf("wfd! %s", msg);
-  while (x == 0) {
-  }
+inline void enableTipi() {
+  __asm__("mov %0,r12\n\tsbo 0" : : "r"(crubase) : "r12");
+}
+
+inline void disableTipi() {
+  __asm__("mov %0,r12\n\tsbz 0" : : "r"(crubase) : "r12");
+}
+
+unsigned char getRC() {
+  enableTipi();
+  unsigned char rc = *((unsigned char*)0x5FF9);
+  disableTipi();
+  return rc;
 }
 
 void waitjiffies(int jiffies) {
@@ -617,8 +626,8 @@ void upgrade() {
     halt();
   }
 
-  spinnerMessage(60, "  Upgrading...");
-  statusMessage("checking for completion...");
+  spinnerMessage(10, "  Starting upgrade...");
+  spinnerPoll("upgrade running...");
   reload();
   statusMessage("Upgrade complete!");
 }
@@ -656,8 +665,8 @@ void reboot() {
     cprintf("Close ERROR: %x", ferr);
     halt();
   }
-  spinnerMessage(37, "Reboot command issued to PI");
-  statusMessage("checking for completion...");
+  spinnerMessage(20, "Reboot command issued to PI");
+  spinnerPoll("waiting for reboot");
   reload();
   statusMessage("PI reboot complete");
 }
@@ -680,6 +689,26 @@ void spinnerMessage(int seconds, const char* msg) {
      gotoxy(0,4);
      cputc(spinner[c]);
      VDP_INT_POLL;
+  }
+  gotoxy(0,4);
+  cclear(40);
+}
+
+void spinnerPoll(const char* msg) {
+  gotoxy(0,4);
+  cclear(40);
+  gotoxy(2,4);
+  cputs(msg);
+  unsigned char pi_rc = 0xff;
+  int i=0;
+  while(pi_rc != 0x00) {
+    waitjiffies(15);
+    int c = i % 4;
+    gotoxy(0,4);
+    cputc(spinner[c]);
+    VDP_INT_POLL;
+    // read pi_rc value
+    pi_rc = getRC();
   }
   gotoxy(0,4);
   cclear(40);

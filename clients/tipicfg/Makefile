@@ -41,5 +41,5 @@ $(FNAME).elf: $(OBJECT_LIST)
 	$(GAS) $< -o $@
 
 %.o: %.c
-	$(CC) -c $< -std=c99 -O2 --save-temp -I$(LIBTI99) -I/home/matthew/dev/gcc-9900/lib/gcc/tms9900/4.4.0/include -o $@
+	$(CC) -c $< -std=c99 -Os --save-temp -I$(LIBTI99) -I/home/matthew/dev/gcc-9900/lib/gcc/tms9900/4.4.0/include -o $@
 

@@ -20,6 +20,8 @@
 #define PI_SHUTDOWN "PI.SHUTDOWN"
 #define PI_REBOOT "PI.REBOOT"
 
+void waitjiffies(int jiffies);
+
 unsigned char dsr_openDV(struct PAB* pab, char* fname, int vdpbuffer, unsigned char flags);
 unsigned char dsr_close(struct PAB* pab);
 unsigned char dsr_read(struct PAB* pab, int recordNumber);
@@ -76,7 +78,8 @@ inline void disableTipi() {
 
 unsigned char getRC() {
   enableTipi();
-  unsigned char rc = *((unsigned char*)0x5FF9);
+  waitjiffies(8);
+  unsigned char rc = *((volatile unsigned char*)0x5FF9);
   disableTipi();
   return rc;
 }
@@ -626,7 +629,7 @@ void upgrade() {
     halt();
   }
 
-  spinnerMessage(10, "  Starting upgrade...");
+  spinnerMessage(10, "Starting upgrade...");
   spinnerPoll("upgrade running...");
   reload();
   statusMessage("Upgrade complete!");
@@ -665,7 +668,7 @@ void reboot() {
     cprintf("Close ERROR: %x", ferr);
     halt();
   }
-  spinnerMessage(20, "Reboot command issued to PI");
+  spinnerMessage(10, "Rebooting PI");
   spinnerPoll("waiting for reboot");
   reload();
   statusMessage("PI reboot complete");
@@ -702,13 +705,14 @@ void spinnerPoll(const char* msg) {
   unsigned char pi_rc = 0xff;
   int i=0;
   while(pi_rc != 0x00) {
-    waitjiffies(15);
+    waitjiffies(7);
     int c = i % 4;
     gotoxy(0,4);
     cputc(spinner[c]);
     VDP_INT_POLL;
     // read pi_rc value
-    pi_rc = getRC();
+    pi_rc = getRC(); // this waits 1/8 second so led flashes.
+    i = i + 1;
   }
   gotoxy(0,4);
   cclear(40);

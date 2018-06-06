@@ -20,6 +20,8 @@
 #define PI_SHUTDOWN "PI.SHUTDOWN"
 #define PI_REBOOT "PI.REBOOT"
 
+#define FCTN_U ((char)95)
+
 void waitjiffies(int jiffies);
 
 unsigned char dsr_openDV(struct PAB* pab, char* fname, int vdpbuffer, unsigned char flags);
@@ -67,6 +69,7 @@ char uri3[79];
 
 int wifi_dirty;
 int disks_dirty;
+int has_upgrade;
 
 inline void enableTipi() {
   __asm__("mov %0,r12\n\tsbo 0" : : "r"(crubase) : "r12");
@@ -176,6 +179,7 @@ void initGlobals() {
 
   wifi_dirty = 0;
   disks_dirty = 0;
+  has_upgrade = 0;
 }
 
 void setupScreen() {
@@ -317,6 +321,11 @@ void main()
         break;
       case 'U':
       case 'u':
+        if (has_upgrade == 1) {
+          upgrade();
+        }
+        break;
+      case FCTN_U:
         upgrade();
         break;
       case 'H':
@@ -385,8 +394,10 @@ void loadPiStatus() {
     gotoxy(0, 4);
     cputs("U) upgrade to ");
     cputs(latest);
+    has_upgrade = 1;
   } else {
     cclearxy(0,4,40);
+    has_upgrade = 0;
   }
 
   if (ferr) {

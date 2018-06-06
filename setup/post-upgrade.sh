@@ -16,6 +16,8 @@ su tipi -c "/home/tipi/tipi/htdocs/update-deps.sh"
 su tipi -c "cp /home/tipi/tipi/setup/bin/TIPI* /home/tipi/tipi_disk/"
 su tipi -c "mkdir /home/tipi/tipi_disk/NET; cp /home/tipi/tipi/setup/bin/NET/* /home/tipi/tipi_disk/NET/"
 
+usermod -s /bin/bash tipi
+
 cd /home/tipi/tipi/setup/
 
 cp *.service /lib/systemd/system/

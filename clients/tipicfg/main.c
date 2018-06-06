@@ -13,12 +13,16 @@
 #define GPLWS ((unsigned int*)0x83E0)
 #define DSRTS ((unsigned char*)0x401A)
 
-#define TIPICFG_VER "6"
+#define TIPICFG_VER "7"
 #define PI_CONFIG "PI.CONFIG"
 #define PI_STATUS "PI.STATUS"
 #define PI_UPGRADE "PI.UPGRADE"
 #define PI_SHUTDOWN "PI.SHUTDOWN"
 #define PI_REBOOT "PI.REBOOT"
+
+#define FCTN_U ((char)95)
+
+void waitjiffies(int jiffies);
 
 unsigned char dsr_openDV(struct PAB* pab, char* fname, int vdpbuffer, unsigned char flags);
 unsigned char dsr_close(struct PAB* pab);
@@ -27,6 +31,8 @@ unsigned char dsr_write(struct PAB* pab, unsigned char* record);
 
 int strcmp(const char* a, const char* b);
 int indexof(const char* str, char c);
+
+void reload();
 
 void processStatusLine(char* cbuf);
 void loadPiStatus();
@@ -39,6 +45,9 @@ void savePiConfig();
 void upgrade();
 void shutdown();
 void reboot();
+void spinnerMessage(int seconds, const char* msg);
+void spinnerPoll(const char* msg);
+void statusMessage(const char* msg);
 
 void getstr(int x, int y, char* var);
 
@@ -60,12 +69,22 @@ char uri3[79];
 
 int wifi_dirty;
 int disks_dirty;
+int has_upgrade;
 
-void waitForDebugger(const char* msg) {
-  int x = 0;
-  gotoxy(20,23); cprintf("wfd! %s", msg);
-  while (x == 0) {
-  }
+inline void enableTipi() {
+  __asm__("mov %0,r12\n\tsbo 0" : : "r"(crubase) : "r12");
+}
+
+inline void disableTipi() {
+  __asm__("mov %0,r12\n\tsbz 0" : : "r"(crubase) : "r12");
+}
+
+unsigned char getRC() {
+  enableTipi();
+  waitjiffies(8);
+  unsigned char rc = *((volatile unsigned char*)0x5FF9);
+  disableTipi();
+  return rc;
 }
 
 void waitjiffies(int jiffies) {
@@ -160,6 +179,7 @@ void initGlobals() {
 
   wifi_dirty = 0;
   disks_dirty = 0;
+  has_upgrade = 0;
 }
 
 void setupScreen() {
@@ -234,8 +254,7 @@ void main()
 
   layoutScreen();
 
-  loadPiConfig();
-  loadPiStatus();
+  reload();
 
   unsigned char key = 0;
   do {
@@ -292,10 +311,7 @@ void main()
         break;
       case 'R':
       case 'r':
-        disks_dirty = 0;
-        wifi_dirty = 0;
-        loadPiConfig();
-        loadPiStatus();
+        reload();
         break;
       case 'W':
       case 'w':
@@ -305,6 +321,11 @@ void main()
         break;
       case 'U':
       case 'u':
+        if (has_upgrade == 1) {
+          upgrade();
+        }
+        break;
+      case FCTN_U:
         upgrade();
         break;
       case 'H':
@@ -314,10 +335,6 @@ void main()
       case 'B':
       case 'b':
         reboot();
-        disks_dirty = 0;
-        wifi_dirty = 0;
-        loadPiConfig();
-        loadPiStatus();
         break;
       case 'T':
       case 't':
@@ -344,9 +361,6 @@ void main()
 void loadPiStatus() {
   struct PAB pab;
 
-  gotoxy(0,4);
-  cputs("Loading PI.STATUS");
-  
   unsigned char ferr = dsr_openDV(&pab, PI_STATUS, FBUF, DSR_TYPE_INPUT);
   if (ferr) {
     cprintf(" ERROR: %x", ferr);
@@ -380,8 +394,10 @@ void loadPiStatus() {
     gotoxy(0, 4);
     cputs("U) upgrade to ");
     cputs(latest);
+    has_upgrade = 1;
   } else {
     cclearxy(0,4,40);
+    has_upgrade = 0;
   }
 
   if (ferr) {
@@ -410,9 +426,6 @@ void processStatusLine(char* cbuf) {
 
 void loadPiConfig() {
   struct PAB pab;
-
-  gotoxy(0,4);
-  cputs("Loading PI.CONFIG");
   
   unsigned char ferr = dsr_openDV(&pab, PI_CONFIG, FBUF, DSR_TYPE_INPUT);
   if (ferr) {
@@ -450,6 +463,13 @@ void loadPiConfig() {
   }
   gotoxy(0,4);
   cclear(40);
+}
+
+void reload() {
+  disks_dirty = 0;
+  wifi_dirty = 0;
+  loadPiConfig();
+  loadPiStatus();
 }
 
 void processConfigLine(char* cbuf) {
@@ -503,10 +523,11 @@ void getstr(int x, int y, char* var) {
           var[delidx] = var[delidx+1];
           delidx++;
         }
-        delidx = strlen(var) - 1;
+        delidx = strlen(var);
         var[delidx] = 0;
         gotoxy(x,y);
         cputs(var);
+        cputs(" ");
         break;
       case 7: // F3 - erase line
         var[idx] = 0;
@@ -619,8 +640,10 @@ void upgrade() {
     halt();
   }
 
-  gotoxy(0,4);
-  cputs("Upgrading... reload to check version");
+  spinnerMessage(10, "Starting upgrade...");
+  spinnerPoll("upgrade running...");
+  reload();
+  statusMessage("Upgrade complete!");
 }
 
 void shutdown() {
@@ -638,10 +661,8 @@ void shutdown() {
     halt();
   }
 
-  gotoxy(0,4);
-  cclear(40);
-  gotoxy(0,4);
-  cputs("Halt command issued to PI");
+  spinnerMessage(60, "Halting PI...");
+  statusMessage("It should be safe to poweroff PI");
 }
 
 void reboot() {
@@ -658,17 +679,51 @@ void reboot() {
     cprintf("Close ERROR: %x", ferr);
     halt();
   }
+  spinnerMessage(10, "Rebooting PI");
+  spinnerPoll("waiting for reboot");
+  reload();
+  statusMessage("PI reboot complete");
+}
 
+void statusMessage(const char* msg) {
   gotoxy(0,4);
   cclear(40);
   gotoxy(0,4);
-  cputs("  Reboot command issued to PI");
-  for (int i=0; i<(37 * 4); i++) {
+  cputs(msg);
+}
+
+void spinnerMessage(int seconds, const char* msg) {
+  gotoxy(0,4);
+  cclear(40);
+  gotoxy(2,4);
+  cputs(msg);
+  for (int i=0; i<(seconds * 4); i++) {
      waitjiffies(15);
      int c = i % 4;
      gotoxy(0,4);
      cputc(spinner[c]);
      VDP_INT_POLL;
+  }
+  gotoxy(0,4);
+  cclear(40);
+}
+
+void spinnerPoll(const char* msg) {
+  gotoxy(0,4);
+  cclear(40);
+  gotoxy(2,4);
+  cputs(msg);
+  unsigned char pi_rc = 0xff;
+  int i=0;
+  while(pi_rc != 0x00) {
+    waitjiffies(7);
+    int c = i % 4;
+    gotoxy(0,4);
+    cputc(spinner[c]);
+    VDP_INT_POLL;
+    // read pi_rc value
+    pi_rc = getRC(); // this waits 1/8 second so led flashes.
+    i = i + 1;
   }
   gotoxy(0,4);
   cclear(40);

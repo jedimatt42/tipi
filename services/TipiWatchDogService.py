@@ -4,6 +4,8 @@ import sys
 import time
 import socket
 
+from subprocess import call
+
 
 class TipiWatchDog(object):
 
@@ -32,9 +34,9 @@ class TipiWatchDog(object):
 
 def onReset(channel):
     print "responding to reset interrupt"
-    s = socket.socket()
-    s.connect(('localhost', 9903))
-    s.close()
+    callargs = ["/bin/systemctl", "restart", "tipi.service"]
+    if call(callargs) != 0:
+        print "Error requesting restart of tipi.service"
 
 
 watchDog = TipiWatchDog()

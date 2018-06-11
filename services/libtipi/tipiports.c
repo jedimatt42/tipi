@@ -217,7 +217,10 @@ tipi_initGpio(PyObject *self, PyObject *args)
   pinMode(PIN_R_DOUT, OUTPUT);
   pinMode(PIN_R_LE, OUTPUT);
   pinMode(PIN_R_DIN, INPUT);
-  pullUpDnControl(PIN_R_DIN, PUD_DOWN);
+  // This line is driven from CPLD directly
+  // enable the pull up on the input pin
+  // to enhance CPLD ability to signal HIGH
+  pullUpDnControl(PIN_R_DIN, PUD_UP);
 
   digitalWrite(PIN_R_RT, 0);
   digitalWrite(PIN_R_CD, 0);

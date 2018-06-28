@@ -5,7 +5,7 @@ def getDiskName(diskfile):
     listing = subprocess.check_output(['xdm99.py', diskfile, '-t', '--ti-names'], stderr=subprocess.STDOUT).decode('utf-8').split("\n")
     for line in listing:
         if 'free' in line:
-            return line.split(':')[0]
+            return line.split(':')[0].strip()
     return 'unknown'
    
 def getFiles(diskfile):
@@ -23,16 +23,17 @@ def safename(n):
     return s
 
 def extractFile(diskfile, fname, diskname):
-    diskname = safename(diskname)
     newname = "%s/%s" % (diskname, safename(fname))
     subprocess.call(['xdm99.py', diskfile, '-t', '-e', fname, '-o', newname])
 
 def extractDisk(diskfile):
     diskname = getDiskName(diskfile)
+    dirname = os.path.dirname(diskfile) + '/' + diskname
     files = getFiles(diskfile)
-    os.mkdir(diskname)
+    os.mkdir(dirname)
     for f in files:
-        extractFile(diskfile, f, diskname)
+        extractFile(diskfile, f, dirname)
+    os.unlink(diskfile)
 
 if __name__ == "__main__":
     extractDisk('TEST.DSK')

@@ -1,5 +1,6 @@
 import subprocess
 import os
+import traceback
 
 def getDiskName(diskfile):
     listing = subprocess.check_output(['xdm99.py', diskfile, '-t', '--ti-names'], stderr=subprocess.STDOUT).decode('utf-8').split("\n")
@@ -27,13 +28,17 @@ def extractFile(diskfile, fname, diskname):
     subprocess.call(['xdm99.py', diskfile, '-t', '-e', fname, '-o', newname])
 
 def extractDisk(diskfile):
-    diskname = getDiskName(diskfile)
-    dirname = os.path.dirname(diskfile) + '/' + diskname
-    files = getFiles(diskfile)
-    os.mkdir(dirname)
-    for f in files:
-        extractFile(diskfile, f, dirname)
-    os.unlink(diskfile)
+    try:
+        diskname = getDiskName(diskfile)
+        dirname = os.path.dirname(diskfile) + '/' + diskname
+        files = getFiles(diskfile)
+        os.mkdir(dirname)
+        for f in files:
+            extractFile(diskfile, f, dirname)
+        os.unlink(diskfile)
+    except:
+        print "failed to extract disk image: " + diskfile
+        traceback.print_exc()
 
 if __name__ == "__main__":
     extractDisk('TEST.DSK')

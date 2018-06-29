@@ -1,13 +1,28 @@
 import subprocess
 import os
 import traceback
+import string
+
+def rollDiskName(diskname):
+    parts = diskname.split('_',2)
+    last = parts[-1:][0]
+    if last.isnumeric():
+        parts[-1:] = [ str(1 + int(last)) ]
+        return string.join(parts, '_')
+    else:
+        return diskname + "_1"
 
 def getDiskName(diskfile):
+    diskname = 'unknown'
     listing = subprocess.check_output(['xdm99.py', diskfile, '-t', '--ti-names'], stderr=subprocess.STDOUT).decode('utf-8').split("\n")
     for line in listing:
         if 'free' in line:
-            return line.split(':')[0].strip()
-    return 'unknown'
+            diskname = line.split(':')[0].strip()
+    dirname = os.path.dirname(diskfile) + '/' + diskname
+    while os.path.exists(dirname):
+        diskname = rollDiskName(diskname)
+        dirname = os.path.dirname(diskfile) + '/' + diskname
+    return diskname
    
 def getFiles(diskfile):
     files = []
@@ -41,5 +56,4 @@ def extractDisk(diskfile):
         traceback.print_exc()
 
 if __name__ == "__main__":
-    extractDisk('TEST.DSK')
-
+    extractDisk('./TEST.DSK')

@@ -14,7 +14,7 @@ input [7:0]d;
 output [7:0]o;
 reg [7:0]tmp;
 
-always @(posedge clk) begin
+always @(negedge clk) begin
   if (a_addr) tmp <= a;
   else if (b_addr) tmp <= b;
   else if (c_addr) tmp <= c;

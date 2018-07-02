@@ -152,7 +152,7 @@ assign db_dir = tipi_read;
 // however, the 4A does not transition the memory enable between high and low byte access of a word. 
 // consequently, I am sampling the address bus on negative edge of ph3 clock. 
 wire [0:7]rreg_mux_out; 
-mux2_8bit rreg_mux(ti_ph3, rc_addr, tipi_db_rc, rd_addr, tipi_db_rd, tc_addr, rpi_tc, td_addr, rpi_td, rreg_mux_out);
+mux2_8bit rreg_mux(rc_addr, tipi_db_rc, rd_addr, tipi_db_rd, tc_addr, rpi_tc, td_addr, rpi_td, rreg_mux_out);
 
 wire [0:7]tp_d_buf;
 wire dbus_ts_en = cru_state[0] && ~ti_memen && ti_dbin && ( ti_a >= 16'h5ff8 && ti_a < 16'h6000 );

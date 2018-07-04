@@ -2,6 +2,7 @@ import subprocess
 import os
 import traceback
 import string
+import pc99tov9t9
 
 def rollDiskName(diskname):
     parts = diskname.split('_',2)
@@ -12,16 +13,16 @@ def rollDiskName(diskname):
     else:
         return diskname + "_1"
 
-def getDiskName(diskfile):
+def getDiskName(diskfile, parentdir):
     diskname = 'unknown'
     listing = subprocess.check_output(['xdm99.py', diskfile, '-t', '--ti-names'], stderr=subprocess.STDOUT).decode('utf-8').split("\n")
     for line in listing:
         if 'free' in line:
             diskname = line.split(':')[0].strip()
-    dirname = os.path.dirname(diskfile) + '/' + diskname
+    dirname = parentdir + '/' + diskname
     while os.path.exists(dirname):
         diskname = rollDiskName(diskname)
-        dirname = os.path.dirname(diskfile) + '/' + diskname
+        dirname = parentdir + '/' + diskname
     return diskname
    
 def getFiles(diskfile):
@@ -42,18 +43,28 @@ def extractFile(diskfile, fname, diskname):
     newname = "%s/%s" % (diskname, safename(fname))
     subprocess.call(['xdm99.py', diskfile, '-t', '-e', fname, '-o', newname])
 
+TMPFILE = '/tmp/sdump.dsk'
+
 def extractDisk(diskfile):
     try:
-        diskname = getDiskName(diskfile)
-        dirname = os.path.dirname(diskfile) + '/' + diskname
-        files = getFiles(diskfile)
+        parentname = os.path.dirname(diskfile)
+        sectorfile = diskfile
+        if pc99tov9t9.dumpSectors(diskfile, TMPFILE):
+            sectorfile = TMPFILE
+        
+        dirname = os.path.dirname(diskfile)
+        diskname = getDiskName(sectorfile, dirname)
+        dirname = parentname + '/' + diskname
+        files = getFiles(sectorfile)
         os.mkdir(dirname)
         for f in files:
-            extractFile(diskfile, f, dirname)
+            extractFile(sectorfile, f, dirname)
         os.unlink(diskfile)
     except:
         print "failed to extract disk image: " + diskfile
         traceback.print_exc()
+    if os.path.exists(TMPFILE):
+        os.unlink(TMPFILE)
 
 if __name__ == "__main__":
     extractDisk('./TEST.DSK')

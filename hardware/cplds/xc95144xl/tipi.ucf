@@ -54,7 +54,3 @@ NET "tp_d<2>" LOC = P16;
 NET "tp_d<1>" LOC = P17;
 NET "tp_d<0>" LOC = P18;
 
-NET "test<0>" LOC = P65;
-NET "test<1>" LOC = P66;
-NET "test<2>" LOC = P67;
-NET "test<3>" LOC = P68;

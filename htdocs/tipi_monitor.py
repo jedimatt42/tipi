@@ -6,6 +6,7 @@ import ConfigLogging
 import tipi_cache
 from ti_files import ti_files
 from tinames import tinames
+from dsks.extract_sectordump import extractDisk
 
 #
 # Monitor file changes under tipi_disk, and update meta-data in a database
@@ -33,7 +34,11 @@ def main():
                 tipi_cache.deleteFileInfo(name)
             elif 'IN_CLOSE_WRITE' in type_names:
                 name = os.path.join(watch_path.decode('utf-8'), filename.decode('utf-8'))
-                tipi_cache.updateFileInfo(name)
+                if name.endswith('.dsk') or name.endswith('.DSK'):
+                    print "extracting: " + name
+                    extractDisk(name)
+                else:
+                    tipi_cache.updateFileInfo(name)
 
 if __name__ == '__main__':
     main()

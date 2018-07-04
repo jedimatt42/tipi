@@ -19,7 +19,7 @@ btipicfg			; implementation of CALL TIPI
 	AI	R1,5		;   check if '(' is present for parameters
 	.setvdpra R1
 	CLR	R9
-	MOV	@VDPRD,R9
+	MOVB	@VDPRD,R9
 	CI	R9,>B700	; compare with string parameter tokens are present
 	JEQ	copyname 
 	; otherwise use default name

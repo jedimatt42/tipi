@@ -1,5 +1,6 @@
 import subprocess
 import os
+import sys
 import traceback
 import string
 
@@ -98,4 +99,13 @@ def dumpSectors(infile, outfile):
         return True
     return False
 
+
+if __name__ == "__main__":
+    infile = sys.argv[1]
+    outfile = sys.argv[2]
+    print "converting: \'" + infile + "\' to \'" + outfile + "\'"
+    if dumpSectors(infile, outfile):
+        print "done"
+    else:
+        print "ERROR: not a track dump file"
 

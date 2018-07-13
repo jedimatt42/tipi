@@ -1,6 +1,7 @@
 import sys
 import os
 import re
+import string
 import logging
 from crccheck.crc import Crc15
 from TipiConfig import TipiConfig
@@ -15,7 +16,8 @@ TIPI_DIR = "/home/tipi/tipi_disk"
 
 def __driveMapping(key):
     path = tipi_config.get(key)
-    path = path.replace('.', "/")
+    path = '/'.join([x.replace('/','.') for x in path.split('.')])
+
     if path != "":
         path = TIPI_DIR + "/" + path
     return path
@@ -56,6 +58,7 @@ def devnameToLocal(devname):
         startpart = 2
 
     if path == None:
+        logger.debug("no path matched")
         return None
 
     for part in parts[startpart:]:
@@ -65,6 +68,7 @@ def devnameToLocal(devname):
             logger.debug("building path: %s", path)
 
     path = str(path)
+    logger.debug("%s -> %s", devname, path)
 
     return path
 
@@ -73,6 +77,9 @@ def asTiShortName(name):
     parts = name.split('/')
     lastpart = parts[len(parts)-1]
     name = lastpart.replace('.', '/')
+    return encodeName(name)
+
+def encodeName(name):
     if len(name) <= 10:
         return name
     else:

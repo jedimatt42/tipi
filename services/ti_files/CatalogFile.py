@@ -73,7 +73,9 @@ class CatalogFile(object):
         return recs
 
     def __createVolumeData(self):
+        logger.debug("localpath: %s", self.localpath)
         volumeName = os.path.basename(self.localpath)
+        logger.debug("volumeName stage1: %s", volumeName)
         if self.devname.startswith(("WDS1.","DSK4.","DSK0.","TIPI.")):
             volumeName = "TIPI"
         else:
@@ -81,7 +83,8 @@ class CatalogFile(object):
             parts = tipi_config.get(drive + "_DIR").split('.')
             volumeName = parts[-1]
             
-        return self.__encodeDirRecord(volumeName, 0, 1440, 1438)
+        logger.debug("volumeName: %s", volumeName)
+        return self.__encodeVolRecord(volumeName, 0, 1440, 1438)
 
     def __createFileCatRecords(self):
         files = sorted(list(filter(lambda x: 
@@ -132,39 +135,52 @@ class CatalogFile(object):
             if fh is not None:
                 fh.close()
 
+    def __encodeVolRecord(self, name, ftype, sectors, recordLength):
+        if self.longnames:
+            recname = name
+            buff = bytearray(28 + len(recname))
+        else:
+            recname = tinames.encodeName(name)
+            buff = bytearray(38)
+
+        return self.__encodeCatRecord(buff, recname, ftype, sectors, recordLength)
+
     def __encodeDirRecord(self, name, ftype, sectors, recordLength):
         if self.longnames:
             recname = name
-            bytes = bytearray(28 + len(recname))
+            buff = bytearray(28 + len(recname))
         else:
             recname = tinames.asTiShortName(name)
-            bytes = bytearray(38)
+            buff = bytearray(38)
+
+        return self.__encodeCatRecord(buff, recname, ftype, sectors, recordLength)
             
+    def __encodeCatRecord(self, buff, recname, ftype, sectors, recordLength):
         logger.debug("cat record: %s, %d, %d, %d", recname, ftype, sectors, recordLength)
 
-        bytes[0] = len(recname)
+        buff[0] = len(recname)
         i = 1
         for c in recname:
-            bytes[i] = c
+            buff[i] = c
             i += 1
         ft = tifloat.asFloat(ftype)
         for b in ft:
-            bytes[i] = b
+            buff[i] = b
             i += 1
         sc = tifloat.asFloat(sectors)
         for b in sc:
-            bytes[i] = b
+            buff[i] = b
             i += 1
         rl = tifloat.asFloat(recordLength)
         for b in rl:
-            bytes[i] = b
+            buff[i] = b
             i += 1
         if not self.longnames:
             # pad the rest of the fixed record length
             for i in range(i, 38):
-                bytes[i] = 0
+                buff[i] = 0
 
-        return bytes
+        return buff
 
     def __line_count(self, fp):
         i = 0

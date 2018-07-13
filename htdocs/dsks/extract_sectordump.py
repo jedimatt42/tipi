@@ -1,5 +1,6 @@
 import subprocess
 import os
+import sys
 import traceback
 import string
 import pc99tov9t9
@@ -19,6 +20,7 @@ def getDiskName(diskfile, parentdir):
     for line in listing:
         if 'free' in line:
             diskname = line.split(':')[0].strip()
+            diskname = safename(diskname)
     dirname = parentdir + '/' + diskname
     while os.path.exists(dirname):
         diskname = rollDiskName(diskname)
@@ -67,4 +69,4 @@ def extractDisk(diskfile):
         os.unlink(TMPFILE)
 
 if __name__ == "__main__":
-    extractDisk('./TEST.DSK')
+    extractDisk(sys.argv[1])

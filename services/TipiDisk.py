@@ -365,7 +365,11 @@ class TipiDisk(object):
             statbyte |= STNOFILE
         else:
             if not os.path.isdir(localPath):
-                open_file = self.openFiles[localPath]
+                open_file = None
+                try:
+                    open_file = self.openFiles[localPath]
+                except:
+                    pass
                 if open_file is not None:
                     statbyte = open_file.getStatusByte()
                 else:

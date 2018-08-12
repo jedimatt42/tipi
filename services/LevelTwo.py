@@ -158,9 +158,9 @@ class LevelTwo(object):
 
         bytestart = 128 + (startblock * 256)
         byteend = bytestart + (blocks * 256)
-        total = len(fbytes)
+        total = ((((len(fbytes)-128) / 256) + 1) * 256) + 128
         if blocks != 0 and (bytestart > total or byteend > total):
-            logger.error("request exceeds file size")
+            logger.error("request exceeds file size: t: %d, s: %d, e: %d", total, bytestart, byteend)
             self.tipi_io.send([EDEVERR])
             return True
         logger.debug("Request is good!")

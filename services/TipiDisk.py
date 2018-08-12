@@ -303,9 +303,11 @@ class TipiDisk(object):
         logger.info("Opcode 6 Save - %s", devname)
         logPab(pab)
         unix_name = tinames.devnameToLocal(devname)
+        logger.debug("unix_name for program is %s", unix_name)
 
-        if unix_name is None:
+        if unix_name == "" or unix_name is None:
             self.sendErrorCode(EDVNAME)
+            return
 
         oled.info("SAVE:/%s", devname)
 

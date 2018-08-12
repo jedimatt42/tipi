@@ -16,10 +16,12 @@ TIPI_DIR = "/home/tipi/tipi_disk"
 
 def __driveMapping(key):
     path = tipi_config.get(key)
-    path = '/'.join([x.replace('/','.') for x in path.split('.')])
 
-    if path != "":
-        path = TIPI_DIR + "/" + path
+    if path == "" or path is None:
+        return None
+
+    path = '/'.join([x.replace('/','.') for x in path.split('.')])
+    path = TIPI_DIR + "/" + path
     return path
 
 def __scanForVolume(volume):

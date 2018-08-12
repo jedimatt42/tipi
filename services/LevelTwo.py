@@ -48,12 +48,15 @@ class LevelTwo(object):
         logger.info("unit: %d, filename: %s, prot: %d", unit, filename, protvalue )
         oled.info("lvl2 protect/%d: %s", unit, filename)
 
-        localname = self.getLocalName(unit,filename)
+        localfilename = self.getLocalName(unit,filename)
+        if localfilename is None:
+            self.tipi_io.send([EDVNAME])
+            return True
 
         try:
-            bytes = self.getFileBytes(localname)
+            bytes = self.getFileBytes(localfilename)
             ti_files.setProtected(bytes,protvalue)
-            self.saveFile(localname,bytes)
+            self.saveFile(localfilename,bytes)
             self.tipi_io.send([SUCCESS])
         except Exception as e:
             logger.error("Error setting protect bit", exc_info=True)
@@ -69,6 +72,9 @@ class LevelTwo(object):
         oled.info("lvl2 rename/%d: %s", unit, filename)
 
         origlocalname = self.getLocalName(unit,filename)
+        if origlocalname is None:
+            self.tipi_io.send([EDVNAME])
+            return True
         newlocalname = self.getLocalName(unit,newfilename)
 
         if not os.path.exists(origlocalname):
@@ -94,12 +100,15 @@ class LevelTwo(object):
         pathname = str(self.tipi_io.receive()).strip()
         logger.info("unit: %d, path: %s", unit, pathname)
         oled.info("lvl2 path:/%d: %s", unit, pathname)
-        self.unitpath[unit] = pathname
 
-        localname = self.getLocalName(unit,"")
-        if not os.path.exists(localname):
+        localfilename = self.getLocalName(unit,"")
+        if localfilename is None:
+            self.tipi_io.send([EDVNAME])
+            return True
+        if not os.path.exists(localfilename):
             self.tipi_io.send([EDEVERR])
         else:
+            self.unitpath[unit] = pathname
             self.tipi_io.send([SUCCESS])
         return True
 
@@ -110,6 +119,9 @@ class LevelTwo(object):
         logger.info("unit: %d, dir: %s", unit, dirname)
         oled.info("lvl2 mkdir:/%d: %s", unit, pathname)
         localname = self.getLocalName(unit,dirname)
+        if localname is None:
+            self.tipi_io.send([EDVNAME])
+            return True
         try:
             os.makedirs(localname)
             self.tipi_io.send([SUCCESS])
@@ -125,6 +137,9 @@ class LevelTwo(object):
         logger.info("unit: %d, dir: %s", unit, dirname)
         oled.info("lvl2 rmdir:/%d: %s", unit, dirname)
         localname = self.getLocalName(unit,dirname)
+        if localname is None:
+            self.tipi_io.send([EDVNAME])
+            return True
         try:
             os.rmdir(localname)
             self.tipi_io.send([SUCCESS])
@@ -145,6 +160,9 @@ class LevelTwo(object):
         oled.info("lvl2 read:/%d: %d %s", unit, startblock, filename)
         
         localfilename = self.getLocalName(unit,filename)
+        if localfilename is None:
+            self.tipi_io.send([EDVNAME])
+            return True
         if not os.path.exists(localfilename):
             logger.error("file doesn't exist")
             self.tipi_io.send([EDEVERR])
@@ -203,6 +221,9 @@ class LevelTwo(object):
         oled.info("lvl2 write:/%d: %d %s", unit, startblock, filename)
 
         localfilename = self.getLocalName(unit,filename)
+        if localfilename is None:
+            self.tipi_io.send([EDVNAME])
+            return True
 
         if os.path.exists(localfilename):
             fbytes = self.getFileBytes(localfilename)

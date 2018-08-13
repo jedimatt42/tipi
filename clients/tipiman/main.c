@@ -84,6 +84,10 @@ void drawLentries(int start) {
         gotoxy(17, 5+i);
         cputs(int2str(entry->reclen));
       }
+      if (entry->type != 6) {
+        gotoxy(22, 5+i);
+        cputs(int2str(entry->sectors));
+      }
     } else {
       done = 1;
     }

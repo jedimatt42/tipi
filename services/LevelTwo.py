@@ -117,7 +117,7 @@ class LevelTwo(object):
         unit = self.tipi_io.receive()[0]
         dirname = str(self.tipi_io.receive()).strip()
         logger.info("unit: %d, dir: %s", unit, dirname)
-        oled.info("lvl2 mkdir:/%d: %s", unit, pathname)
+        oled.info("lvl2 mkdir:/%d: %s", unit, dirname)
         localname = self.getLocalName(unit,dirname)
         if localname is None:
             self.tipi_io.send([EDVNAME])

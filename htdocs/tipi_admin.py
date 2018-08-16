@@ -11,6 +11,10 @@ def version():
             version[str(parts[0].strip().lower())] = str(parts[1].strip())
     return version
 
+def logdata():
+    with open('/var/log/tipi/tipi.log', 'r') as f:
+        return { 'logdata': f.read() }
+
 def reboot():
     with open("/tmp/tipireboot", 'w') as trigger:
         trigger.write("tipi")

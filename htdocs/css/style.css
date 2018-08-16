@@ -139,6 +139,13 @@ a {
     padding: 40px;
 }
 
+.log_container {
+    padding: 40px;
+    overflow-y: auto;
+    overflow-x: auto;
+    height: 600px;
+}
+
 .tooltip {
     position: relative;
     display: inline-block;

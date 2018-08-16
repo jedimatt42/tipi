@@ -123,6 +123,11 @@ def about():
     version = tipi_admin.version()
     return render_template('about.html', **version)
 
+@app.route('/logs', methods=['GET'])
+def logs():
+    logdata = tipi_admin.logdata()
+    return render_template('log.html', **logdata)
+
 @app.route('/rebootnow', methods=['GET'])
 def rebootnow():
     tipi_admin.reboot()
@@ -132,6 +137,8 @@ def rebootnow():
 def shutdownnow():
     tipi_admin.shutdown()
     return render_template('shutdown.html')
+
+## Utility
 
 def createFileUrl(path):
     if path == '/' or path == '':

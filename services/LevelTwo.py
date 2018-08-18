@@ -177,18 +177,20 @@ class LevelTwo(object):
         bytestart = 128 + (startblock * 256)
         byteend = bytestart + (blocks * 256)
         total = ((((len(fbytes)-128) / 256) + 1) * 256) + 128
+        logger.debug("requested bytes total: %d, start: %d, end: %d", total, bytestart, byteend)
+
         if blocks != 0 and (bytestart > total or byteend > total):
             logger.error("request exceeds file size: t: %d, s: %d, e: %d", total, bytestart, byteend)
             self.tipi_io.send([EDEVERR])
             return True
-        logger.debug("Request is good!")
+
         self.tipi_io.send([SUCCESS])
 
-        finfo = bytearray(8)
         if blocks == 0:
             startblock = ti_files.getSectors(fbytes)
             logger.debug("setting total sectors: %d", startblock)
 
+        finfo = bytearray(8)
         finfo[0] = startblock >> 8
         finfo[1] = startblock & 0xff
         finfo[2:] = fbytes[10:16]
@@ -225,15 +227,20 @@ class LevelTwo(object):
             self.tipi_io.send([EDVNAME])
             return True
 
-        if os.path.exists(localfilename):
+        startbyte = 128 + (startblock * 256)
+        endbyte = startbyte + (blocks * 256)
+
+        if os.path.exists(localfilename) and blocks != 0:
             fbytes = self.getFileBytes(localfilename)
         else:
-            raw = bytearray(startblock * 256)
+            raw = bytearray(endbyte - 128)
             header = ti_files.createHeader(0, filename, raw)
+            logger.debug("header len %d, raw len %d", len(header), len(raw))
             fbytes = header + raw
+            logger.debug("created file bytes: %d", len(fbytes))
 
         if blocks == 0:
-            fbytes[10:16] = finfo
+            fbytes[10:16] = finfo[0:6]
             self.saveFile(localfilename, fbytes)
 
         logger.info("Accepting request")
@@ -243,8 +250,6 @@ class LevelTwo(object):
             return True
 
         blockdata = self.tipi_io.receive()
-        startbyte = 128 + (startblock * 256)
-        endbyte = startbyte + (blocks * 256)
         fbytes[startbyte:endbyte] = blockdata
         self.saveFile(localfilename, fbytes)
 
@@ -266,6 +271,7 @@ class LevelTwo(object):
         return None
         
     def saveFile(self,localname,bytes):
+        logger.debug("saveFile len: %d", len(bytes))
         with open(localname,"wb") as fh:
             fh.write(bytes)
 

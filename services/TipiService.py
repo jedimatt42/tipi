@@ -43,8 +43,9 @@ try:
     tipiDisk = TipiDisk(tipi_io)
 
     oled.info("TIPI Ready")
+    logger.info("TIPI Ready")
     while True:
-        logger.info("waiting for request...")
+        logger.debug("waiting for request...")
 
         msg = tipi_io.receive()
 

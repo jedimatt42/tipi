@@ -65,7 +65,7 @@ class TipiMessage(object):
     # TC -> 0xF1, RC -> 0xF1
     #
     def __resetProtocol(self):
-        logger.info("waiting for handshake...")
+        logger.debug("waiting for handshake...")
         # And wait for the TI to signal RESET
         backoff = BACKOFF_DELAY
         self.prev_syn = 0
@@ -118,7 +118,7 @@ class TipiMessage(object):
     #
     # Receive a message, returned as a byte array
     def receive(self):
-        logger.info("waiting to receive message...")
+        logger.debug("waiting to receive message...")
         self.__resetProtocol()
         startTime = time.time()
         self.__modeRead()
@@ -128,7 +128,7 @@ class TipiMessage(object):
         for i in range(0, msglen):
             message[i] = self.__readByte()
         elapsed = time.time() - startTime
-        logger.info(
+        logger.debug(
             'received msg len %d, rate %d bytes/sec',
             len(message),
             len(message) / elapsed)
@@ -137,7 +137,7 @@ class TipiMessage(object):
     #
     # Send an array of data as is... no length prefix or hash
     def send(self, bytes):
-        logger.info("waiting to send message...")
+        logger.debug("waiting to send message...")
         startTime = time.time()
         self.__resetProtocol()
         self.__modeSend()
@@ -149,7 +149,7 @@ class TipiMessage(object):
         for byte in bytes:
             self.__sendByte(byte)
         elapsed = time.time() - startTime
-        logger.info(
+        logger.debug(
             'sent msg len %d, rate %d bytes/sec',
             len(bytes),
             len(bytes) / elapsed)

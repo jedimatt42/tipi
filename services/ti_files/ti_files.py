@@ -196,7 +196,7 @@ class ti_files(object):
         # set record counts based on data array. (not sufficient)
         header = bytearray(128)
         header[0] = 0x07
-        header[1:7] = bytearray("TIFILES")
+        header[1:8] = bytearray("TIFILES")
         header[10] = flags
 
         datalen = len(data)

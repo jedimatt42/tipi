@@ -104,7 +104,7 @@ class TiSocket(object):
             return BAD
         try:
             existing.sendall(bytes[3:])
-            logger.info("wrote %d bytes to socket: %d", len(bytes[3:]), handleId)
+            logger.debug("wrote %d bytes to socket: %d", len(bytes[3:]), handleId)
             oled.info("Socket %d/Wrote %d bytes", handleId, len(bytes[3:]))
             return GOOD
         except Exception as e:
@@ -117,20 +117,20 @@ class TiSocket(object):
     def handleRead(self, bytes):
         try:
             handleId = bytes[1]
-            logger.info("read socket: %d", handleId)
+            logger.debug("read socket: %d", handleId)
             existing = self.handles.get(handleId, None)
             if existing is None:
                 logger.info("socket not open: %d", handleId)
                 return BAD
             limit = (bytes[3] << 8) + bytes[4]
             data = bytearray(existing.recv(limit))
-            logger.info("read %d bytes from %d", len(data), handleId)
+            logger.debug("read %d bytes from %d", len(data), handleId)
             oled.info("Socket %d/Read %d bytes", handleId, len(data))
             return data
         except socket.error as e:
             err = e.args[0]
             if err == errno.EAGAIN or err == errno.EWOULDBLOCK:
-                logger.info("no data ready: %d", handleId)
+                logger.debug("no data ready: %d", handleId)
                 return bytearray(0)
             else:
                 logger.error(e, exc_info=True)

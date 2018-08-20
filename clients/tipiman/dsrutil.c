@@ -1,9 +1,21 @@
 #include "dsrutil.h"
 
 #include <vdp.h>
+#include "strutil.h"
+#include "tifloat.h"
+#include <string.h>
 
+int volRecordHandler(char* buf, struct VolInfo* volInfo);
+int catRecordHandler(char* buf, struct DirEntry* entry);
 
-unsigned char loadDir(const char* pathname, catHandler func) {
+struct VolInfo lvol;
+struct VolInfo rvol;
+
+struct DeviceServiceRoutine dsrList[40];
+struct DirEntry lentries[200];
+struct DirEntry rentries[200];
+
+unsigned char loadDir(const char* pathname, int leftOrRight) {
   struct PAB pab;
   
   unsigned char ferr = dsr_open(&pab, pathname, FBUF, DSR_TYPE_INPUT | DSR_TYPE_INTERNAL | DSR_TYPE_SEQUENTIAL, 38);
@@ -11,16 +23,29 @@ unsigned char loadDir(const char* pathname, catHandler func) {
     return ferr;
   }
 
+  struct VolInfo* volInfo = &lvol;
+  struct DirEntry* entryList = lentries; 
+  if (leftOrRight) {
+    volInfo = &rvol;
+    entryList = rentries;
+  }
+
   int recNo = 0;
   ferr = DSR_ERR_NONE;
   while(ferr == DSR_ERR_NONE) {
     unsigned char cbuf[38];
-    ferr = dsr_read(&pab, recNo++);
+    ferr = dsr_read(&pab, recNo);
     if (ferr == DSR_ERR_NONE) {
       // Now FBUF has the data... 
       vdpmemread(FBUF, cbuf, pab.CharCount);
       // process Record
-      func(cbuf);
+      if (recNo == 0) {
+        volRecordHandler(cbuf, volInfo);
+      } else {
+        catRecordHandler(cbuf, &entryList[recNo - 1]);
+        entryList[recNo].name[0] = 0;
+      }
+      recNo++;
     }
   }
 
@@ -76,4 +101,24 @@ unsigned char dsr_read(struct PAB* pab, int recordNumber) {
   vdpmemread(VPAB + 5, (&pab->CharCount), 1);
   return result;
 }
+
+int volRecordHandler(char* buf, struct VolInfo* volInfo) {
+  basicToCstr(buf, volInfo->name);
+  return 0;
+}
+
+int entry_row = 0;
+
+int catRecordHandler(char* buf, struct DirEntry* entry) {
+  int namlen = basicToCstr(buf, entry->name);
+  int a = ti_floatToInt(buf+1+namlen);
+  int j = ti_floatToInt(buf+10+namlen);
+  int k = ti_floatToInt(buf+19+namlen);
+  entry->type = a;
+  entry->sectors = j;
+  entry->reclen = k;
+  entry_row++;
+  return 0;
+}
+
 

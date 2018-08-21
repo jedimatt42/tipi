@@ -50,6 +50,7 @@ class LevelTwo(object):
 
         localfilename = self.getLocalName(unit,filename)
         if localfilename is None:
+            logger.info("passing request to next device")
             self.tipi_io.send([EDVNAME])
             return True
 
@@ -73,6 +74,7 @@ class LevelTwo(object):
 
         origlocalname = self.getLocalName(unit,filename)
         if origlocalname is None:
+            logger.info("passing request to next device")
             self.tipi_io.send([EDVNAME])
             return True
         newlocalname = self.getLocalName(unit,newfilename)
@@ -103,6 +105,7 @@ class LevelTwo(object):
 
         localfilename = self.getLocalName(unit,"")
         if localfilename is None:
+            logger.info("passing request to next device")
             self.tipi_io.send([EDVNAME])
             return True
         if not os.path.exists(localfilename):
@@ -120,6 +123,7 @@ class LevelTwo(object):
         oled.info("lvl2 mkdir:/%d: %s", unit, dirname)
         localname = self.getLocalName(unit,dirname)
         if localname is None:
+            logger.info("passing request to next device")
             self.tipi_io.send([EDVNAME])
             return True
         try:
@@ -138,6 +142,7 @@ class LevelTwo(object):
         oled.info("lvl2 rmdir:/%d: %s", unit, dirname)
         localname = self.getLocalName(unit,dirname)
         if localname is None:
+            logger.info("passing request to next device")
             self.tipi_io.send([EDVNAME])
             return True
         try:
@@ -161,6 +166,7 @@ class LevelTwo(object):
         
         localfilename = self.getLocalName(unit,filename)
         if localfilename is None:
+            logger.info("passing request to next device")
             self.tipi_io.send([EDVNAME])
             return True
         if not os.path.exists(localfilename):
@@ -224,6 +230,7 @@ class LevelTwo(object):
 
         localfilename = self.getLocalName(unit,filename)
         if localfilename is None:
+            logger.info("passing request to next device")
             self.tipi_io.send([EDVNAME])
             return True
 

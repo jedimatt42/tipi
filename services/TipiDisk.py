@@ -338,6 +338,7 @@ class TipiDisk(object):
         unix_name = tinames.devnameToLocal(devname)
         if unix_name is None:
             self.sendErrorCode(EDVNAME)
+            return
 
         oled.info("DELETE:/%s", devname)
 

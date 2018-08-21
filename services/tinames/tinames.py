@@ -59,8 +59,8 @@ def devnameToLocal(devname):
         path = __scanForVolume(parts[1])
         startpart = 2
 
-    if path == None:
-        logger.debug("no path matched")
+    if path == None or path == "":
+        logger.info("no path matched")
         return None
 
     for part in parts[startpart:]:

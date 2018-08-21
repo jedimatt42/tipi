@@ -23,7 +23,7 @@ void _start(void)
   __asm__("\tlwpi >8300");
 
   /* Create the stack before declaring any variables */
-  __asm__("\tli sp, >4000");
+  __asm__("\tli sp, >FFD0"); // TOP OF HIGH MEM
 
   /* Fill .data section with initial values */
   {

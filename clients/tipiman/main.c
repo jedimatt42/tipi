@@ -16,21 +16,6 @@
 
 #define TIPIMAN_VER "1"
 
-int entry_row = 0;
-
-struct __attribute__((__packed__)) DirEntry {
-  char name[11];
-  int type;
-  int sectors;
-  int reclen;
-}; 
-
-struct DirEntry lentries[200];
-char lvolname[11];
-int llen = 0;
-int lfree = 0;
-char ldrive[30];
-
 const char* const ftypes[] = {
   "D/F",
   "D/V",
@@ -40,9 +25,13 @@ const char* const ftypes[] = {
   "DIR"
 };
 
-
 void initGlobals() {
-  strcpy(ldrive, "DSK2.");
+}
+
+void sleep(int jiffies) {
+  for(int i=0; i<jiffies;i++) {
+    VDP_WAIT_VBLANK_CRU;
+  }
 }
 
 void setupScreen() {
@@ -52,40 +41,75 @@ void setupScreen() {
   textcolor(COLOR_BLACK);
 }
 
-void layoutScreen() {
+void titleScreen() {
   clrscr();
-  gotoxy(0,0);
+  drawBox2(25,8,54,16);
+  gotoxy(35,10);
   cputs("TIPIMAN v");
   cputs(TIPIMAN_VER);
-  drawBox(0, 1, 39, 3);
-  drawBox(0, 4, 39, 22);
-  drawBox(40, 1, 79, 3);
-  drawBox(40, 4, 79, 22);
-
-  gotoxy(1,2);
-  cputs("SRC:");
-  cputs(ldrive);
-  gotoxy(41,2);
-  cputs("DST:");
+  gotoxy(30,12);
+  cputs("File Manager for TIPI");
+  gotoxy(33,14);
+  cputs("ti994a.cwfk.net");
 }
 
-void drawLentries(int start) {
+void printPadded(int x, int y, char* str, int width) {
+  cclearxy(x, y, width);
+  cputsxy(x, y, str);
+}
+
+void headings(int x) {
+  cputsxy(x+2,1, "Name");
+  cputsxy(x+23,1, "Type");
+  cputsxy(x+28,1, "Rec");
+  cputsxy(x+33,1, "Sect");
+}
+
+void layoutScreen() {
+  clrscr();
+  drawBox1(0, 0, 39, 22);
+  drawBox1(40, 0, 79, 22);
+  
+  cputcxy(2, 0, LEFT_T);
+  printPadded(3,0, "", 32);
+  cputcxy(35, 0, RIGHT_T);
+  cputcxy(42, 0, LEFT_T);
+  printPadded(43,0, "", 32);
+  cputcxy(75, 0, RIGHT_T);
+  headings(1);
+  headings(41);
+}
+
+void showVolInfo(int leftOrRight) {
+  struct VolInfo* volInfo = leftOrRight ? &rvol : &rvol;
+  int x = leftOrRight ? 43 : 3;
+  cputsxy(x, 0, volInfo->name);
+}
+
+void drawEntries(int start, int leftOrRight) {
   int done = 0;
-  for(int i=0;i<17;i++) {
-    gotoxy(1, 5+i);
+  int bx = 1;
+  struct DirEntry* entries = lentries;
+  if (leftOrRight) {
+    bx = 41;
+    entries = rentries;
+  }
+  for(int i=0;i<20;i++) {
+    int yi = 2+i;
+    gotoxy(bx, yi);
     cclear(38);
-    struct DirEntry* entry = &(lentries[i+start]);
+    struct DirEntry* entry = &(entries[i+start]);
     if (!done && entry->name[0] != 0) {
-      gotoxy(2, 5+i);
+      gotoxy(bx+2, yi);
       cputs(entry->name);
-      gotoxy(13, 5+i);
+      gotoxy(bx+23, yi);
       cputs(ftypes[entry->type - 1]);
       if (entry->type < 4) {
-        gotoxy(17, 5+i);
+        gotoxy(bx+28, yi);
         cputs(int2str(entry->reclen));
       }
       if (entry->type != 6) {
-        gotoxy(22, 5+i);
+        gotoxy(bx+33, yi);
         cputs(int2str(entry->sectors));
       }
     } else {
@@ -94,42 +118,27 @@ void drawLentries(int start) {
   }
 }
 
-int lCatRecord(char* buf) {
-  char cstr[11];
-  int namlen = basicToCstr(buf, cstr);
-  int a = ti_floatToInt(buf+1+namlen);
-  int j = ti_floatToInt(buf+10+namlen);
-  int k = ti_floatToInt(buf+19+namlen);
-  if (entry_row == 0) {
-    strcpy(lvolname, cstr);
-    lfree = k;
-  } else {
-    struct DirEntry* entry = &(lentries[entry_row-1]);
-    strcpy(entry->name, cstr);
-    entry->type = a;
-    entry->sectors = j;
-    entry->reclen = k;
-  }
-  entry_row++;
-  return 0;
-}
-
-void catalogLdrive() {
-  entry_row = 0;
-  loadDir(ldrive, &lCatRecord);
-  lentries[entry_row].name[0] = 0;
-  drawLentries(0);
+void catalogDrive(char* drive, int leftOrRight) {
+  loadDir(drive, leftOrRight);
+  showVolInfo(leftOrRight);
+  drawEntries(0, leftOrRight);
 }
 
 void main()
 {
   initGlobals();
   setupScreen();
+  titleScreen();
+  sleep(90);
   layoutScreen();
 
   while(1) {
-    getstr(5,2, ldrive, 30);
-    catalogLdrive();
+    char drive[32];
+    strcpy(drive, "TIPI.");  
+    getstr(0,23, drive, 32);
+    catalogDrive(drive, 0);
+    getstr(0,23, drive, 32);
+    catalogDrive(drive, 1);
   }
 }
 

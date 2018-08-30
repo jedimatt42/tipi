@@ -48,6 +48,7 @@ def dumpFmSectors(filepath, outfile):
                 track = sector[7]
                 head = sector[8]
                 sectorno = sector[9]
+                print "fm ths: %d, %d, %d" % (track, head, sectorno)
                 sdata = sector[31:31+256]
                 putSector(sectordump, sdata, track, head, sectorno)
     with open(outfile, 'wb') as fh:
@@ -70,14 +71,23 @@ def dumpMfmSectors(filepath, outfile):
     with open(filepath, 'rb') as fh:
         data = bytearray(fh.read())
         tracks = list(divide_chunks(data, 6872))
-        sectordump = bytearray(18 * 2 * len(tracks) * 256)
+        maxhead = 0
+        maxtrack = 0
+        maxsector = 0
+        for track in tracks:
+            sectors = mfm_sectors(track)
+            for sector in sectors:
+                maxtrack = max(maxtrack, sector[14])
+                maxhead = max(maxhead, sector[15])
+                maxsector = max(maxsector, sector[16])
+
+        sectordump = bytearray((maxsector+1) * (maxhead+1) * (maxtrack+1) * 256)
         for track in tracks:
             sectors = mfm_sectors(track)
             for sector in sectors:
                 track = sector[14]
                 head = sector[15]
                 sectorno = sector[16]
-                print "ths: %d, %d, %d" % (track, head, sectorno)
                 sdata = sector[58:58+256]
                 putSector(sectordump, sdata, track, head, sectorno)
     with open(outfile, 'wb') as fh:

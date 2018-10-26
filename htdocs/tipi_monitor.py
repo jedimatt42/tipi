@@ -34,7 +34,7 @@ def main():
                 tipi_cache.deleteFileInfo(name)
             elif 'IN_CLOSE_WRITE' in type_names:
                 name = os.path.join(watch_path.decode('utf-8'), filename.decode('utf-8'))
-                if name.endswith('.dsk') or name.endswith('.DSK'):
+                if name.endswith('.dsk') or name.endswith('.DSK') or name.endswith('.tidisk') or name.endswith('.TIDISK'):
                     print "extracting: " + name
                     extractDisk(name)
                 else:

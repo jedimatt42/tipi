@@ -13,6 +13,7 @@ import logging
 LOGGER = logging.getLogger(__name__)
 
 CONFIG_DEFAULTS = {
+    "AUTO": "off",
     "DSK1_DIR": "",
     "DSK2_DIR": "",
     "DSK3_DIR": "",
@@ -43,21 +44,30 @@ class TipiConfig(object):
         """ return the singleton config object """
         return SINGLETON
 
+    def applyfile(self, filename):
+        with open(filename, 'r') as in_file:
+            self.records = dict(CONFIG_DEFAULTS)
+            for line in in_file.readlines():
+                key = line.split('=')[0].strip()
+                value = line.split('=')[1].strip()
+                self.records[key] = value
+                LOGGER.debug("read record: %s = %s", key, value)
+        self.sorted_keys = list(self.records.keys())
+        self.sorted_keys.sort()
+
     def load(self):
         """ read config values from file """
         if os.path.exists(self.tipi_config):
             self.mtime = os.path.getmtime(self.tipi_config)
-            with open(self.tipi_config, 'r') as in_file:
-                self.records = dict(CONFIG_DEFAULTS)
-                for line in in_file.readlines():
-                    key = line.split('=')[0].strip()
-                    value = line.split('=')[1].strip()
-                    self.records[key] = value
-                    LOGGER.debug("read record: %s = %s", key, value)
-            self.sorted_keys = list(self.records.keys())
-            self.sorted_keys.sort()
+            self.applyfile(self.tipi_config)
         else:
             LOGGER.info("config file missing: %s", self.tipi_config)
+
+    def loadtmp(self, dirpath):
+        """ If dirpath contains a TIPICFG file, load the values. They will get lost on reset. """
+        configfile = os.path.join(dirpath, "TIPI")
+        if os.path.exists(configfile):
+            self.applyfile(configfile)
 
     def save(self):
         """ write the in-memory config out to disk to share and persist """
@@ -89,10 +99,14 @@ class TipiConfig(object):
         newvalue = value.strip()
         oldvalue = self.records.get(key, "")
         if oldvalue != newvalue:
-            self.records[key.strip()] = value.strip()
+            self.records[key] = newvalue
             self.sorted_keys = list(self.records.keys())
             self.sorted_keys.sort()
             self.changes.add(key)
+
+    def settmp(self, key, value):
+        """ Update item, but do not add to changes. """
+        self.records[key.strip()] = value.strip()
 
     def get(self, key, default=None):
         """ Fetch a config item """

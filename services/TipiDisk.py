@@ -24,6 +24,8 @@ logger = logging.getLogger(__name__)
 
 basicSuffixes = (".b99", ".bas", ".xb")
 
+tipi_config = TipiConfig.instance()
+
 class TipiDisk(object):
 
     def __init__(self, tipi_io):
@@ -288,6 +290,12 @@ class TipiDisk(object):
             if filesize > maxsize:
                 logger.debug("TI buffer too small, only loading %d of %d bytes", maxsize, filesize)
                 bytes = bytes[:maxsize]
+
+            dirname = os.path.dirname(unix_name)
+            if tipi_config.get("AUTO") == "on":
+                tipi_config.settmp("DSK1_DIR", dirname)
+
+            tipi_config.loadtmp(dirname)
 
             self.sendSuccess()
             logger.info("LOAD image size %d", filesize)

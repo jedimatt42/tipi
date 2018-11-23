@@ -19,6 +19,7 @@ from tinames import tinames
 from SpecialFiles import SpecialFiles
 from Oled import oled
 from Pab import *
+from TipiConfig import TipiConfig
 
 logger = logging.getLogger(__name__)
 
@@ -247,7 +248,7 @@ class TipiDisk(object):
 
         if localPath is None:
             logger.info("Passing to other controllers")
-            self.sendErrorcode(EDVNAME)
+            self.sendErrorCode(EDVNAME)
             return
 
         if localPath not in self.openFiles:
@@ -352,7 +353,7 @@ class TipiDisk(object):
 
         logger.debug("deleting file %s", unix_name)
         try:
-            del self.openFiles[localPath]
+            del self.openFiles[unix_name]
         except Exception as e:
             logger.debug("removing open file on delete: file was not open! Good")
         try:

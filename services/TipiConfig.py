@@ -45,6 +45,7 @@ class TipiConfig(object):
         return SINGLETON
 
     def applyfile(self, filename):
+        LOGGER.debug("applying config: %s", filename)
         with open(filename, 'r') as in_file:
             self.records = dict(CONFIG_DEFAULTS)
             for line in in_file.readlines():
@@ -66,6 +67,7 @@ class TipiConfig(object):
     def loadtmp(self, dirpath):
         """ If dirpath contains a TIPICFG file, load the values. They will get lost on reset. """
         configfile = os.path.join(dirpath, "TIPI")
+        LOGGER.debug("looking for %s", configfile)
         if os.path.exists(configfile):
             self.applyfile(configfile)
 

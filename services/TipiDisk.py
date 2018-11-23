@@ -294,7 +294,11 @@ class TipiDisk(object):
 
             dirname = os.path.dirname(unix_name)
             if tipi_config.get("AUTO") == "on":
-                tipi_config.settmp("DSK1_DIR", dirname)
+                tipidirname = tinames.local2tipi(dirname)
+                logger.debug("tmp mapping DSK1 to %s", tipidirname)
+                tipi_config.settmp("DSK1_DIR", tipidirname)
+            else:
+                logger.debug("AUTO mapping not enabled")
 
             tipi_config.loadtmp(dirname)
 

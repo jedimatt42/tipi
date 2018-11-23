@@ -117,3 +117,13 @@ def findpath(path, part):
                 return candidates[0]
 
     return part
+
+def local2tipi(localpath):
+    """ transform a unix local path to a ti path relative to TIPI. """
+    if localpath.startswith(TIPI_DIR + "/"):
+        idx = len(TIPI_DIR) + 1
+        tipart = localpath[idx:]
+        return tipart.replace("/", ".")
+    else:
+        return ""
+

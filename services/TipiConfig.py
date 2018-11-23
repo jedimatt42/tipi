@@ -9,6 +9,7 @@ data will be lost.
 
 import os
 import logging
+from ti_files.ti_files import ti_files
 
 LOGGER = logging.getLogger(__name__)
 
@@ -44,15 +45,12 @@ class TipiConfig(object):
         """ return the singleton config object """
         return SINGLETON
 
-    def applyfile(self, filename):
-        LOGGER.debug("applying config: %s", filename)
-        with open(filename, 'r') as in_file:
-            self.records = dict(CONFIG_DEFAULTS)
-            for line in in_file.readlines():
-                key = line.split('=')[0].strip()
-                value = line.split('=')[1].strip()
-                self.records[key] = value
-                LOGGER.debug("read record: %s = %s", key, value)
+    def applyrecords(self, records):
+        for line in records:
+            key = str(line).split('=')[0].strip()
+            value = str(line).split('=')[1].strip()
+            self.records[key] = value
+            LOGGER.debug("read record: %s = %s", key, value)
         self.sorted_keys = list(self.records.keys())
         self.sorted_keys.sort()
 
@@ -60,16 +58,11 @@ class TipiConfig(object):
         """ read config values from file """
         if os.path.exists(self.tipi_config):
             self.mtime = os.path.getmtime(self.tipi_config)
-            self.applyfile(self.tipi_config)
+            self.records = dict(CONFIG_DEFAULTS)
+            with open(self.tipi_config, 'r') as in_file:
+                self.applyrecords(in_file.readlines())
         else:
             LOGGER.info("config file missing: %s", self.tipi_config)
-
-    def loadtmp(self, dirpath):
-        """ If dirpath contains a TIPICFG file, load the values. They will get lost on reset. """
-        configfile = os.path.join(dirpath, "TIPI")
-        LOGGER.debug("looking for %s", configfile)
-        if os.path.exists(configfile):
-            self.applyfile(configfile)
 
     def save(self):
         """ write the in-memory config out to disk to share and persist """
@@ -121,5 +114,6 @@ class TipiConfig(object):
             out_file.write('\n')
             out_file.write(self.records["WIFI_PSK"])
             out_file.write('\n')
+
 
 SINGLETON = TipiConfig()

@@ -9,6 +9,7 @@ from ti_files.ti_files import ti_files
 from ti_files.ProgramImageFile import ProgramImageFile
 from ti_files.FixedRecordFile import FixedRecordFile
 from ti_files.VariableRecordFile import VariableRecordFile
+from ti_files.VariableRecordFile import load_internal
 from ti_files.CatalogFile import CatalogFile
 from ti_files.NativeFile import NativeFile
 from ti_files.BasicFile import BasicFile
@@ -300,7 +301,10 @@ class TipiDisk(object):
             else:
                 logger.debug("AUTO mapping not enabled")
 
-            tipi_config.loadtmp(dirname)
+            tipifile = os.path.join(dirname, "TIPI")
+            if os.path.exists(tipifile):
+                config_records = load_internal(tipifile)
+                tipi_config.applyrecords(config_records)
 
             self.sendSuccess()
             logger.info("LOAD image size %d", filesize)

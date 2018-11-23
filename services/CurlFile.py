@@ -31,6 +31,8 @@ class CurlFile(object):
             self.close(pab, devname)
         elif op == READ:
             self.read(pab, devname)
+        elif op == STATUS:
+            self.status(pab, devname)
         elif op == LOAD:
             self.load(pab, devname)
         else:
@@ -98,6 +100,28 @@ class CurlFile(object):
             logger.error("issue forming record", print_exc=True)
         self.tipi_io.send([EEOF])
         return
+
+    def status(self, pab, devname):
+        logger.info("status devname - %s", devname)
+        try:
+            recLen = recordLength(pab)
+            body = self.bodies[devname]
+            record = recordNumber(pab)
+            if record == 0:
+                record = self.record[devname]
+            lbody = len(body)
+            startOff = record * recLen
+
+            self.tipi_io.send([SUCCESS])
+            statbyte = STVARIABLE
+            if startOff >= lbody:
+                statbyte |= STLEOF
+            self.tipi_io.send([statbyte])
+            return
+        except Exception:
+            logger.error("issue forming record", exc_info=True)
+        self.tipi_io.send([EOPATTR])
+
 
     def load(self, pab, devname):
         logger.info("load devname - %s", devname)

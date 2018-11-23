@@ -28,6 +28,7 @@ class VariableRecordFile(object):
 
     @staticmethod
     def create(devname, localPath, pab):
+        """ Create a new file, replacing one that might already exist """
         nameParts = str(devname).split('.')
         tiname = nameParts[len(nameParts) - 1]
         recLen = recordLength(pab)
@@ -130,7 +131,7 @@ class VariableRecordFile(object):
                 record = bytearray(bytes[offset + 1:nextoff])
                 records += [record]
         except Exception as e:
-            logger.exception("failed to load all records", e)
+            logger.exception("failed to load all records")
 
         return records
 
@@ -187,3 +188,10 @@ class VariableRecordFile(object):
             sec += 1
             idx += 256
         return bytes
+
+def load_internal(unix_file_name):
+    pab = bytearray(8)
+    pab[1] = (VARIABLE << 4) + (INPUT << 1)
+    pab[4] = 80
+    return VariableRecordFile.load(unix_file_name, pab).records
+

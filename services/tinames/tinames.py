@@ -59,8 +59,8 @@ def devnameToLocal(devname):
         path = __scanForVolume(parts[1])
         startpart = 2
 
-    if path == None:
-        logger.debug("no path matched")
+    if path == None or path == "":
+        logger.info("no path matched")
         return None
 
     for part in parts[startpart:]:
@@ -117,3 +117,13 @@ def findpath(path, part):
                 return candidates[0]
 
     return part
+
+def local2tipi(localpath):
+    """ transform a unix local path to a ti path relative to TIPI. """
+    if localpath.startswith(TIPI_DIR + "/"):
+        idx = len(TIPI_DIR) + 1
+        tipart = localpath[idx:]
+        return tipart.replace("/", ".")
+    else:
+        return ""
+

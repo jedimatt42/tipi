@@ -9,10 +9,12 @@ data will be lost.
 
 import os
 import logging
+from ti_files.ti_files import ti_files
 
 LOGGER = logging.getLogger(__name__)
 
 CONFIG_DEFAULTS = {
+    "AUTO": "off",
     "DSK1_DIR": "",
     "DSK2_DIR": "",
     "DSK3_DIR": "",
@@ -43,19 +45,22 @@ class TipiConfig(object):
         """ return the singleton config object """
         return SINGLETON
 
+    def applyrecords(self, records):
+        for line in records:
+            key = str(line).split('=')[0].strip()
+            value = str(line).split('=')[1].strip()
+            self.records[key] = value
+            LOGGER.debug("read record: %s = %s", key, value)
+        self.sorted_keys = list(self.records.keys())
+        self.sorted_keys.sort()
+
     def load(self):
         """ read config values from file """
         if os.path.exists(self.tipi_config):
             self.mtime = os.path.getmtime(self.tipi_config)
+            self.records = dict(CONFIG_DEFAULTS)
             with open(self.tipi_config, 'r') as in_file:
-                self.records = dict(CONFIG_DEFAULTS)
-                for line in in_file.readlines():
-                    key = line.split('=')[0].strip()
-                    value = line.split('=')[1].strip()
-                    self.records[key] = value
-                    LOGGER.debug("read record: %s = %s", key, value)
-            self.sorted_keys = list(self.records.keys())
-            self.sorted_keys.sort()
+                self.applyrecords(in_file.readlines())
         else:
             LOGGER.info("config file missing: %s", self.tipi_config)
 
@@ -89,10 +94,14 @@ class TipiConfig(object):
         newvalue = value.strip()
         oldvalue = self.records.get(key, "")
         if oldvalue != newvalue:
-            self.records[key.strip()] = value.strip()
+            self.records[key] = newvalue
             self.sorted_keys = list(self.records.keys())
             self.sorted_keys.sort()
             self.changes.add(key)
+
+    def settmp(self, key, value):
+        """ Update item, but do not add to changes. """
+        self.records[key.strip()] = value.strip()
 
     def get(self, key, default=None):
         """ Fetch a config item """
@@ -105,5 +114,6 @@ class TipiConfig(object):
             out_file.write('\n')
             out_file.write(self.records["WIFI_PSK"])
             out_file.write('\n')
+
 
 SINGLETON = TipiConfig()

@@ -9,6 +9,7 @@ from ti_files.ti_files import ti_files
 from ti_files.ProgramImageFile import ProgramImageFile
 from ti_files.FixedRecordFile import FixedRecordFile
 from ti_files.VariableRecordFile import VariableRecordFile
+from ti_files.VariableRecordFile import load_internal
 from ti_files.CatalogFile import CatalogFile
 from ti_files.NativeFile import NativeFile
 from ti_files.BasicFile import BasicFile
@@ -19,10 +20,13 @@ from tinames import tinames
 from SpecialFiles import SpecialFiles
 from Oled import oled
 from Pab import *
+from TipiConfig import TipiConfig
 
 logger = logging.getLogger(__name__)
 
 basicSuffixes = (".b99", ".bas", ".xb")
+
+tipi_config = TipiConfig.instance()
 
 class TipiDisk(object):
 
@@ -245,7 +249,7 @@ class TipiDisk(object):
 
         if localPath is None:
             logger.info("Passing to other controllers")
-            self.sendErrorcode(EDVNAME)
+            self.sendErrorCode(EDVNAME)
             return
 
         if localPath not in self.openFiles:
@@ -288,6 +292,19 @@ class TipiDisk(object):
             if filesize > maxsize:
                 logger.debug("TI buffer too small, only loading %d of %d bytes", maxsize, filesize)
                 bytes = bytes[:maxsize]
+
+            dirname = os.path.dirname(unix_name)
+            if tipi_config.get("AUTO") == "on":
+                tipidirname = tinames.local2tipi(dirname)
+                logger.debug("tmp mapping DSK1 to %s", tipidirname)
+                tipi_config.settmp("DSK1_DIR", tipidirname)
+            else:
+                logger.debug("AUTO mapping not enabled")
+
+            tipifile = os.path.join(dirname, "TIPI")
+            if os.path.exists(tipifile):
+                config_records = load_internal(tipifile)
+                tipi_config.applyrecords(config_records)
 
             self.sendSuccess()
             logger.info("LOAD image size %d", filesize)
@@ -338,12 +355,13 @@ class TipiDisk(object):
         unix_name = tinames.devnameToLocal(devname)
         if unix_name is None:
             self.sendErrorCode(EDVNAME)
+            return
 
         oled.info("DELETE:/%s", devname)
 
         logger.debug("deleting file %s", unix_name)
         try:
-            del self.openFiles[localPath]
+            del self.openFiles[unix_name]
         except Exception as e:
             logger.debug("removing open file on delete: file was not open! Good")
         try:

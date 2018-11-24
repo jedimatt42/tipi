@@ -1,8 +1,6 @@
 
 #include <files.h>
 
-#define DSR_STATUS_EOF DST_STATUS_EOF
-
 #include <string.h>
 #include <system.h>
 #include <conio.h>
@@ -45,6 +43,7 @@ void savePiConfig();
 void upgrade();
 void shutdown();
 void reboot();
+void toggleAutomap();
 void spinnerMessage(int seconds, const char* msg);
 void spinnerPoll(const char* msg);
 void statusMessage(const char* msg);
@@ -66,6 +65,7 @@ char wifi_psk[79];
 char uri1[79];
 char uri2[79];
 char uri3[79];
+char automap[79];
 
 int wifi_dirty;
 int disks_dirty;
@@ -175,6 +175,7 @@ void initGlobals() {
   strcpy(uri1,"");
   strcpy(uri2,"");
   strcpy(uri3,"");
+  strcpy(automap,"");
   crubase = 0;
 
   wifi_dirty = 0;
@@ -210,6 +211,8 @@ void layoutScreen() {
 
   gotoxy(0,6);
   cputs("Drive Mappings");
+  gotoxy(24,6);
+  cputs("A) AUTO=");
   gotoxy(2,7);
   cputs("1) DSK1=");
   gotoxy(2,8);
@@ -264,6 +267,12 @@ void main()
 
     key = cgetc();
     switch(key) {
+      case 'A':
+      case 'a':
+        disks_dirty = 1;
+        toggleAutomap();
+        showValue(32,6,automap);
+        break;
       case '1':
         disks_dirty = 1;
         getstr(10,7,dsk1_dir);
@@ -455,6 +464,7 @@ void loadPiConfig() {
   showValue(10, 12, uri3);
   showValue(10, 15, wifi_ssid);
   showValue(10, 16, wifi_psk);
+  showValue(32,6, automap);
 
   ferr = dsr_close(&pab);
   if (ferr) {
@@ -495,6 +505,8 @@ void processConfigLine(char* cbuf) {
     strcpy(wifi_ssid, val);
   } else if (0 == strcmp(cbuf, "WIFI_PSK")) {
     strcpy(wifi_psk, val);
+  } else if (0 == strcmp(cbuf, "AUTO")) {
+    strcpy(automap, val);
   }
 }
 
@@ -609,6 +621,7 @@ void savePiConfig() {
     writeConfigItem(&pab, "URI1", uri1);
     writeConfigItem(&pab, "URI2", uri2);
     writeConfigItem(&pab, "URI3", uri3);
+    writeConfigItem(&pab, "AUTO", automap);
   }
 
   if (wifi_dirty) {
@@ -779,6 +792,15 @@ unsigned char dsr_write(struct PAB* pab, unsigned char* record) {
   pab->CharCount = len;
 
   return dsrlnk(pab, VPAB);
+}
+
+// weird string state toggle
+void toggleAutomap() {
+  if (0 == strcmp(automap, "on")) {
+    strcpy(automap, "off");
+  } else {
+    strcpy(automap, "on");
+  }
 }
 
 // utilities

@@ -2,6 +2,16 @@
 
 ## If using the SD-Card image the following has already been performed.
 
+SD Card image is available for download: 
+
+[www.jedimatt42.com](https://www.jedimatt42.com/downloads.html)
+
+Go to the [Wiki](https://github.com/jedimatt42/tipi/wiki) for end user installation.
+
+# Only follow these instructions if you are setting up an SD Card from scratch.
+
+Assumes base image is Raspbian Lite
+
 ## Replace log and tmp folders with tmpfs to prolong SD card life
 
 Add the following to /etc/fstab:

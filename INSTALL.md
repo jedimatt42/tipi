@@ -12,6 +12,11 @@ Go to the [Wiki](https://github.com/jedimatt42/tipi/wiki) for end user installat
 
 Assumes base image is Raspbian Lite
 
+Use raspi-config to install locales and set default, en_US_utf8.
+
+Use raspi-config to enable i2c, ssh, and grow the root filesystem.
+reboot.
+
 ## Replace log and tmp folders with tmpfs to prolong SD card life
 
 Add the following to /etc/fstab:
@@ -74,18 +79,27 @@ is for the 'tipi' user.
 cd /home/tipi
 git clone https://github.com/jedimatt42/tipi.git tipi
 cd /home/tipi/tipi
+git checkout unstable
 ./setup.sh
 ```
 
 ## Other items to setup
 
-* change the password for user pi
-* change the hostname
+* (for distributing an image, I don't do this) change the password for user pi
+* change the hostname (raspi-config)
 * install samba share for /home/tipi/tipi_disk
 * add telnetd for localhost access
-   /etc/hosts.allow: in.telnetd: localhost
-   /etc/hosts.deny: in.telnetd: ALL
+   /etc/hosts.allow: 
 
+```
+in.telnetd: localhost
+```
+
+   /etc/hosts.deny: 
+
+```
+in.telnetd: ALL
+```
 
 
 Changing hostname: /etc/hostname & /etc/hosts

@@ -1,0 +1,10 @@
+[Unit]
+Description=TIPI Power Button Service
+
+[Service]
+Type=simple
+ExecStart=/home/tipi/tipi/services/shutdownbutton.sh
+
+[Install]
+WantedBy=multi-user.target
+

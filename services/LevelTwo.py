@@ -173,6 +173,10 @@ class LevelTwo(object):
             logger.error("file doesn't exist")
             self.tipi_io.send([EDEVERR])
             return True
+        if os.path.isdir(localfilename):
+            logger.error("cannot read blocks from a directory")
+            self.tipi_io.send([EDEVERR])
+            return True
 
         fbytes = self.getFileBytes(localfilename)
         if fbytes is None:

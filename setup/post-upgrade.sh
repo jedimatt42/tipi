@@ -28,12 +28,14 @@ systemctl enable tipi.service
 systemctl enable tipiweb.service
 systemctl enable tipimon.service
 systemctl enable tipisuper.service
+# systemctl enable tipibutton.service
 
 # the order below matters
 systemctl restart tipiboot.service
 systemctl restart tipiwatchdog.service
 systemctl restart tipimon.service
 systemctl restart tipiweb.service
+# systemctl restart tipibutton.service
 systemctl restart tipi.service
 
 # last we'll restart the super service which is our parent process.

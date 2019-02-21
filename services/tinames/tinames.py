@@ -28,7 +28,7 @@ def __scanForVolume(volume):
     disks = ("DSK1_DIR","DSK2_DIR","DSK3_DIR")
     for disk in disks:
         path = __driveMapping(disk)
-        if path.endswith("/" + volume):
+        if path != None and path.endswith("/" + volume):
             return path
     # None of the Disks are mapped to this volume...
     # fall back to top level directories

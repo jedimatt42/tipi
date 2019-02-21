@@ -380,21 +380,26 @@ class TipiDisk(object):
         logger.info("Opcode 9 Status - %s", devname)
         logPab(pab)
         statbyte = 0
-        localPath = str(tinames.devnameToLocal(devname))
-        if not os.path.exists(localPath):
+
+        unix_name = tinames.devnameToLocal(devname)
+        if unix_name is None:
+            self.sendErrorCode(EDVNAME)
+            return
+
+        if not os.path.exists(unix_name):
             statbyte |= STNOFILE
         else:
-            if not os.path.isdir(localPath):
+            if not os.path.isdir(unix_name):
                 open_file = None
                 try:
-                    open_file = self.openFiles[localPath]
+                    open_file = self.openFiles[unix_name]
                 except:
                     pass
                 if open_file is not None:
                     statbyte = open_file.getStatusByte()
                 else:
-                    if ti_files.isTiFile(localPath):
-                        fh = open(localPath, "rb")
+                    if ti_files.isTiFile(unix_name):
+                        fh = open(unix_name, "rb")
                         header = bytearray(fh.read())[:128]
                         if ti_files.isVariable(header):
                             statbyte |= STVARIABLE
@@ -403,7 +408,7 @@ class TipiDisk(object):
                         if ti_files.isInternal(header):
                             statbyte |= STINTERNAL
                     else:
-                        statbyte = NativeFile.status(localPath)
+                        statbyte = NativeFile.status(unix_name)
 
         oled.info("STATUS %d:/%s", statbyte, devname)
 

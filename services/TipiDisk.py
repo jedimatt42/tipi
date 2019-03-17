@@ -302,7 +302,7 @@ class TipiDisk(object):
                 logger.debug("AUTO mapping not enabled")
 
             tipifile = os.path.join(dirname, "TIPI")
-            if os.path.exists(tipifile):
+            if os.path.isfile(tipifile):
                 config_records = load_internal(tipifile)
                 tipi_config.applyrecords(config_records)
 

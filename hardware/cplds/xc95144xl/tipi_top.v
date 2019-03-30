@@ -144,13 +144,10 @@ wire tipi_dsr_en = tipi_read && ti_a >= 16'h4000 && ti_a < 16'h5ff8;
 // drive the dsr eprom oe and cs lines.
 assign dsr_en = ~(tipi_dsr_en);
 // drive the 74hct245 oe and dir lines.
-assign db_en = ~(cru_dev_en && ~ti_memen && ti_a >= 16'h4000 && ti_a < 16'h6000);
+assign db_en = ~(cru_dev_en && ti_a >= 16'h4000 && ti_a < 16'h6000);
 assign db_dir = tipi_read;
 
 // register to databus output selection
-// on most cpu's this would be triggered on negative edge of memory enable. 
-// however, the 4A does not transition the memory enable between high and low byte access of a word. 
-// consequently, I am sampling the address bus on negative edge of ph3 clock. 
 wire [0:7]rreg_mux_out; 
 mux2_8bit rreg_mux(rc_addr, tipi_db_rc, rd_addr, tipi_db_rd, tc_addr, rpi_tc, td_addr, rpi_td, rreg_mux_out);
 
@@ -160,6 +157,8 @@ tristate_8bit dbus_ts(dbus_ts_en, rreg_mux_out, tp_d_buf);
 
 assign tp_d = tp_d_buf;
 
+
 assign led0 = cru_state[0] && db_en;
+
 
 endmodule

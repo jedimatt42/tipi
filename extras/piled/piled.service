@@ -1,0 +1,12 @@
+[Unit]
+Description=LED Flasher indicating Active RPi
+
+[Service]
+Type=simple
+ExecStart=/home/tipi/tipi/extras/piled/piled.py
+Restart=always
+User=tipi
+
+[Install]
+WantedBy=multi-user.target
+

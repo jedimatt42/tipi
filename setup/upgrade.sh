@@ -5,7 +5,11 @@
 ## Run with --upgrade to upgrade to latest
 ##
 
-branch=`cat /home/tipi/tipi/version.txt | sed -n 's/^branch=\(.*\)$/\1/p'`
+if [ -f /home/tipi/tipi/branch.txt ]; then
+  branch=`cat /home/tipi/tipi/branch.txt | sed -n 's/^branch=\(.*\)$/\1/p'`
+else
+  branch=`cat /home/tipi/tipi/version.txt | sed -n 's/^branch=\(.*\)$/\1/p'`
+fi
 version=`cat /home/tipi/tipi/version.txt | sed -n 's/^version=\(.*\)$/\1/p'`
 
 remoteversion=`curl https://raw.githubusercontent.com/jedimatt42/tipi/$branch/version.txt 2>/dev/null | sed -n 's/^version=\(.*\)$/\1/p'`

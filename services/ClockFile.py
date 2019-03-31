@@ -28,18 +28,20 @@ class ClockFile(object):
         self.tipi_io.send([SUCCESS])
 
     def open(self, pab, devname):
-        if mode(pab) == INPUT:
+        if mode(pab) == INPUT or mode(pab) == UPDATE:
             if dataType(pab) == DISPLAY:
-                if recordLength(pab) == 0 or recordLength(pab) == 24:
+                if recordLength(pab) == 0 or recordLength(pab) == 19:
                     self.tipi_io.send([SUCCESS])
-                    self.tipi_io.send([24])
+                    self.tipi_io.send([19])
                     return
         self.tipi_io.send([EOPATTR])
 
     def read(self, pab, devname):
-        if mode(pab) == INPUT:
+        if mode(pab) == INPUT or mode(pab) == UPDATE:
             if dataType(pab) == DISPLAY:
-                fdata = bytearray(time.asctime())
+                pattern = '%w,%m/%d/%y,%H:%M:%S'
+                record = time.strftime(pattern)
+                fdata = bytearray(record)
                 self.tipi_io.send([SUCCESS])
                 self.tipi_io.send(fdata)
                 return

@@ -45,7 +45,11 @@ def send_css(path):
 @app.route('/<path:path>', methods=['GET'])
 def download(path):
     localpath = tipi_files.download(path)
-    return send_from_directory(localpath['directory'], localpath['filename'])
+    resp = make_response(send_from_directory(localpath['directory'], localpath['filename']))
+    resp.cache_control.no_store = True
+    resp.cache_control.public = False
+    resp.cache_control.max_age = None
+    return resp
 
 @app.route('/files', defaults = {'path': ''}, methods=['GET'])
 @app.route('/files/<path:path>', methods=['GET'])

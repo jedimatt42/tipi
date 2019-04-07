@@ -79,7 +79,7 @@ is for the 'tipi' user.
 cd /home/tipi
 git clone https://github.com/jedimatt42/tipi.git tipi
 cd /home/tipi/tipi
-git checkout unstable
+git checkout release
 ./setup.sh
 ```
 

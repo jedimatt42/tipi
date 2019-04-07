@@ -1,2 +1,2 @@
-version=1.0betav035
-reldate=2019-04-02
+version=1.36
+reldate=2019-04-07

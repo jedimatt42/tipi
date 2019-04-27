@@ -278,7 +278,7 @@ void main()
       case 'p':
         wifi_dirty = 1;
         getstr(10,16,wifi_psk);
-        showValue(10,16,wifi_psk);
+        showValue(10,16,"************");
         break;
       case 'R':
       case 'r':
@@ -289,8 +289,6 @@ void main()
         savePiConfig();
         disks_dirty = 0;
         wifi_dirty = 0;
-        // clear password/psk from screen
-        showValue(10,16,"************");
         break;
       case 'U':
       case 'u':

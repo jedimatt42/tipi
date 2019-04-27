@@ -1,11 +1,3 @@
-
-	.ifeq A14, 0
-L2B	EQU	>10
-	.endif
-	.ifeq A14, 1
-L2B	EQU	>20
-	.endif
-
 ; Power up header list.
 pwrlnk
 	DATA	>0000		; terminate powerup list.
@@ -19,7 +11,6 @@ tipilnk
 	TEXT	"TIPI"		; name of tipi drive
 	EVEN
 
-	.ifeq A14, 0
 tipi0
 	DATA	tipi1		; next dsr list entry
 	DATA	tipidsr		; tipi dsr routine pointer
@@ -61,16 +52,6 @@ tipid
 	BYTE	3		; TIPI Drive name length
 	TEXT	"DSK"		; name of tipi drive
 	EVEN
-	.endif
-
-	.ifeq A14, 1
-tipi0
-	DATA	tipip		; next dsr list entry
-	DATA	tipidsr		; tipi dsr routine pointer
-	BYTE	4		; TIPI Drive name length
-	TEXT	"WDS1"		; name of tipi drive
-	EVEN
-	.endif
 
 tipip
 	DATA	tipiu1		; terminate dsr list.
@@ -119,61 +100,61 @@ l2x2
 	DATA	l2x3
 	DATA	protect
 	BYTE	1
-	BYTE	L2B+2		; lvl2 modify protection
+	BYTE	>12		; lvl2 modify protection
 	EVEN
 
 l2x3
 	DATA	l2x4
 	DATA	frename
 	BYTE	1
-	BYTE	L2B+3		; lvl2 file rename
+	BYTE	>13		; lvl2 file rename
 	EVEN
 
 l2x4
 	DATA	l2x5
 	DATA	directinp
 	BYTE	1
-	BYTE	L2B+4		; lvl2 file direct input
+	BYTE	>14		; lvl2 file direct input
 	EVEN
 
 l2x5
 	DATA	l2x6
 	DATA	directout
 	BYTE	1
-	BYTE	L2B+5		; lvl2 file direct output
+	BYTE	>15		; lvl2 file direct output
 	EVEN
 
 l2x6
 	DATA	l2x7
 	DATA	setfiles
 	BYTE	1
-	BYTE	L2B+6		; lvl2 call files/buffer allocation
+	BYTE	>16		; lvl2 call files/buffer allocation
 	EVEN
 
 l2x7
 	DATA	l2x8
 	DATA	setpath
 	BYTE	1
-	BYTE	L2B+7		; lvl2 set current directory
+	BYTE	>17		; lvl2 set current directory
 	EVEN
 
 l2x8
 	DATA	l2x9
 	DATA	createdir
 	BYTE	1
-	BYTE	L2B+8		; lvl2 create a sub directory
+	BYTE	>18		; lvl2 create a sub directory
 	EVEN
 
 l2x9
 	DATA	l2xA
 	DATA	deldir
 	BYTE	1
-	BYTE	L2B+9		; lvl2 delete directory
+	BYTE	>19		; lvl2 delete directory
 	EVEN
 
 l2xA
 	DATA	>0000
 	DATA	drename
 	BYTE	1
-	BYTE	L2B+10		; lvl2 directory rename
+	BYTE	>1A		; lvl2 directory rename
 	EVEN

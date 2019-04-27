@@ -13,18 +13,10 @@ clean:
 	-rm *.list >/dev/null 2>&1
 	-rm tipi*.bin timestamp.gen >/dev/null 2>&1
 
-tipi0.bin: $(sources) timestamp.gen
-	xas99.py -R -b -L tipi0.list -o $@ rom.a99 -DA14=0
+tipi.bin: $(sources) timestamp.gen
+	xas99.py -R -b -L tipi.list -o $@ rom.a99
 	mv $@_4000 $@
-	dd if=/dev/null of=$@ bs=1 count=0 seek=16384
-
-tipi1.bin: $(sources) timestamp.gen
-	xas99.py -R -b -L tipi1.list -o $@ rom.a99 -DA14=1
-	mv $@_4000 $@
-	dd if=/dev/null of=$@ bs=1 count=0 seek=16384
-
-tipi.bin: tipi0.bin tipi1.bin
-	cat tipi0.bin tipi1.bin >$@
+	dd if=/dev/null of=$@ bs=1 count=0 seek=32768
 
 timestamp.gen:
 	TIMESTAMP=`date --iso-8601="seconds"`; ( echo "	TEXT	\"$$TIMESTAMP\""; echo "	BYTE	0"; echo "	EVEN" ) >timestamp.gen

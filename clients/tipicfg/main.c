@@ -11,7 +11,7 @@
 #define GPLWS ((unsigned int*)0x83E0)
 #define DSRTS ((unsigned char*)0x401A)
 
-#define TIPICFG_VER "7"
+#define TIPICFG_VER "8"
 #define PI_CONFIG "PI.CONFIG"
 #define PI_STATUS "PI.STATUS"
 #define PI_UPGRADE "PI.UPGRADE"
@@ -105,24 +105,6 @@ void showValue(int x, int y, const char* val) {
   cputs(val);
 }
 
-void showMode() {
-  int statusbits = 0;
-  if (crubase != 0) {
-    __asm__("mov %1,r12\n\ttb 3\n\tstst %0" : "=r"(statusbits) : "r"(crubase) : "r12"); 
-  }
-  if (statusbits & 0x2000) {
-    gotoxy(13,19);
-    cputs("        ");
-    gotoxy(13,20);
-    cputs("- active");
-  } else {
-    gotoxy(13,19);
-    cputs("- active");
-    gotoxy(13,20);
-    cputs("        ");
-  }
-}
-
 void showQMenu() {
   gotoxy(0,22);
   cputs("CFG: Q)uit, ");
@@ -149,18 +131,6 @@ void printDsrTimestamp() {
     }
     // disable the ROM
     __asm__("mov %0,r12\n\tsbz 0" : : "r"(crubase) : "r12");
-  }
-}
-
-void tiMode() {
-  if (crubase != 0) {
-    __asm__("mov %0,r12\n\tsbz 3" : : "r"(crubase) : "r12");
-  }
-}
-
-void myarcMode() {
-  if (crubase != 0) {
-    __asm__("mov %0,r12\n\tsbo 3" : : "r"(crubase) : "r12");
   }
 }
 
@@ -237,16 +207,8 @@ void layoutScreen() {
   gotoxy(0,17);
   chline(40);
 
-  gotoxy(0,18);
-  cputs("Emulation Mode");
-  gotoxy(2,19);
-  cputs("T)I DSK");
-  gotoxy(2,20);
-  cputs("M)yarc WSD");
-
   gotoxy(0,21);
   chline(40);
-  showMode();
   showQMenu();
 }
 
@@ -327,6 +289,8 @@ void main()
         savePiConfig();
         disks_dirty = 0;
         wifi_dirty = 0;
+        // clear password/psk from screen
+        showValue(10,16,"************");
         break;
       case 'U':
       case 'u':
@@ -345,17 +309,8 @@ void main()
       case 'b':
         reboot();
         break;
-      case 'T':
-      case 't':
-        tiMode();
-        break;
-      case 'M':
-      case 'm':
-        myarcMode();
-        break;
     }
 
-    showMode();
     showQMenu();
 
     VDP_INT_POLL;
@@ -463,7 +418,7 @@ void loadPiConfig() {
   showValue(10, 11, uri2);
   showValue(10, 12, uri3);
   showValue(10, 15, wifi_ssid);
-  showValue(10, 16, wifi_psk);
+  showValue(10, 16, "************");
   showValue(32,6, automap);
 
   ferr = dsr_close(&pab);

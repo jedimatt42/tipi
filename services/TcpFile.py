@@ -86,14 +86,22 @@ class TcpFile(object):
 
     def write(self, pab, devname):
         logger.debug("write devname: %s", devname)
+
+        sock = self.sock[devname]
+        self.tipi_io.send([SUCCESS])
+        msg = self.tipi_io.receive()
+        logger.debug("msg: %s", msg)
+
         try:
-            sock = self.sock[devname]
-            self.tipi_io.send([SUCCESS])
-            msg = self.tipi_io.receive()
             sock.sendall(msg)
+            logger.debug("sent message %d", len(msg))
+            self.tipi_io.send([SUCCESS])
         except socket.error as e:
+            logger.error(e, exc_info=True)
             self.sock[devname].close()
             del(self.sock[devname])
+            self.tipi_io.send([EFILERR])
+            return
 
     def parseDev(self, devname):
         parts = str(devname).split("=")[1].split(":")

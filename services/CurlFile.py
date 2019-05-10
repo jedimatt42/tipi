@@ -1,10 +1,13 @@
 import os
 import traceback
-import pycurl
 import logging
-from io import BytesIO
 from ti_files.ti_files import ti_files
 from Pab import *
+from ti_files.NativeFile import NativeFile
+from ti_files.BasicFile import BasicFile
+from ti_files.ProgramImageFile import ProgramImageFile
+from ti_files.FixedRecordFile import FixedRecordFile
+from ti_files.VariableRecordFile import VariableRecordFile
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +22,7 @@ class CurlFile(object):
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
-        self.bodies = {}
+        self.files = {}
         self.record = {}
 
     def handle(self, pab, devname):
@@ -42,7 +45,7 @@ class CurlFile(object):
         logger.info("close devname - %s", devname)
         self.tipi_io.send([SUCCESS])
         try:
-            del(self.bodies[devname])
+            del(self.files[devname])
             del(self.record[devname])
         except BaseException:
             pass
@@ -51,23 +54,18 @@ class CurlFile(object):
         logger.info("open devname - %s", devname)
         try:
             url = self.parseDev(devname)
-            buffer = BytesIO()
-            c = pycurl.Curl()
-            c.setopt(c.URL, url)
-            c.setopt(c.WRITEDATA, buffer)
-            c.perform()
-            body = bytearray(buffer.getvalue())
-            logger.info("retrieved %d bytes", len(body))
-            c.close()
-            self.bodies[devname] = body
+            logger.info("url: %s", url)
+            file = self.fetch(url, pab)
+            self.files[devname] = file
             self.record[devname] = 0
         except BaseException:
+            logger.exception("failed")
             self.tipi_io.send([EFILERR])
             return
 
         recLen = recordLength(pab)
         if recLen == 0:
-            recLen = 80
+            recLen = file.getRecordLength()
         self.tipi_io.send([SUCCESS])
         self.tipi_io.send([recLen])
         return
@@ -75,84 +73,85 @@ class CurlFile(object):
     def read(self, pab, devname):
         logger.info("read devname - %s", devname)
         try:
-            body = self.bodies[devname]
-            recLen = recordLength(pab)
-            record = recordNumber(pab)
-            if record == 0:
-                record = self.record[devname]
-            lbody = len(body)
-            logger.info("length of data: %d", lbody)
-            startOff = record * recLen
-            if startOff >= lbody:
-                self.tipi_io.send([EEOF])
+            open_file = self.files[devname]
+
+            if not open_file.isLegal(pab):
+                logger.error("illegal read mode for %s", devname)
+                self.tipi_io.send([EFILERR])
                 return
-            endOff = (record + 1) * recLen
-            if endOff >= lbody:
-                endOff = lbody
-            logger.info("taking chunk: %d - %d", startOff, endOff)
-            fdata = body[startOff:endOff]
-            logger.info("record fdata len: %d", len(fdata))
-            self.tipi_io.send([SUCCESS])
-            self.tipi_io.send(fdata)
-            self.record[devname] = record + 1
+
+            recNum = self.record[devname]
+            rdata = open_file.readRecord(recNum)
+            if rdata is None:
+                logger.debug("received None for record %d", recNum)
+                self.tipi_io.send([EEOF])
+            else:
+                self.tipi_io.send([SUCCESS])
+                self.tipi_io.send(rdata)
+                logger.debug("record bytes: {}", len(rdata))
             return
         except Exception:
-            logger.error("issue forming record", print_exc=True)
-        self.tipi_io.send([EEOF])
-        return
+            logger.exception("failed to read from open file")
+            self.tipi_io.send([EFILERR])
 
     def status(self, pab, devname):
         logger.info("status devname - %s", devname)
-        try:
-            recLen = recordLength(pab)
-            body = self.bodies[devname]
-            record = recordNumber(pab)
-            if record == 0:
-                record = self.record[devname]
-            lbody = len(body)
-            startOff = record * recLen
+        statbyte = 0
 
-            self.tipi_io.send([SUCCESS])
-            statbyte = STVARIABLE
-            if startOff >= lbody:
-                statbyte |= STLEOF
-            self.tipi_io.send([statbyte])
-            return
-        except Exception:
-            logger.error("issue forming record", exc_info=True)
-        self.tipi_io.send([EOPATTR])
-
+	# not really implemented yet 
+        self.tipi_io.send([SUCCESS])
+        self.tipi_io.send([statbyte])
 
     def load(self, pab, devname):
         logger.info("load devname - %s", devname)
         try:
+            tmpname = '/tmp/CF'
             url = self.parseDev(devname)
-            logger.debug("url: %s", url)
-            buffer = BytesIO()
-            c = pycurl.Curl()
-            c.setopt(c.URL, url)
-            c.setopt(c.WRITEDATA, buffer)
-            c.perform()
-            c.close()
-            body = bytearray(buffer.getvalue())
-            logger.debug("downloaded %d bytes", len(body))
-            if not ti_files.isValid(body):
-                logger.debug("not a TIFILES file")
-                self.tipi_io.send([EFILERR])
-                return
-            if not ti_files.isProgram(body):
-                logger.debug("not a PROGRAM image file")
-                self.tipi_io.send([EFILERR])
-                return
-            filesize = ti_files.byteLength(body)
-            logger.info("sending program - %d", filesize)
+            cmd = "wget -O {} {}".format(tmpname, url)
+            logger.info("cmd: %s", cmd)
+            code = os.system(cmd)
+            if code != 0:
+                raise Exception("error downloading resource")
+            if (not ti_files.isTiFile(tmpname)) and devname.lower().endswith(basicSuffixes):
+                prog_file = BasicFile.load(tmpname)
+            else:
+                prog_file = ProgramImageFile.load(tmpname)
+
+            filesize = prog_file.getImageSize()
+            bytes = prog_file.getImage()
+            maxsize = recordNumber(pab)
+            if filesize > maxsize:
+                logger.debug("TI buffer too small, only loading %d of %d bytes", maxsize, filesize)
+                bytes = bytes[:maxsize]
+
             self.tipi_io.send([SUCCESS])
-            self.tipi_io.send((body[128:])[:filesize])
-            return
-        except BaseException:
-            logger.exception("Error loading %s", devname)
-        self.tipi_io.send([EFILERR])
-        return
+            logger.info("LOAD image size %d", filesize)
+            self.tipi_io.send(bytes)
+
+        except Exception:
+            # I don't think this will work. we need to check for as
+            #   many errors as possible up front.
+            self.tipi_io.send([EFILERR])
+            logger.exception("failed to load file - %s", devname)
+
+
+
+    def fetch(self, url, pab):
+        tmpname = '/tmp/CF'
+        cmd = "wget -O {} {}".format(tmpname, url)
+        logger.info("cmd: %s", cmd)
+        code = os.system(cmd)
+        if code != 0:
+            raise Exception("error downloading resource")
+	if ti_files.isTiFile(tmpname):
+	    if recordType(pab) == FIXED:
+		return FixedRecordFile.load(tmpname, pab)
+	    else:
+		return VariableRecordFile.load(tmpname, pab)
+	else:
+	    return NativeFile.load(tmpname, pab, url)
+
+
 
     def parseDev(self, devname):
         return str(devname[3:])

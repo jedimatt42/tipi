@@ -10,7 +10,7 @@ from Pab import *
 
 logger = logging.getLogger(__name__)
 
-dv80suffixes = (".txt", ".a99", ".b99", ".bas", ".xb")
+dv80suffixes = (".cmd", ".txt", ".a99", ".b99", ".bas", ".xb")
 
 class NativeFile(object):
 
@@ -22,26 +22,30 @@ class NativeFile(object):
         self.filetype = fileType(pab)
 
     @staticmethod
-    def load(unix_file_name, pab):
+    def load(unix_file_name, pab, url=""):
         if mode(pab) != INPUT:
             raise Exception("Native files are read only")
 
         try:
-            if unix_file_name.lower().endswith(dv80suffixes):
+            if unix_file_name.lower().endswith(dv80suffixes) or url.lower().endswith(dv80suffixes):
                 if recordLength(pab) != 80 and recordLength(pab) != 0:
                     raise Exception("Incompatible recordlength")
+                logger.debug("using D/V 80 mode")
                 records = NativeFile.loadLines(unix_file_name)
+                logger.debug("loaded {} lines", len(records))
                 recLen = 80
                 statByte = STVARIABLE
             else:
                 if recordLength(pab) != 128 and recordLength(pab) != 0:
                     raise Exception("Incompatible recordlength")
+                logger.debug("using Fixed 128 mode")
                 records = NativeFile.loadBytes(unix_file_name)
+                logger.debug("loaded {} records", len(records))
                 recLen = 128
                 statByte = 0
                 if dataType(pab):
                     statByte |= STINTERNAL
-            return NativeFile(records, recLen, statByte,pab)
+            return NativeFile(records, recLen, statByte, pab)
 
         except Exception as e:
             logger.exception("not a valid NativeFile %s", unix_file_name)
@@ -108,5 +112,7 @@ class NativeFile(object):
     def getRecordLength(self):
         return self.recordLength
 
+    def close(self, localPath):
+        pass
 
 

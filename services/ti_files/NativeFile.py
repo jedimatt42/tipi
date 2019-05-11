@@ -75,8 +75,8 @@ class NativeFile(object):
         return records
 
     @staticmethod
-    def status(fp):
-        if fp.lower().endswith(dv80suffixes):
+    def status(fp, url=""):
+        if fp.lower().endswith(dv80suffixes) or url.lower().endswith(dv80suffixes):
             statByte = STVARIABLE
         else:
             statByte = 0

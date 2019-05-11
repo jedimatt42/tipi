@@ -38,6 +38,8 @@ class CurlFile(object):
             self.status(pab, devname)
         elif op == LOAD:
             self.load(pab, devname)
+        elif op == RESTORE:
+            self.restore(pab, devname)
         else:
             self.tipi_io.send([EOPATTR])
 
@@ -70,6 +72,20 @@ class CurlFile(object):
         self.tipi_io.send([recLen])
         return
 
+    def restore(self, pab, devname):
+        try:
+            open_file = self.files[devname]
+        except KeyError:
+            pass
+
+        if open_file == None:
+            self.tipi_io.send([EFILERR])
+            return
+
+        open_file.restore(pab)
+        self.tipi_io.send([SUCCESS])
+
+
     def read(self, pab, devname):
         logger.info("read devname - %s", devname)
         try:
@@ -98,6 +114,12 @@ class CurlFile(object):
         logger.info("status devname - %s", devname)
         statbyte = 0
 
+        try:
+            open_file = self.files[devname]
+            statbyte = open_file.getStatusByte()
+        except KeyError:
+            statbyte = NativeFile.status("", devname)
+            
 	# not really implemented yet 
         self.tipi_io.send([SUCCESS])
         self.tipi_io.send([statbyte])

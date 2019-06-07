@@ -121,7 +121,7 @@ class TiSocket(object):
             existing = self.handles.get(handleId, None)
             if existing is None:
                 logger.info("socket not open: %d", handleId)
-                return BAD
+                return bytearray(0)
             limit = (bytes[3] << 8) + bytes[4]
             data = bytearray(existing.recv(limit))
             logger.debug("read %d bytes from %d", len(data), handleId)

@@ -13,6 +13,7 @@ case $version in
 *)
   TIPI_RESTART_SERVICES=true
   ;;
+esac
 
 
 #### Perform steps

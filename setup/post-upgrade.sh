@@ -1,10 +1,13 @@
 #!/bin/bash
 
-version=${1:-0}
+fversion=${1:-0}
+nversion=`cat /home/tipi/tipi/version.txt | sed -n 's/^version=\(.*\)$/\1/p'`
 
-# Version is the old version number. Variables should enable steps required to get to latest.
+# $fversion is the old version number. 
+# $nversion is the new version number.
+# Variables should enable steps required to get to latest.
 
-case $version in
+case $fversion in
 0)
   TIPI_BASE_CONFIG=true
   TIPI_RESTART_SERVICES=true

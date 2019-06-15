@@ -89,13 +89,18 @@ git checkout release
 * change the hostname (raspi-config)
 * install samba share for /home/tipi/tipi_disk
 * add telnetd for localhost access
-   /etc/hosts.allow: 
+
+```
+sudo apt-get install telnetd
+```
+
+   edit /etc/hosts.allow: 
 
 ```
 in.telnetd: localhost
 ```
 
-   /etc/hosts.deny: 
+   edit /etc/hosts.deny: 
 
 ```
 in.telnetd: ALL

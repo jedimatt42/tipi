@@ -11,6 +11,8 @@ sudo apt-get install libssl-dev
 sudo apt-get install libjpeg-dev
 sudo apt-get install wiringpi
 sudo apt-get install samba
+sudo apt-get install sqlite3
+sudo apt-get install libsqlite3-dev
 
 if [ ! -e /home/tipi/tipi_disk ]; then
   mkdir /home/tipi/tipi_disk

@@ -12,7 +12,9 @@ Please refer to the [wiki](https://github.com/jedimatt42/tipi/wiki)
 
 ## License 
 
-The designs files and software contained in this repository are licenses under the terms of [GPLv3](https://www.gnu.org/licenses/quick-guide-gplv3.en.html)
+The hardware design files and TI-99 DSR ROM code are in the [hardware](hardware) folder and free for use under the [UNLICENSE.txt](hardware/UNLICENSE.txt) 
+
+The remaining software contained in this repository are licensed under the terms of [GPLv3](https://www.gnu.org/licenses/quick-guide-gplv3.en.html)
 
 These files are part of TiPi.
 
@@ -20,5 +22,5 @@ TiPi is free hardware design and software: you can redistribute it and/or modify
 
 TiPi is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with TiPi.  If not, see [GNU Licenses](http://www.gnu.org/licenses/).
+You should have received a copy of the GNU General Public License along with TiPi SD Card Image.  If not, see [GNU Licenses](http://www.gnu.org/licenses/).
 

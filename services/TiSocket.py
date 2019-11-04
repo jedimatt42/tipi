@@ -139,9 +139,10 @@ class TiSocket(object):
         return BAD
 
 
-    def safeClose(self, socket):
+    def safeClose(self, sock):
         try:
-            socket.close()
+            sock.shutdown(socket.SHUT_RDWR)
+            sock.close()
         except Exception as e:
             pass
 

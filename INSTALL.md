@@ -81,6 +81,8 @@ git clone https://github.com/jedimatt42/tipi.git tipi
 cd /home/tipi/tipi
 git checkout release
 ./setup.sh
+cd setup
+sudo ./post-upgrade.sh
 ```
 
 ## Other items to setup
@@ -128,6 +130,24 @@ force user=tipi
 
 ### Capture SD Card Image
 
-run dmesg to see what device sd card mounted as... /dev/sdb?
-dd if=/dev/sdb of=sdimage.img bs=4M
+On a linux system dump the sdcard to an image. Then mount the image and clear unused blocks before zipping.
 
+run dmesg to see what device sd card mounted as... presuming it was /dev/sdb:
+
+```
+sudo dd if=/dev/sdb of=sdimage.img bs=4M
+sudo kpartx -a sdimage.img
+```
+
+You should be able to now mount the rootfs, or /dev/mapper/loop??p2. Then clear the space:
+
+```
+cd /media/`whoami`/rootfs
+sudo dd if=/dev/zero of=zeroes bs=4M
+sudo sync
+sudo rm zeroes
+cd
+umount /media/`whoami`/rootfs
+```
+
+Now zip it up!

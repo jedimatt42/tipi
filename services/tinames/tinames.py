@@ -20,12 +20,15 @@ def __driveMapping(key):
     if path == "" or path is None:
         return None
 
+    if path == "TIPI":
+        return TIPI_DIR
+
     path = '/'.join([x.replace('/','.') for x in path.split('.')])
     path = TIPI_DIR + "/" + path
     return path
 
 def __scanForVolume(volume):
-    disks = ("DSK1_DIR","DSK2_DIR","DSK3_DIR")
+    disks = ("DSK0_DIR", "DSK1_DIR","DSK2_DIR","DSK3_DIR", "DSK4_DIR")
     for disk in disks:
         path = __driveMapping(disk)
         if path != None and path.endswith("/" + volume):
@@ -43,18 +46,18 @@ def devnameToLocal(devname):
     startpart = 1
     if parts[0] == "TIPI":
         path = TIPI_DIR
-    elif parts[0] == "DSK0":
-        path = TIPI_DIR
     elif parts[0] == "WDS1":
         path = TIPI_DIR
-    elif parts[0] == "DSK4":
-        path = TIPI_DIR
+    elif parts[0] == "DSK0":
+        path = __driveMapping("DSK0_DIR")
     elif parts[0] == "DSK1":
         path = __driveMapping("DSK1_DIR")
     elif parts[0] == "DSK2":
         path = __driveMapping("DSK2_DIR")
     elif parts[0] == "DSK3":
         path = __driveMapping("DSK3_DIR")
+    elif parts[0] == "DSK4":
+        path = __driveMapping("DSK4_DIR")
     elif parts[0] == "DSK":
         path = __scanForVolume(parts[1])
         startpart = 2

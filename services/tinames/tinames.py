@@ -49,7 +49,7 @@ def devnameToLocal(devname):
     elif parts[0] == "WDS1":
         path = TIPI_DIR
     elif parts[0] == "DSK0":
-        path = __driveMapping("DSK0_DIR")
+        path = TIPI_DIR
     elif parts[0] == "DSK1":
         path = __driveMapping("DSK1_DIR")
     elif parts[0] == "DSK2":

@@ -28,7 +28,7 @@ def __driveMapping(key):
     return path
 
 def __scanForVolume(volume):
-    disks = ("DSK0_DIR", "DSK1_DIR","DSK2_DIR","DSK3_DIR", "DSK4_DIR")
+    disks = ("DSK1_DIR","DSK2_DIR","DSK3_DIR", "DSK4_DIR")
     for disk in disks:
         path = __driveMapping(disk)
         if path != None and path.endswith("/" + volume):

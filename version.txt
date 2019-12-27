@@ -1,2 +1,2 @@
-version=1.41
-reldate=2019-06-14
+version=1.42
+reldate=2019-12-26

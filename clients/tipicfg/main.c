@@ -11,7 +11,7 @@
 #define GPLWS ((unsigned int*)0x83E0)
 #define DSRTS ((unsigned char*)0x401A)
 
-#define TIPICFG_VER "8"
+#define TIPICFG_VER "9"
 #define PI_CONFIG "PI.CONFIG"
 #define PI_STATUS "PI.STATUS"
 #define PI_UPGRADE "PI.UPGRADE"
@@ -60,6 +60,7 @@ int crubase;
 char dsk1_dir[79];
 char dsk2_dir[79];
 char dsk3_dir[79];
+char dsk4_dir[79];
 char wifi_ssid[79];
 char wifi_psk[79];
 char uri1[79];
@@ -140,6 +141,7 @@ void initGlobals() {
   strcpy(dsk1_dir,"");
   strcpy(dsk2_dir,"");
   strcpy(dsk3_dir,"");
+  strcpy(dsk4_dir,"");
   strcpy(wifi_ssid,"");
   strcpy(wifi_psk,"");
   strcpy(uri1,"");
@@ -190,21 +192,23 @@ void layoutScreen() {
   gotoxy(2,9);
   cputs("3) DSK3=");
   gotoxy(2,10);
-  cputs("J) URI1=");
+  cputs("4) DSK4=");
   gotoxy(2,11);
-  cputs("K) URI2=");
+  cputs("J) URI1=");
   gotoxy(2,12);
+  cputs("K) URI2=");
+  gotoxy(2,13);
   cputs("L) URI3=");
 
-  gotoxy(0,13);
-  chline(40);
   gotoxy(0,14);
+  chline(40);
+  gotoxy(0,15);
   cputs("WiFi Settings");
-  gotoxy(2,15);
-  cputs("S) SSID=");
   gotoxy(2,16);
+  cputs("S) SSID=");
+  gotoxy(2,17);
   cputs("P)  PSK=");
-  gotoxy(0,17);
+  gotoxy(0,18);
   chline(40);
 
   gotoxy(0,21);
@@ -250,35 +254,40 @@ void main()
         getstr(10,9,dsk3_dir);
         showValue(10,9,dsk3_dir);
         break;
+      case '4':
+        disks_dirty = 1;
+        getstr(10,10,dsk4_dir);
+        showValue(10,10,dsk4_dir);
+        break;
       case 'J':
       case 'j':
         disks_dirty = 1;
-        getstr(10,10,uri1);
-        showValue(10,10,uri1);
+        getstr(10,11,uri1);
+        showValue(10,11,uri1);
         break;
       case 'K':
       case 'k':
         disks_dirty = 1;
-        getstr(10,11,uri2);
-        showValue(10,11,uri2);
+        getstr(10,12,uri2);
+        showValue(10,12,uri2);
         break;
       case 'L':
       case 'l':
         disks_dirty = 1;
-        getstr(10,12,uri3);
-        showValue(10,12,uri3);
+        getstr(10,13,uri3);
+        showValue(10,13,uri3);
         break;
       case 'S':
       case 's':
         wifi_dirty = 1;
-        getstr(10,15,wifi_ssid);
-        showValue(10,15,wifi_ssid);
+        getstr(10,16,wifi_ssid);
+        showValue(10,16,wifi_ssid);
         break;
       case 'P':
       case 'p':
         wifi_dirty = 1;
-        getstr(10,16,wifi_psk);
-        showValue(10,16,"************");
+        getstr(10,17,wifi_psk);
+        showValue(10,17,"************");
         break;
       case 'R':
       case 'r':
@@ -412,11 +421,12 @@ void loadPiConfig() {
   showValue(10, 7, dsk1_dir);
   showValue(10, 8, dsk2_dir);
   showValue(10, 9, dsk3_dir);
-  showValue(10, 10, uri1);
-  showValue(10, 11, uri2);
-  showValue(10, 12, uri3);
-  showValue(10, 15, wifi_ssid);
-  showValue(10, 16, "************");
+  showValue(10, 10, dsk4_dir);
+  showValue(10, 11, uri1);
+  showValue(10, 12, uri2);
+  showValue(10, 13, uri3);
+  showValue(10, 16, wifi_ssid);
+  showValue(10, 17, "************");
   showValue(32,6, automap);
 
   ferr = dsr_close(&pab);
@@ -448,6 +458,8 @@ void processConfigLine(char* cbuf) {
     strcpy(dsk2_dir, val);
   } else if (0 == strcmp(cbuf, "DSK3_DIR")) {
     strcpy(dsk3_dir, val);
+  } else if (0 == strcmp(cbuf, "DSK4_DIR")) {
+    strcpy(dsk4_dir, val);
   } else if (0 == strcmp(cbuf, "URI1")) {
     strcpy(uri1, val);
   } else if (0 == strcmp(cbuf, "URI2")) {
@@ -571,6 +583,7 @@ void savePiConfig() {
     writeConfigItem(&pab, "DSK1_DIR", dsk1_dir);
     writeConfigItem(&pab, "DSK2_DIR", dsk2_dir);
     writeConfigItem(&pab, "DSK3_DIR", dsk3_dir);
+    writeConfigItem(&pab, "DSK4_DIR", dsk4_dir);
     writeConfigItem(&pab, "URI1", uri1);
     writeConfigItem(&pab, "URI2", uri2);
     writeConfigItem(&pab, "URI3", uri3);

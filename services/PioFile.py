@@ -2,6 +2,7 @@
 import logging
 from Pab import *
 from datetime import datetime
+from subprocess import call
 
 logger = logging.getLogger(__name__)
 
@@ -31,8 +32,9 @@ class PioFile(object):
 
     def close(self, pab, devname):
         logger.info("close special? {}".format(devname))
+        # spawn conversion to PDF
+        self.convert(self.data_filename)
         self.data_filename = None
-        # todo: trigger conversion to PDF
         self.tipi_io.send([SUCCESS])
 
     def open(self, pab, devname):
@@ -50,7 +52,7 @@ class PioFile(object):
             if o == 'NU':
                 self.NU = 1
         if mode(pab) == OUTPUT or mode(pab) == UPDATE:
-            self.data_filename = '/tmp/print_' + datetime.today().isoformat()[:-7] + '.prn'
+            self.data_filename = '/tmp/print_' + datetime.today().strftime('%Y_%m_%d_T%H_%M_%S') + '.prn'
             if recordLength(pab) == 0 or recordLength(pab) == 80:
                 self.tipi_io.send([SUCCESS])
                 self.tipi_io.send([80])
@@ -86,4 +88,11 @@ class PioFile(object):
     def status(self, pab, devname):
         logger.info("status special? {}".format(devname))
 
+    def convert(self, prn_name):
+        logger.info("converting {} to PDF".format(prn_name))
+        callargs = ["/home/tipi/tipi/services/epson.sh", prn_name]
+        if call(callargs) != 0:
+            logger.error("failed to convert to pdf: {}".format(prn_name))
+        else:
+            logger.info("completed pdf conversion")
 

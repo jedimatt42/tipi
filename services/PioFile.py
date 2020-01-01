@@ -34,6 +34,7 @@ class ClockFile(object):
     def open(self, pab, devname):
         self.CR = 1
         self.LF = 1
+        self.NU = 0
         dev_options = devname.split('.')
         for o in dev_options:
             if o == 'LF':
@@ -41,6 +42,8 @@ class ClockFile(object):
             if o == 'CR':
                 self.CR = 0
                 self.LF = 0
+            if o == 'NU':
+                self.NU = 1
         if mode(pab) == OUTPUT or mode(pab) == UPDATE:
             self.data_filename = '/tmp/print_' + datetime.today().isoformat()[:-7].epson
             if recordLength(pab) == 0 or recordLength(pab) == 80:
@@ -63,6 +66,9 @@ class ClockFile(object):
                 data_file.write(0x13)
             if self.LF:
                 data_file.write(0x10)
+            if self.NU:
+                # pad line ending with 6 nulls to allow time for carriage return action
+                data_file.write(bytearray(6))
         self.tipi_io.send([SUCCESS])
 
 

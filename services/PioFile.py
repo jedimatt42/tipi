@@ -32,6 +32,7 @@ class PioFile(object):
         self.tipi_io.send([SUCCESS])
 
     def open(self, pab, devname):
+        logger.info("open special? {}".format(devname))
         self.CR = 1
         self.LF = 1
         self.NU = 0
@@ -58,6 +59,7 @@ class PioFile(object):
         self.tipi_io.send([EOPATTR])
 
     def write(self, pab, devname):
+        logger.info("write special? {}".format(devname))
         self.tipi_io.send([SUCCESS])
         data = str(self.tipi_io.receive())
         crlf = bytearray(2)

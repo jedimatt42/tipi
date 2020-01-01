@@ -45,7 +45,7 @@ class ClockFile(object):
             if o == 'NU':
                 self.NU = 1
         if mode(pab) == OUTPUT or mode(pab) == UPDATE:
-            self.data_filename = '/tmp/print_' + datetime.today().isoformat()[:-7].epson
+            self.data_filename = '/tmp/print_' + datetime.today().isoformat()[:-7] + '.prn'
             if recordLength(pab) == 0 or recordLength(pab) == 80:
                 self.tipi_io.send([SUCCESS])
                 self.tipi_io.send([80])

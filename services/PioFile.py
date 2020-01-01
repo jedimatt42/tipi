@@ -60,12 +60,15 @@ class PioFile(object):
     def write(self, pab, devname):
         self.tipi_io.send([SUCCESS])
         data = str(self.tipi_io.receive())
+        crlf = bytearray(2)
+        crlf[0] = chr(13)
+        crlf[1] = chr(10)
         with open(self.data_filename, 'ab') as data_file:
             data_file.write(data)
             if self.CR:
-                data_file.write(0x13)
+                data_file.write(crlf[:-1])
             if self.LF:
-                data_file.write(0x10)
+                data_file.write(crlf[1:])
             if self.NU:
                 # pad line ending with 6 nulls to allow time for carriage return action
                 data_file.write(bytearray(6))

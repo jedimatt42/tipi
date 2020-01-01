@@ -5,7 +5,7 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-class ClockFile(object):
+class PioFile(object):
 
     @staticmethod
     def filename():

@@ -22,6 +22,10 @@ class PioFile(object):
             self.close(pab, devname)
         elif op == WRITE:
             self.write(pab, devname)
+        elif op == READ:
+            self.read(pab, devname)
+        elif op == STATUS:
+            self.status(pab, devname)
         else:
             self.tipi_io.send([EOPATTR])
 
@@ -76,5 +80,10 @@ class PioFile(object):
                 data_file.write(bytearray(6))
         self.tipi_io.send([SUCCESS])
 
+    def read(self, pab, devname):
+        logger.info("read special? {}".format(devname))
+
+    def status(self, pab, devname):
+        logger.info("status special? {}".format(devname))
 
 

@@ -17,6 +17,7 @@ function build() {
 }
 
 function share() {
+  mkdir -p /home/tipi/pdf_share
   cp /etc/samba/smb.conf /tmp/smb.a 
   cat >/tmp/smb.b <<xxx
 

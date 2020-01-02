@@ -50,6 +50,7 @@ class PioFile(object):
         self.CR = 1
         self.LF = 1
         self.NU = 0
+        self.last_record = bytearray(0)
         dev_options = devname.split('.')
         for o in dev_options:
             if o == 'LF':
@@ -76,6 +77,7 @@ class PioFile(object):
         logger.info("write special? {}".format(devname))
         self.tipi_io.send([SUCCESS])
         data = str(self.tipi_io.receive())
+        self.last_record = data
         with open(self.data_filename, 'ab') as data_file:
             data_file.write(data)
             if self.CR:

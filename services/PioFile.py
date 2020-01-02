@@ -6,6 +6,10 @@ from subprocess import call
 
 logger = logging.getLogger(__name__)
 
+crlf = bytearray(2)
+crlf[0] = chr(13)
+crlf[1] = chr(10)
+
 class PioFile(object):
 
     @staticmethod
@@ -32,6 +36,10 @@ class PioFile(object):
 
     def close(self, pab, devname):
         logger.info("close special? {}".format(devname))
+        # make sure we've at least had one CR or the converter won't do anything.
+        if not '\r' in self.last_record:
+            with open(self.data_filename, 'ab') as data_file:
+                data_file.write(crlf)
         # spawn conversion to PDF
         self.convert(self.data_filename)
         self.data_filename = None
@@ -68,9 +76,6 @@ class PioFile(object):
         logger.info("write special? {}".format(devname))
         self.tipi_io.send([SUCCESS])
         data = str(self.tipi_io.receive())
-        crlf = bytearray(2)
-        crlf[0] = chr(13)
-        crlf[1] = chr(10)
         with open(self.data_filename, 'ab') as data_file:
             data_file.write(data)
             if self.CR:

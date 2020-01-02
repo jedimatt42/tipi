@@ -1,5 +1,6 @@
 
 import logging
+import os
 from Pab import *
 from datetime import datetime
 from subprocess import call
@@ -19,6 +20,7 @@ class PioFile(object):
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
         self.data_filename = None
+        self.last_record = bytearray(0)
 
     def handle(self, pab, devname):
         op = opcode(pab)
@@ -46,6 +48,7 @@ class PioFile(object):
             # spawn conversion to PDF
             self.convert(self.data_filename)
             self.data_filename = None
+            self.last_record = bytearray(0)
         self.tipi_io.send([SUCCESS])
 
     def open(self, pab, devname):
@@ -65,7 +68,16 @@ class PioFile(object):
                 self.NU = 1
         if mode(pab) == OUTPUT or mode(pab) == UPDATE:
             if self.data_filename is None:
-                self.data_filename = '/tmp/print_' + datetime.today().strftime('%Y_%m_%d_T%H_%M_%S') + '.prn'
+                spools = [f for f in os.listdir('/tmp/') if f.startswith('print_')]
+                if len(spools) == 1:
+                    self.data_filename = spools[0]
+                    logger.info('continuing with spool: {}'.format(self.data_filename))
+                else:
+                    self.data_filename = '/tmp/print_' + datetime.today().strftime('%Y_%m_%d_T%H_%M_%S') + '.prn'
+                    logger.info('creating new spool: {}'.format(self.data_filename))
+            else:
+                logger.info('continuing with spool: {}'.format(self.data_filename))
+
             if recordLength(pab) == 0 or recordLength(pab) == 80:
                 self.tipi_io.send([SUCCESS])
                 self.tipi_io.send([80])

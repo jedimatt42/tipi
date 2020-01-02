@@ -18,6 +18,7 @@ class PioFile(object):
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
+        self.data_filename = None
 
     def handle(self, pab, devname):
         op = opcode(pab)
@@ -36,13 +37,15 @@ class PioFile(object):
 
     def close(self, pab, devname):
         logger.info("close special? {}".format(devname))
-        # make sure we've at least had one CR or the converter won't do anything.
-        if not '\r' in self.last_record:
-            with open(self.data_filename, 'ab') as data_file:
-                data_file.write(crlf)
-        # spawn conversion to PDF
-        self.convert(self.data_filename)
-        self.data_filename = None
+        dev_options = devname.split('.')
+        if not 'SP' in dev_options:
+            # make sure we've at least had one CR or the converter won't do anything.
+            if not '\r' in self.last_record:
+                with open(self.data_filename, 'ab') as data_file:
+                    data_file.write(crlf)
+            # spawn conversion to PDF
+            self.convert(self.data_filename)
+            self.data_filename = None
         self.tipi_io.send([SUCCESS])
 
     def open(self, pab, devname):
@@ -61,7 +64,8 @@ class PioFile(object):
             if o == 'NU':
                 self.NU = 1
         if mode(pab) == OUTPUT or mode(pab) == UPDATE:
-            self.data_filename = '/tmp/print_' + datetime.today().strftime('%Y_%m_%d_T%H_%M_%S') + '.prn'
+            if self.data_filename is None:
+                self.data_filename = '/tmp/print_' + datetime.today().strftime('%Y_%m_%d_T%H_%M_%S') + '.prn'
             if recordLength(pab) == 0 or recordLength(pab) == 80:
                 self.tipi_io.send([SUCCESS])
                 self.tipi_io.send([80])

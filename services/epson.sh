@@ -13,6 +13,7 @@ function topdf() {
   gs -o "/home/tipi/pdf_share/${fname}.pdf" -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress `ls -1 /home/tipi/pdfs/pdf/*.pdf`
 
   rm -f /home/tipi/pdfs/pdf/* /home/tipi/pdfs/eps/*
+  rm -f /tmp/print_*.prn
 }
 
 topdf 2>&1 >>/var/log/tipi/pio.log

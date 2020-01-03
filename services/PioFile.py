@@ -73,7 +73,11 @@ class PioFile(object):
                     self.data_filename = '/tmp/' + spools[0]
                     logger.info('continuing with spool: {}'.format(self.data_filename))
                 else:
-                    self.data_filename = '/tmp/print_' + datetime.today().strftime('%Y_%m_%d_T%H_%M_%S') + '.prn'
+                    if 'A4' in dev_options:
+                        paper = '_a4'
+                    else:
+                        paper = ''
+                    self.data_filename = '/tmp/print_' + datetime.today().strftime('%Y_%m_%d_T%H_%M_%S') + paper + '.prn'
                     logger.info('creating new spool: {}'.format(self.data_filename))
             else:
                 logger.info('continuing with spool: {}'.format(self.data_filename))

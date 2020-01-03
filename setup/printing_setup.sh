@@ -2,18 +2,23 @@
 
 function deps() {
   sudo apt update
-  sudo apt install imagemagick
-  sudo apt install libpng12-dev
-  sudo apt install libhpdf-2.3.0
-  sudo apt install libhpdf-dev
-  sudo apt install libsdl-dev
+  sudo apt-get install -y imagemagick
+  sudo apt-get install -y libpng12-dev
+  sudo apt-get install -y libhpdf-2.3.0
+  sudo apt-get install -y libhpdf-dev
+  sudo apt-get install -y libsdl-dev
 }
 
 function build() {
   cd /home/tipi
-  git clone https://github.com/RWAP/PrinterToPDF.git
+  if [ ! -e PrinterToPDF ];
+  then
+    git clone https://github.com/jedimatt42/PrinterToPDF.git
+  fi
   cd PrinterToPDF
-  gcc PrinterConvert.c `sdl-config --cflags --libs` -o printerToPDF -lrt -lhpdf -lpng
+  git pull
+  gcc PrinterConvert.c `sdl-config --cflags --libs` -DPAPER_LETTER -o printerToPDF_Letter -lrt -lhpdf -lpng
+  gcc PrinterConvert.c `sdl-config --cflags --libs` -o printerToPDF_A4 -lrt -lhpdf -lpng
 }
 
 function share() {

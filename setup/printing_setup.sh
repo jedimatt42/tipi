@@ -10,7 +10,7 @@ function deps() {
 }
 
 function share() {
-  mkdir -p /home/tipi/pdf_share
+  su tipi -c "mkdir -p /home/tipi/pdf_share"
   cp /etc/samba/smb.conf /tmp/smb.a 
   cat >/tmp/smb.b <<xxx
 

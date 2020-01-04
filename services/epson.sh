@@ -18,9 +18,9 @@ function topdf() {
   mkdir -p /home/tipi/pdf_share
 
   echo "Merging pages into one PDF: "
-  ls -1 /home/tipi/pdfs/pdf/*.pdf
+  ls -1v /home/tipi/pdfs/pdf/*.pdf
 
-  gs -o "/home/tipi/pdf_share/${fname}.pdf" -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress `ls -1 /home/tipi/pdfs/pdf/*.pdf`
+  gs -o "/home/tipi/pdf_share/${fname}.pdf" -q -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress `ls -1v /home/tipi/pdfs/pdf/*.pdf`
 
   rm -f /home/tipi/pdfs/pdf/* /home/tipi/pdfs/eps/*
   rm -f /tmp/print_*.prn

@@ -8,8 +8,7 @@ function build() {
   fi
   cd PrinterToPDF
   git pull
-  gcc PrinterConvert.c `sdl-config --cflags --libs` -DPAPER_LETTER -o printerToPDF_Letter -lrt -lhpdf -lpng
-  gcc PrinterConvert.c `sdl-config --cflags --libs` -o printerToPDF_A4 -lrt -lhpdf -lpng
+  gcc PrinterConvert.c `sdl-config --cflags --libs` -o printerToPDF -lrt -lhpdf -lpng
 }
 
 build

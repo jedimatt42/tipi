@@ -1,24 +1,12 @@
 #!/bin/bash
 
 function deps() {
-  sudo apt update
-  sudo apt-get install -y imagemagick
-  sudo apt-get install -y libpng12-dev
-  sudo apt-get install -y libhpdf-2.3.0
-  sudo apt-get install -y libhpdf-dev
-  sudo apt-get install -y libsdl-dev
-}
-
-function build() {
-  cd /home/tipi
-  if [ ! -e PrinterToPDF ];
-  then
-    git clone https://github.com/jedimatt42/PrinterToPDF.git
-  fi
-  cd PrinterToPDF
-  git pull
-  gcc PrinterConvert.c `sdl-config --cflags --libs` -DPAPER_LETTER -o printerToPDF_Letter -lrt -lhpdf -lpng
-  gcc PrinterConvert.c `sdl-config --cflags --libs` -o printerToPDF_A4 -lrt -lhpdf -lpng
+  apt update
+  apt-get install -y imagemagick
+  apt-get install -y libpng12-dev
+  apt-get install -y libhpdf-2.3.0
+  apt-get install -y libhpdf-dev
+  apt-get install -y libsdl-dev
 }
 
 function share() {
@@ -40,12 +28,12 @@ directory mask=0755
 force user=tipi
 
 xxx
-  cat /tmp/smb.a /tmp/smb.b | sudo tee /etc/samba/smb.conf
-  sudo systemctl restart smbd
+  cat /tmp/smb.a /tmp/smb.b | tee /etc/samba/smb.conf
+  systemctl restart smbd
   rm -f /tmp/smb.a /tmp/smb.b
 }
 
 deps
-build
+su tipi -c "/home/tipi/tipi/setup/compile_printToPDF.sh"
 grep "pdf_share" /etc/samba/smb.conf || share
 

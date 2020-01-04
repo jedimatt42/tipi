@@ -18,6 +18,9 @@ case $fversion in
   ;;
 esac
 
+if [ ! -d "/home/tipi/PrinterToPDF" ]; then
+  TIPI_PRINTING_UPDATE=true
+fi
 
 #### Perform steps
 
@@ -46,6 +49,11 @@ fi
 #### Always update TI binaries (cheap)
 su tipi -c "cp /home/tipi/tipi/setup/bin/TIPI* /home/tipi/tipi_disk/"
 su tipi -c "mkdir -p /home/tipi/tipi_disk/NET; cp /home/tipi/tipi/setup/bin/NET/* /home/tipi/tipi_disk/NET/"
+
+#### Rebuild the printing to PDF converter and add samba share
+if [ ! -z ${TIPI_PRINTING_UPDATE:-} ]; then
+  /home/tipi/tipi/setup/printing_setup.sh
+fi
 
 #### Restart all TIPI services
 if [ ! -z ${TIPI_RESTART_SERVICES:-} ]; then

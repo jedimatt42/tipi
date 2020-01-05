@@ -135,15 +135,17 @@ On a linux system dump the sdcard to an image. Then mount the image and clear un
 run dmesg to see what device sd card mounted as... presuming it was /dev/sdb:
 
 ```
-sudo dd if=/dev/sdb of=sdimage.img bs=4M
+sudo dd status=progress if=/dev/sdb of=sdimage.img bs=4M
 sudo kpartx -a sdimage.img
 ```
 
-You should be able to now mount the rootfs, or /dev/mapper/loop??p2. Then clear the space:
+You should be able to now mount the rootfs, or /dev/mapper/loop??p2.  On ubuntu like desktops the volume names will show up in the UI for removable media... 
+
+Then clear the space:
 
 ```
 cd /media/`whoami`/rootfs
-sudo dd if=/dev/zero of=zeroes bs=4M
+sudo dd status=progress if=/dev/zero of=zeroes bs=4M
 sudo sync
 sudo rm zeroes
 cd

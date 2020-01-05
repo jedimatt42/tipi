@@ -11,6 +11,7 @@ from TipiConfig import TipiConfig
 from UpgradeFile import UpgradeFile
 from VariablesFile import VariablesFile
 from Oled import oled
+from PioFile import PioFile
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,7 @@ class SpecialFiles(object):
             ClockFile.filename(): ClockFile(self.tipi_io),
             ConfigFile.filename(): ConfigFile(self.tipi_io),
             CurlFile.filename(): CurlFile(self.tipi_io),
+            PioFile.filename(): PioFile(self.tipi_io),
             RebootFile.filename(): RebootFile(self.tipi_io),
             ShutdownFile.filename(): ShutdownFile(self.tipi_io),
             StatusFile.filename(): StatusFile(self.tipi_io),

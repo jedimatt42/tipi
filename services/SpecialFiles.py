@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 tipi_config = TipiConfig.instance()
 
+
 class SpecialFiles(object):
 
     def __init__(self, tipi_io):
@@ -36,7 +37,7 @@ class SpecialFiles(object):
 
     def handle(self, pab, devname):
         logger.debug("Matching special file handler for: %s", devname)
-        if devname.startswith(("URI1.","URI2.","URI3.")):
+        if devname.startswith(("URI1.", "URI2.", "URI3.")):
             uriShortcut = str(devname[:4])
             link = tipi_config.get(uriShortcut)
             if link != "":

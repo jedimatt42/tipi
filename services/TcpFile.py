@@ -16,6 +16,10 @@ class TcpFile(object):
     def filename():
         # open file in "append" mode, such as:
         #   PI.TCP=<hostname/ipv4-addr>:<port>
+        # for server socket:
+        #   PI.TCP=<interface>:<port>.BIND
+        #      input handle
+        #   PI.TCP=<interface>:<port>.<handle>
         return "TCP="
 
     def __init__(self, tipi_io):
@@ -53,19 +57,25 @@ class TcpFile(object):
     def open(self, pab, devname):
         logger.debug("open devname: %s", devname)
         try:
-            server = self.parseDev(devname)
-            logger.debug("host %s, port %s", server[0], server[1])
-            handleId = self.tisockets.allocateHandleId()
-            address = server[0] + ':' + server[1]
-            msg = bytearray(len(address) + 3)
-            msg[0] = 0x22
-            msg[1] = handleId
-            msg[2] = 0x01
-            msg[3:] = address
-            res = self.tisockets.processRequest(msg)
-            if res == BAD:
-                raise Exception("error opening socket")
-            self.handles[devname] = handleId
+            (host, port, binding) = self.parseDev(devname)
+            if not binding:
+                # connecting as a client
+                logger.debug("host %s, port %s", host, port)
+                handleId = self.tisockets.allocateHandleId()
+                address = host + ':' + port
+                msg = bytearray(len(address) + 3)
+                msg[0] = 0x22
+                msg[1] = handleId
+                msg[2] = 0x01
+                msg[3:] = address
+                res = self.tisockets.processRequest(msg)
+                if res == BAD:
+                    raise Exception("error opening socket")
+                self.handles[devname] = handleId
+            elif binding == "BIND":
+                logger.info("bind a socket")
+            elif binding:
+                logger.info("open accepted socket")
         except Exception as e:
             logger.error(e, exc_info=True)
             self.tipi_io.send([EFILERR])
@@ -115,4 +125,8 @@ class TcpFile(object):
 
     def parseDev(self, devname):
         parts = str(devname).split("=")[1].split(":")
-        return (parts[0], parts[1])
+        host_iface = parts[0]
+        parts = parts[1].split(".")
+        port = parts[0]
+        handle = parts[1] if parts[1] else ""
+        return (host_iface, port, handle)

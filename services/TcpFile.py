@@ -1,10 +1,11 @@
-import os
-import socket
-import errno
-import fcntl
 import logging
 
-from Pab import *
+from Pab import (
+    opcode, recordLength,
+    EOPATTR, EFILERR, SUCCESS,
+    OPEN, CLOSE, READ, WRITE,
+)
+from TiSocket import BAD, TiSocket
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,8 @@ class TcpFile(object):
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
-        self.sock = {}
+        self.handles = {}
+        self.tisockets = TiSocket()
 
     def handle(self, pab, devname):
         op = opcode(pab)
@@ -36,24 +38,35 @@ class TcpFile(object):
 
     def close(self, pab, devname):
         logger.debug("close devname: %s", devname)
-        self.tipi_io.send([SUCCESS])
         try:
-            if self.sock[devname]:
-                self.sock[devname].close()
-                del(self.sock[devname])
+            if self.handles[devname]:
+                msg = bytearray(3)
+                msg[0] = 0x22
+                msg[1] = self.handles[devname]
+                msg[2] = 0x02
+                self.tisockets.processRequest(msg)
+                del(self.handles[devname])
         except BaseException:
             pass
+        self.tipi_io.send([SUCCESS])
 
     def open(self, pab, devname):
         logger.debug("open devname: %s", devname)
         try:
             server = self.parseDev(devname)
             logger.debug("host %s, port %s", server[0], server[1])
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.connect(server)
-            fcntl.fcntl(sock, fcntl.F_SETFL, os.O_NONBLOCK)
-            self.sock[devname] = sock
-        except socket.error as e:
+            handleId = self.tisockets.allocateHandleId()
+            address = server[0] + ':' + server[1]
+            msg = bytearray(len(address) + 3)
+            msg[0] = 0x22
+            msg[1] = handleId
+            msg[2] = 0x01
+            msg[3:] = address
+            res = self.tisockets.processRequest(msg)
+            if res == BAD:
+                raise Exception("error opening socket")
+            self.handles[devname] = handleId
+        except Exception as e:
             logger.error(e, exc_info=True)
             self.tipi_io.send([EFILERR])
             return
@@ -67,42 +80,39 @@ class TcpFile(object):
 
     def read(self, pab, devname):
         logger.debug("read devname: %s", devname)
-        try:
-            sock = self.sock[devname]
-            fdata = bytearray(sock.recv(recordLength(pab)))
-            logger.debug("read from socket: %s", str(fdata))
-            self.tipi_io.send([SUCCESS])
-            self.tipi_io.send(fdata)
-            return
-        except socket.error as e:
-            err = e.args[0]
-            if err == errno.EAGAIN or err == errno.EWOULDBLOCK:
-                fdata = bytearray("")
-                self.tipi_io.send([SUCCESS])
-                self.tipi_io.send(fdata)
-                return
-        self.tipi_io.send([EFILERR])
+
+        handleId = self.handles[devname]
+        msg = bytearray(5)
+        buf_len = recordLength(pab)
+        msg[0] = 0x22
+        msg[1] = handleId
+        msg[2] = 0x04
+        msg[3] = (buf_len & 0xFF00) >> 8
+        msg[4] = buf_len & 0xFF
+        res = self.tisockets.processRequest(msg)
+        if res == BAD:
+            raise Exception('error reading socket')
+        self.tipi_io.send([SUCCESS])
+        self.tipi_io.send(res)
         return
 
     def write(self, pab, devname):
         logger.debug("write devname: %s", devname)
 
-        sock = self.sock[devname]
+        handleId = self.handles[devname]
         self.tipi_io.send([SUCCESS])
-        msg = self.tipi_io.receive()
-        logger.debug("msg: %s", msg)
+        data = self.tipi_io.receive()
 
-        try:
-            sock.sendall(msg)
-            logger.debug("sent message %d", len(msg))
-            self.tipi_io.send([SUCCESS])
-        except socket.error as e:
-            logger.error(e, exc_info=True)
-            self.sock[devname].close()
-            del(self.sock[devname])
-            self.tipi_io.send([EFILERR])
-            return
+        msg = bytearray(len(data) + 3)
+        msg[0] = 0x22
+        msg[1] = handleId
+        msg[2] = 0x03
+        msg[3:] = data
+        res = self.tisockets.processRequest(msg)
+        if res == BAD:
+            raise Exception('failed to write to sokcet')
+        self.tipi_io.send([SUCCESS])
 
     def parseDev(self, devname):
         parts = str(devname).split("=")[1].split(":")
-        return (parts[0], int(parts[1]))
+        return (parts[0], parts[1])

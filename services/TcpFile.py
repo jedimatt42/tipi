@@ -21,7 +21,7 @@ class TcpFile(object):
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
         self.handles = {}
-        self.tisockets = TiSocket()
+        self.tisockets = TiSocket(tipi_io)
 
     def handle(self, pab, devname):
         op = opcode(pab)

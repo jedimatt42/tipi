@@ -126,7 +126,12 @@ class TcpFile(object):
     def parseDev(self, devname):
         parts = str(devname).split("=")[1].split(":")
         host_iface = parts[0]
-        parts = parts[1].split(".")
-        port = parts[0]
-        handle = parts[1] if parts[1] else ""
+        if '.' in parts[1]:
+            parts = parts[1].split(".")
+            port = parts[0]
+            handle = parts[1]
+        else:
+            port = parts[1]
+            handle = ""
+        logger.info('tcp devname: %s, %s, %s', host_iface, port, handle)
         return (host_iface, port, handle)

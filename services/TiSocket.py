@@ -165,13 +165,15 @@ class TiSocket(object):
             existing = None
             logger.debug("closed leftover binding: %d", serverId)
         # need to get the target host and port
+        if interface == "*":
+            interface = '0.0.0.0'
         server = (interface, port)
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setblocking(0)
         try:
             sock.bind(server)
             self.bindings[serverId] = sock
-            sock.listen()
+            sock.listen(5)
             logger.info("bind success")
             oled.info("Socket %d/Bound", serverId)
             return GOOD
@@ -183,8 +185,8 @@ class TiSocket(object):
 
     def handleUnbind(self, bytes):
         serverId = bytes[1]
-        existing = self.bindings.get(serverId, None)
-        if existing is not None:
+        if serverId in self.bindings.keys():
+            existing = self.bindings.get(serverId, None)
             del(self.bindings[serverId])
             self.safeClose(existing)
             logger.info("unbound socket: %d", serverId)
@@ -207,6 +209,7 @@ class TiSocket(object):
 
     def safeClose(self, sock):
         try:
+            logger.info('closing socket')
             sock.shutdown(socket.SHUT_RDWR)
             sock.close()
         except Exception:

@@ -41,41 +41,41 @@ class TcpFile(object):
             self.tipi_io.send([EOPATTR])
 
     def close(self, pab, devname):
-        logger.debug("close devname: %s", devname)
+        logger.info("close devname: %s", devname)
         try:
-            if self.handles[devname]:
-                msg = bytearray(3)
-                msg[0] = 0x22
-                msg[1] = self.handles[devname]
-                msg[2] = 0x02
-                self.tisockets.processRequest(msg)
-                del(self.handles[devname])
+            if devname in self.handles.keys():
+                self.closeConnection(devname)
+            elif devname.endswith('BIND'):
+                self.unbind(devname)
         except BaseException:
             pass
         self.tipi_io.send([SUCCESS])
+
+    def closeConnection(self, devname):
+	msg = bytearray(3)
+	msg[0] = 0x22
+	msg[1] = self.handles[devname]
+	msg[2] = 0x02
+	self.tisockets.processRequest(msg)
+	del(self.handles[devname])
+
+    def unbind(self, devname):
+        msg = bytearray(3)
+        msg[0] = 0x22
+        msg[1] = 0x00
+        msg[2] = 0x06
+	self.tisockets.processRequest(msg)
 
     def open(self, pab, devname):
         logger.debug("open devname: %s", devname)
         try:
             (host, port, binding) = self.parseDev(devname)
             if not binding:
-                # connecting as a client
-                logger.debug("host %s, port %s", host, port)
-                handleId = self.tisockets.allocateHandleId()
-                address = host + ':' + port
-                msg = bytearray(len(address) + 3)
-                msg[0] = 0x22
-                msg[1] = handleId
-                msg[2] = 0x01
-                msg[3:] = address
-                res = self.tisockets.processRequest(msg)
-                if res == BAD:
-                    raise Exception("error opening socket")
-                self.handles[devname] = handleId
+                self.connectClient(host, port)
             elif binding == "BIND":
-                logger.info("bind a socket")
+                self.bindServer(host, port)
             elif binding:
-                logger.info("open accepted socket")
+                self.openIncoming(devname, binding)
         except Exception as e:
             logger.error(e, exc_info=True)
             self.tipi_io.send([EFILERR])
@@ -88,9 +88,57 @@ class TcpFile(object):
         self.tipi_io.send([recLen])
         return
 
+    def connectClient(self, host, port):
+	handleId = self.tisockets.allocateHandleId()
+	address = host + ':' + port
+	msg = bytearray(len(address) + 3)
+	msg[0] = 0x22
+	msg[1] = handleId
+	msg[2] = 0x01
+	msg[3:] = address
+	res = self.tisockets.processRequest(msg)
+	if res == BAD:
+	    raise Exception("error opening socket")
+	self.handles[devname] = handleId
+
+    def bindServer(self, host, port):
+        iface_addr = host + ':' + port
+        msg = bytearray(len(iface_addr) + 3)
+        msg[0] = 0x22
+        # from DSR level 3 io, we'll only do one listening port
+        # it's an old computer.
+        msg[1] = 0x00
+        msg[2] = 0x05
+        msg[3:] = iface_addr
+        res = self.tisockets.processRequest(msg)
+        if res == BAD:
+            raise Exception("error binding port")
+
+    def openIncoming(self, devname, binding):
+        # TODO: check that binding matches handle
+        self.handles[devname] = binding
+
     def read(self, pab, devname):
         logger.debug("read devname: %s", devname)
 
+        if devname.endswith('BIND'):
+            self.accept(devname)
+        else:
+            self.readConnection(pab, devname)
+        return
+
+    def accept(self, devname):
+        msg = bytearray(3)
+        msg[0] = 0x22
+        msg[1] = 0x00
+        msg[2] = 0x07
+        res = self.tisockets.processRequest(msg)
+        if res == 'BAD':
+            raise Exception('no client')
+        self.tipi_io.send([SUCCESS])
+        self.tipi_io.send(bytearray(str(res[0])))
+
+    def readConnection(self, pab, devname):
         handleId = self.handles[devname]
         msg = bytearray(5)
         buf_len = recordLength(pab)
@@ -104,10 +152,11 @@ class TcpFile(object):
             raise Exception('error reading socket')
         self.tipi_io.send([SUCCESS])
         self.tipi_io.send(res)
-        return
 
     def write(self, pab, devname):
         logger.debug("write devname: %s", devname)
+        if devname.endswith('BIND'):
+            raise Exception('not supported')
 
         handleId = self.handles[devname]
         self.tipi_io.send([SUCCESS])
@@ -120,7 +169,7 @@ class TcpFile(object):
         msg[3:] = data
         res = self.tisockets.processRequest(msg)
         if res == BAD:
-            raise Exception('failed to write to sokcet')
+            raise Exception('failed to write to socket')
         self.tipi_io.send([SUCCESS])
 
     def parseDev(self, devname):

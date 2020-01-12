@@ -110,12 +110,13 @@ class TiSocket(object):
     # bytes: 0x22, handleId, write-cmd, <bytes to write>
     def handleWrite(self, bytes):
         handleId = bytes[1]
-        existing = self.handles.get(handleId, None)
-        if existing is None:
+        if not handleId in self.handles.keys():
+            logger.info("No socket open for handleId %s", handleId)
             return BAD
         try:
+            existing = self.handles[handleId]
             existing.sendall(bytes[3:])
-            logger.debug("wrote %d bytes to socket: %d", len(bytes[3:]),
+            logger.info("wrote %d bytes to socket: %d", len(bytes[3:]),
                          handleId)
             oled.info("Socket %d/Wrote %d bytes", handleId, len(bytes[3:]))
             return GOOD
@@ -201,9 +202,9 @@ class TiSocket(object):
             if handleId == 0:
                 return BAD
             conn, address = server_socket.accept()
-            if conn is not None:
+            if conn:
                 self.handles[handleId] = conn
-                logger.info("incoming connection from %s", address)
+                logger.info("connection socket given handleId %d", handleId)
                 return bytearray([handleId])
         return BAD
 

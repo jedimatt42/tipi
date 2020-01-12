@@ -47,8 +47,8 @@ class TcpFile(object):
                 self.closeConnection(devname)
             elif devname.endswith('BIND'):
                 self.unbind(devname)
-        except BaseException:
-            pass
+        except Exception as e:
+            logger.error(e, exc_info=True)
         self.tipi_io.send([SUCCESS])
 
     def closeConnection(self, devname):
@@ -116,7 +116,7 @@ class TcpFile(object):
 
     def openIncoming(self, devname, binding):
         # TODO: check that binding matches handle
-        self.handles[devname] = binding
+        self.handles[devname] = int(binding)
 
     def read(self, pab, devname):
         logger.debug("read devname: %s", devname)

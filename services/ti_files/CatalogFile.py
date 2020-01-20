@@ -76,8 +76,10 @@ class CatalogFile(object):
         logger.debug("localpath: %s", self.localpath)
         volumeName = os.path.basename(self.localpath)
         logger.debug("volumeName stage1: %s", volumeName)
-        if self.devname.startswith(("WDS1.","DSK4.","DSK0.","TIPI.")):
+        if self.devname.startswith(("DSK0.","TIPI.")):
             volumeName = "TIPI"
+        elif self.devname.startswith(("DSK.")):
+            volumeName = self.devname.split('.')[-1]
         else:
             drive = self.devname.split('.')[0]
             parts = tipi_config.get(drive + "_DIR").split('.')

@@ -9,6 +9,7 @@ data will be lost.
 
 import os
 import logging
+import time
 from ti_files.ti_files import ti_files
 
 LOGGER = logging.getLogger(__name__)
@@ -122,6 +123,8 @@ class TipiConfig(object):
         with open("/tmp/tz", 'w') as out_file:
             out_file.write(self.records["TZ"])
             out_file.write('\n')
+        while os.path.exists("/tmp/tz"):
+            time.sleep(0.5)
 
 
 SINGLETON = TipiConfig()

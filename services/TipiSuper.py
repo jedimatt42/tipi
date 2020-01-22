@@ -77,9 +77,10 @@ while True:
     elif os.path.exists("/tmp/tz"):
         with open("/tmp/tz", 'r') as tz_file:
             timezone = tz_file.readline().rstrip()
-        os.remove("/tmp/tz")
         callargs = ["/usr/bin/raspi-config", "nonint", "do_change_timezone", timezone]
-        if call(callargs) != 0:
+        exitcode = call(callargs)
+        os.remove("/tmp/tz")
+        if exitcode:
             raise Exception("failed to set timezone {}".format(timezone))
 
 

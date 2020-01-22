@@ -25,7 +25,8 @@ CONFIG_DEFAULTS = {
     "WIFI_SSID": "",
     "WIFI_PSK": "",
     "MOUSE_SCALE": "50",
-    "OLED_ROTATE": "0"
+    "OLED_ROTATE": "0",
+    "TZ": "America/Los_Angeles"
 }
 
 
@@ -74,6 +75,8 @@ class TipiConfig(object):
         # Some config events require action
         if "WIFI_SSID" in self.changes or "WIFI_PSK" in self.changes:
             self.__triggerWifiConfig()
+        if "TZ" in self.changes:
+            self.__triggerTimezone()
 
         # reset changed settings
         self.changes = set()
@@ -113,6 +116,11 @@ class TipiConfig(object):
             out_file.write(self.records["WIFI_SSID"])
             out_file.write('\n')
             out_file.write(self.records["WIFI_PSK"])
+            out_file.write('\n')
+
+    def __triggerTimezone(self):
+        with open("/tmp/tz", 'w') as out_file:
+            out_file.write(self.records["TZ"])
             out_file.write('\n')
 
 

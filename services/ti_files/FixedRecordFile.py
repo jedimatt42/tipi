@@ -63,8 +63,7 @@ class FixedRecordFile(object):
                 raise Exception("file is variable")
             return FixedRecordFile(fdata, pab)
         except Exception as e:
-            traceback.print_exc()
-            logger.error("not a valid Fixed Record TIFILE %s", unix_file_name)
+            logger.error("File does not match PAB type: %s", unix_file_name)
             return None
         finally:
             if fh != None:

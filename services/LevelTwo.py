@@ -237,6 +237,10 @@ class LevelTwo(object):
             logger.info("passing request to next device")
             self.tipi_io.send([EDVNAME])
             return True
+        if os.path.exists(localfilename) and os.path.isdir(localfilename):
+            logger.info("folder with same name exists")
+            self.tipi_io.send([EDEVERR])
+            return True
 
         startbyte = 128 + (startblock * 256)
         endbyte = startbyte + (blocks * 256)

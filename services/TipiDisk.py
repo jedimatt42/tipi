@@ -103,7 +103,6 @@ class TipiDisk(object):
 
         if os.path.exists(localPath):
             try:
-                open_file = None
                 if ti_files.isTiFile(localPath):
                     if recordType(pab) == FIXED:
                         open_file = FixedRecordFile.load(localPath, pab)
@@ -111,6 +110,10 @@ class TipiDisk(object):
                         open_file = VariableRecordFile.load(localPath, pab)
                 else:
                     open_file = NativeFile.load(localPath, pab)
+
+                if open_file is None:
+                    self.sendErrorCode(EOPATTR)
+                    return
 
                 fillInRecordLen = open_file.getRecordLength()
 
@@ -121,7 +124,7 @@ class TipiDisk(object):
 
             except Exception as e:
                 self.sendErrorCode(EOPATTR)
-                logger.exception("failed to open file - %s", devname)
+                logger.error("failed to open file - %s", devname)
                 return
 
 

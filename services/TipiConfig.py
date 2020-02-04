@@ -10,6 +10,7 @@ data will be lost.
 import os
 import logging
 import time
+import re
 from ti_files.ti_files import ti_files
 
 LOGGER = logging.getLogger(__name__)
@@ -19,6 +20,7 @@ CONFIG_DEFAULTS = {
     "DSK1_DIR": "",
     "DSK2_DIR": "",
     "DSK3_DIR": "",
+    "DSK4_DIR": "",
     "URI1": "",
     "URI2": "",
     "URI3": "",
@@ -98,6 +100,8 @@ class TipiConfig(object):
         newvalue = value.strip()
         oldvalue = self.records.get(key, "")
         if oldvalue != newvalue:
+            if key.endswith('_DIR'):
+                newvalue = self.__sanitizeMapping(newvalue)
             self.records[key] = newvalue
             self.sorted_keys = list(self.records.keys())
             self.sorted_keys.sort()
@@ -125,6 +129,19 @@ class TipiConfig(object):
             out_file.write('\n')
         while os.path.exists("/tmp/tz"):
             time.sleep(0.5)
+
+    def __sanitizeMapping(self, newvalue):
+        if newvalue == "." or newvalue == "TIPI." or newvalue == "TIPI":
+            return "."
+        newvalue = re.sub("[.]+", ".", newvalue)
+        if newvalue.endswith("."):
+            newvalue = newvalue[:-1]
+        if newvalue.startswith("."):
+            newvalue = newvalue[1:]
+        if newvalue.startswith("TIPI."):
+            newvalue = newvalue[5:]
+        return newvalue
+
 
 
 SINGLETON = TipiConfig()

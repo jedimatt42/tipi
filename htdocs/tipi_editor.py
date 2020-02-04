@@ -68,9 +68,21 @@ def basicContents(filename):
         with open(filename, "rb") as tifile:
             with open(prg_tmp_file, "wb") as program:
                 bytes = bytearray(tifile.read())
-                if not ti_files.isProgram(bytes):
+                if ti_files.isProgram(bytes):
+                    program.write(bytes[128:])
+                if ti_files.isVariable(bytes) and ti_files.isInternal(bytes) and ti_files.recordLength(bytes) == 254:
+                    i = 128
+                    limit = len(bytes)
+                    while(i < limit):
+                        rlen = bytes[i]
+                        next = i+rlen+1
+                        program.write(bytes[i:next])
+                        i = next
+                        if bytes[i] == 0xff:
+                            # skip to next 256 byte boundary
+                            i = (256 * (((i - 128)/256)+1)) + 128
+                else:
                     return False
-                program.write(bytes[128:])
 
         call(['/home/tipi/xdt99/xbas99.py', '-d', prg_tmp_file, '-o', bas_tmp_file]) 
 

@@ -76,10 +76,13 @@ class CatalogFile(object):
         logger.debug("localpath: %s", self.localpath)
         volumeName = os.path.basename(self.localpath)
         logger.debug("volumeName stage1: %s", volumeName)
-        if self.devname.startswith(("DSK0.","TIPI.")):
+        if self.devname == "DSK.":
+            return self.__encodeVolRecord("", 0, 1440, 1438)
+
+        if self.localpath == "/home/tipi/tipi_disk":
             volumeName = "TIPI"
         elif self.devname.startswith(("DSK.")):
-            volumeName = self.devname.split('.')[-1]
+            volumeName = self.devname.split('.')[1]
         else:
             drive = self.devname.split('.')[0]
             parts = tipi_config.get(drive + "_DIR").split('.')
@@ -89,6 +92,9 @@ class CatalogFile(object):
         return self.__encodeVolRecord(volumeName, 0, 1440, 1438)
 
     def __createFileCatRecords(self):
+        if self.devname == "DSK.":
+            return { }
+
         files = sorted(list(filter(lambda x: 
             self.__include(os.path.join(self.localpath, x)), os.listdir(self.localpath))))
         return map(self.__createFileRecord, files)

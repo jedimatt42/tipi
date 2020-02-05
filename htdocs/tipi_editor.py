@@ -70,7 +70,7 @@ def basicContents(filename):
                 bytes = bytearray(tifile.read())
                 if ti_files.isProgram(bytes):
                     program.write(bytes[128:])
-                if ti_files.isVariable(bytes) and ti_files.isInternal(bytes) and ti_files.recordLength(bytes) == 254:
+                elif ti_files.isVariable(bytes) and ti_files.isInternal(bytes) and ti_files.recordLength(bytes) == 254:
                     i = 128
                     limit = len(bytes)
                     while(i < limit):

@@ -102,6 +102,8 @@ def updateFileInfo(name):
     return sqlargs
 
 def _getFileInfo(name):
+    logger.info("Looking at %s", name)
+
     dv80suffixes = (".txt", ".a99", ".b99", ".bas", ".xb")
     basicSuffixes = (".b99", ".bas", ".xb")
         
@@ -131,6 +133,10 @@ def _getFileInfo(name):
 
     if type == 'PROGRAM' and ti_files.isTiBasicPrg(name):
         icon = 'basic'
+    if type == 'INT/VAR 254' and ti_files.isTiBasicPrg(name):
+        icon = 'basic'
+
+    logger.info("%s is of type %s, icon %s", name, type, icon)
         
     return (name, icon, type, tiname, size, isprotected)
     

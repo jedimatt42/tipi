@@ -237,9 +237,13 @@ class ti_files(object):
             with open(filename, "rb") as tifile:
                 with open(prg_tmp_file, "wb") as program:
                     bytes = bytearray(tifile.read())
-                    if not ti_files.isProgram(bytes):
+                    if ti_files.isProgram(bytes):
+                        program.write(bytes[128:])
+                    elif (ti_files.isInternal(bytes) and ti_files.isVariable(bytes) and (ti_files.recordLength(bytes) == 254)):
+                        ## internal file needs to be extracted differently but it has a marker... so we can cheat here.
+                        return bytes[129:131] == "\xab\xcd" 
+                    else:
                         return False
-                    program.write(bytes[128:])
 
             call(['/home/tipi/xdt99/xbas99.py', '-d', prg_tmp_file, '-o', bas_tmp_file])         
 

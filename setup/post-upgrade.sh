@@ -1,11 +1,16 @@
 #!/bin/bash
 
 fversion=${1:-0}
+fmajor=`echo $fversion | cut -f1 -d.`
+fminor=`echo $fversion | cut -f2 -d.`
 nversion=`cat /home/tipi/tipi/version.txt | sed -n 's/^version=\(.*\)$/\1/p'`
+nmajor=`echo $nversion | cut -f1 -d.`
+nminor=`echo $nversion | cut -f2 -d.`
 
-# $fversion is the old version number. 
-# $nversion is the new version number.
+# $fversion is the old version number. $fmajor and $fminor are component integers
+# $nversion is the new version number. $nmajor and $nminor are component integers
 # Variables should enable steps required to get to latest.
+
 
 case $fversion in
 0)
@@ -17,6 +22,10 @@ case $fversion in
   TIPI_RESTART_SERVICES=true
   ;;
 esac
+
+if [ $fmajor -le 1 ] && [ $fminor -le 47 ]; then
+  TIPI_PURGE_CACHE=true
+fi
 
 if [ ! -d "/home/tipi/PrinterToPDF" ]; then
   TIPI_PRINTING_UPDATE=true
@@ -53,6 +62,11 @@ su tipi -c "mkdir -p /home/tipi/tipi_disk/NET; cp /home/tipi/tipi/setup/bin/NET/
 #### Rebuild the printing to PDF converter and add samba share
 if [ ! -z ${TIPI_PRINTING_UPDATE:-} ]; then
   /home/tipi/tipi/setup/printing_setup.sh
+fi
+
+#### Purge tipi_cache sqlite database if necessary
+if [ ! -z ${TIPI_PURGE_CACHE:-} ]; then
+  rm -f /home/tipi/.tipiweb.db
 fi
 
 #### Restart all TIPI services

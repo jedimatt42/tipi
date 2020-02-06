@@ -11,7 +11,7 @@
 #define GPLWS ((unsigned int*)0x83E0)
 #define DSRTS ((unsigned char*)0x401A)
 
-#define TIPICFG_VER "9"
+#define TIPICFG_VER "10"
 #define PI_CONFIG "PI.CONFIG"
 #define PI_STATUS "PI.STATUS"
 #define PI_UPGRADE "PI.UPGRADE"
@@ -298,6 +298,7 @@ void main()
         savePiConfig();
         disks_dirty = 0;
         wifi_dirty = 0;
+        reload();
         break;
       case 'U':
       case 'u':

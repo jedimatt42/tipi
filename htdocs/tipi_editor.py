@@ -8,6 +8,7 @@
 import os
 import logging
 import uuid
+import tipi_cache
 from ti_files import ti_files
 from subprocess import call
 
@@ -102,17 +103,27 @@ def writeBasicContents(edit_file_name, file_contents):
     bas_tmp_file = '/tmp/' + str(uuid.uuid4()) + '.tmp'
     prg_tmp_file = '/tmp/' + str(uuid.uuid4()) + '.tmp'
 
+    encode_cmd = ['xbas99.py', '-c', bas_tmp_file, '-o', prg_tmp_file]
+    fiad_cmd = ['xdm99.py', '-T', prg_tmp_file, '-o', edit_file_name]
+
+    fileInfo = tipi_cache.lookupFileInfo(edit_file_name)
+    type = fileInfo['type']
+    if type == 'INT/VAR 254':
+        encode_cmd.insert(1,'--long')
+        fiad_cmd.insert(1,'-f')
+        fiad_cmd.insert(2,"INT/VAR254")
+
     try:
         with open(bas_tmp_file, 'wb') as file:
             file.write(file_contents.encode("latin_1"))
             
         # Encode ASCII file to TI's binary BASIC format:
         #
-        call(['xbas99.py', '-c', bas_tmp_file, '-o', prg_tmp_file])
+        call(encode_cmd)
 
         # Now convert to TIFILES format:
         #
-        call(['xdm99.py', '-T', prg_tmp_file, '-o', edit_file_name])
+        call(fiad_cmd)
     finally:
         if os.path.exists(prg_tmp_file):
             os.unlink(prg_tmp_file)

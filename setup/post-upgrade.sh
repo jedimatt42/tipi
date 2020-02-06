@@ -66,7 +66,7 @@ fi
 
 #### Purge tipi_cache sqlite database if necessary
 if [ ! -z ${TIPI_PURGE_CACHE:-} ]; then
-  rm -f ~/.tipiweb.db
+  rm -f /home/tipi/.tipiweb.db
 fi
 
 #### Restart all TIPI services

@@ -27,7 +27,7 @@ class NativeFile(object):
             raise Exception("Native files are read only")
 
         try:
-            if unix_file_name.lower().endswith(dv80suffixes) or url.lower().endswith(dv80suffixes):
+            if recordType(pab) == VARIABLE and (unix_file_name.lower().endswith(dv80suffixes) or url.lower().endswith(dv80suffixes)):
                 if recordLength(pab) != 80 and recordLength(pab) != 0:
                     raise Exception("Incompatible recordlength")
                 logger.debug("using D/V 80 mode")

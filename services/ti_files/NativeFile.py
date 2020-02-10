@@ -23,28 +23,30 @@ class NativeFile(object):
 
     @staticmethod
     def load(unix_file_name, pab, url=""):
+        logger.info("loading as native file: %s", url)
         if mode(pab) != INPUT:
             raise Exception("Native files are read only")
 
         try:
-            if recordType(pab) == VARIABLE and (unix_file_name.lower().endswith(dv80suffixes) or url.lower().endswith(dv80suffixes)):
-                if recordLength(pab) != 80 and recordLength(pab) != 0:
-                    raise Exception("Incompatible recordlength")
-                logger.debug("using D/V 80 mode")
-                records = NativeFile.loadLines(unix_file_name)
-                logger.debug("loaded {} lines", len(records))
-                recLen = 80
+            if recordType(pab) == VARIABLE:
+                recLen = recordLength(pab)
+                if recordLength(pab) == 0: 
+                    recLen = 80
+                records = NativeFile.loadLines(unix_file_name, recLen)
+                logger.info("loaded %d lines", len(records))
+                logger.info("records: %s", records)
                 statByte = STVARIABLE
             else:
-                if recordLength(pab) != 128 and recordLength(pab) != 0:
-                    raise Exception("Incompatible recordlength")
-                logger.debug("using Fixed 128 mode")
-                records = NativeFile.loadBytes(unix_file_name)
-                logger.debug("loaded {} records", len(records))
-                recLen = 128
+                recLen = recordLength(pab)
+                if recordLength(pab) == 0:
+                    recLen = 128
+                records = NativeFile.loadBytes(unix_file_name, recLen)
+                logger.info("loaded %d records", len(records))
+                logger.info("records: %s", records)
                 statByte = 0
                 if dataType(pab):
                     statByte |= STINTERNAL
+                
             return NativeFile(records, recLen, statByte, pab)
 
         except Exception as e:
@@ -52,27 +54,36 @@ class NativeFile(object):
             raise
 
     @staticmethod
-    def loadLines(fp):
+    def loadLines(fp, recLen):
         i = 0
         records = []
         with open(fp) as f:
             for i, l in enumerate(f):
-                records += [bytearray(l.rstrip())]
+                bytes = bytearray(l.rstrip())
+                if len(bytes) > 0:
+                    records += NativeFile.divide_chunks(bytes, recLen)
+                else:
+                    records += [ bytearray() ]
         return records
 
     @staticmethod
-    def loadBytes(fp):
+    def loadBytes(fp, recLen):
         records = []
         with open(fp) as f:
             bytes = bytearray(f.read())
-            while len(bytes) >= 128:
-                records += [bytes[:128]]
-                bytes = bytes[128:]
-            if len(bytes) > 0:
-                padded = bytearray(128)
-                padded[0:] = bytes
-                records += [padded]
+            records += NativeFile.divide_chunks(bytes, recLen, True)
         return records
+
+    @staticmethod
+    def divide_chunks(l, n, pad=False):
+        for i in range(0, len(l), n):
+            if pad:
+                y = bytearray(n)
+                s = l[i:i+n]
+                y[0:len(s)] = s
+                yield y
+            else:
+                yield l[i:i + n]
 
     @staticmethod
     def status(fp, url=""):

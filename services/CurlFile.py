@@ -99,12 +99,12 @@ class CurlFile(object):
             recNum = self.record[devname]
             rdata = open_file.readRecord(recNum)
             if rdata is None:
-                logger.debug("received None for record %d", recNum)
+                logger.info("received None for record %d", recNum)
                 self.tipi_io.send([EEOF])
             else:
                 self.tipi_io.send([SUCCESS])
                 self.tipi_io.send(rdata)
-                logger.debug("record bytes: {}", len(rdata))
+                logger.info("record bytes: %d", len(rdata))
             return
         except Exception:
             logger.exception("failed to read from open file")

@@ -85,8 +85,11 @@ class CatalogFile(object):
             volumeName = self.devname.split('.')[1]
         else:
             drive = self.devname.split('.')[0]
-            parts = tipi_config.get(drive + "_DIR").split('.')
-            volumeName = parts[-1]
+            if drive == "TIPI":
+                volumeName = "TIPI"
+            else:
+                parts = tipi_config.get(drive + "_DIR").split('.')
+                volumeName = parts[-1]
             
         logger.debug("volumeName: %s", volumeName)
         return self.__encodeVolRecord(volumeName, 0, 1440, 1438)

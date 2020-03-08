@@ -33,6 +33,9 @@ def __scanForVolume(volume):
         path = __driveMapping(disk)
         if path != None and path.endswith("/" + volume):
             return path
+    # If it it literally DSK.TIPI. act like it matches DSK0.
+    return TIPI_DIR
+
     # None of the Disks are mapped to this volume...
     # fall back to top level directories
     path = os.path.join(TIPI_DIR, volume)

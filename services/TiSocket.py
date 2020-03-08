@@ -203,6 +203,7 @@ class TiSocket(object):
                 return BAD
             conn, address = server_socket.accept()
             if conn:
+                fcntl.fcntl(conn, fcntl.F_SETFL, os.O_NONBLOCK)
                 self.handles[handleId] = conn
                 logger.info("connection socket given handleId %d", handleId)
                 return bytearray([handleId])

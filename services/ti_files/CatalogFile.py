@@ -85,7 +85,7 @@ class CatalogFile(object):
             volumeName = self.devname.split('.')[1]
         else:
             drive = self.devname.split('.')[0]
-            if drive == "TIPI":
+            if drive == "TIPI" or drive == "DSK0":
                 volumeName = "TIPI"
             else:
                 parts = tipi_config.get(drive + "_DIR").split('.')

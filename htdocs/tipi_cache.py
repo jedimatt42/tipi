@@ -104,7 +104,7 @@ def updateFileInfo(name):
 def _getFileInfo(name):
     logger.info("Looking at %s", name)
 
-    dv80suffixes = (".txt", ".a99", ".b99", ".bas", ".xb")
+    dv80suffixes = (".txt", ".a99", ".b99", ".bas", ".xb", ".obj")
     basicSuffixes = (".b99", ".bas", ".xb")
         
     header = None

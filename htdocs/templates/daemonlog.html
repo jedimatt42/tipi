@@ -1,0 +1,28 @@
+
+{% extends "page_template.html"%}
+{% block content %}
+
+<script>
+function gotoBottom() {
+  var objDiv = document.getElementById("log");
+  objDiv.scrollTop = objDiv.scrollHeight;
+}
+</script>
+
+
+<div class="panel panel-default">
+
+<div style="display: inline-block">
+<h2 style="display: inline-block; margin-left: 20px">/var/log/daemon.log</h2>
+<br/>
+<button style="display: inline-block; margin-left: 20px" onclick="gotoBottom()">goto bottom</button>
+</div>
+
+<div id="log" class="log_container">
+<pre>{{ logdata }}</pre>
+
+</div>
+</div>
+
+{% endblock %}
+

@@ -15,6 +15,10 @@ def logdata():
     with open('/var/log/tipi/tipi.log', 'r') as f:
         return { 'logdata': f.read() }
 
+def daemonlogdata():
+    with open('/var/log/daemon.log', 'r') as f:
+        return { 'logdata': f.read() }
+
 def reboot():
     with open("/tmp/tipireboot", 'w') as trigger:
         trigger.write("tipi")

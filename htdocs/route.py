@@ -132,6 +132,11 @@ def logs():
     logdata = tipi_admin.logdata()
     return render_template('log.html', **logdata)
 
+@app.route('/daemonlogs', methods=['GET'])
+def daemonlogs():
+    logdata = tipi_admin.daemonlogdata()
+    return render_template('daemonlog.html', **logdata)
+
 @app.route('/rebootnow', methods=['GET'])
 def rebootnow():
     tipi_admin.reboot()

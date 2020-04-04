@@ -106,7 +106,11 @@ def writeBasicContents(edit_file_name, file_contents):
     encode_cmd = ['xbas99.py', '-c', bas_tmp_file, '-o', prg_tmp_file]
     fiad_cmd = ['xdm99.py', '-T', prg_tmp_file, '-o', edit_file_name]
 
-    fileInfo = tipi_cache.lookupFileInfo(edit_file_name)
+    try:
+        fileInfo = tipi_cache.lookupFileInfo(edit_file_name)
+    except IOError:
+        fileInfo = { 'type': 'PROGRAM' }
+        
     type = fileInfo['type']
     if type == 'INT/VAR 254':
         encode_cmd.insert(1,'--long')

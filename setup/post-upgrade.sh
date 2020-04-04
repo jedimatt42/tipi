@@ -69,6 +69,9 @@ if [ ! -z ${TIPI_PURGE_CACHE:-} ]; then
   rm -f /home/tipi/.tipiweb.db
 fi
 
+#### Update tipi user group membership
+sudo usermod -G tipi,sudo,input,i2c,gpio,adm tipi
+
 #### Restart all TIPI services
 if [ ! -z ${TIPI_RESTART_SERVICES:-} ]; then
 cd /home/tipi/tipi/setup/

@@ -2,6 +2,7 @@
 #
 # Corey J. Anderson ElectricLab.com 2017
 # et al.
+import io
 
 def version():
     version = { }
@@ -12,11 +13,11 @@ def version():
     return version
 
 def logdata():
-    with open('/var/log/tipi/tipi.log', 'r') as f:
+    with io.open('/var/log/tipi/tipi.log', mode='r', encoding="utf-8") as f:
         return { 'logdata': f.read() }
 
 def daemonlogdata():
-    with open('/var/log/daemon.log', 'r') as f:
+    with io.open('/var/log/daemon.log', mode='r', encoding="utf-8") as f:
         return { 'logdata': f.read() }
 
 def reboot():

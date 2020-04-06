@@ -50,7 +50,7 @@ su tipi -c "/home/tipi/tipi/htdocs/update-deps.sh"
 fi
 
 if [ ! -f "/usr/bin/php" ]; then
-  apt-get install php
+  apt-get install -y php
 fi
 
 if [ ! -f "/home/tipi/tidbit/tidbit_cmd.php" ]; then

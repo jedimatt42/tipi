@@ -24,7 +24,7 @@ from TipiConfig import TipiConfig
 
 logger = logging.getLogger(__name__)
 
-basicSuffixes = (".b99", ".bas", ".xb")
+basicSuffixes = (".b99", ".bas", ".xb", ".tb")
 
 tipi_config = TipiConfig.instance()
 

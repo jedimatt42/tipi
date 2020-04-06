@@ -49,6 +49,14 @@ su tipi -c "/home/tipi/tipi/services/update-deps.sh"
 su tipi -c "/home/tipi/tipi/htdocs/update-deps.sh"
 fi
 
+if [ ! -f "/usr/bin/php" ]; then
+  apt-get install php
+fi
+
+if [ ! -f "/home/tipi/tidbit/tidbit_cmd.php" ]; then
+  su tipi -c "git clone https://github.com/dnotq/tidbit.git /home/tipi/tidbit"
+fi
+
 #### Should have been part of base sd image creation
 if [ ! -z ${TIPI_BASE_CONFIG:-} ]; then
 usermod -s /bin/bash tipi

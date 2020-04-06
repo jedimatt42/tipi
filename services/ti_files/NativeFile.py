@@ -10,7 +10,7 @@ from Pab import *
 
 logger = logging.getLogger(__name__)
 
-dv80suffixes = (".cmd", ".txt", ".a99", ".b99", ".bas", ".xb")
+dv80suffixes = (".cmd", ".txt", ".a99", ".b99", ".bas", ".xb", ".tb")
 
 class NativeFile(object):
 

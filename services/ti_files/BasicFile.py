@@ -11,15 +11,26 @@ class BasicFile(object):
 
     @staticmethod
     def load(unix_file_name):
+        logger.info("load %s", unix_file_name)
         fh = None
+        source_file_name = unix_file_name
+        if source_file_name.lower().endswith('.tb'):
+            logger.info("converting with tidbit: %s", source_file_name)
+            try:
+                tmpfp = "/tmp/tidbit_tmp"
+                BasicFile.tidbit(source_file_name, tmpfp)
+                source_file_name = tmpfp
+            except Exception as e:
+                logger.error("Error reading file %s", unix_file_name)
+                raise
         try:
             tmpfp = "/tmp/xbas_tmp"
-            BasicFile.toBasic(unix_file_name, tmpfp)
+            BasicFile.toBasic(source_file_name, tmpfp)
             fh = open(tmpfp, "rb")
             bytes = bytearray(fh.read())
             return BasicFile(bytes)
         except Exception as e:
-            logger.error("Error reading file %s", unix_file_name)
+            logger.error("Error reading file %s", source_file_name)
             raise
         finally:
             if fh != None:
@@ -30,6 +41,10 @@ class BasicFile(object):
         return BasicFile(fdata)
 
     def save(self, unix_file_name):
+        if unix_file_name.lower().endswith('.tb'):
+            logger.warn("saving PROGRAM to .tb files not permitted")
+            raise Exception("saving PROGRAM to .tb files not permitted")
+
         fh = None
         try:
             tmpfp = "/tmp/xbas_tmp"
@@ -63,3 +78,10 @@ class BasicFile(object):
         if call(cmdargs) != 0:
             raise Exception("Invalid BASIC Program")
  
+    @staticmethod
+    def tidbit(fp, tmpfp):
+        cmdargs = ["php", "/home/tipi/tidbit/tidbit_cmd.php", fp, "100", "10", tmpfp]
+        logger.info("issuing command: " + str(cmdargs))
+        if call(cmdargs) != 0:
+            raise Exception("Invalid Tidbit Source")
+

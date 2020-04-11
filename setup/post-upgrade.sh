@@ -23,6 +23,10 @@ case $fversion in
   ;;
 esac
 
+if [ $fmajor -le 1 ] && [ $fminor -le 56 ]; then
+  TIPI_UPDATE_DEPS=true
+fi
+
 if [ $fmajor -le 1 ] && [ $fminor -le 47 ]; then
   TIPI_PURGE_CACHE=true
 fi

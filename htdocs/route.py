@@ -5,21 +5,15 @@
 # Corey J. Anderson ElectricLab.com 2017
 # et al.
 
-import logging
 import string
 import tipi_admin
 import tipi_editor
 import tipi_files
 import tipi_uploads
-import ConfigLogging
 
 from flask import *
 
-ConfigLogging.configure_logging()
-
 app = Flask(__name__)
-
-logger = logging.getLogger(__name__)
 
 #
 # Static resources
@@ -68,7 +62,6 @@ def upload_file():
 def newdir():
     path = request.form.get('path')
     newdir = request.form.get('newdir')
-    logger.debug("newdir - path: %s, newdir: %s", path, newdir)
     tipi_files.newdir(path, newdir)
     rp = createFileUrl(path)
     return redirect(rp)
@@ -101,7 +94,6 @@ def edit_basic_file():
 
 @app.route('/save_basic_file', methods=['POST'])
 def save_basic_file():
-    logger.debug("save basic request: %s", request)
     file_data = tipi_editor.save(request.form.get('file_name'), request.form.get('file_contents'))
     rp = request.form.get('rp')
     if request.form.get('saveAndExit'):

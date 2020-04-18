@@ -116,7 +116,7 @@ class TiSocket(object):
         try:
             existing = self.handles[handleId]
             existing.sendall(bytes[3:])
-            logger.info("wrote %d bytes to socket: %d", len(bytes[3:]),
+            logger.debug("wrote %d bytes to socket: %d", len(bytes[3:]),
                          handleId)
             oled.info("Socket %d/Wrote %d bytes", handleId, len(bytes[3:]))
             return GOOD

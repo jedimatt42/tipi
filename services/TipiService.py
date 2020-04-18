@@ -4,6 +4,7 @@ import logging.handlers
 import os
 import errno
 from tipi.TipiMessage import TipiMessage
+from tipi.TipiMessage import BackOffException
 from SpecialFiles import SpecialFiles
 from Pab import *
 from RawExtensions import RawExtensions
@@ -21,7 +22,7 @@ if not os.path.isdir(logpath):
 LOG_FILENAME = logpath + "/tipi.log"
 logging.getLogger('').setLevel(logging.INFO)
 loghandler = logging.handlers.RotatingFileHandler(
-    LOG_FILENAME, maxBytes=(5000 * 1024), backupCount=5)
+    LOG_FILENAME, maxBytes=(1000 * 1024), backupCount=2)
 logformatter = logging.Formatter('%(asctime)-15s %(name)-12s: %(levelname)-8s %(message)s')
 loghandler.setFormatter(logformatter)
 logging.getLogger('').addHandler(loghandler)
@@ -46,8 +47,14 @@ try:
     logger.info("TIPI Ready")
     while True:
         logger.debug("waiting for request...")
-
-        msg = tipi_io.receive()
+        try:
+            msg = tipi_io.receive()
+        except BackOffException:
+            if os.path.exists('/tmp/tipi_safepoint'):
+                logger.info('found /tmp/tipi_safepoint, restarting')
+                os.remove('/tmp/tipi_safepoint')
+                quit()
+            continue
 
         if levelTwo.handle(msg):
             continue

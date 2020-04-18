@@ -8,6 +8,9 @@ TSRB = 0x06
 
 BACKOFF_DELAY = 10000
 
+class BackOffException(Exception):
+    pass
+
 logger = logging.getLogger(__name__)
 
 # Low Level
@@ -67,6 +70,7 @@ class TipiMessage(object):
     def __resetProtocol(self):
         logger.debug("waiting for handshake...")
         # And wait for the TI to signal RESET
+        bail = 0
         backoff = BACKOFF_DELAY
         self.prev_syn = 0
         while self.prev_syn != RESET:
@@ -74,6 +78,9 @@ class TipiMessage(object):
             if backoff < 1:
                 backoff = 1
                 time.sleep(0.01)
+                bail += 1
+                if bail > 50:
+                    raise BackOffException()
             self.prev_syn = self.ports.getTC()
         # Reset the control signals
         self.ports.setRC(RESET)

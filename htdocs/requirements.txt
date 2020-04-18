@@ -1,8 +1,8 @@
-Flask==0.12.2
-Jinja2==2.9.6
-MarkupSafe==1.0
-Werkzeug==0.12.2
-click==6.7
-crccheck==0.6
-inotify==0.2.9
-pysqlite==2.8.3
+Flask>=1.0.0
+Jinja2>=2.10.1
+MarkupSafe>=1.0
+Werkzeug>=0.15.3
+click>=6.7
+crccheck>=0.6
+inotify>=0.2.9
+pysqlite>=2.8.3

@@ -4,6 +4,7 @@ import logging.handlers
 import os
 import errno
 from tipi.TipiMessage import TipiMessage
+from tipi.TipiMessage import BackOffException
 from SpecialFiles import SpecialFiles
 from Pab import *
 from RawExtensions import RawExtensions
@@ -46,8 +47,14 @@ try:
     logger.info("TIPI Ready")
     while True:
         logger.debug("waiting for request...")
-
-        msg = tipi_io.receive()
+        try:
+            msg = tipi_io.receive()
+        except BackOffException:
+            if os.path.exists('/tmp/tipi_safepoint'):
+                logger.info('found /tmp/tipi_safepoint, restarting')
+                os.remove('/tmp/tipi_safepoint')
+                quit()
+            continue
 
         if levelTwo.handle(msg):
             continue

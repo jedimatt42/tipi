@@ -3,7 +3,6 @@ import io
 import sys
 import traceback
 import math
-import magic
 import logging
 from ti_files import ti_files
 from Pab import *

@@ -1,9 +1,7 @@
 crccheck==0.6
 netifaces==0.10.6
-Pillow>=6.2.2
 pycurl==7.43.0
 pygtail==0.7.0
-python-magic==0.4.13
 RPi.GPIO==0.6.3
 spidev==3.2
 tipiports==1.0

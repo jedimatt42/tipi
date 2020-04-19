@@ -1,6 +1,5 @@
 crccheck==0.6
 netifaces==0.10.6
-Pillow>=6.2.2
 pycurl==7.43.0
 pygtail==0.7.0
 RPi.GPIO==0.6.3

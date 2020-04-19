@@ -31,6 +31,8 @@ logger = logging.getLogger(__name__)
 
 GOOD = bytearray([255])
 BAD = bytearray([0])
+# It is ok, this is the same as good, but good isn't used in the context of accept.
+ACCEPT_ERR = bytearray([255])
 
 
 class TiSocket(object):
@@ -137,7 +139,7 @@ class TiSocket(object):
                 return bytearray(0)
             limit = (bytes[3] << 8) + bytes[4]
             data = bytearray(existing.recv(limit))
-            logger.debug("read %d bytes from %d", len(data), handleId)
+            logger.info("read %d bytes from %d", len(data), handleId)
             oled.info("Socket %d/Read %d bytes", handleId, len(data))
             return data
         except socket.error as e:
@@ -195,19 +197,34 @@ class TiSocket(object):
         return GOOD
 
     def handleAccept(self, bytes):
+        logger.info('handleAccept')
         serverId = bytes[1]
         server_socket = self.bindings.get(serverId, None)
         if server_socket is not None:
             handleId = self.allocateHandleId()
+            logger.info("new connection handle: %d", handleId)
             if handleId == 0:
+                logger.error('out of handles')
+                return ACCEPT_ERR
+            logger.info('accepting...')
+            conn = None
+            try:
+                conn, address = server_socket.accept()
+            except Exception as e:
+                logger.info('no connection available')
                 return BAD
-            conn, address = server_socket.accept()
+            logger.info('accept conn: %s', conn)
             if conn:
                 fcntl.fcntl(conn, fcntl.F_SETFL, os.O_NONBLOCK)
                 self.handles[handleId] = conn
                 logger.info("connection socket given handleId %d", handleId)
                 return bytearray([handleId])
-        return BAD
+            else:
+                logger.info('no connection available')
+                return BAD
+        else:
+            logger.error("no socket bound with id: %d", serverId)
+            return ACCEPT_ERR
 
     def safeClose(self, sock):
         try:

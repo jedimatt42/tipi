@@ -80,7 +80,7 @@ class TipiMessage(object):
                 time.sleep(0.01)
                 bail += 1
                 if bail > 50:
-                    raise BackOffException()
+                    raise BackOffException('safepoint')
             self.prev_syn = self.ports.getTC()
         # Reset the control signals
         self.ports.setRC(RESET)

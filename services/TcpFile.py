@@ -5,7 +5,7 @@ from Pab import (
     EOPATTR, EFILERR, SUCCESS,
     OPEN, CLOSE, READ, WRITE,
 )
-from TiSocket import BAD, TiSocket
+from TiSocket import ACCEPT_ERR, BAD, TiSocket
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +119,7 @@ class TcpFile(object):
         self.handles[devname] = int(binding)
 
     def read(self, pab, devname):
-        logger.debug("read devname: %s", devname)
+        logger.info("read devname: %s", devname)
 
         if devname.endswith('BIND'):
             self.accept(devname)
@@ -128,15 +128,21 @@ class TcpFile(object):
         return
 
     def accept(self, devname):
+        logger.info("accepting from devname: %s", devname)
         msg = bytearray(3)
         msg[0] = 0x22
         msg[1] = 0x00
         msg[2] = 0x07
         res = self.tisockets.processRequest(msg)
-        if res == 'BAD':
-            raise Exception('no client')
-        self.tipi_io.send([SUCCESS])
-        self.tipi_io.send(bytearray(str(res[0])))
+        if res == ACCEPT_ERR:
+            logger.error("accept error, devname: %s", devname)
+            self.tipi_io.send([EFILERR])
+        else:
+            # If there was no error, but no pending connect this just passes
+            # the zero back through the read operation.
+            logger.info("accept success, handle: %d, devname: %s", res[0], devname)
+            self.tipi_io.send([SUCCESS])
+            self.tipi_io.send(bytearray(str(res[0])))
 
     def readConnection(self, pab, devname):
         handleId = self.handles[devname]
@@ -154,7 +160,7 @@ class TcpFile(object):
         self.tipi_io.send(res)
 
     def write(self, pab, devname):
-        logger.debug("write devname: %s", devname)
+        logger.info("write devname: %s", devname)
         if devname.endswith('BIND'):
             raise Exception('not supported')
 

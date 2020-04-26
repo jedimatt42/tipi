@@ -2,6 +2,7 @@ import os
 import logging
 import sqlite3
 import ConfigLogging
+from flask import g
 from ti_files import ti_files
 from tinames import tinames
 
@@ -10,24 +11,52 @@ from tinames import tinames
 #
 
 logger = logging.getLogger(__name__)
-conn = sqlite3.connect('/home/tipi/.tipiweb.db')
 tipi_disk = '/home/tipi/tipi_disk'
+
+global_conn = None
+db_name = '/home/tipi/.tipiweb.db'
+
+def get_context_conn():
+    """
+    Flask needs a database connection per request context, and that
+    is registered to close in route.py
+    """
+    db = getattr(g, '_database', None)
+    if db is None:
+	db = g._database = sqlite3.connect(db_name)
+    return db
+
+def get_mon_conn():
+    """
+    If not under the flask process, such as TipiMonitor.py, we can
+    act in a single-threaded model, and use a global connection
+    """
+    global global_conn
+    if not global_conn:
+	global_conn = sqlite3.connect(db_name)
+    return global_conn
+
+def get_conn():
+    try:
+        return get_context_conn()
+    except RuntimeError:
+        return get_mon_conn()
 
 def setupSchema():
     logger.info("Checking for schema")
-    sql = conn.cursor()
+    sql = get_conn().cursor()
     sql.execute('CREATE TABLE IF NOT EXISTS fileheader (name TEXT PRIMARY KEY, icon TEXT, type TEXT, tiname TEXT, size INTEGER, protected INTEGER)')
-    conn.commit()
+    get_conn().commit()
     sql.close()
 
 def deleteAll():
     logger.info("clearing tipi_disk meta-data")
     setupSchema()
-    sql = conn.cursor()
+    sql = get_conn().cursor()
     sql.execute('DELETE FROM fileheader')
-    conn.commit()
+    get_conn().commit()
     sql.execute('VACUUM')
-    conn.commit()
+    get_conn().commit()
     sql.close()
     logger.debug("previous meta-data deleted.")
 
@@ -40,11 +69,11 @@ def addAll():
 def deleteMissing():
     cachedFiles = []
     logger.debug("finding all cached files")
-    sql = conn.cursor()
+    sql = get_conn().cursor()
     for row in sql.execute('SELECT name FROM fileheader'):
         cachedFiles.append(row[0])
     
-    conn.commit()
+    get_conn().commit()
     sql.close()
 
     for name in cachedFiles:
@@ -53,12 +82,12 @@ def deleteMissing():
 
 def deleteFileInfo(name):
     logger.info("Deleting cache for %s", name)
-    sql = conn.cursor()
+    sql = get_conn().cursor()
     try: 
-        sql = conn.cursor()
+        sql = get_conn().cursor()
         sqlargs = (name,)
         sql.execute('DELETE FROM fileheader WHERE name == ?', sqlargs)
-        conn.commit()
+        get_conn().commit()
     except Exception as e:
         logger.error("failed to delete %s", name)
     finally:
@@ -67,7 +96,7 @@ def deleteFileInfo(name):
 
 def lookupFileInfo(name):
     logger.debug("looking up file info for %s", name)
-    sql = conn.cursor()
+    sql = get_conn().cursor()
     sqlargs = (name,)
     sql.execute('SELECT * FROM fileheader WHERE name == ?', sqlargs)
     fileInfo = sql.fetchone()
@@ -91,10 +120,10 @@ def updateFileInfo(name):
         logger.debug("skipping directory")
         return
     sqlargs = _getFileInfo(name)
-    sql = conn.cursor()
+    sql = get_conn().cursor()
     try:
         sql.execute('REPLACE INTO fileheader VALUES (?, ?, ?, ?, ?, ?)', sqlargs)
-        conn.commit()
+        get_conn().commit()
     except Exception as e:
         logger.error("could not update info for %s", name)
     finally:

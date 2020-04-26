@@ -10,10 +10,24 @@ import tipi_admin
 import tipi_editor
 import tipi_files
 import tipi_uploads
+from flask_socketio import SocketIO
 
 from flask import *
 
 app = Flask(__name__)
+app.config['DEBUG'] = False
+app.config['TESTING'] = False
+app.config['ENV'] = 'development'
+socketio = SocketIO(app)
+
+#
+# sqlite3 concession
+#
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.close()
 
 #
 # Static resources
@@ -147,3 +161,9 @@ def createFileUrl(path):
     else:
         return string.replace('/files' + '/' + path, '//', '/')
         
+
+## Launch app
+
+if __name__ == "__main__":
+    socketio.run(app, '0.0.0.0', 9900)
+

@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name tipi-rescue)(type Legacy)(uri ${KIPRJMOD}/tipi-rescue.lib)(options "")(descr ""))
+  (lib (name vs-tipi)(type Legacy)(uri ${KIPRJMOD}/vs-tipi.lib)(options "")(descr ""))
+)

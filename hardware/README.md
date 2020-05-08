@@ -4,6 +4,7 @@ This package below contains the hardware design files. These are un-encumbered o
 
 * tipi-kicad - contains the PCB designs for the sideport board
 * tipi-peb-kicad - contains the PCB designs for the Periphal Expansion Box variant of the board. 
+* tipi-speech - contains the PCB designs for the Speech Synthsizer Box variant of the TIPI board. 
 * dsr - the ROM driver software for messaging to the PI and general DISK like behavior.
 * cplds - the verilog - Xilinx ISE 14.1 project files 
 

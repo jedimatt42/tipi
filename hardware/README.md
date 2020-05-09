@@ -10,6 +10,9 @@ This package below contains the hardware design files. These are un-encumbered o
   * gerbers - artifacts for PCB fabrication
   * kicad - pcb schematic and layout design files for KiCad
 * tipi-speech - contains the PCB designs for the Speech Synthsizer Box variant of the TIPI board. 
+  * gerbers - artifacts for PCB fabrication
+  * kicad - pcb schematic and layout design files for KiCad
+  * ise - the verilog - Xilinx ISE 14.1 project files (combined 32k and TIPI decoding)
 * dsr - the ROM driver software for messaging to the PI and general DISK like behavior.
 
 See [UNLICENSE.txt](UNLICENSE.txt)

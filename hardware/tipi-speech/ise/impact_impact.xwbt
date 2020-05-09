@@ -1,0 +1,8 @@
+INTSTYLE=impact
+INFILE=/home/matthew/dev/github/jedimatt42/tipi/hardware/cplds/xc95144xl/impact.xsl
+OUTFILE=/home/matthew/dev/github/jedimatt42/tipi/hardware/cplds/xc95144xl/impact.xsl
+FAMILY=Single
+PART=Single
+WORKINGDIR=/home/matthew/dev/github/jedimatt42/tipi/hardware/cplds/xc95144xl
+LICENSE=iMPACT
+USER_INFO=iMPACT

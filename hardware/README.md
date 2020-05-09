@@ -9,6 +9,7 @@ This package below contains the hardware design files. These are un-encumbered o
 * tipi-sideport - contains the PCB designs for the sideport board
   * gerbers - artifacts for PCB fabrication
   * kicad - pcb schematic and layout design files for KiCad
+* tipi-speech - contains the PCB designs for the Speech Synthsizer Box variant of the TIPI board. 
 * dsr - the ROM driver software for messaging to the PI and general DISK like behavior.
 
 See [UNLICENSE.txt](UNLICENSE.txt)

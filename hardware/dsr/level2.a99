@@ -122,7 +122,7 @@ disuc
 	MOVB	@BLOCKCNT,@BLOCKCNT
 	JEQ	l2derr		; finished if number of blocks to read was 0
 
-	LI	R0,256		; this is actually ignored. set maximum bytes to read 
+	LI	R0,256		; this is actually ignored. set maximum bytes to read
 	MOV	*R8,R1
 	BL	@vrecvmsg	; read blocks into vdp buffer
 	B	@l2derr		; return as handled
@@ -166,7 +166,7 @@ dosuc
 	JEQ	l2done		; skip sending blocks if block count was 0
 	MOV	*R8,R1
 	BL	@vsendmsg	; send the data blocks
-	
+
 	LI	R0,1
 	LI	R1,L2STAT
 	BL	@recvmsg	; get data write confirmation
@@ -183,7 +183,7 @@ dosuc2
 	MOVB	R3,@L2STAT	; turn success into 0
 
 	B	@l2derr
-	
+
 
 l2derr				; handle errors from direct input or direct output
 	MOV	R7,R11
@@ -202,11 +202,11 @@ setpath				; set current directory for a unit/drive
 	MOV	@PATHNAM,R1
 	.setvdpra R1
 	CLR	R0
-	MOV	@VDPRD,R0
+	MOVB	@VDPRD,R0
 	SWPB	R0		; get length of string
 	MOV	@PATHNAM,R1
 	INC	R1
-	BL	@vsendmsg	; send path string 
+	BL	@vsendmsg	; send path string
 	B	@getl2resp
 
 createdir			; create a subdirectory
@@ -278,7 +278,7 @@ getl2resp
 	B	@retl2err
 l2suc
 	MOVB	R0,@L2STAT	; clear special PI success code and proceed to return
-	B	@retl2err	
+	B	@retl2err
 
 setfiles			; Buffer allocation routine
 	LIMI	0

@@ -1,0 +1,8 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TI32kSideport
+D TI-99/4A Sideport - 32k header style
+K TI99
+$ENDCMP
+#
+#End Doc Library

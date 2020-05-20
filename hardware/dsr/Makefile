@@ -15,7 +15,6 @@ clean:
 
 tipi.bin: $(sources) timestamp.gen
 	xas99.py -R -b -L tipi.list -o $@ rom.a99
-	mv $@_4000 $@
 	dd if=/dev/null of=$@ bs=1 count=0 seek=32768
 
 timestamp.gen:
@@ -24,5 +23,5 @@ timestamp.gen:
 .PHONY: burn 
 
 burn: tipi.bin
-	minipro -p "AM27C256 @DIP28" -w tipi.bin -y
+	minipro -p "AM27C256@DIP28" -w tipi.bin -y
 

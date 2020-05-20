@@ -1,0 +1,5 @@
+(sym_lib_table
+  (lib (name tipi-rescue)(type Legacy)(uri ${KIPRJMOD}/tipi-rescue.lib)(options "")(descr ""))
+  (lib (name ti32ksideport)(type Legacy)(uri ${KIPRJMOD}/ti32ksideport.lib)(options "")(descr ""))
+  (lib (name xc9572xl-7vq64c)(type Legacy)(uri ${KIPRJMOD}/xc9572xl-7vq64c.lib)(options "")(descr ""))
+)

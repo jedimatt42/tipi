@@ -1,3 +1,0 @@
-(fp_lib_table
-  (lib (name peb-edge-card)(type KiCad)(uri "$(KIPRJMOD)/peb-edge-card.pretty")(options "")(descr ""))
-)

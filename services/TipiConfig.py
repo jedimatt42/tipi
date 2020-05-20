@@ -29,7 +29,8 @@ CONFIG_DEFAULTS = {
     "WIFI_PSK": "",
     "MOUSE_SCALE": "50",
     "OLED_ROTATE": "0",
-    "TZ": "America/Los_Angeles"
+    "TZ": "America/Los_Angeles",
+    "SECTOR_COUNT": "1440"
 }
 
 

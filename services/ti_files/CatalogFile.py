@@ -76,8 +76,14 @@ class CatalogFile(object):
         logger.debug("localpath: %s", self.localpath)
         volumeName = os.path.basename(self.localpath)
         logger.debug("volumeName stage1: %s", volumeName)
+
+        try:
+            sector_count = max(2,min(9999, int(tipi_config.get('SECTOR_COUNT'))))
+        except:
+            sector_count = 1440
+
         if self.devname == "DSK.":
-            return self.__encodeVolRecord("", 0, 1440, 1438)
+            return self.__encodeVolRecord("", 0, sector_count, sector_count - 2)
 
         if self.localpath == "/home/tipi/tipi_disk":
             volumeName = "TIPI"
@@ -92,7 +98,7 @@ class CatalogFile(object):
                 volumeName = parts[-1]
             
         logger.debug("volumeName: %s", volumeName)
-        return self.__encodeVolRecord(volumeName, 0, 1440, 1438)
+        return self.__encodeVolRecord(volumeName, 0, sector_count, sector_count - 2)
 
     def __createFileCatRecords(self):
         if self.devname == "DSK.":

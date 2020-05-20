@@ -23,7 +23,7 @@ case $fversion in
   ;;
 esac
 
-if [ $fmajor -le 1 ] && [ $fminor -le 60 ]; then
+if [ $fmajor -le 1 ] && [ $fminor -le 59 ]; then
   TIPI_UPDATE_DEPS=true
 fi
 

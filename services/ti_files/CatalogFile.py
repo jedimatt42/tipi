@@ -78,7 +78,7 @@ class CatalogFile(object):
         logger.debug("volumeName stage1: %s", volumeName)
 
         try:
-            sector_count = min(9999, int(tipi_config.get('SECTOR_COUNT')))
+            sector_count = max(2,min(9999, int(tipi_config.get('SECTOR_COUNT'))))
         except:
             sector_count = 1440
 

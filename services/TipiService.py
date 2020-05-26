@@ -47,6 +47,7 @@ try:
     logger.info("TIPI Ready")
     while True:
         logger.debug("waiting for request...")
+        msg = None
         try:
             msg = tipi_io.receive()
         except BackOffException:
@@ -54,6 +55,7 @@ try:
                 logger.info('found /tmp/tipi_safepoint, restarting')
                 os.remove('/tmp/tipi_safepoint')
                 quit()
+        if msg is None:
             continue
 
         if levelTwo.handle(msg):

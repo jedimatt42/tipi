@@ -101,18 +101,28 @@ class LevelTwo(object):
         unit = self.tipi_io.receive()[0]
         pathname = str(self.tipi_io.receive()).strip()
         logger.info("unit: %d, path: %s", unit, pathname)
-        oled.info("lvl2 path:/%d: %s", unit, pathname)
-
+        
+        # test if device is mapped
         localfilename = self.getLocalName(unit,"")
         if localfilename is None:
             logger.info("passing request to next device")
             self.tipi_io.send([EDVNAME])
             return True
+
         if not os.path.exists(localfilename):
+            logger.info("device not mapped")
             self.tipi_io.send([EDEVERR])
-        else:
-            self.unitpath[unit] = pathname
-            self.tipi_io.send([SUCCESS])
+            return True
+
+        target = tinames.devnameToLocal(pathname)
+        if not (os.path.exists(target) and os.path.isdir(target)):
+            logger.info("target %s does not exist", target)
+            self.tipi_io.send([EDEVERR])
+            return True
+
+        self.unitpath[unit] = pathname
+        logger.info("set unit %s path to %s", unit, pathname)
+        self.tipi_io.send([SUCCESS])
         return True
 
     def handleCreateDir(self):

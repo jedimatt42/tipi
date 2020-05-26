@@ -43,6 +43,9 @@ WFILNAM	EQU	>834E		; (vdp addr) note, filenames are 10 characters... space padde
 WOLDNAM	EQU	>8350		; (vdp addr) if two names are used, this is the original
 PATHNAM EQU	WFILNAM		; (vdp addr) path name for set path operation.
 
+; Convenience
+GPLR0LB EQU >83E1
+
 protect				; Set or unset protect bit on a file
 	LIMI	0
 	MOV	R11,R7
@@ -270,7 +273,7 @@ getl2resp
 	MOVB	@L2STAT,@L2STAT
 	JEQ	retl2sk		; PI didn't handled request
 	CLR	R0
-	MOVB	@L2STAT,@R0LB(R10)
+	MOVB	@L2STAT,@GPLR0LB
 	CI	R0,SUCCESS
 	JEQ	l2suc
 	SRC	R0,3

@@ -30,7 +30,7 @@
   where "Rx" is one of: TD TC RD RC
   and "nnn" is decimal byte value
 
-  See https://github.com/peberlein/tipi/blob/master/hardware/dsr/tipi-io.a99
+  See https://github.com/jedimatt42/tipi/blob/master/hardware/dsr/tipi-io.a99
   for latched register addresses in DSR, reproduced here:
   
 TDOUT	EQU	>5FFF		; TI Data (output)
@@ -315,10 +315,11 @@ static void set_reg_from_string(char *s)
 {
   unsigned int i;
   for (i = 0; i < ARRAY_SIZE(regs); i++) {
-    if (s[0] = reg_names[i][0] &&
+    if (s[0] == reg_names[i][0] &&
         s[1] == reg_names[i][1] &&
         s[2] == '=') {
       regs[i] = atoi(s+3);
+      printf("%s=%d   %s\n", reg_names[i], regs[i], s);
       break;
     }
   }
@@ -577,6 +578,7 @@ void websocket_writeByte(unsigned char value, int reg)
 #ifdef MAIN
 int main(int argc, char *argv[])
 {
+	websocket_init("../../../../Js99er/src/");
 	while (1) {
                 websocket_readByte(SEL_TD);
 	}

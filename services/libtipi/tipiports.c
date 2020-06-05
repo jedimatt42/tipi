@@ -54,7 +54,7 @@ inline unsigned char parity(unsigned char input) {
     return piParity & 0x01;
 }
 
-inline unsigned char readByte(int reg)
+static unsigned char gpio_readByte(int reg)
 {
   unsigned char value = 0;
 
@@ -107,6 +107,8 @@ inline unsigned char readByte(int reg)
   return value;
 }
 
+static unsigned char (*readByte)(int reg) = gpio_readByte;
+
 static PyObject* 
 tipi_getTD(PyObject *self, PyObject *args)
 {
@@ -123,7 +125,7 @@ tipi_getTC(PyObject *self, PyObject *args)
   return Py_BuildValue("i", tc_value);
 }
 
-inline void writeByte(unsigned char value, int reg) 
+static void gpio_writeByte(unsigned char value, int reg)
 {
   int errors = 0;
 
@@ -168,6 +170,8 @@ inline void writeByte(unsigned char value, int reg)
   }
 }
 
+static void (*writeByte)(unsigned char value, int reg) = gpio_writeByte;
+
 void writeErrors(int errors) {
   int fd = open(errorsFifo, O_WRONLY);
   write(fd, (void*)&errors, 2);
@@ -201,6 +205,20 @@ tipi_setRC(PyObject *self, PyObject *args)
 static PyObject* 
 tipi_initGpio(PyObject *self, PyObject *args)
 {
+  // determine websocket mode and web path from env
+  const char* tipiWebSock = getenv("TIPI_WEBSOCK");
+  if (tipiWebSock==NULL) {
+    // functions from websock.c
+    extern void websocket_init(const char *path_to_web_root);
+    extern void websocket_writeByte(unsigned char value, int reg);
+    extern unsigned char websocket_readByte(int reg);
+
+    websocket_init(tipiWebSock);
+    readByte = websocket_readByte;
+    writeByte = websocket_writeByte;
+    return;
+  }
+
   // get signalling delay from env
   const char* tipiSigEnv = getenv("TIPI_SIG_DELAY");
   if (tipiSigEnv==NULL) {

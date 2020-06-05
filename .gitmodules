@@ -1,0 +1,3 @@
+[submodule "services/libtipi/services/libtipi/sha1"]
+	path = services/libtipi/services/libtipi/sha1
+	url = https://github.com/clibs/sha1.git

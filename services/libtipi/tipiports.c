@@ -207,7 +207,7 @@ tipi_initGpio(PyObject *self, PyObject *args)
 {
   // determine websocket mode and web path from env
   const char* tipiWebSock = getenv("TIPI_WEBSOCK");
-  if (tipiWebSock==NULL) {
+  if (tipiWebSock != NULL) {
     // functions from websock.c
     extern void websocket_init(const char *path_to_web_root);
     extern void websocket_writeByte(unsigned char value, int reg);
@@ -216,35 +216,36 @@ tipi_initGpio(PyObject *self, PyObject *args)
     websocket_init(tipiWebSock);
     readByte = websocket_readByte;
     writeByte = websocket_writeByte;
-    return;
-  }
 
-  // get signalling delay from env
-  const char* tipiSigEnv = getenv("TIPI_SIG_DELAY");
-  if (tipiSigEnv==NULL) {
-    delayloop = 0;
   } else {
-    delayloop = atoi(tipiSigEnv);
+
+    // get signalling delay from env
+    const char* tipiSigEnv = getenv("TIPI_SIG_DELAY");
+    if (tipiSigEnv==NULL) {
+      delayloop = 0;
+    } else {
+      delayloop = atoi(tipiSigEnv);
+    }
+
+    wiringPiSetupGpio();
+
+    pinMode(PIN_R_RT, OUTPUT);
+    pinMode(PIN_R_CD, OUTPUT);
+    pinMode(PIN_R_CLK, OUTPUT);
+    pinMode(PIN_R_DOUT, OUTPUT);
+    pinMode(PIN_R_LE, OUTPUT);
+    pinMode(PIN_R_DIN, INPUT);
+    // This line is driven from CPLD directly
+    // enable the pull up on the input pin
+    // to enhance CPLD ability to signal HIGH
+    pullUpDnControl(PIN_R_DIN, PUD_UP);
+
+    digitalWrite(PIN_R_RT, 0);
+    digitalWrite(PIN_R_CD, 0);
+    digitalWrite(PIN_R_CLK, 0);
+    digitalWrite(PIN_R_DOUT, 0);
+    digitalWrite(PIN_R_LE, 0);
   }
-
-  wiringPiSetupGpio();
-
-  pinMode(PIN_R_RT, OUTPUT);
-  pinMode(PIN_R_CD, OUTPUT);
-  pinMode(PIN_R_CLK, OUTPUT);
-  pinMode(PIN_R_DOUT, OUTPUT);
-  pinMode(PIN_R_LE, OUTPUT);
-  pinMode(PIN_R_DIN, INPUT);
-  // This line is driven from CPLD directly
-  // enable the pull up on the input pin
-  // to enhance CPLD ability to signal HIGH
-  pullUpDnControl(PIN_R_DIN, PUD_UP);
-
-  digitalWrite(PIN_R_RT, 0);
-  digitalWrite(PIN_R_CD, 0);
-  digitalWrite(PIN_R_CLK, 0);
-  digitalWrite(PIN_R_DOUT, 0);
-  digitalWrite(PIN_R_LE, 0);
 
   Py_INCREF(Py_None);
   return Py_None;

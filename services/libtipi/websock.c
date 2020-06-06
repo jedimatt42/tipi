@@ -55,6 +55,7 @@ RCIN	EQU	>5FF9		; PI Control Signal (input)
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <sys/sendfile.h>
 
 #include "sha1/sha1.h"
@@ -221,72 +222,79 @@ static char* base64_encode(const unsigned char *src, unsigned int len)
 	return dest;
 }
 
-
+enum {
+	OPCODE_CONTINUATION = 0,
+	OPCODE_TEXT = 1,
+	OPCODE_BINARY = 2,
+};
 
 // read one websocket frame up to data_size, returning actual size
 static int websocket_read(int fd, unsigned char *data, int data_size)
 {
-  uint64_t payload_len = 0;
-  unsigned char opcode;
+  int i, len;
+  //unsigned char opcode;
   unsigned char mask_key[4] = {};
-  int len, mask, i;
+  int mask;
   
-  if (read(fd, data, 2) < 2)
+  if (read(fd, data, 14) < 2)
     return -1;
   
-  opcode = data[0] & 0xf;
+  //opcode = data[0] & 0xf;
   mask = data[1] & 0x80 ? 1 : 0;
-  payload_len = data[1] & 0x7f;
+  len = data[1] & 0x7f;
   
-  if (payload_len == 126) {
+  if (len == 126) {
     // 16-bit len
     if (read(fd, data, 2) < 2)
       return -1;
-    payload_len = (data[0] << 8) | data[1];
-  } else if (payload_len == 127) {
+    len = (data[0] << 8) | data[1];
+  } else if (len == 127) {
     // 64-bit len
     if (read(fd, data, 8) < 8)
       return -1;
-    payload_len =
+    uint64_t payload_len =
       ((uint64_t)data[0] << 56) | ((uint64_t)data[1] << 48) |
       ((uint64_t)data[2] << 40) | ((uint64_t)data[3] << 32) |
       (data[4] << 24) | (data[5] << 16) |
       (data[6] << 8)  |  data[7];
+    if (payload_len > INT_MAX)
+      return -1;
+    len = payload_len;
   }
-  if (payload_len > data_size)
+  if (len > data_size)
     return -1;
-  
   if (mask) {
     if (read(client_fd, mask_key, 4) < 4)
       return -1;
   }
-  if (read(fd, data, payload_len) < payload_len)
+  if (read(fd, data, len) < len)
     return -1;
   
   if (mask) {
-    for (i = 0; i < payload_len; i++) {
+    for (i = 0; i < len; i++) {
       data[i] ^= mask_key[i&3];
     }
   }
-  return payload_len;
+  return len;
 }
 
 // write one websocket frame with opcode and mask(if nonzero)
-static void websocket_write(int fd, int opcode, unsigned int mask, unsigned char *data, long long payload_len)
+static void websocket_write(int fd, int opcode, unsigned int mask, unsigned char *data, int len)
 {
   unsigned char header[32];
   unsigned int header_len = 2;
-  unsigned char mask_key[4];
+
   
   header[0] = 0x80 /*FIN=1*/ | (opcode & 0xf);
   header[1] = (mask ? 0x80 : 0x00) |
-      ((payload_len <= 125) ? payload_len : 
-       payload_len <= 0xffff ? 126 : 127);
-  if (payload_len > 125) {
-    if (payload_len <= 0xffff) {
-      header[header_len++] = (payload_len >> 8) & 0xff;
-      header[header_len++] = payload_len & 0xff;
-    } else {    
+      ((len <= 125) ? len :
+       len <= 0xffff ? 126 : 127);
+  if (len > 125) {
+    if (len <= 0xffff) {
+      header[header_len++] = (len >> 8) & 0xff;
+      header[header_len++] = len & 0xff;
+    } else {
+      uint64_t payload_len = len;
       header[header_len++] = (payload_len >> 56) & 0xff;
       header[header_len++] = (payload_len >> 48) & 0xff;
       header[header_len++] = (payload_len >> 40) & 0xff;
@@ -298,17 +306,18 @@ static void websocket_write(int fd, int opcode, unsigned int mask, unsigned char
     }
   }
   if (mask) {
+    unsigned char *mask_key = header + header_len;
     header[header_len++] = (mask >> 24) & 0xff;
     header[header_len++] = (mask >> 16) & 0xff;
     header[header_len++] = (mask >> 8) & 0xff;
     header[header_len++] = mask & 0xff;
     int i;
-    for (i = 0; i < payload_len; i++) {
-      data[i] ^= (mask >> ((i&3)*8)) & 0xff;
+    for (i = 0; i < len; i++) {
+      data[i] ^= mask_key[i&3];
     }
   }
   write(fd, header, header_len);
-  write(fd, data, payload_len);
+  write(fd, data, len);
 }
 
 static void set_reg_from_string(char *s)
@@ -348,7 +357,7 @@ static int websocket_serve(void)
 		addr.sin_addr.s_addr = INADDR_ANY;
 		addr.sin_port = htons(PORT);
 
-		if (bind(srv_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+		if (bind(srv_fd, (struct sockaddr*)&addr, addrlen) < 0) {
 			perror("bind");
 			goto err;
 		}
@@ -498,9 +507,9 @@ badrequest:
 
 upgrade_websocket:	
 	{
-		char *protocol = "Sec-WebSocket-Protocol: ",
+		char *protocol = "Sec-WebSocket-Protocol:",
 		     *websocket_key = "Sec-WebSocket-Key:",
-		     *version = "Sec-WebSocket-Version: ",
+		     *version = "Sec-WebSocket-Version:",
 		     *guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11",
 		     *key = NULL;
 		
@@ -513,6 +522,9 @@ upgrade_websocket:
 				strcpy(key, tmp);
 				strcat(key, guid);
 				break;
+			} else if (strncmp(headers[i], protocol, strlen(protocol)) == 0 ||
+			           strncmp(headers[i], version, strlen(version)) == 0) {
+			  printf("%s\n", headers[i]);
 			}
 		}
 		if (!key) goto badrequest;
@@ -568,7 +580,7 @@ void websocket_writeByte(unsigned char value, int reg)
   if (client_fd != -1) {
     char buf[32];
     int len = sprintf(buf, "%s=%d", reg_names[reg], regs[reg]);
-    websocket_write(client_fd, 1/*opcode*/, 0/*mask*/, buf, len);
+    websocket_write(client_fd, OPCODE_TEXT, 0/*mask*/, (unsigned char*)buf, len);
   }
 }
 

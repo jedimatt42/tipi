@@ -69,32 +69,33 @@ class TiSocket(object):
 
     # bytes: 0x22, handleId, open-cmd, <hostname:port>
     def handleOpen(self, bytes):
-        handleId = bytes[1]
-        params = str(bytes[3:]).split(':')
-        hostname = params[0]
-        port = int(params[1])
-        logger.info("open socket(%d) %s:%d", handleId, hostname, port)
-
-        existing = self.handles.get(handleId, None)
-        # close the socket if we already had one for this handle.
-        if existing is not None:
-            del(self.handles[handleId])
-            self.safeClose(existing)
-            existing = None
-            logger.debug("closed leftover socket: %d", handleId)
-        # need to get the target host and port
-        server = (hostname, port)
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.handles[handleId] = sock
+        sock = None
         try:
+            handleId = bytes[1]
+            params = str(bytes[3:]).split(':')
+            hostname = params[0]
+            port = int(params[1])
+            logger.info("open socket(%d) %s:%d", handleId, hostname, port)
+
+            existing = self.handles.get(handleId, None)
+            # close the socket if we already had one for this handle.
+            if existing is not None:
+                del(self.handles[handleId])
+                self.safeClose(existing)
+                existing = None
+                logger.debug("closed leftover socket: %d", handleId)
+            # need to get the target host and port
+            server = (hostname, port)
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.handles[handleId] = sock
+
             sock.connect(server)
             fcntl.fcntl(sock, fcntl.F_SETFL, os.O_NONBLOCK)
             logger.info("connected")
             oled.info("Socket %d/Connected", handleId)
             return GOOD
         except Exception:
-            logger.info("failed to connect socket: %d", handleId,
-                        exc_info=True)
+            logger.info("failed to connect socket: %d", handleId)
             self.safeClose(sock)
             return BAD
 
@@ -228,9 +229,10 @@ class TiSocket(object):
 
     def safeClose(self, sock):
         try:
-            logger.info('closing socket')
-            sock.shutdown(socket.SHUT_RDWR)
-            sock.close()
+            if sock:
+                logger.info('closing socket')
+                sock.shutdown(socket.SHUT_RDWR)
+                sock.close()
         except Exception:
             pass
 

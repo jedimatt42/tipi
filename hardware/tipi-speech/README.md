@@ -1,4 +1,4 @@
-# Hardare design files for VS TIPI board and CPLD code
+# Hardare design files for TIPI-32K board that fits in the Speech Synthesizer house and its unique CPLD code
 
 This package below contains the hardware design files. These are un-encumbered open license files you can all do whatever you want with...
 

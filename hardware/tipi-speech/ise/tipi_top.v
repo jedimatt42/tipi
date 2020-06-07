@@ -35,10 +35,9 @@ module tipi_top(
 		output dsr_b1,
 		output dsr_en,
 		
-		// Added to support 32K DRAM for vs-tipi -JP 4/24/2020
-		output dram_a0,
-		output dram_en,
-
+		// Added to support 32K sram for TIPI-32K board
+		output sram_a0,
+		output sram_en,
 
 		input r_clk,
 		// 0 = Data or 1 = Control byte selection
@@ -149,24 +148,13 @@ wire tipi_dsr_en = tipi_read && ti_a >= 16'h4000 && ti_a < 16'h5ff8;
 assign dsr_en = ~(tipi_dsr_en);
 
 
+// drive the SRAM  enable and address MSB lines.   Added for TIPI-32K boards only.   Logic copied from 32K sidecar design except for disable. 
+assign sram_en = ~(~ti_memen & ( (ti_a[0] &  ti_a[1]) | (~ti_a[1] &  ti_a[2])) & crub[0]);  // Enables (active low) 32K RAM on MEMEN low and address from 2000 to 3fff or A000 to FFFF, and on CRU MSB low (to disable internal RAM for CRU >=1800).  
+assign sram_a0 = ti_a[0] & ti_a[2];  // Drives MSB Address line A14 on RAM, logic copied frm 32K sidecar design (A15 & A13).
 
-
-
-
-// drive the dram oe and cs lines.  -JP 4/24/2020
-assign dram_en = ~(~ti_memen & ( (ti_a[0] &  ti_a[1]) | (~ti_a[1] &  ti_a[2])));  // Enables (active low) 32K RAM on ~MEMEN and address >= 16'hx2000 and < 16'h4000) or >= 16'hxA000 and < 16'hFFFF.  Logic from 32K sidecar.
-assign dram_a0 = ti_a[0] & ti_a[2];  // logic from 32K sidecar (A15 & A13)  -JP
-
-// wire dram_read = ~dram_en && ~ti_memen && ti_dbin;  // Not needed, but logic used in db_dir
-
-
-// drive the 74hct245 oe and dir lines.  Modified to pass DRAM data as well -JP 4/24/2020
-assign db_en = ~((cru_dev_en && ti_a >= 16'h4000 && ti_a < 16'h6000) || ~dram_en);  //  added "( .. || ~dram_en)" so tipi enable is or'ed with dram eanble (active low), this will confict with external DRAM  -JP
-assign db_dir = tipi_read | (~dram_en & ~ti_memen & ti_dbin);  // added "| (~dram_en & ~ti_memen & ti_dbin);"  to "or" dram read with tipi read  -JP
-
-
-
-
+// drive the 74hct245 data buffer oe and dir lines.  Modified to pass SRAM data for the TIPI-32K board only
+assign db_en = ~((cru_dev_en && ti_a >= 16'h4000 && ti_a < 16'h6000) || ~sram_en);  //  Active low.  Added "( .. || ~sram_en)" to "or" tipi enable with SRAM eanble.  This will confict with external sram if not disabled.
+assign db_dir = tipi_read | (~sram_en & ~ti_memen & ti_dbin);  // added "| (~sram_en & ~ti_memen & ti_dbin);"  to "or" sram read with tipi read for TIPI-32K board only.  
 
 
 // register to databus output selection
@@ -180,7 +168,7 @@ tristate_8bit dbus_ts(dbus_ts_en, rreg_mux_out, tp_d_buf);
 assign tp_d = tp_d_buf;
 
 
-assign led0 = cru_state[0] && db_en;
+assign led0 = (cru_state[0] && db_en) || ~sram_en;  // Added SRAM activlty to TIPI LED activity 
 
 
 endmodule

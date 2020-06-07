@@ -69,6 +69,7 @@ class TiSocket(object):
 
     # bytes: 0x22, handleId, open-cmd, <hostname:port>
     def handleOpen(self, bytes):
+        sock = None
         try:
             handleId = bytes[1]
             params = str(bytes[3:]).split(':')
@@ -94,8 +95,7 @@ class TiSocket(object):
             oled.info("Socket %d/Connected", handleId)
             return GOOD
         except Exception:
-            logger.info("failed to connect socket: %d", handleId,
-                        exc_info=True)
+            logger.info("failed to connect socket: %d", handleId)
             self.safeClose(sock)
             return BAD
 
@@ -229,9 +229,10 @@ class TiSocket(object):
 
     def safeClose(self, sock):
         try:
-            logger.info('closing socket')
-            sock.shutdown(socket.SHUT_RDWR)
-            sock.close()
+            if sock:
+                logger.info('closing socket')
+                sock.shutdown(socket.SHUT_RDWR)
+                sock.close()
         except Exception:
             pass
 

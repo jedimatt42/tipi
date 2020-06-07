@@ -382,7 +382,7 @@ static int websocket_serve(void)
 	if (fd < 0)
 		return 0;
 	
-	char buffer[1024];
+	char buffer[1024]; // hopefully enough for all headers
 	int rc = read(fd, buffer, sizeof(buffer)-1);
 	if (rc <= 0)
 		return 0;

@@ -25,5 +25,8 @@ if [ $? == 0 ]; then
   export TIPI_SIG_DELAY=100
 fi
 
+# Uncomment this line to enable websocket server
+#export TIPI_WEBSOCK=/home/tipi/tipi/htdocs
+
 python ./TipiService.py
 

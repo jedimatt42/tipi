@@ -1,6 +1,6 @@
 import time
 import logging
-from TipiPorts import TipiPorts
+from .TipiPorts import TipiPorts
 
 RESET = 0xF1
 TSWB = 0x02

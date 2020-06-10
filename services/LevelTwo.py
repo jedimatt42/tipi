@@ -21,7 +21,7 @@ class LevelTwo(object):
           3: "",
           4: ""
         }
-	self.handlers = {
+        self.handlers = {
           0x12: self.handleProtect,
           0x13: self.handleFileRename,
           0x14: self.handleDirectInput,

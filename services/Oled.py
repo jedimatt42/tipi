@@ -27,7 +27,7 @@ class Oled(object):
 
             # Initialize library.
             self.device.begin()
-            print "TIPI Attached to I2C Oled Display"
+            print("TIPI Attached to I2C Oled Display")
 
             # Clear display.
             self.device.clear()
@@ -50,7 +50,7 @@ class Oled(object):
 
         except Exception as e:
             self.device = None
-            print "No I2C Oled Display attached"
+            print("No I2C Oled Display attached")
 
     def displayLine(self, line):
         lineparts = line.split('/')

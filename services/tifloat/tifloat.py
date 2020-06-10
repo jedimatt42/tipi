@@ -57,11 +57,11 @@ def asInt(bytes):
     return val 
 
 if __name__ == "__main__":
-    print asInt(asFloat(0))
-    print asInt(asFloat(1))
-    print asInt(asFloat(6))
-    print asInt(asFloat(128))
-    print asInt(asFloat(-1))
-    print asInt(asFloat(-6))
-    print asInt(asFloat(-128))
+    print(asInt(asFloat(0)))
+    print(asInt(asFloat(1)))
+    print(asInt(asFloat(6)))
+    print(asInt(asFloat(128)))
+    print(asInt(asFloat(-1)))
+    print(asInt(asFloat(-6)))
+    print(asInt(asFloat(-128)))
 

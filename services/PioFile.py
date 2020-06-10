@@ -8,8 +8,8 @@ from subprocess import call
 logger = logging.getLogger(__name__)
 
 crlf = bytearray(2)
-crlf[0] = chr(13)
-crlf[1] = chr(10)
+crlf[0] = 13
+crlf[1] = 10
 
 class PioFile(object):
 

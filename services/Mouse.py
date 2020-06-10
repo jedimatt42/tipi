@@ -9,7 +9,11 @@ class Mouse(object):
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
-        self.file = open("/dev/input/mice", "rb")
+        try:
+            self.file = open("/dev/input/mice", "rb")
+        except:
+            self.file = None
+            return
         fd = self.file.fileno()
         flag = fcntl.fcntl(fd, fcntl.F_GETFL)
         fcntl.fcntl(fd, fcntl.F_SETFL, flag | os.O_NONBLOCK)
@@ -26,5 +30,6 @@ class Mouse(object):
             return bytearray([0, 0, self.button])
 
     def handle(self, bytes):
-        self.tipi_io.send(self.getMouseEvent())
+        if self.file != None:
+            self.tipi_io.send(self.getMouseEvent())
         return True

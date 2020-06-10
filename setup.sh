@@ -4,6 +4,7 @@ TIPI=/home/tipi/tipi
 cd $TIPI || exit 1
 
 sudo apt-get install python-dev
+sudo apt-get install python3-dev
 sudo apt-get install python-virtualenv
 sudo apt-get install libcurl4-openssl-dev
 sudo apt-get install libssl-dev

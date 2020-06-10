@@ -23,7 +23,7 @@ case $fversion in
   ;;
 esac
 
-if [ $fmajor -le 1 ] && [ $fminor -le 59 ]; then
+if [ $fmajor -le 1 ] && [ $fminor -le 63 ]; then
   TIPI_UPDATE_DEPS=true
 fi
 
@@ -49,6 +49,7 @@ if [ ! -z ${TIPI_UPDATE_DEPS:-} ]; then
 apt-get update
 apt-get install -y libsqlite3-dev
 apt-get install -y python-pil
+apt-get install -y python3-dev
 
 su tipi -c "/home/tipi/tipi/services/update-deps.sh"
 su tipi -c "/home/tipi/tipi/htdocs/update-deps.sh"

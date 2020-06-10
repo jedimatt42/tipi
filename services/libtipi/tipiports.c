@@ -28,8 +28,6 @@ int delayloop = 50;
 
 char* errorsFifo = "/tmp/tipierrors";
 
-void writeErrors(int errors);
-
 inline void signalDelay(void)
 {
   // delayMicroseconds(1L);
@@ -100,10 +98,6 @@ inline unsigned char readByte(int reg)
     }
   }
 
-  if (errors != 0) {
-    writeErrors(errors);
-  }
-
   return value;
 }
 
@@ -162,16 +156,6 @@ inline void writeByte(unsigned char value, int reg)
   signalDelay();
   digitalWrite(PIN_R_LE, 0);
   signalDelay();
-
-  if (errors != 0) {
-    writeErrors(errors);
-  }
-}
-
-void writeErrors(int errors) {
-  int fd = open(errorsFifo, O_WRONLY);
-  write(fd, (void*)&errors, 2);
-  close(fd);
 }
 
 static PyObject* 
@@ -241,12 +225,23 @@ static PyMethodDef TipiMethods[] = {
   {NULL, NULL, 0, NULL}
 };
 
+static struct PyModuleDef moduledef = {
+  PyModuleDef_HEAD_INIT,
+  "tipiports",
+  "Tipi GPIO register interface",
+  -1,
+  TipiMethods,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+};
+
 PyMODINIT_FUNC
-inittipiports(void)
+PyInit_tipiports(void)
 {
   PyObject *m;
-  m = Py_InitModule("tipiports", TipiMethods);
-  if (m == NULL)
-    return;
+  m = PyModule_Create(&moduledef);
+  return m; /* if it fails, just return the NULL */
 }
 

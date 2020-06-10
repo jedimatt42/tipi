@@ -4,7 +4,7 @@ if [ -d ENV ]; then
   rm -r ENV
 fi
 
-virtualenv --system-site-packages ENV
+virtualenv --python=python3 --system-site-packages ENV
 
 . ./ENV/bin/activate
 

@@ -57,6 +57,7 @@ RCIN	EQU	>5FF9		; PI Control Signal (input)
 #include <fcntl.h>
 #include <limits.h>
 #include <sys/sendfile.h>
+#include <stdarg.h>
 
 #include "sha1/sha1.h"
 
@@ -81,6 +82,26 @@ static struct {
 } files[1024];
 static unsigned int file_count = 0;
 
+
+#ifdef LOG
+static void log_printf(const char *fmt, ...)
+{
+	static FILE *log = NULL;
+	
+	if (!log)
+		log = fopen("/tmp/websock.log", "w");
+	
+	va_list ap;
+	va_start(ap, fmt);
+	vfprintf(log, fmt, ap);
+	va_end(ap);
+	fflush(log);
+}
+#else
+
+#define log_printf(...) do{}while(0)
+
+#endif
 
 static int scan_filter(const struct dirent *d)
 {
@@ -131,9 +152,9 @@ void websocket_init(const char *path_to_web_root)
 	struct dirent **namelist = NULL;
 	web_root = path_to_web_root;
         web_root_len = strlen(web_root);
-	printf("scanning %s\n", web_root);
+	log_printf("scanning %s\n", web_root);
 	scandir(web_root, &namelist, scan_filter, NULL);
-        printf("found %d files\n", file_count);
+        log_printf("found %d files\n", file_count);
 }
 
 
@@ -226,22 +247,25 @@ enum {
 	OPCODE_CONTINUATION = 0,
 	OPCODE_TEXT = 1,
 	OPCODE_BINARY = 2,
+	OPCODE_PING = 0x9,
+	OPCODE_PONG = 0xa,
 };
 
 // read one websocket frame up to data_size, returning actual size
-static int websocket_read(int fd, unsigned char *data, int data_size)
+static int websocket_read(int fd, int *opcode, unsigned char *data, int data_size)
 {
   int i, len;
-  //unsigned char opcode;
   unsigned char mask_key[4] = {};
   int mask;
   
-  if (read(fd, data, 14) < 2)
+  if (read(fd, data, 2) < 2)
     return -1;
   
-  //opcode = data[0] & 0xf;
+  *opcode = data[0] & 0xf;
   mask = data[1] & 0x80 ? 1 : 0;
   len = data[1] & 0x7f;
+  
+  log_printf("opcode=%d len=%d\n", *opcode, len);
   
   if (len == 126) {
     // 16-bit len
@@ -283,9 +307,15 @@ static void websocket_write(int fd, int opcode, unsigned int mask, unsigned char
 {
   unsigned char header[32];
   unsigned int header_len = 2;
-
   
-  header[0] = 0x80 /*FIN=1*/ | (opcode & 0xf);
+  if (opcode != OPCODE_CONTINUATION && 
+      opcode != OPCODE_TEXT && 
+      opcode != OPCODE_BINARY &&
+      opcode != OPCODE_PING &&
+      opcode != OPCODE_PONG)
+	  return;
+
+  header[0] = 0x80 /*FIN=1*/ | opcode;
   header[1] = (mask ? 0x80 : 0x00) |
       ((len <= 125) ? len :
        len <= 0xffff ? 126 : 127);
@@ -316,6 +346,7 @@ static void websocket_write(int fd, int opcode, unsigned int mask, unsigned char
       data[i] ^= mask_key[i&3];
     }
   }
+  log_printf("%02x %02x hdr_len=%d len=%d\n", header[0], header[1], header_len, len);
   write(fd, header, header_len);
   write(fd, data, len);
 }
@@ -328,16 +359,28 @@ static void set_reg_from_string(char *s)
         s[1] == reg_names[i][1] &&
         s[2] == '=') {
       regs[i] = atoi(s+3);
-      printf("%s=%d   %s\n", reg_names[i], regs[i], s);
+      log_printf("%s=%d   %s\n", reg_names[i], regs[i], s);
       break;
     }
   }
 }
 
+static void websocket_serveReg(int reg)
+{
+  log_printf("%s value=%d reg=%d client_fd=%d\n", __func__, regs[reg], reg, client_fd);
+  if (client_fd != -1) {
+    char buf[32];
+    int len = sprintf(buf, "%s=%d", reg_names[reg], regs[reg]);
+    websocket_write(client_fd, OPCODE_TEXT, 0/*mask*/, (unsigned char*)buf, len);
+  }
+}
+		
 
 // open the server socket, accept any pending connection, perform upgrade, poll open websocket
 static int websocket_serve(void)
 {
+	static int startup = 0;
+	
 	if (srv_fd == -1) {
 		struct sockaddr_in addr;
 		int opt = 1;
@@ -370,15 +413,23 @@ static int websocket_serve(void)
         
         // read any data from the websocket
         while (client_fd != -1 && poll_in(client_fd, 0/*ms*/)) {
-                unsigned char data[32];
-                int len = websocket_read(client_fd, data, sizeof(data));
+                unsigned char data[128];
+		int opcode = 0;
+                int len = websocket_read(client_fd, &opcode, data, sizeof(data));
                 if (len == -1) {
                         close(client_fd);
                 	client_fd = -1;
-                } else if (len >= 4) {
+                } else if (opcode == OPCODE_TEXT && len >= 4) {
                 	data[len] = 0;
                 	set_reg_from_string((char*)data);
-                }
+			if (startup) {
+				startup = 0;
+				websocket_serveReg(SEL_RC);
+				websocket_serveReg(SEL_RD);
+			}
+                } else if (opcode == OPCODE_PING) {
+			websocket_write(client_fd, OPCODE_PONG, 0/*mask*/, data, len);
+		}
         }
 	
         // read any requests from the HTTP server socket
@@ -391,7 +442,7 @@ static int websocket_serve(void)
 	if (fd < 0)
 		return 0;
 	
-	char buffer[1024]; // hopefully enough for all headers
+	char buffer[4096];
 	int rc = read(fd, buffer, sizeof(buffer)-1);
 	if (rc <= 0)
 		return 0;
@@ -426,7 +477,7 @@ static int websocket_serve(void)
 			i++;
 		}
 		
-                printf("filename = %s\n", filename);
+                log_printf("filename = %s\n", filename);
 		for (i = 0; i < header_count; i++)
 			printf("%s\n", headers[i]);
 		
@@ -447,12 +498,12 @@ static int websocket_serve(void)
 		if (strcmp(filename, files[i].path+web_root_len) != 0)
 			continue;
 		char *content_type = mime_type(filename);
-		char resp[100];
+		char resp[1024];
 		int src_fd;
 		off_t size = files[i].size;
 
 		src_fd = open(files[i].path, O_RDONLY);
-		printf("%s %d %s\n\n\n", files[i].path, src_fd, content_type);
+		log_printf("%s %d %s\n\n\n", files[i].path, src_fd, content_type);
 		
 		if (src_fd == -1)
 			goto notfound;
@@ -524,7 +575,7 @@ upgrade_websocket:
 				break;
 			} else if (strncmp(headers[i], protocol, strlen(protocol)) == 0 ||
 			           strncmp(headers[i], version, strlen(version)) == 0) {
-			  printf("%s\n", headers[i]);
+			  log_printf("%s\n", headers[i]);
 			}
 		}
 		if (!key) goto badrequest;
@@ -545,12 +596,14 @@ upgrade_websocket:
 			"Sec-WebSocket-Accept: %s\r\n"
 			"\r\n",
 			accept);
-		printf("%d %s", hdr_len, resp);
+		log_printf("%d %s", hdr_len, resp);
 		write(fd, resp, hdr_len);
 		
-		if (client_fd != -1)
+		if (client_fd != -1) {
 			close(client_fd);  // close existing client
+		}
 		client_fd = fd;
+		startup = 1;
 	}
 	return 0;
 	
@@ -576,12 +629,7 @@ unsigned char websocket_readByte(int reg)
 void websocket_writeByte(unsigned char value, int reg)
 {
   regs[reg] = value;
-
-  if (client_fd != -1) {
-    char buf[32];
-    int len = sprintf(buf, "%s=%d", reg_names[reg], regs[reg]);
-    websocket_write(client_fd, OPCODE_TEXT, 0/*mask*/, (unsigned char*)buf, len);
-  }
+  websocket_serveReg(reg);
 }
 
 
@@ -590,7 +638,7 @@ void websocket_writeByte(unsigned char value, int reg)
 #ifdef MAIN
 int main(int argc, char *argv[])
 {
-	websocket_init("../../../../Js99er/src/");
+	websocket_init("/home/pete/Dropbox/ti994a/Js99er/src/");
 	while (1) {
                 websocket_readByte(SEL_TD);
 	}

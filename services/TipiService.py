@@ -10,7 +10,6 @@ from Pab import *
 from RawExtensions import RawExtensions
 from LevelTwo import LevelTwo
 from TipiDisk import TipiDisk
-from Oled import oled
 
 #
 # Setup logging
@@ -35,15 +34,12 @@ logger = logging.getLogger(__name__)
 # MAIN
 ##
 try:
-    oled.info("TIPI Init")
-
     tipi_io = TipiMessage()
     specialFiles = SpecialFiles(tipi_io)
     rawExtensions = RawExtensions(tipi_io)
     levelTwo = LevelTwo(tipi_io)
     tipiDisk = TipiDisk(tipi_io)
 
-    oled.info("TIPI Ready")
     logger.info("TIPI Ready")
     while True:
         logger.debug("waiting for request...")
@@ -80,5 +76,4 @@ try:
 
         logger.info("Request completed.")
 except Exception as e:
-    oled.info("Crash/Device Error")
     logger.error("Unhandled exception in main", exc_info=True)

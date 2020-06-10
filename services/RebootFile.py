@@ -2,7 +2,6 @@ import time
 import logging
 
 from Pab import *
-from Oled import oled
 from tipi.TipiPorts import TipiPorts
 
 logger = logging.getLogger(__name__)
@@ -34,7 +33,6 @@ class RebootFile(object):
     def close(self, pab, devname):
         logger.info("close %s", devname)
         self.tipi_io.send([SUCCESS])
-        oled.info("Reboot/PENDING...")
         # Give the TI a little time to complete the IO request.
         time.sleep(1.000)
         # let the TI know that the PI service is offline.

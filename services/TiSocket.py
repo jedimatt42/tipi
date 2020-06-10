@@ -3,7 +3,6 @@ import logging
 import errno
 import socket
 import fcntl
-from Oled import oled
 
 # Represent socket access from Raw extensions.
 # This is registered as 0x22 in RawExtensions.py
@@ -92,7 +91,6 @@ class TiSocket(object):
             sock.connect(server)
             fcntl.fcntl(sock, fcntl.F_SETFL, os.O_NONBLOCK)
             logger.info("connected")
-            oled.info("Socket %d/Connected", handleId)
             return GOOD
         except Exception:
             logger.info("failed to connect socket: %d", handleId)
@@ -107,7 +105,6 @@ class TiSocket(object):
             del(self.handles[handleId])
             self.safeClose(existing)
             logger.info("closed socket: %d", handleId)
-            oled.info("Socket %d/Closed", handleId)
         return GOOD
 
     # bytes: 0x22, handleId, write-cmd, <bytes to write>
@@ -121,7 +118,6 @@ class TiSocket(object):
             existing.sendall(bytes[3:])
             logger.debug("wrote %d bytes to socket: %d", len(bytes[3:]),
                          handleId)
-            oled.info("Socket %d/Wrote %d bytes", handleId, len(bytes[3:]))
             return GOOD
         except Exception:
             del(self.handles[handleId])
@@ -141,7 +137,6 @@ class TiSocket(object):
             limit = (bytes[3] << 8) + bytes[4]
             data = bytearray(existing.recv(limit))
             logger.info("read %d bytes from %d", len(data), handleId)
-            oled.info("Socket %d/Read %d bytes", handleId, len(data))
             return data
         except socket.error as e:
             err = e.args[0]
@@ -179,7 +174,6 @@ class TiSocket(object):
             self.bindings[serverId] = sock
             sock.listen(5)
             logger.info("bind success")
-            oled.info("Socket %d/Bound", serverId)
             return GOOD
         except Exception:
             logger.info("failed to bind socket: %d", serverId,
@@ -194,7 +188,6 @@ class TiSocket(object):
             del(self.bindings[serverId])
             self.safeClose(existing)
             logger.info("unbound socket: %d", serverId)
-            oled.info("Socket %d/Unbound", serverId)
         return GOOD
 
     def handleAccept(self, bytes):

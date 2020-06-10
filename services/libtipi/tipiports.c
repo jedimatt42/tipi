@@ -250,7 +250,6 @@ tipi_initGpio(PyObject *self, PyObject *args)
   Py_INCREF(Py_None);
   return Py_None;
 }
-
 static PyMethodDef TipiMethods[] = {
   {"getTD", tipi_getTD, METH_VARARGS, "get tipi input data"},
   {"getTC", tipi_getTC, METH_VARARGS, "set tipi input signals"},
@@ -259,6 +258,8 @@ static PyMethodDef TipiMethods[] = {
   {"initGpio", tipi_initGpio, METH_VARARGS, "set tipi gpio modes"},
   {NULL, NULL, 0, NULL}
 };
+
+#if PYTHON_ABI_VERSION < 3
 
 PyMODINIT_FUNC
 inittipiports(void)
@@ -269,3 +270,20 @@ inittipiports(void)
     return;
 }
 
+#else
+
+static struct PyModuleDef TipiModule = {
+  PyModuleDef_HEAD_INIT,
+  "tipiports",
+  NULL, /* module documentation */
+  -1,  /* global variable state */
+  TipiMethods
+};
+
+PyMODINIT_FUNC
+PyInit_tipiports(void)
+{
+  return PyModule_Create(&TipiModule);
+}
+
+#endif

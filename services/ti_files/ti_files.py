@@ -132,7 +132,7 @@ class ti_files(object):
     @staticmethod
     def catFileType(bytes):
         protected = 1
-	if ti_files.isProtected(bytes):
+        if ti_files.isProtected(bytes):
             protected = -1
         if ti_files.isProgram(bytes):
             return 5 * protected

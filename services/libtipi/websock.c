@@ -178,13 +178,6 @@ static char *trim(char *s)
 	return s;
 }
 
-static int poll_in(int fd, int ms)
-{
-  struct pollfd pfd = { .fd = fd, .events = POLLIN };
-  if (poll(&pfd, 1, ms) < 1)
-    return 0;
-  return (pfd.revents & POLLIN) ? 1 : 0;
-}
 
 
 static char *mime_type(const char *str)
@@ -374,7 +367,44 @@ static void websocket_serveReg(int reg)
     websocket_write(client_fd, OPCODE_TEXT, 0/*mask*/, (unsigned char*)buf, len);
   }
 }
-		
+
+static int server_create(void)
+{
+	struct sockaddr_in addr;
+	int opt = 1;
+	int addrlen = sizeof(addr);
+	int fd;
+
+	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
+		perror("socket");
+		goto err;
+	}
+
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR|SO_REUSEPORT, &opt, sizeof(opt))) {
+		perror("setsockopt SO_REUSEADDR|SO_REUSEPORT");
+		//goto err;
+	}
+
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = INADDR_ANY;
+	addr.sin_port = htons(PORT);
+
+	if (bind(fd, (struct sockaddr*)&addr, addrlen) < 0) {
+		perror("bind");
+		goto err;
+	}
+
+	if (listen(fd, 3) < 0) {
+		perror("listen");
+		goto err;
+	}
+	return fd;
+err:
+	if (fd != -1)
+		close(fd);
+	return -1;
+}
+
 
 // open the server socket, accept any pending connection, perform upgrade, poll open websocket
 static int websocket_serve(void)
@@ -382,43 +412,30 @@ static int websocket_serve(void)
 	static int startup = 0;
 	
 	if (srv_fd == -1) {
-		struct sockaddr_in addr;
-		int opt = 1;
-		int addrlen = sizeof(addr);
-
-		if ((srv_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
-			perror("socket");
+		srv_fd = server_create();
+		if (srv_fd == -1)
 			goto err;
-		}
-
-		if (setsockopt(srv_fd, SOL_SOCKET, SO_REUSEADDR|SO_REUSEPORT, &opt, sizeof(opt))) {
-			perror("setsockopt SO_REUSEADDR|SO_REUSEPORT");
-			//goto err;
-		}
-
-		addr.sin_family = AF_INET;
-		addr.sin_addr.s_addr = INADDR_ANY;
-		addr.sin_port = htons(PORT);
-
-		if (bind(srv_fd, (struct sockaddr*)&addr, addrlen) < 0) {
-			perror("bind");
-			goto err;
-		}
-
-		if (listen(srv_fd, 3) < 0) {
-			perror("listen");
-			goto err;
-		}
 	}
-        
+
+	struct pollfd pfd[] = {
+		{ .fd = srv_fd, .events = POLLIN },
+		{ .fd = client_fd, .events = POLLIN },
+	};
+
+	int ms = 100; // milliseconds
+	int rc = poll(pfd, ARRAY_SIZE(pfd), ms);
+	if (rc <= 0)
+		return 0;
+
         // read any data from the websocket
-        while (client_fd != -1 && poll_in(client_fd, 0/*ms*/)) {
+	if (client_fd != -1 && (pfd[1].revents & POLLIN)) {
                 unsigned char data[128];
 		int opcode = 0;
                 int len = websocket_read(client_fd, &opcode, data, sizeof(data));
                 if (len == -1) {
-                        close(client_fd);
-                	client_fd = -1;
+			// websocket closed
+			goto err;
+
                 } else if (opcode == OPCODE_TEXT && len >= 4) {
                 	data[len] = 0;
                 	set_reg_from_string((char*)data);
@@ -433,7 +450,7 @@ static int websocket_serve(void)
         }
 	
         // read any requests from the HTTP server socket
-	if (!poll_in(srv_fd, 0/*ms*/))
+	if ((pfd[0].revents & POLLIN) == 0)
 		return 0;
 	
 	struct sockaddr_in addr;
@@ -443,7 +460,7 @@ static int websocket_serve(void)
 		return 0;
 	
 	char buffer[4096];
-	int rc = read(fd, buffer, sizeof(buffer)-1);
+	rc = read(fd, buffer, sizeof(buffer)-1);
 	if (rc <= 0)
 		return 0;
 	buffer[rc] = 0;
@@ -479,7 +496,7 @@ static int websocket_serve(void)
 		
                 log_printf("filename = %s\n", filename);
 		for (i = 0; i < header_count; i++)
-			printf("%s\n", headers[i]);
+			log_printf("%s\n", headers[i]);
 		
 		for (i = 0; i < header_count; i++) {
 			if (strcasecmp(headers[i], "Upgrade: websocket") == 0 &&
@@ -606,13 +623,18 @@ upgrade_websocket:
 		startup = 1;
 	}
 	return 0;
-	
+
 err:
 	if (srv_fd != -1) {
 		close(srv_fd);
-                srv_fd = -1;
-        }
-	return -1;
+		srv_fd = -1;
+	}
+	if (client_fd != -1) {
+		close(client_fd);
+		client_fd = -1;
+	}
+	log_printf("websocket closed, restarting tipiservice\n");
+	exit(0); // restart service since websocket closed
 }
 
 

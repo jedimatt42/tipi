@@ -71,7 +71,7 @@ try:
         logger.debug("waiting for devicename...")
         devicename = tipi_io.receive()
 
-        filename = str(devicename)
+        filename = str(devicename, 'ascii')
         if specialFiles.handle(pab, filename):
             continue
 

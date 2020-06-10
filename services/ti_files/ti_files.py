@@ -57,7 +57,7 @@ class ti_files(object):
 
     @staticmethod
     def isValid(bytes):
-        return bytes[0] == 0x07 and str(bytes[1:8]) == "TIFILES"
+        return bytes[0] == 0x07 and str(bytes[1:8], 'ascii') == "TIFILES"
 
     @staticmethod
     def setTiFile(bytes):
@@ -116,7 +116,7 @@ class ti_files(object):
 
     @staticmethod
     def tiName(bytes):
-        return str(bytes[0x10:0x1A])
+        return str(bytes[0x10:0x1A], 'ascii')
 
     @staticmethod
     def setName(bytes, shortName):

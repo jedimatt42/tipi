@@ -5,7 +5,7 @@ import traceback
 import math
 import logging
 from . import NativeFile
-from ti_files import ti_files
+from .ti_files import ti_files
 from tinames import tinames
 from tifloat import tifloat
 from Pab import *

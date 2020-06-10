@@ -57,7 +57,7 @@ class ConfigFile(object):
             value = self.tipi_config.get(key)
             msg = key + "=" + value
             self.tipi_io.send([SUCCESS])
-            self.tipi_io.send(bytearray(msg))
+            self.tipi_io.send(bytearray(msg, 'ascii'))
             self.currentRecord += 1
             return
         self.tipi_io.send([EOPATTR])

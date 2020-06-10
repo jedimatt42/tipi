@@ -3,7 +3,7 @@ import io
 import sys
 import math
 import logging
-from ti_files import ti_files
+from .ti_files import ti_files
 from tinames import tinames
 from Pab import *
 

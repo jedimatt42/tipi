@@ -13,18 +13,19 @@ from ti_files import v9t9_files
 
 logger = logging.getLogger(__name__)
 
-tipi_disk_base = '/home/tipi/tipi_disk' 
+tipi_disk_base = "/home/tipi/tipi_disk"
+
 
 def waitForMonitor():
     time.sleep(2)
     checks = 3
     while checks > 0:
         time.sleep(1)
-        if os.path.isfile('/tmp/tipimon.lock'):
+        if os.path.isfile("/tmp/tipimon.lock"):
             checks = 3
         else:
             checks -= 1
-        
+
 
 def save(path, fileset):
     for filedata in fileset:
@@ -32,6 +33,4 @@ def save(path, fileset):
         logger.debug("saving upload to: %s", localfilename)
         filedata.save(localfilename)
         v9t9_files.convert(localfilename)
-    waitForMonitor()    
-    
-
+    waitForMonitor()

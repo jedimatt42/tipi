@@ -1,4 +1,3 @@
-
 import logging
 import os
 from ti_files import ti_files
@@ -13,7 +12,7 @@ def isValid(filename):
         return False
 
     tmpheader = bytearray(128)
-    moveHeader(bytes,tmpheader)
+    moveHeader(bytes, tmpheader)
 
     expectedlen = ti_files.getSectors(tmpheader) * 256
     flen = os.stat(filename).st_size
@@ -21,8 +20,9 @@ def isValid(filename):
         return False
     return True
 
+
 # Copy bytes from v9t9 header to position in TIFILES header
-def moveHeader(vheader,theader):
+def moveHeader(vheader, theader):
     theader[8] = vheader[14]
     theader[9] = vheader[15]
     theader[10] = vheader[12]
@@ -31,7 +31,8 @@ def moveHeader(vheader,theader):
     theader[13] = vheader[17]
     theader[14] = vheader[18]
     theader[15] = vheader[19]
-    
+
+
 # Safe v9t9 file as TIFILES file
 def convert(filename):
     if not isValid(filename):
@@ -43,11 +44,10 @@ def convert(filename):
 
     newheader = bytearray(128)
     newheader[0] = 7
-    newheader[1:8] = bytearray('TIFILES')
-    moveHeader(bytes,newheader)
+    newheader[1:8] = bytearray("TIFILES")
+    moveHeader(bytes, newheader)
     bytes[0:128] = newheader[0:128]
-    
+
     with open(filename, "wb") as fh:
         fh.write(bytes)
         return True
-    

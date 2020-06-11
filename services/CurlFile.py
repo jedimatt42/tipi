@@ -156,8 +156,6 @@ class CurlFile(object):
             self.tipi_io.send([EFILERR])
             logger.exception("failed to load file - %s", devname)
 
-
-
     def fetch(self, url, pab):
         tmpname = '/tmp/CF'
         cmd = "wget -O {} {}".format(tmpname, url)
@@ -165,15 +163,13 @@ class CurlFile(object):
         code = os.system(cmd)
         if code != 0:
             raise Exception("error downloading resource")
-	if ti_files.isTiFile(tmpname):
-	    if recordType(pab) == FIXED:
-		return FixedRecordFile.load(tmpname, pab)
-	    else:
-		return VariableRecordFile.load(tmpname, pab)
-	else:
-	    return NativeFile.load(tmpname, pab, url)
-
-
+        if ti_files.isTiFile(tmpname):
+            if recordType(pab) == FIXED:
+                return FixedRecordFile.load(tmpname, pab)
+            else:
+                return VariableRecordFile.load(tmpname, pab)
+        else:
+            return NativeFile.load(tmpname, pab, url)
 
     def parseDev(self, devname):
         return str(devname[3:])

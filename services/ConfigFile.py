@@ -72,7 +72,7 @@ class ConfigFile(object):
 
     def status(self, pab, devname):
         self.tipi_io.send([SUCCESS])
-	if len(self.tipi_config.keys()) < (self.currentRecord + 1):
+        if len(self.tipi_config.keys()) < (self.currentRecord + 1):
             self.tipi_io.send([STVARIABLE | STLEOF])
             return
         self.tipi_io.send([STVARIABLE])

@@ -52,19 +52,19 @@ class TcpFile(object):
         self.tipi_io.send([SUCCESS])
 
     def closeConnection(self, devname):
-	msg = bytearray(3)
-	msg[0] = 0x22
-	msg[1] = self.handles[devname]
-	msg[2] = 0x02
-	self.tisockets.processRequest(msg)
-	del(self.handles[devname])
+        msg = bytearray(3)
+        msg[0] = 0x22
+        msg[1] = self.handles[devname]
+        msg[2] = 0x02
+        self.tisockets.processRequest(msg)
+        del(self.handles[devname])
 
     def unbind(self, devname):
         msg = bytearray(3)
         msg[0] = 0x22
         msg[1] = 0x00
         msg[2] = 0x06
-	self.tisockets.processRequest(msg)
+        self.tisockets.processRequest(msg)
 
     def open(self, pab, devname):
         logger.debug("open devname: %s", devname)
@@ -89,17 +89,17 @@ class TcpFile(object):
         return
 
     def connectClient(self, host, port):
-	handleId = self.tisockets.allocateHandleId()
-	address = host + ':' + port
-	msg = bytearray(len(address) + 3)
-	msg[0] = 0x22
-	msg[1] = handleId
-	msg[2] = 0x01
-	msg[3:] = address
-	res = self.tisockets.processRequest(msg)
-	if res == BAD:
-	    raise Exception("error opening socket")
-	self.handles[devname] = handleId
+        handleId = self.tisockets.allocateHandleId()
+        address = host + ':' + port
+        msg = bytearray(len(address) + 3)
+        msg[0] = 0x22
+        msg[1] = handleId
+        msg[2] = 0x01
+        msg[3:] = address
+        res = self.tisockets.processRequest(msg)
+        if res == BAD:
+            raise Exception("error opening socket")
+        self.handles[devname] = handleId
 
     def bindServer(self, host, port):
         iface_addr = host + ':' + port

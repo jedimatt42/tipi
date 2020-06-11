@@ -9,8 +9,8 @@ from Pab import *
 
 logger = logging.getLogger(__name__)
 
-class VariableRecordFile(object):
 
+class VariableRecordFile(object):
     def __init__(self, bytes, pab):
         self.dirty = False
         self.mode = mode(pab)
@@ -20,7 +20,7 @@ class VariableRecordFile(object):
             self.records = self.__loadRecords(bytes[128:])
         else:
             self.dirty = True
-            self.records = [ ]
+            self.records = []
         if self.mode == APPEND:
             self.currentRecord = len(self.records)
         else:
@@ -29,7 +29,7 @@ class VariableRecordFile(object):
     @staticmethod
     def create(devname, localPath, pab):
         """ Create a new file, replacing one that might already exist """
-        nameParts = str(devname).split('.')
+        nameParts = str(devname).split(".")
         tiname = nameParts[len(nameParts) - 1]
         recLen = recordLength(pab)
         if recLen == 0:
@@ -39,7 +39,7 @@ class VariableRecordFile(object):
             flags |= ti_files.INTERNAL
         header = ti_files.createHeader(flags, tiname, bytearray(0))
         ti_files.setRecordLength(header, recLen)
-        ti_files.setRecordsPerSector(header, int(256/recLen))
+        ti_files.setRecordsPerSector(header, int(256 / recLen))
         return VariableRecordFile(header, pab)
 
     @staticmethod
@@ -59,7 +59,9 @@ class VariableRecordFile(object):
             if not ti_files.isVariable(fdata):
                 raise Exception("file is FIXED, must be VARIABLE")
             if fileType(pab) == RELATIVE:
-                raise Exception("variable length records are restricted to SEQUENTIAL access")
+                raise Exception(
+                    "variable length records are restricted to SEQUENTIAL access"
+                )
             return VariableRecordFile(fdata, pab)
         except Exception as e:
             logger.exception("not a valid Variable Record TIFILE %s", unix_file_name)
@@ -85,7 +87,9 @@ class VariableRecordFile(object):
     def writeRecord(self, rdata, pab):
         self.dirty = True
         if self.currentRecord >= len(self.records):
-            self.records += [bytearray(0)] * (1 + self.currentRecord - len(self.records))
+            self.records += [bytearray(0)] * (
+                1 + self.currentRecord - len(self.records)
+            )
         self.records[self.currentRecord] = bytearray(rdata)
         self.currentRecord += 1
 
@@ -112,14 +116,14 @@ class VariableRecordFile(object):
             return records
 
         nextoff = offset + bytes[offset] + 1
-        record = bytearray(bytes[offset + 1:nextoff])
+        record = bytearray(bytes[offset + 1 : nextoff])
         records += [record]
 
         try:
             while sIdx < sectors:
                 logger.debug("record %d of %d", sIdx, sectors)
                 offset = nextoff
-                if bytes[offset] == 0xff:
+                if bytes[offset] == 0xFF:
                     sIdx += 1
                     if sIdx >= sectors:
                         break
@@ -128,7 +132,7 @@ class VariableRecordFile(object):
                     nextoff = offset + bytes[offset] + 1
                 else:
                     nextoff += bytes[offset] + 1
-                record = bytearray(bytes[offset + 1:nextoff])
+                record = bytearray(bytes[offset + 1 : nextoff])
                 records += [record]
         except Exception as e:
             logger.exception("failed to load all records")
@@ -155,19 +159,19 @@ class VariableRecordFile(object):
             rec = self.records[recNo]
             recLen = len(rec)
             if (255 - offset) <= (recLen + 1):
-                sector[offset] = 0xff
+                sector[offset] = 0xFF
                 sectors += [sector]
                 offset = 0
                 sector = bytearray(256)
             sector[offset] = recLen
             offset += 1
             if recLen > 0:
-                sector[offset:offset + recLen] = rec
+                sector[offset : offset + recLen] = rec
                 offset += recLen
             recNo += 1
 
         if offset != 0:
-            sector[offset] = 0xff
+            sector[offset] = 0xFF
             offset += 1
             sectors += [sector]
         sectorCount = len(sectors)
@@ -189,9 +193,9 @@ class VariableRecordFile(object):
             idx += 256
         return bytes
 
+
 def load_internal(unix_file_name):
     pab = bytearray(8)
     pab[1] = (VARIABLE << 4) + (INPUT << 1)
     pab[4] = 80
     return VariableRecordFile.load(unix_file_name, pab).records
-

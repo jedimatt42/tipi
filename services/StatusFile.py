@@ -1,4 +1,3 @@
-
 import time
 import logging
 from Pab import *
@@ -8,7 +7,6 @@ logger = logging.getLogger(__name__)
 
 
 class StatusFile(object):
-
     @staticmethod
     def filename():
         return "STATUS"

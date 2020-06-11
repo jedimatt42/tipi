@@ -18,7 +18,6 @@ tipi_config = TipiConfig.instance()
 
 
 class SpecialFiles(object):
-
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
         self.specreg = {
@@ -31,7 +30,7 @@ class SpecialFiles(object):
             StatusFile.filename(): StatusFile(self.tipi_io),
             TcpFile.filename(): TcpFile(self.tipi_io),
             UpgradeFile.filename(): UpgradeFile(self.tipi_io),
-            VariablesFile.filename(): VariablesFile(self.tipi_io)
+            VariablesFile.filename(): VariablesFile(self.tipi_io),
         }
 
     def handle(self, pab, devname):

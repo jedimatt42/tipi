@@ -19,12 +19,15 @@ if not os.path.isdir(logpath):
     os.makedirs(logpath)
 
 LOG_FILENAME = logpath + "/tipi.log"
-logging.getLogger('').setLevel(logging.INFO)
+logging.getLogger("").setLevel(logging.INFO)
 loghandler = logging.handlers.RotatingFileHandler(
-    LOG_FILENAME, maxBytes=(1000 * 1024), backupCount=2)
-logformatter = logging.Formatter('%(asctime)-15s %(name)-12s: %(levelname)-8s %(message)s')
+    LOG_FILENAME, maxBytes=(1000 * 1024), backupCount=2
+)
+logformatter = logging.Formatter(
+    "%(asctime)-15s %(name)-12s: %(levelname)-8s %(message)s"
+)
 loghandler.setFormatter(logformatter)
-logging.getLogger('').addHandler(loghandler)
+logging.getLogger("").addHandler(loghandler)
 
 __name__ = "TipiService"
 
@@ -47,9 +50,9 @@ try:
         try:
             msg = tipi_io.receive()
         except BackOffException:
-            if os.path.exists('/tmp/tipi_safepoint'):
-                logger.info('found /tmp/tipi_safepoint, restarting')
-                os.remove('/tmp/tipi_safepoint')
+            if os.path.exists("/tmp/tipi_safepoint"):
+                logger.info("found /tmp/tipi_safepoint, restarting")
+                os.remove("/tmp/tipi_safepoint")
                 quit()
         if msg is None:
             continue

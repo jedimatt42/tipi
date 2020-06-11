@@ -5,8 +5,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class Mouse(object):
 
+class Mouse(object):
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
         self.file = open("/dev/input/mice", "rb")
@@ -19,9 +19,9 @@ class Mouse(object):
         try:
             buf = self.file.read(3)
             self.button = ord(buf[0])
-            x, y = struct.unpack("bb", buf[1:]);
+            x, y = struct.unpack("bb", buf[1:])
             logger.debug("x %d, y %d, b %d", x, y, self.button)
-            return bytearray(struct.pack('bbb', x, -1 * y, self.button))
+            return bytearray(struct.pack("bbb", x, -1 * y, self.button))
         except IOError as e:
             return bytearray([0, 0, self.button])
 

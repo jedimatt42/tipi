@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 class RebootFile(object):
-
     @staticmethod
     def filename():
         return "REBOOT"
@@ -37,9 +36,9 @@ class RebootFile(object):
         time.sleep(1.000)
         # let the TI know that the PI service is offline.
         TipiPorts.getInstance().setRC(0xFF)
-        with open("/tmp/tipireboot", 'w') as fh_out:
+        with open("/tmp/tipireboot", "w") as fh_out:
             fh_out.write("woot")
-        # Block forever, until we are killed and restarted. 
+        # Block forever, until we are killed and restarted.
         while True:
             time.sleep(2)
 

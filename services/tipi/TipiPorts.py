@@ -6,8 +6,8 @@ import RPi.GPIO as GPIO
 
 logger = logging.getLogger(__name__)
 
-class TipiPorts(object):
 
+class TipiPorts(object):
     def __init__(self):
         logger.info("Using libtipi wiringPi GPIO")
         tipiports.initGpio()
@@ -36,6 +36,7 @@ class TipiPorts(object):
     def getInstance():
         return singleton
 
+
 singleton = TipiPorts()
 
 if __name__ == "__main__":
@@ -45,4 +46,3 @@ if __name__ == "__main__":
     while True:
         print "M5FFD = " + hex(singleton.getTC()) + " M5FFF = " + hex(singleton.getTD())
         time.sleep(5)
-

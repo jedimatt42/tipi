@@ -9,8 +9,8 @@ from Pab import *
 
 logger = logging.getLogger(__name__)
 
-class FixedRecordFile(object):
 
+class FixedRecordFile(object):
     def __init__(self, bytes, pab):
         self.dirty = False
         self.header = bytes[:128]
@@ -18,7 +18,7 @@ class FixedRecordFile(object):
         self.filetype = fileType(pab)
         self.recordLength = ti_files.recordLength(self.header)
         if self.mode == OUTPUT and self.filetype == SEQUENTIAL:
-            self.records = [ ]
+            self.records = []
             self.dirty = True
         else:
             self.records = self.__loadRecords(bytes[128:])
@@ -26,11 +26,16 @@ class FixedRecordFile(object):
             self.currentRecord = len(self.records)
         else:
             self.currentRecord = 0
-        logger.info("records loaded: %d, currentRecord: %d, recordLength: %d", len(self.records), self.currentRecord, self.recordLength)
+        logger.info(
+            "records loaded: %d, currentRecord: %d, recordLength: %d",
+            len(self.records),
+            self.currentRecord,
+            self.recordLength,
+        )
 
     @staticmethod
     def create(devname, localpath, pab):
-        nameParts = str(devname).split('.')
+        nameParts = str(devname).split(".")
         tiname = nameParts[len(nameParts) - 1]
         recLen = recordLength(pab)
         if recLen == 0:
@@ -41,7 +46,7 @@ class FixedRecordFile(object):
             flags |= ti_files.INTERNAL
         header = ti_files.createHeader(flags, tiname, bytearray(0))
         ti_files.setRecordLength(header, recLen)
-        ti_files.setRecordsPerSector(header, int(256/recLen))
+        ti_files.setRecordsPerSector(header, int(256 / recLen))
         recordFile = FixedRecordFile(header, pab)
         recordFile.dirty = True
         return recordFile
@@ -94,10 +99,14 @@ class FixedRecordFile(object):
             self.currentRecord = recNo
         if self.currentRecord >= len(self.records):
             logger.info("growing records")
-            self.records += [bytearray(self.recordLength)] * (1 + self.currentRecord - len(self.records))
+            self.records += [bytearray(self.recordLength)] * (
+                1 + self.currentRecord - len(self.records)
+            )
         record = self.records[self.currentRecord]
-        record[:len(rdata)] = bytearray(rdata)
-        logger.info("set record %d to bytes of length %d", self.currentRecord, len(rdata))
+        record[: len(rdata)] = bytearray(rdata)
+        logger.info(
+            "set record %d to bytes of length %d", self.currentRecord, len(rdata)
+        )
         self.currentRecord += 1
 
     def readRecord(self, idx):
@@ -120,7 +129,7 @@ class FixedRecordFile(object):
         count = ti_files.recordCount(self.header)
         idx = 0
         records = []
-        
+
         while idx < count:
             record = self.__recordBytes(bytes, idx)
             if record == None:
@@ -160,7 +169,7 @@ class FixedRecordFile(object):
                 sectors += [sector]
                 offset = 0
                 sector = bytearray(256)
-            sector[offset:offset + recLen] = rec
+            sector[offset : offset + recLen] = rec
             offset += recLen
             recNo += 1
 

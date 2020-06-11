@@ -16,13 +16,15 @@ def configureWifi(wificonfig):
         with open(wificonfig) as fh:
             ssid = fh.readline().rstrip()
             psk = fh.readline().rstrip()
-        
+
         # remove handoff file
         os.remove(wificonfig)
 
         # adjust settings for network 0
-        with open("/etc/wpa_supplicant/wpa_supplicant.conf",'w') as fh_out:
-            with open("/home/tipi/tipi/services/templates/wpa_supplicant.conf") as fh_in:
+        with open("/etc/wpa_supplicant/wpa_supplicant.conf", "w") as fh_out:
+            with open(
+                "/home/tipi/tipi/services/templates/wpa_supplicant.conf"
+            ) as fh_in:
                 for line in fh_in:
                     line = line.replace("${SSID}", ssid)
                     line = line.replace("${PSK}", psk)
@@ -36,6 +38,7 @@ def configureWifi(wificonfig):
     except Exception as e:
         print e
 
+
 while True:
     time.sleep(1)
 
@@ -48,7 +51,7 @@ while True:
         else:
             while True:
                 time.sleep(20)
-        
+
     # reboot the PI
     elif os.path.exists("/tmp/tipireboot"):
         os.remove("/tmp/tipireboot")
@@ -58,14 +61,14 @@ while True:
         else:
             while True:
                 time.sleep(20)
-                
+
     # Configure WiFi from TI-side
     elif os.path.exists("/tmp/wificonfig"):
         configureWifi("/tmp/wificonfig")
-    
+
     # Configure WiFi from bootstrap file on USB stick:
     elif os.path.exists("/media/usb1/tipiwifi.txt"):
-        configureWifi("/media/usb1/tipiwifi.txt")    
+        configureWifi("/media/usb1/tipiwifi.txt")
 
     # Upgrade TIPI services
     elif os.path.exists("/tmp/tipiupgrade"):
@@ -75,12 +78,10 @@ while True:
             raise Exception("failed to run tipi upgrade")
 
     elif os.path.exists("/tmp/tz"):
-        with open("/tmp/tz", 'r') as tz_file:
+        with open("/tmp/tz", "r") as tz_file:
             timezone = tz_file.readline().rstrip()
         callargs = ["/usr/bin/raspi-config", "nonint", "do_change_timezone", timezone]
         exitcode = call(callargs)
         os.remove("/tmp/tz")
         if exitcode:
             raise Exception("failed to set timezone {}".format(timezone))
-
-

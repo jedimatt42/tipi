@@ -31,7 +31,7 @@ RELATIVE = 0x01
 
 
 def fileType(pab):
-    return (pab[1] & 0x01)
+    return pab[1] & 0x01
 
 
 # Constants for modes
@@ -62,11 +62,13 @@ VARIABLE = 0x01
 def recordType(pab):
     return (pab[1] & 0x10) >> 4
 
+
 # Length of file records
 
 
 def recordLength(pab):
     return pab[4]
+
 
 #
 # Return byte count from PAB / or byte count in LOAD/SAVE operations
@@ -74,6 +76,7 @@ def recordLength(pab):
 
 def recordNumber(pab):
     return (pab[6] << 8) + pab[7]
+
 
 #
 # pretty pab string
@@ -90,24 +93,22 @@ def logPab(pab):
         6: "Save",
         7: "Delete",
         8: "Scratch",
-        9: "Status"}
+        9: "Status",
+    }
     fileTypes = {SEQUENTIAL: "Sequential", RELATIVE: "Relative"}
-    modes = {
-        UPDATE: "Update",
-        OUTPUT: "Output",
-        INPUT: "Input",
-        APPEND: "Append"}
+    modes = {UPDATE: "Update", OUTPUT: "Output", INPUT: "Input", APPEND: "Append"}
     dataTypes = {DISPLAY: "Display", INTERNAL: "Internal"}
     recordTypes = {FIXED: "Fixed", VARIABLE: "Variable"}
-    logger.info("opcode: %s, fileType: %s, mode: %s, dataType: %s, recordType: %s, recordLength: %d, recordNumber: %d",
-                 opcodes[opcode(pab)],
-                 fileTypes[fileType(pab)],
-                 modes[mode(pab)],
-                 dataTypes[dataType(pab)],
-                 recordTypes[recordType(pab)],
-                 recordLength(pab),
-                 recordNumber(pab)
-                 )
+    logger.info(
+        "opcode: %s, fileType: %s, mode: %s, dataType: %s, recordType: %s, recordLength: %d, recordNumber: %d",
+        opcodes[opcode(pab)],
+        fileTypes[fileType(pab)],
+        modes[mode(pab)],
+        dataTypes[dataType(pab)],
+        recordTypes[recordType(pab)],
+        recordLength(pab),
+        recordNumber(pab),
+    )
 
 
 #

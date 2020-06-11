@@ -8,7 +8,6 @@ from subprocess import call
 
 
 class TipiWatchDog(object):
-
     def __init__(self):
         self.__RESET = 26
 
@@ -25,10 +24,8 @@ class TipiWatchDog(object):
             pass
 
         GPIO.add_event_detect(
-            self.__RESET,
-            GPIO.FALLING,
-            callback=onReset,
-            bouncetime=100)
+            self.__RESET, GPIO.FALLING, callback=onReset, bouncetime=100
+        )
         print "GPIO initialized."
 
 

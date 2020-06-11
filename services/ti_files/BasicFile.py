@@ -4,8 +4,8 @@ from subprocess import call
 
 logger = logging.getLogger(__name__)
 
-class BasicFile(object):
 
+class BasicFile(object):
     def __init__(self, bytes):
         self.body = bytes
 
@@ -14,7 +14,7 @@ class BasicFile(object):
         logger.info("load %s", unix_file_name)
         fh = None
         source_file_name = unix_file_name
-        if source_file_name.lower().endswith('.tb'):
+        if source_file_name.lower().endswith(".tb"):
             logger.info("converting with tidbit: %s", source_file_name)
             try:
                 tmpfp = "/tmp/tidbit_tmp"
@@ -41,7 +41,7 @@ class BasicFile(object):
         return BasicFile(fdata)
 
     def save(self, unix_file_name):
-        if unix_file_name.lower().endswith('.tb'):
+        if unix_file_name.lower().endswith(".tb"):
             logger.warn("saving PROGRAM to .tb files not permitted")
             raise Exception("saving PROGRAM to .tb files not permitted")
 
@@ -77,11 +77,10 @@ class BasicFile(object):
         cmdargs = ["/home/tipi/xdt99/xbas99.py", "-d", "-o", fp, tmpfp]
         if call(cmdargs) != 0:
             raise Exception("Invalid BASIC Program")
- 
+
     @staticmethod
     def tidbit(fp, tmpfp):
         cmdargs = ["php", "/home/tipi/tidbit/tidbit_cmd.php", fp, "100", "10", tmpfp]
         logger.info("issuing command: " + str(cmdargs))
         if call(cmdargs) != 0:
             raise Exception("Invalid Tidbit Source")
-

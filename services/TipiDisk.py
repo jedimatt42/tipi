@@ -27,8 +27,8 @@ basicSuffixes = (".b99", ".bas", ".xb", ".tb")
 
 tipi_config = TipiConfig.instance()
 
-class TipiDisk(object):
 
+class TipiDisk(object):
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
         self.openFiles = {}
@@ -46,7 +46,7 @@ class TipiDisk(object):
             6: self.handleSave,
             7: self.handleDelete,
             8: self.handleScratch,
-            9: self.handleStatus
+            9: self.handleStatus,
         }
         handler = switcher.get(opcode(pab), self.handleNotSupported)
         handler(pab, filename)
@@ -124,7 +124,6 @@ class TipiDisk(object):
                 self.sendErrorCode(EOPATTR)
                 logger.error("failed to open file - %s", devname)
                 return
-
 
         else:
             if self.parentExists(localPath):
@@ -278,7 +277,9 @@ class TipiDisk(object):
             self.sendErrorCode(EDVNAME)
             return
         try:
-            if (not ti_files.isTiFile(unix_name)) and unix_name.lower().endswith(basicSuffixes):
+            if (not ti_files.isTiFile(unix_name)) and unix_name.lower().endswith(
+                basicSuffixes
+            ):
                 prog_file = BasicFile.load(unix_name)
             else:
                 prog_file = ProgramImageFile.load(unix_name)
@@ -286,7 +287,11 @@ class TipiDisk(object):
             filesize = prog_file.getImageSize()
             bytes = prog_file.getImage()
             if filesize > maxsize:
-                logger.debug("TI buffer too small, only loading %d of %d bytes", maxsize, filesize)
+                logger.debug(
+                    "TI buffer too small, only loading %d of %d bytes",
+                    maxsize,
+                    filesize,
+                )
                 bytes = bytes[:maxsize]
 
             dirname = os.path.dirname(unix_name)

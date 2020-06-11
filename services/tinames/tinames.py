@@ -96,9 +96,9 @@ def encodeName(name):
     if len(name) <= 10:
         return name
     else:
-        crc = Crc15.calc(bytearray(name[6:]))
+        crc = Crc15.calc(bytearray(name[6:], 'ascii'))
         shortname = "{}`{}".format(name[:6], baseN(crc, 36))
-        return str(shortname)
+        return shortname
 
 
 def baseN(num, b, numerals="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"):

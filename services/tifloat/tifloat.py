@@ -12,13 +12,13 @@ def asFloat(val):
         val *= -1
 
     if val >= 100:
-        word0 = (val / 100) | 0x4100
+        word0 = int(val / 100) | 0x4100
         word1 = val % 100
     else:
         if val == 0:
             word0 = 0
         else:
-            word0 = val | 0x4000
+            word0 = int(val) | 0x4000
         word1 = 0
 
     if tmp < 0:

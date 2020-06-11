@@ -5,7 +5,7 @@ import traceback
 import math
 import logging
 from . import NativeFile
-from ti_files import ti_files
+from ti_files.ti_files import ti_files
 from tinames import tinames
 from tifloat import tifloat
 from Pab import *
@@ -160,20 +160,20 @@ class CatalogFile(object):
 
     def __encodeVolRecord(self, name, ftype, sectors, recordLength):
         if self.longnames:
-            recname = name
+            recname = bytearray(name, 'ascii')
             buff = bytearray(28 + len(recname))
         else:
-            recname = tinames.encodeName(name)
+            recname = bytearray(tinames.encodeName(name), 'ascii')
             buff = bytearray(38)
 
         return self.__encodeCatRecord(buff, recname, ftype, sectors, recordLength)
 
     def __encodeDirRecord(self, name, ftype, sectors, recordLength):
         if self.longnames:
-            recname = name
+            recname = bytearray(name, 'ascii')
             buff = bytearray(28 + len(recname))
         else:
-            recname = tinames.asTiShortName(name)
+            recname = bytearray(tinames.asTiShortName(name), 'ascii')
             buff = bytearray(38)
 
         return self.__encodeCatRecord(buff, recname, ftype, sectors, recordLength)

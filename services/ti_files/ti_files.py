@@ -57,7 +57,7 @@ class ti_files(object):
 
     @staticmethod
     def isValid(bytes):
-        return bytes[0] == 0x07 and str(bytes[1:8]) == "TIFILES"
+        return bytes[0] == 0x07 and str(bytes[1:8], 'ascii') == "TIFILES"
 
     @staticmethod
     def setTiFile(bytes):
@@ -116,7 +116,7 @@ class ti_files(object):
 
     @staticmethod
     def tiName(bytes):
-        return str(bytes[0x10:0x1A])
+        return str(bytes[0x10:0x1A], 'ascii')
 
     @staticmethod
     def setName(bytes, shortName):
@@ -174,18 +174,18 @@ class ti_files(object):
         if ti_files.isValid(bytes):
             logger.debug("TIFILES Header: ")
             logger.debug("  [8,9]  sectors: " +
-                         str(ti_files.getSectors(bytes)))
+                         str(ti_files.getSectors(bytes), 'ascii'))
             logger.debug("   [10]  type: " +
-                         str(ti_files.flagsToString(bytes)))
+                         ti_files.flagsToString(bytes))
             logger.debug("   [11]  records per sector: " +
-                         str(ti_files.recordsPerSector(bytes)))
+                         ti_files.recordsPerSector(bytes))
             logger.debug("   [12]  eofOffset: " +
-                         str(ti_files.eofOffset(bytes)))
+                         ti_files.eofOffset(bytes))
             logger.debug("   [13]  record length: " +
-                         str(ti_files.recordLength(bytes)))
+                         ti_files.recordLength(bytes))
             logger.debug("[14,15]  record count: " +
-                         str(ti_files.recordCount(bytes)))
-            logger.debug("[16:26]  name: " + str(ti_files.tiName(bytes)))
+                         ti_files.recordCount(bytes))
+            logger.debug("[16:26]  name: " + ti_files.tiName(bytes))
         else:
             logger.error("not TIFILES header")
 

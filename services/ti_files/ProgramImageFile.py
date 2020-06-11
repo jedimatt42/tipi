@@ -1,5 +1,5 @@
 import logging
-from ti_files import ti_files
+from ti_files.ti_files import ti_files
 
 logger = logging.getLogger(__name__)
 

@@ -62,7 +62,7 @@ class StatusFile(object):
                     self.tipi_io.send([EEOF])
                     return
                 else:
-                    fdata = bytearray(self.tipiStatus.record(readRec))
+                    fdata = bytearray(self.tipiStatus.record(readRec), 'ascii')
                     self.tipi_io.send([SUCCESS])
                     self.tipi_io.send(fdata)
                     self.recordNo += 1

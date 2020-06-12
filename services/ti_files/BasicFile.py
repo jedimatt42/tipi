@@ -1,5 +1,5 @@
 import logging
-from ti_files import ti_files
+from . import ti_files
 from subprocess import call
 
 logger = logging.getLogger(__name__)

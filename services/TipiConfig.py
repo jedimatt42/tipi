@@ -11,7 +11,7 @@ import os
 import logging
 import time
 import re
-from ti_files.ti_files import ti_files
+from ti_files import ti_files
 
 LOGGER = logging.getLogger(__name__)
 

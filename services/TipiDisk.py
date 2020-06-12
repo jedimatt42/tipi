@@ -5,7 +5,6 @@ import time
 import os
 import errno
 
-from ti_files.ti_files import ti_files
 from ti_files.ProgramImageFile import ProgramImageFile
 from ti_files.FixedRecordFile import FixedRecordFile
 from ti_files.VariableRecordFile import VariableRecordFile
@@ -13,6 +12,7 @@ from ti_files.VariableRecordFile import load_internal
 from ti_files.CatalogFile import CatalogFile
 from ti_files.NativeFile import NativeFile
 from ti_files.BasicFile import BasicFile
+from ti_files import ti_files
 from array import array
 from tipi.TipiMessage import TipiMessage
 from tifloat import tifloat

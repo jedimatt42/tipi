@@ -1,7 +1,7 @@
 import os
 import traceback
 import logging
-from ti_files.ti_files import ti_files
+from ti_files import ti_files
 from Pab import *
 from ti_files.NativeFile import NativeFile
 from ti_files.BasicFile import BasicFile

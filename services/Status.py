@@ -33,14 +33,15 @@ class Status(object):
                 )
 
         with open("/home/tipi/tipi.uuid", "r") as fh_in:
-            self.__records.append("UUID={}".format(fh_in.readline()))
+            self.__records.append("UUID={}".format(fh_in.readline().strip()))
 
         # This needs to work even if there is no network.. thus a catch all.
         try:
-            upgradeCheck = check_output(["/home/tipi/tipi/setup/upgrade.sh"])
+            upgradeCheck = str(check_output(["/home/tipi/tipi/setup/upgrade.sh"]), 'ascii')
             latest = upgradeCheck.split("\n")[1]
             if latest.startswith("Latest Version: "):
-                self.__records.append("LATEST={}".format(latest.split(":")[1].strip()))
+                gitver=latest.split(":")[1].strip()
+                self.__records.append(f'LATEST={gitver}')
         except Exception as e:
             logger.warn("failed to fetch latest version info")
 

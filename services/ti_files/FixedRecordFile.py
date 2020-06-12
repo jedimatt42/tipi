@@ -4,7 +4,7 @@ import sys
 import traceback
 import math
 import logging
-from ti_files import ti_files
+from . import ti_files
 from Pab import *
 
 logger = logging.getLogger(__name__)

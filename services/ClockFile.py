@@ -26,7 +26,7 @@ class ClockFile(object):
             self.tipi_io.send([EOPATTR])
 
     def close(self, pab, devname):
-        logger.info("close special? {}".format(devname))
+        logger.info(f"close special? {devname}")
         self.tipi_io.send([SUCCESS])
 
     def open(self, pab, devname):
@@ -52,13 +52,13 @@ class ClockFile(object):
                 if self.mode == "corcomp":
                     pattern = "%w,%m/%d/%y,%H:%M:%S"
                     record = time.strftime(pattern)
-                    fdata = bytearray(record)
+                    fdata = bytearray(record, 'ascii')
                     self.tipi_io.send([SUCCESS])
                     self.tipi_io.send(fdata)
                     return
                 if self.mode == "tipi":
                     record = time.asctime()
-                    fdata = bytearray(record)
+                    fdata = bytearray(record, 'ascii')
                     self.tipi_io.send([SUCCESS])
                     self.tipi_io.send(fdata)
                     return

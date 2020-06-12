@@ -70,7 +70,7 @@ class TiSocket(object):
         sock = None
         try:
             handleId = bytes[1]
-            params = str(bytes[3:]).split(":")
+            params = str(bytes[3:], 'ascii').split(":")
             hostname = params[0]
             port = int(params[1])
             logger.info("open socket(%d) %s:%d", handleId, hostname, port)

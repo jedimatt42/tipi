@@ -60,7 +60,7 @@ def isValid(bytes):
 
 def setTiFile(bytes):
     bytes[0] = 0x07
-    bytes[1:8] = "TIFILES"
+    bytes[1:8] = bytearray("TIFILES", 'ascii')
 
 
 def getSectors(bytes):
@@ -194,19 +194,19 @@ def createHeader(flags, tiname, data):
     # set record counts based on data array. (not sufficient)
     header = bytearray(128)
     header[0] = 0x07
-    header[1:8] = bytearray("TIFILES")
+    header[1:8] = bytearray("TIFILES", 'ascii')
     header[10] = flags
 
     datalen = len(data)
-    sectors = datalen / 256
-    eofOffset = datalen % 256
+    sectors = int(datalen / 256)
+    eofOffset = int(datalen % 256)
     if eofOffset != 0:
         sectors += 1
     header[8] = sectors >> 8
     header[9] = sectors & 0xFF
     header[12] = eofOffset
 
-    header[0x10:0x1A] = bytearray(tiname.ljust(10,' '))
+    header[0x10:0x1A] = bytearray(tiname.ljust(10,' '), 'ascii')
     return header
 
 

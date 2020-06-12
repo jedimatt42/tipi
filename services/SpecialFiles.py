@@ -36,13 +36,13 @@ class SpecialFiles(object):
     def handle(self, pab, devname):
         logger.debug("Matching special file handler for: %s", devname)
         if devname.startswith(("URI1.", "URI2.", "URI3.")):
-            uriShortcut = str(devname[:4])
+            uriShortcut = str(devname[:4], 'ascii')
             link = tipi_config.get(uriShortcut)
             if link != "":
                 devname = "PI." + link + "/" + devname[5:]
                 logger.debug("using %s to map to %s", uriShortcut, devname)
         if devname.startswith("PI."):
-            fname = str(devname[3:])
+            fname = str(devname[3:], 'ascii')
             logger.debug("Looking for special file handler: %s", fname)
             for prefix in self.specreg.keys():
                 if fname.startswith(prefix):

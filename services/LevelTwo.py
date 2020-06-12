@@ -43,7 +43,7 @@ class LevelTwo(object):
         bytes = self.tipi_io.receive()
         unit = bytes[0]
         protvalue = bytes[1]
-        filename = str(self.tipi_io.receive()).strip()
+        filename = str(self.tipi_io.receive(), 'ascii').strip()
         logger.info("unit: %d, filename: %s, prot: %d", unit, filename, protvalue )
 
         localfilename = self.getLocalName(unit,filename)
@@ -65,8 +65,8 @@ class LevelTwo(object):
     def handleFileRename(self):
         logger.info("file rename request")
         unit = self.tipi_io.receive()[0]
-        newfilename = str(self.tipi_io.receive()).strip()
-        filename = str(self.tipi_io.receive()).strip()
+        newfilename = str(self.tipi_io.receive(), 'ascii').strip()
+        filename = str(self.tipi_io.receive(), 'ascii').strip()
         logger.info("unit: %d, filename: %s, newname: %s", unit, filename, newfilename)
 
         origlocalname = self.getLocalName(unit,filename)
@@ -96,7 +96,7 @@ class LevelTwo(object):
     def handleSetPath(self):
         logger.info("set path request")
         unit = self.tipi_io.receive()[0]
-        pathname = str(self.tipi_io.receive()).strip()
+        pathname = str(self.tipi_io.receive(), 'ascii').strip()
         logger.info("unit: %d, path: %s", unit, pathname)
         
         # test if device is mapped
@@ -125,7 +125,7 @@ class LevelTwo(object):
     def handleCreateDir(self):
         logger.info("create directory request")
         unit = self.tipi_io.receive()[0]
-        dirname = str(self.tipi_io.receive()).strip()
+        dirname = str(self.tipi_io.receive(), 'ascii').strip()
         logger.info("unit: %d, dir: %s", unit, dirname)
         localname = self.getLocalName(unit,dirname)
         if localname is None:
@@ -143,7 +143,7 @@ class LevelTwo(object):
     def handleDeleteDir(self):
         logger.info("delete directory request")
         unit = self.tipi_io.receive()[0]
-        dirname = str(self.tipi_io.receive()).strip()
+        dirname = str(self.tipi_io.receive(), 'ascii').strip()
         logger.info("unit: %d, dir: %s", unit, dirname)
         localname = self.getLocalName(unit,dirname)
         if localname is None:
@@ -163,7 +163,7 @@ class LevelTwo(object):
         bytes = self.tipi_io.receive()
         unit = bytes[0]
         blocks = bytes[1]
-        filename = str(self.tipi_io.receive()).strip()
+        filename = str(self.tipi_io.receive(), 'ascii').strip()
         bytes = self.tipi_io.receive()
         startblock = bytes[1] + (bytes[0] << 8)
         logger.info("unit: %d, blocks: %d, filename: %s, startblock %d", unit, blocks, filename, startblock)
@@ -228,7 +228,7 @@ class LevelTwo(object):
         bytes = self.tipi_io.receive()
         unit = bytes[0]
         blocks = bytes[1]
-        filename = str(self.tipi_io.receive()).strip()
+        filename = str(self.tipi_io.receive(), 'ascii').strip()
         bytes = self.tipi_io.receive()
         startblock = bytes[1] + (bytes[0] << 8)
         finfo = bytes[2:]
@@ -282,7 +282,7 @@ class LevelTwo(object):
         return tinames.devnameToLocal(devname)
 
     def getFileBytes(self,localname):
-        with open(localname) as fh:
+        with open(localname, 'rb') as fh:
             bytes = bytearray(fh.read())
             if ti_files.isValid(bytes):
                 return bytes

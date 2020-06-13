@@ -42,7 +42,7 @@ class SpecialFiles(object):
                 devname = "PI." + link + "/" + devname[5:]
                 logger.debug("using %s to map to %s", uriShortcut, devname)
         if devname.startswith("PI."):
-            fname = str(devname[3:], 'ascii')
+            fname = devname[3:]
             logger.debug("Looking for special file handler: %s", fname)
             for prefix in self.specreg.keys():
                 if fname.startswith(prefix):

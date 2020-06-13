@@ -36,7 +36,7 @@ def configureWifi(wificonfig):
             raise Exception("failed to reload configuration")
 
     except Exception as e:
-        print e
+        print(e)
 
 
 while True:

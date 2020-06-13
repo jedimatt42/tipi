@@ -31,7 +31,8 @@ class NativeFile(object):
                 recLen = recordLength(pab)
                 if recordLength(pab) == 0:
                     recLen = 80
-                records = NativeFile.loadLines(unix_file_name, recLen)
+                encoding = 'utf-8' if url else 'ascii'
+                records = NativeFile.loadLines(unix_file_name, recLen, encoding)
                 logger.info("loaded %d lines", len(records))
                 logger.info("records: %s", records)
                 statByte = STVARIABLE
@@ -53,12 +54,12 @@ class NativeFile(object):
             raise
 
     @staticmethod
-    def loadLines(fp, recLen):
+    def loadLines(fp, recLen, encoding='ascii'):
         i = 0
         records = []
-        with open(fp) as f:
+        with open(fp, 'r') as f:
             for i, l in enumerate(f):
-                bytes = bytearray(l.rstrip())
+                bytes = bytearray(l.rstrip(), encoding)
                 if len(bytes) > 0:
                     records += NativeFile.divide_chunks(bytes, recLen)
                 else:
@@ -68,7 +69,7 @@ class NativeFile(object):
     @staticmethod
     def loadBytes(fp, recLen):
         records = []
-        with open(fp) as f:
+        with open(fp, 'rb') as f:
             bytes = bytearray(f.read())
             records += NativeFile.divide_chunks(bytes, recLen, True)
         return records

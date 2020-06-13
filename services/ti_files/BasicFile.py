@@ -68,13 +68,13 @@ class BasicFile(object):
 
     @staticmethod
     def toBasic(fp, tmpfp):
-        cmdargs = ["/home/tipi/xdt99/xbas99.py", "-c", "-o", tmpfp, fp]
+        cmdargs = ["python2", "/home/tipi/xdt99/xbas99.py", "-c", "-o", tmpfp, fp]
         if call(cmdargs) != 0:
             raise Exception("Invalid BASIC Source")
 
     @staticmethod
     def toText(tmpfp, fp):
-        cmdargs = ["/home/tipi/xdt99/xbas99.py", "-d", "-o", fp, tmpfp]
+        cmdargs = ["python2", "/home/tipi/xdt99/xbas99.py", "-d", "-o", fp, tmpfp]
         if call(cmdargs) != 0:
             raise Exception("Invalid BASIC Program")
 

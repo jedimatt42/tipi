@@ -149,7 +149,7 @@ class TiSocket(object):
 
     def handleBind(self, bytes):
         serverId = bytes[1]
-        params = str(bytes[3:]).split(":")
+        params = str(bytes[3:], 'ascii').split(":")
         interface = params[0]
         port = int(params[1])
         logger.info("bind socket(%d) %s:%d", serverId, interface, port)

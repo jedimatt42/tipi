@@ -41,7 +41,7 @@ class PioFile(object):
         dev_options = devname.split(".")
         if not "SP" in dev_options:
             # make sure we've at least had one CR or the converter won't do anything.
-            if not "\r" in self.last_record:
+            if not 0x0D in self.last_record:
                 with open(self.data_filename, "ab") as data_file:
                     data_file.write(crlf)
             # spawn conversion to PDF
@@ -100,7 +100,7 @@ class PioFile(object):
     def write(self, pab, devname):
         logger.info("write special? {}".format(devname))
         self.tipi_io.send([SUCCESS])
-        data = str(self.tipi_io.receive())
+        data = self.tipi_io.receive()
         self.last_record = data
         with open(self.data_filename, "ab") as data_file:
             data_file.write(data)

@@ -44,7 +44,7 @@ def convert(filename):
 
     newheader = bytearray(128)
     newheader[0] = 7
-    newheader[1:8] = bytearray("TIFILES")
+    newheader[1:8] = bytearray("TIFILES", 'ascii')
     moveHeader(bytes, newheader)
     bytes[0:128] = newheader[0:128]
 

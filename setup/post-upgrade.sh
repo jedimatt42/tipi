@@ -23,6 +23,10 @@ case $fversion in
   ;;
 esac
 
+if [ -e /tmp/test_update ]; then
+  TIPI_UPDATE_DEPS=true
+fi
+
 if [ $fmajor -le 1 ] && [ $fminor -le 63 ]; then
   TIPI_UPDATE_DEPS=true
 fi

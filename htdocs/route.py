@@ -186,7 +186,7 @@ def createFileUrl(path):
     if path == "/" or path == "":
         return "/files"
     else:
-        return string.replace("/files" + "/" + path, "//", "/")
+        return f"/files/{path}".replace("//", "/")
 
 
 ## Launch app

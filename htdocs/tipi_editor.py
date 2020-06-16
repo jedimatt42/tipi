@@ -27,7 +27,7 @@ def load(file_name):
     if not file_contents:
         if file_name.lower().endswith(basicSuffixes):
             with open(edit_file_path, "rb") as fh:
-                file_contents = fh.read()
+                file_contents = str(fh.read(), "latin1")
 
     editor_data = {
         "file_contents": file_contents,
@@ -49,7 +49,7 @@ def save(file_name, data):
     if file_name.lower().endswith(basicSuffixes):
         logger.debug("saving ascii basic file")
         with open(edit_file_path, "wb") as fh:
-            fh.write(data)
+            fh.write(bytearray(data, 'latin1'))
     else:
         logger.debug("saving program image basic file")
         writeBasicContents(edit_file_path, data)
@@ -94,7 +94,7 @@ def basicContents(filename):
 
         if ti_files.isTiBasicAscii(bas_tmp_file):
             with open(bas_tmp_file, "rb") as content_file:
-                return content_file.read().decode("latin_1")
+                return str(content_file.read(), "latin_1")
 
     finally:
         if os.path.exists(prg_tmp_file):
@@ -125,7 +125,7 @@ def writeBasicContents(edit_file_name, file_contents):
 
     try:
         with open(bas_tmp_file, "wb") as file:
-            file.write(file_contents.encode("latin_1"))
+            file.write(bytearray(file_contents, "latin_1"))
 
         # Encode ASCII file to TI's binary BASIC format:
         #

@@ -47,15 +47,15 @@ def main():
             (header, type_names, watch_path, filename) = event
             if "IN_DELETE" in type_names:
                 name = os.path.join(
-                    watch_path.decode("utf-8"), filename.decode("utf-8")
+                    watch_path, filename
                 )
                 tipi_cache.deleteFileInfo(name)
             elif "IN_CLOSE_WRITE" in type_names:
                 name = os.path.join(
-                    watch_path.decode("utf-8"), filename.decode("utf-8")
+                    watch_path, filename
                 )
                 if name.lower().endswith((".dsk", ".tidisk")):
-                    print "extracting: " + name
+                    logger.info("extracting: " + name)
                     extractDisk(name)
                 else:
                     tipi_cache.updateFileInfo(name)

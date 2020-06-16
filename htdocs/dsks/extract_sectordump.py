@@ -3,7 +3,11 @@ import os
 import sys
 import traceback
 import string
-import pc99tov9t9
+from dsks import pc99tov9t9
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 def rollDiskName(diskname):
@@ -20,7 +24,7 @@ def getDiskName(diskfile, parentdir):
     diskname = "unknown"
     listing = (
         subprocess.check_output(
-            ["xdm99.py", diskfile, "-t", "--ti-names"], stderr=subprocess.STDOUT
+            ["python3", "/home/tipi/xdt99/xdm99.py", diskfile, "-t", "--ti-names"], stderr=subprocess.STDOUT
         )
         .decode("utf-8")
         .split("\n")
@@ -40,7 +44,7 @@ def getFiles(diskfile):
     files = []
     listing = (
         subprocess.check_output(
-            ["xdm99.py", diskfile, "-t", "--ti-names"], stderr=subprocess.STDOUT
+            ["python3", "/home/tipi/xdt99/xdm99.py", diskfile, "-t", "--ti-names"], stderr=subprocess.STDOUT
         )
         .decode("utf-8")
         .split("\n")
@@ -60,7 +64,7 @@ def safename(n):
 
 def extractFile(diskfile, fname, diskname):
     newname = "%s/%s" % (diskname, safename(fname))
-    subprocess.call(["xdm99.py", diskfile, "-t", "-e", fname, "-o", newname])
+    subprocess.call(["python3", "/home/tipi/xdt99/xdm99.py", diskfile, "-t", "-e", fname, "-o", newname])
 
 
 TMPFILE = "/tmp/sdump.dsk"
@@ -82,8 +86,7 @@ def extractDisk(diskfile):
             extractFile(sectorfile, f, dirname)
         os.unlink(diskfile)
     except:
-        print "failed to extract disk image: " + diskfile
-        traceback.print_exc()
+        logger.exception("failed to extract disk image: " + diskfile)
     if os.path.exists(TMPFILE):
         os.unlink(TMPFILE)
 

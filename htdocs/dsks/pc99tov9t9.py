@@ -3,6 +3,11 @@ import os
 import sys
 import traceback
 import string
+import logging
+
+
+logger = logging.getLogger(__name__)
+
 
 # Yield successive n-sized
 # chunks from l.
@@ -27,11 +32,11 @@ def isFmTrackDump(filepath):
         if int(data[22]) == 0xFE:
             tracks = len(data) / 3253
             if tracks == 80:
-                print "FM DSSD 40"
+                logger.info("FM DSSD 40")
             elif tracks == 160:
-                print "FM DSSD 80"
+                logger.info("FM DSSD 80")
             elif tracks == 40:
-                print "FM SSSD 40"
+                logger.info("FM SSSD 40")
             return True
         else:
             return False
@@ -53,7 +58,7 @@ def dumpFmSectors(filepath, outfile):
                 track = sector[7]
                 head = sector[8]
                 sectorno = sector[9]
-                print "fm ths: %d, %d, %d" % (track, head, sectorno)
+                logger.info(f"fm ths: {track}, {head}, {sectorno}")
                 sdata = sector[31 : 31 + 256]
                 putSector(sectordump, sdata, track, head, sectorno)
     with open(outfile, "wb") as fh:
@@ -124,8 +129,9 @@ def dumpSectors(infile, outfile):
 if __name__ == "__main__":
     infile = sys.argv[1]
     outfile = sys.argv[2]
-    print "converting: '" + infile + "' to '" + outfile + "'"
+    logger.info(f"converting: '{infile}' to '{outfile}'")
     if dumpSectors(infile, outfile):
-        print "done"
+        logger.info("done")
     else:
-        print "ERROR: not a track dump file"
+        logger.info("ERROR: not a track dump file")
+

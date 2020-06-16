@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 import RPi.GPIO as GPIO
 import sys
 import time

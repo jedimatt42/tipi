@@ -50,6 +50,8 @@ apt-get update
 apt-get install -y libsqlite3-dev
 apt-get install -y python-pil
 apt-get install -y python3-dev
+# moves to the python3 version of xdt99
+su tipi -c "cd /home/tipi/xdt99/; git pull"
 
 su tipi -c "/home/tipi/tipi/services/update-deps.sh"
 su tipi -c "/home/tipi/tipi/htdocs/update-deps.sh"

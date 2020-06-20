@@ -1,4 +1,3 @@
-
 import time
 import logging
 
@@ -9,7 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 class UpgradeFile(object):
-
     @staticmethod
     def filename():
         return "UPGRADE"
@@ -39,9 +37,9 @@ class UpgradeFile(object):
         # let the TI know that the PI service is offline.
         TipiPorts.getInstance().setRC(0xFF)
         logger.info("RC set to 0xFF")
-        with open("/tmp/tipiupgrade", 'w') as fh_out:
+        with open("/tmp/tipiupgrade", "w") as fh_out:
             fh_out.write("woot")
-        # Block forever, until we are killed and restarted. 
+        # Block forever, until we are killed and restarted.
         # by the TipiSuper service running the upgrade.
         while True:
             time.sleep(2)

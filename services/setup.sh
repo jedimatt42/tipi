@@ -4,14 +4,14 @@ if [ -d ENV ]; then
   rm -r ENV
 fi
 
-virtualenv --system-site-packages ENV
+virtualenv --python=python3 --system-site-packages ENV
 
 . ./ENV/bin/activate
 
+if [ ! -d libtipi/sha1 ]; then
+  ( cd libtipi; git clone https://github.com/clibs/sha1.git )
+fi
 ( cd libtipi; python ./setup.py install )
 
 pip install -r requirements.txt
-
-( cd /tmp; git clone https://github.com/adafruit/Adafruit_Python_GPIO.git; cd /tmp/Adafruit_Python_GPIO; git checkout 268cd87672a9203217e99f85811cf33bf1ce3081; python ./setup.py install )
-( cd /tmp; git clone https://github.com/adafruit/Adafruit_Python_SSD1306.git; cd /tmp/Adafruit_Python_SSD1306; python ./setup.py install )
 

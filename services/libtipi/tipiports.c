@@ -22,13 +22,11 @@
 #define SEL_TD 3
 
 // volatile to force slow memory access.
-volatile long delmem = 55; 
+volatile long delmem = 55;
 
 int delayloop = 50;
 
 char* errorsFifo = "/tmp/tipierrors";
-
-void writeErrors(int errors);
 
 inline void signalDelay(void)
 {
@@ -98,10 +96,6 @@ static unsigned char readReg(int reg)
     if (!ok) {
       errors++;
     }
-  }
-
-  if (errors != 0) {
-    writeErrors(errors);
   }
 
   return value;
@@ -345,7 +339,7 @@ tipi_sendMsg(PyObject *self, PyObject *args)
   return Py_None;
 }
 
-static PyObject* 
+static PyObject*
 tipi_readMsg(PyObject *self, PyObject *args)
 {
   PyObject *rc = readMsg();
@@ -357,7 +351,7 @@ tipi_readMsg(PyObject *self, PyObject *args)
 }
 
 
-static PyObject* 
+static PyObject*
 tipi_initGpio(PyObject *self, PyObject *args)
 {
   // determine websocket mode and web path from env
@@ -405,25 +399,13 @@ tipi_initGpio(PyObject *self, PyObject *args)
   Py_INCREF(Py_None);
   return Py_None;
 }
+
 static PyMethodDef TipiMethods[] = {
   {"initGpio", tipi_initGpio, METH_VARARGS, "set tipi gpio modes"},
   {"sendMsg", tipi_sendMsg, METH_VARARGS, "send tipi message"},
   {"readMsg", tipi_readMsg, METH_VARARGS, "read tipi message"},
   {NULL, NULL, 0, NULL}
 };
-
-#if PYTHON_ABI_VERSION < 3
-
-PyMODINIT_FUNC
-inittipiports(void)
-{
-  PyObject *m;
-  m = Py_InitModule("tipiports", TipiMethods);
-  if (m == NULL)
-    return;
-}
-
-#else
 
 static struct PyModuleDef TipiModule = {
   PyModuleDef_HEAD_INIT,
@@ -438,5 +420,3 @@ PyInit_tipiports(void)
 {
   return PyModule_Create(&TipiModule);
 }
-
-#endif

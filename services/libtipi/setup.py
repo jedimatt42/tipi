@@ -1,4 +1,3 @@
-
 from distutils.core import setup, Extension
 
 moduletipi = Extension(
@@ -8,7 +7,8 @@ moduletipi = Extension(
     extra_compile_args=['-O3'])
 
 setup(
-    name='tipiports',
-    version='1.0',
-    description='low level tipi io',
-    ext_modules=[moduletipi])
+    name="tipiports",
+    version="1.0",
+    description="low level tipi io",
+    ext_modules=[moduletipi],
+)

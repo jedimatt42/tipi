@@ -64,7 +64,7 @@ class ConfigFile(object):
 
     def write(self, pab, devname):
         self.tipi_io.send([SUCCESS])
-        msg = str(self.tipi_io.receive())
+        msg = str(self.tipi_io.receive(), 'ascii')
         key = msg.split('=')[0].strip()
         value = msg.split('=')[1].strip()
         self.tipi_config.set(key, value)

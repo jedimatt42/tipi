@@ -1,7 +1,7 @@
 import os
 import traceback
 import logging
-from ti_files.ti_files import ti_files
+from ti_files import ti_files
 from Pab import *
 from ti_files.NativeFile import NativeFile
 from ti_files.BasicFile import BasicFile
@@ -119,8 +119,8 @@ class CurlFile(object):
             statbyte = open_file.getStatusByte()
         except KeyError:
             statbyte = NativeFile.status("", devname)
-            
-	# not really implemented yet 
+
+	# not really implemented yet
         self.tipi_io.send([SUCCESS])
         self.tipi_io.send([statbyte])
 
@@ -156,8 +156,6 @@ class CurlFile(object):
             self.tipi_io.send([EFILERR])
             logger.exception("failed to load file - %s", devname)
 
-
-
     def fetch(self, url, pab):
         tmpname = '/tmp/CF'
         cmd = "wget -O {} {}".format(tmpname, url)
@@ -172,8 +170,6 @@ class CurlFile(object):
                 return VariableRecordFile.load(tmpname, pab)
         else:
             return NativeFile.load(tmpname, pab, url)
-
-
 
     def parseDev(self, devname):
         return str(devname[3:])

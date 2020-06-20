@@ -2,13 +2,14 @@ import time
 import logging
 from .TipiPorts import TipiPorts
 
+
 class BackOffException(Exception):
     pass
+
 
 logger = logging.getLogger(__name__)
 
 class TipiMessage(object):
-
     def __init__(self):
         self.ports = TipiPorts.getInstance()
 
@@ -22,9 +23,10 @@ class TipiMessage(object):
             raise BackOffException('safepoint')
         elapsed = time.time() - startTime
         logger.debug(
-            'received msg len %d, rate %d bytes/sec',
+            "received msg len %d, rate %d bytes/sec",
             len(message),
-            len(message) / elapsed)
+            len(message) / elapsed,
+        )
         return message
 
     #
@@ -35,6 +37,5 @@ class TipiMessage(object):
         self.ports.sendMsg(bytes)
         elapsed = time.time() - startTime
         logger.debug(
-            'sent msg len %d, rate %d bytes/sec',
-            len(bytes),
-            len(bytes) / elapsed)
+            "sent msg len %d, rate %d bytes/sec", len(bytes), len(bytes) / elapsed
+        )

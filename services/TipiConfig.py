@@ -11,7 +11,7 @@ import os
 import logging
 import time
 import re
-from ti_files.ti_files import ti_files
+from ti_files import ti_files
 
 LOGGER = logging.getLogger(__name__)
 
@@ -28,9 +28,8 @@ CONFIG_DEFAULTS = {
     "WIFI_SSID": "",
     "WIFI_PSK": "",
     "MOUSE_SCALE": "50",
-    "OLED_ROTATE": "0",
     "TZ": "America/Los_Angeles",
-    "SECTOR_COUNT": "1440"
+    "SECTOR_COUNT": "1440",
 }
 
 
@@ -52,8 +51,8 @@ class TipiConfig(object):
 
     def applyrecords(self, records):
         for line in records:
-            key = str(line).split('=')[0].strip()
-            value = str(line).split('=')[1].strip()
+            key = str(line).split("=")[0].strip()
+            value = str(line).split("=")[1].strip()
             self.records[key] = value
             LOGGER.debug("read record: %s = %s", key, value)
         self.sorted_keys = list(self.records.keys())
@@ -64,14 +63,14 @@ class TipiConfig(object):
         if os.path.exists(self.tipi_config):
             self.mtime = os.path.getmtime(self.tipi_config)
             self.records = dict(CONFIG_DEFAULTS)
-            with open(self.tipi_config, 'r') as in_file:
+            with open(self.tipi_config, "r") as in_file:
                 self.applyrecords(in_file.readlines())
         else:
             LOGGER.info("config file missing: %s", self.tipi_config)
 
     def save(self):
         """ write the in-memory config out to disk to share and persist """
-        with open(self.tipi_config, 'w') as out_file:
+        with open(self.tipi_config, "w") as out_file:
             for key in self.sorted_keys:
                 out_file.write(key + "=" + self.records[key])
                 out_file.write("\n")
@@ -101,7 +100,7 @@ class TipiConfig(object):
         newvalue = value.strip()
         oldvalue = self.records.get(key, "")
         if oldvalue != newvalue:
-            if key.endswith('_DIR'):
+            if key.endswith("_DIR"):
                 newvalue = self.__sanitizeMapping(newvalue)
             self.records[key] = newvalue
             self.sorted_keys = list(self.records.keys())
@@ -118,16 +117,16 @@ class TipiConfig(object):
         return self.records.get(key.strip(), default)
 
     def __triggerWifiConfig(self):
-        with open("/tmp/wificonfig", 'w') as out_file:
+        with open("/tmp/wificonfig", "w") as out_file:
             out_file.write(self.records["WIFI_SSID"])
-            out_file.write('\n')
+            out_file.write("\n")
             out_file.write(self.records["WIFI_PSK"])
-            out_file.write('\n')
+            out_file.write("\n")
 
     def __triggerTimezone(self):
-        with open("/tmp/tz", 'w') as out_file:
+        with open("/tmp/tz", "w") as out_file:
             out_file.write(self.records["TZ"])
-            out_file.write('\n')
+            out_file.write("\n")
         while os.path.exists("/tmp/tz"):
             time.sleep(0.5)
 
@@ -142,7 +141,6 @@ class TipiConfig(object):
         if newvalue.startswith("TIPI."):
             newvalue = newvalue[5:]
         return newvalue
-
 
 
 SINGLETON = TipiConfig()

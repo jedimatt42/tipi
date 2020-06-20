@@ -3,7 +3,6 @@ import logging
 import errno
 import socket
 import fcntl
-from Oled import oled
 
 # Represent socket access from Raw extensions.
 # This is registered as 0x22 in RawExtensions.py
@@ -36,20 +35,19 @@ ACCEPT_ERR = bytearray([255])
 
 
 class TiSocket(object):
-
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
         self.handles = {}
         self.bindings = {}
         self.commands = {
-                0x01: self.handleOpen,
-                0x02: self.handleClose,
-                0x03: self.handleWrite,
-                0x04: self.handleRead,
-                0x05: self.handleBind,
-                0x06: self.handleUnbind,
-                0x07: self.handleAccept
-                }
+            0x01: self.handleOpen,
+            0x02: self.handleClose,
+            0x03: self.handleWrite,
+            0x04: self.handleRead,
+            0x05: self.handleBind,
+            0x06: self.handleUnbind,
+            0x07: self.handleAccept,
+        }
 
     def handle(self, bytes):
         self.tipi_io.send(self.processRequest(bytes))
@@ -69,32 +67,32 @@ class TiSocket(object):
 
     # bytes: 0x22, handleId, open-cmd, <hostname:port>
     def handleOpen(self, bytes):
-        handleId = bytes[1]
-        params = str(bytes[3:]).split(':')
-        hostname = params[0]
-        port = int(params[1])
-        logger.info("open socket(%d) %s:%d", handleId, hostname, port)
-
-        existing = self.handles.get(handleId, None)
-        # close the socket if we already had one for this handle.
-        if existing is not None:
-            del(self.handles[handleId])
-            self.safeClose(existing)
-            existing = None
-            logger.debug("closed leftover socket: %d", handleId)
-        # need to get the target host and port
-        server = (hostname, port)
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.handles[handleId] = sock
+        sock = None
         try:
+            handleId = bytes[1]
+            params = str(bytes[3:], 'ascii').split(":")
+            hostname = params[0]
+            port = int(params[1])
+            logger.info("open socket(%d) %s:%d", handleId, hostname, port)
+
+            existing = self.handles.get(handleId, None)
+            # close the socket if we already had one for this handle.
+            if existing is not None:
+                del self.handles[handleId]
+                self.safeClose(existing)
+                existing = None
+                logger.debug("closed leftover socket: %d", handleId)
+            # need to get the target host and port
+            server = (hostname, port)
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.handles[handleId] = sock
+
             sock.connect(server)
             fcntl.fcntl(sock, fcntl.F_SETFL, os.O_NONBLOCK)
             logger.info("connected")
-            oled.info("Socket %d/Connected", handleId)
             return GOOD
         except Exception:
-            logger.info("failed to connect socket: %d", handleId,
-                        exc_info=True)
+            logger.info("failed to connect socket: %d", handleId)
             self.safeClose(sock)
             return BAD
 
@@ -103,10 +101,9 @@ class TiSocket(object):
         handleId = bytes[1]
         existing = self.handles.get(handleId, None)
         if existing is not None:
-            del(self.handles[handleId])
+            del self.handles[handleId]
             self.safeClose(existing)
             logger.info("closed socket: %d", handleId)
-            oled.info("Socket %d/Closed", handleId)
         return GOOD
 
     # bytes: 0x22, handleId, write-cmd, <bytes to write>
@@ -118,12 +115,10 @@ class TiSocket(object):
         try:
             existing = self.handles[handleId]
             existing.sendall(bytes[3:])
-            logger.debug("wrote %d bytes to socket: %d", len(bytes[3:]),
-                         handleId)
-            oled.info("Socket %d/Wrote %d bytes", handleId, len(bytes[3:]))
+            logger.debug("wrote %d bytes to socket: %d", len(bytes[3:]), handleId)
             return GOOD
         except Exception:
-            del(self.handles[handleId])
+            del self.handles[handleId]
             self.safeClose(existing)
             logger.info("failed to write to socket: %d", handleId)
             return BAD
@@ -140,7 +135,6 @@ class TiSocket(object):
             limit = (bytes[3] << 8) + bytes[4]
             data = bytearray(existing.recv(limit))
             logger.info("read %d bytes from %d", len(data), handleId)
-            oled.info("Socket %d/Read %d bytes", handleId, len(data))
             return data
         except socket.error as e:
             err = e.args[0]
@@ -155,7 +149,7 @@ class TiSocket(object):
 
     def handleBind(self, bytes):
         serverId = bytes[1]
-        params = str(bytes[3:]).split(':')
+        params = str(bytes[3:], 'ascii').split(":")
         interface = params[0]
         port = int(params[1])
         logger.info("bind socket(%d) %s:%d", serverId, interface, port)
@@ -163,13 +157,13 @@ class TiSocket(object):
         existing = self.bindings.get(serverId, None)
         # close the socket if we already had one for this handle.
         if existing is not None:
-            del(self.bindings[serverId])
+            del self.bindings[serverId]
             self.safeClose(existing)
             existing = None
             logger.debug("closed leftover binding: %d", serverId)
         # need to get the target host and port
         if interface == "*":
-            interface = '0.0.0.0'
+            interface = "0.0.0.0"
         server = (interface, port)
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.setblocking(0)
@@ -178,11 +172,9 @@ class TiSocket(object):
             self.bindings[serverId] = sock
             sock.listen(5)
             logger.info("bind success")
-            oled.info("Socket %d/Bound", serverId)
             return GOOD
         except Exception:
-            logger.info("failed to bind socket: %d", serverId,
-                        exc_info=True)
+            logger.info("failed to bind socket: %d", serverId, exc_info=True)
             self.safeClose(sock)
             return BAD
 
@@ -190,37 +182,36 @@ class TiSocket(object):
         serverId = bytes[1]
         if serverId in self.bindings.keys():
             existing = self.bindings.get(serverId, None)
-            del(self.bindings[serverId])
+            del self.bindings[serverId]
             self.safeClose(existing)
             logger.info("unbound socket: %d", serverId)
-            oled.info("Socket %d/Unbound", serverId)
         return GOOD
 
     def handleAccept(self, bytes):
-        logger.info('handleAccept')
+        logger.info("handleAccept")
         serverId = bytes[1]
         server_socket = self.bindings.get(serverId, None)
         if server_socket is not None:
             handleId = self.allocateHandleId()
             logger.info("new connection handle: %d", handleId)
             if handleId == 0:
-                logger.error('out of handles')
+                logger.error("out of handles")
                 return ACCEPT_ERR
-            logger.info('accepting...')
+            logger.info("accepting...")
             conn = None
             try:
                 conn, address = server_socket.accept()
             except Exception as e:
-                logger.info('no connection available')
+                logger.info("no connection available")
                 return BAD
-            logger.info('accept conn: %s', conn)
+            logger.info("accept conn: %s", conn)
             if conn:
                 fcntl.fcntl(conn, fcntl.F_SETFL, os.O_NONBLOCK)
                 self.handles[handleId] = conn
                 logger.info("connection socket given handleId %d", handleId)
                 return bytearray([handleId])
             else:
-                logger.info('no connection available')
+                logger.info("no connection available")
                 return BAD
         else:
             logger.error("no socket bound with id: %d", serverId)
@@ -228,9 +219,10 @@ class TiSocket(object):
 
     def safeClose(self, sock):
         try:
-            logger.info('closing socket')
-            sock.shutdown(socket.SHUT_RDWR)
-            sock.close()
+            if sock:
+                logger.info("closing socket")
+                sock.shutdown(socket.SHUT_RDWR)
+                sock.close()
         except Exception:
             pass
 

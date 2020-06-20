@@ -7,7 +7,6 @@ logger = logging.getLogger(__name__)
 
 
 class VariablesFile(object):
-
     @staticmethod
     def filename():
         # open file in "update" mode, such as:
@@ -66,5 +65,3 @@ class VariablesFile(object):
             self.tipi_io.send(fdata)
             return
         self.tipi_io.send([EFILERR])
-
-

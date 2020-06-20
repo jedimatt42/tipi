@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 import logging
 import logging.handlers
 import os
@@ -10,7 +10,6 @@ from Pab import *
 from RawExtensions import RawExtensions
 from LevelTwo import LevelTwo
 from TipiDisk import TipiDisk
-from Oled import oled
 
 #
 # Setup logging
@@ -20,12 +19,15 @@ if not os.path.isdir(logpath):
     os.makedirs(logpath)
 
 LOG_FILENAME = logpath + "/tipi.log"
-logging.getLogger('').setLevel(logging.INFO)
+logging.getLogger("").setLevel(logging.INFO)
 loghandler = logging.handlers.RotatingFileHandler(
-    LOG_FILENAME, maxBytes=(1000 * 1024), backupCount=2)
-logformatter = logging.Formatter('%(asctime)-15s %(name)-12s: %(levelname)-8s %(message)s')
+    LOG_FILENAME, maxBytes=(1000 * 1024), backupCount=2
+)
+logformatter = logging.Formatter(
+    "%(asctime)-15s %(name)-12s: %(levelname)-8s %(message)s"
+)
 loghandler.setFormatter(logformatter)
-logging.getLogger('').addHandler(loghandler)
+logging.getLogger("").addHandler(loghandler)
 
 __name__ = "TipiService"
 
@@ -35,15 +37,12 @@ logger = logging.getLogger(__name__)
 # MAIN
 ##
 try:
-    oled.info("TIPI Init")
-
     tipi_io = TipiMessage()
     specialFiles = SpecialFiles(tipi_io)
     rawExtensions = RawExtensions(tipi_io)
     levelTwo = LevelTwo(tipi_io)
     tipiDisk = TipiDisk(tipi_io)
 
-    oled.info("TIPI Ready")
     logger.info("TIPI Ready")
     while True:
         logger.debug("waiting for request...")
@@ -51,9 +50,9 @@ try:
         try:
             msg = tipi_io.receive()
         except BackOffException:
-            if os.path.exists('/tmp/tipi_safepoint'):
-                logger.info('found /tmp/tipi_safepoint, restarting')
-                os.remove('/tmp/tipi_safepoint')
+            if os.path.exists("/tmp/tipi_safepoint"):
+                logger.info("found /tmp/tipi_safepoint, restarting")
+                os.remove("/tmp/tipi_safepoint")
                 quit()
         if msg is None:
             continue
@@ -80,5 +79,4 @@ try:
 
         logger.info("Request completed.")
 except Exception as e:
-    oled.info("Crash/Device Error")
     logger.error("Unhandled exception in main", exc_info=True)

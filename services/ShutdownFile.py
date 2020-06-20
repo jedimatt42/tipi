@@ -1,15 +1,12 @@
-
 import time
 import logging
 
 from Pab import *
-from Oled import oled
 
 logger = logging.getLogger(__name__)
 
 
 class ShutdownFile(object):
-
     @staticmethod
     def filename():
         return "SHUTDOWN"
@@ -34,8 +31,7 @@ class ShutdownFile(object):
     def close(self, pab, devname):
         logger.info("close %s", devname)
         self.tipi_io.send([SUCCESS])
-        oled.info("Shutdown/PENDING...")
-        with open("/tmp/tipihalt", 'w') as fh_out:
+        with open("/tmp/tipihalt", "w") as fh_out:
             fh_out.write("woot")
 
     def open(self, pab, devname):

@@ -8,9 +8,9 @@ Keep it open for further device extension.
 
 ## Branching
 
-End users must be on the 'release' branch. 
-'master' branch is full of stuff that doesn't work, won't upgrade correctly, and certainly won't downgrade.
-'master' branch is expert mode only.
+- End users must be on the 'release' branch. 
+- 'master' branch is full of stuff that doesn't work, won't upgrade correctly, and certainly won't downgrade.
+- 'master' branch is expert mode only.
 
 ## Documentation
 

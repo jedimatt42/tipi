@@ -59,6 +59,7 @@ def getFiles(diskfile):
 def safename(n):
     s = n.replace("/", ".")
     s = s.replace("\\", ".")
+    s = s.replace('\0', ' ').strip()
     return s
 
 

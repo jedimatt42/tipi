@@ -18,8 +18,14 @@ def divide_chunks(l, n):
 
 
 # need to determine track count instead of assuming 40
-def putSector(sdump, sdata, track, head, sectorno):
+def putFmSector(sdump, sdata, track, head, sectorno):
     start = (head * (40 * 9 * 256)) + (track * (9 * 256)) + (sectorno * 256)
+    sdump[start : start + 256] = sdata
+
+
+# need to determine track count instead of assuming 40
+def putMfmSector(sdump, sdata, track, head, sectorno):
+    start = (head * (40 * 18 * 256)) + (track * (18 * 256)) + (sectorno * 256)
     sdump[start : start + 256] = sdata
 
 
@@ -60,7 +66,7 @@ def dumpFmSectors(filepath, outfile):
                 sectorno = sector[9]
                 logger.info(f"fm ths: {track}, {head}, {sectorno}")
                 sdata = sector[31 : 31 + 256]
-                putSector(sectordump, sdata, track, head, sectorno)
+                putFmSector(sectordump, sdata, track, head, sectorno)
     with open(outfile, "wb") as fh:
         fh.write(sectordump)
 
@@ -88,6 +94,7 @@ def dumpMfmSectors(filepath, outfile):
         maxhead = 0
         maxtrack = 0
         maxsector = 0
+                
         for track in tracks:
             sectors = mfm_sectors(track)
             for sector in sectors:
@@ -103,7 +110,7 @@ def dumpMfmSectors(filepath, outfile):
                 head = sector[15]
                 sectorno = sector[16]
                 sdata = sector[58 : 58 + 256]
-                putSector(sectordump, sdata, track, head, sectorno)
+                putMfmSector(sectordump, sdata, track, head, sectorno)
     with open(outfile, "wb") as fh:
         fh.write(sectordump)
 

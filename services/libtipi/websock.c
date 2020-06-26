@@ -38,6 +38,7 @@
   In addtion, the following text messages are used:
   "RESET" will exit the server and restart (when the TI emulation is RESET)
   "SYNC" at the start of each message (when TC=0xf1 and RC=0xf1)
+  "MOUSE buttons dx dy" will accumulate mouse motion and relay when requested
 
   See https://github.com/jedimatt42/tipi/blob/master/hardware/dsr/tipi-io.a99
   for latched register addresses in DSR, reproduced here:
@@ -84,7 +85,6 @@ static const char *reg_names[4] = {"RC","RD","TC","TD"};
 
 static const char *web_root = NULL;
 static int web_root_len;
-static int srv_fd = -1; // server socket
 static int client_fd = -1; // websocket client socket
 static struct {
 	char *path;
@@ -99,7 +99,7 @@ static void log_printf(const char *fmt, ...)
 	static FILE *log = NULL;
 	
 	if (!log)
-		log = stdout; //fopen("/tmp/websock.log", "w");
+		log = fopen("/var/log/tipi/websock.log", "w");
 	
 	va_list ap;
 	va_start(ap, fmt);
@@ -396,6 +396,30 @@ static void set_reg_from_string(char *s)
   }
 }
 
+
+
+static int buttons = 0, dx = 0, dy = 0;
+
+
+// move mouse message format "MOUSE buttons dx dy"
+static void move_mouse(char *s)
+{
+  s = strchr(s, ' '); // before buttons
+  if (!s) return;
+
+  //log_printf("%s: %s\n", __func__, s);
+
+  buttons = atoi(++s);
+
+  s = strchr(s, ' '); // before dx
+  if (!s) return;
+  dx += atoi(++s);
+
+  s = strchr(s, ' '); // before dy
+  if (!s) return;
+  dy += atoi(++s);
+}
+
 static void websocket_serveReg(int reg)
 {
   log_printf("%s value=%d reg=%d client_fd=%d\n", __func__, regs[reg], reg, client_fd);
@@ -448,10 +472,13 @@ static int resetSync = 0;
 // open the server socket, accept any pending connection, perform upgrade, poll open websocket
 static int websocket_serve(void)
 {
+	static int srv_fd = -1; // server socket
+
 	if (srv_fd == -1) {
 		srv_fd = server_create();
 		if (srv_fd == -1)
 			goto shutdown;
+		log_printf("server started fd=%d\n", srv_fd);
 	}
 
 	struct pollfd pfd[] = {
@@ -478,15 +505,18 @@ static int websocket_serve(void)
 			client_fd = -1;
 
 		} else if (opcode == OPCODE_TEXT && len >= 4) {
-			data[len] = 0;
-			if (strcmp((char*)data, "RESET") == 0) {
+			char *str = (char*)data;
+			str[len] = 0;
+			if (strcmp(str, "RESET") == 0) {
 				log_printf("RESET received\n");
 				goto shutdown;
 
-			} else if (strcmp((char*)data, "SYNC") == 0) {
+			} else if (strcmp(str, "SYNC") == 0) {
 				resetSync = 1;
+			} else if (strncmp(str, "MOUSE ", 6) == 0) {
+				move_mouse(str);
 			} else {
-				set_reg_from_string((char*)data);
+				set_reg_from_string(str);
 			}
 		} else if (opcode == OPCODE_PING) {
 			websocket_write(client_fd, OPCODE_PONG, 0/*mask*/, data, len);
@@ -719,6 +749,19 @@ PyObject* websocket_readMsg(void)
   PyObject *rc = readMsg;
   readMsg = NULL;
   return rc;
+}
+
+void websocket_sendMouseEvent(void)
+{
+  // send [dx, -dy, buttons]
+  signed char msg[] = {
+    dx < -128 ? -128 : dx > 127 ? 127 : dx,
+    dy < -128 ? -128 : dy > 127 ? 127 : dy,
+    buttons};
+  dx -= msg[0];
+  dy -= msg[1];
+  //log_printf("%s: %d %d %d\n", __func__, msg[0], msg[1], msg[2]);
+  websocket_sendMsg((unsigned char*)msg, 3);
 }
 
 

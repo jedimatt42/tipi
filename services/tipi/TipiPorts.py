@@ -20,6 +20,10 @@ class TipiPorts(object):
     def readMsg(self):
         return tipiports.readMsg()
 
+    #
+    def sendMouseEvent(self):
+        return tipiports.sendMouseEvent()
+
     # Use this method to make sure we only
     @staticmethod
     def getInstance():

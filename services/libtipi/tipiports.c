@@ -52,6 +52,13 @@ inline unsigned char parity(unsigned char input) {
     return piParity & 0x01;
 }
 
+void writeErrors(int errors) {
+  int fd = open(errorsFifo, O_WRONLY);
+  write(fd, (void*)&errors, 2);
+  close(fd);
+}
+
+
 static unsigned char readReg(int reg)
 {
   unsigned char value = 0;
@@ -299,16 +306,31 @@ static void gpio_sendMsg(unsigned char *data, int len)
     sendByte(data[i]);
 }
 
+static void gpio_sendMouseEvent(void)
+{
+  static char buttons = 0;
+  static int fd = -1;
+  char buf[4] = {buttons, 0, 0};
 
-void writeErrors(int errors) {
-  int fd = open(errorsFifo, O_WRONLY);
-  write(fd, (void*)&errors, 2);
-  close(fd);
+  if (fd == -1) {
+    fd = open("/dev/input/mice", O_RDONLY | O_NONBLOCK);
+    if (fd == -1)
+      return;
+  }
+  if (read(fd, buf, 3) == 3) {
+    buttons = buf[0];
+    buf[2] = -buf[2];
+  }
+  buf[3] = buttons;
+  // send [dx, -dy, buttons]
+  gpio_sendMsg((unsigned char*)(buf+1), 3);
 }
 
 
-static void (*sendMsg)(unsigned char *, int) = gpio_sendMsg;
+
 static PyObject* (*readMsg)(void) = gpio_readMsg;
+static void (*sendMsg)(unsigned char *, int) = gpio_sendMsg;
+static void (*sendMouseEvent)(void) = gpio_sendMouseEvent;
 
 
 static PyObject*
@@ -350,6 +372,15 @@ tipi_readMsg(PyObject *self, PyObject *args)
   return rc;
 }
 
+static PyObject*
+tipi_sendMouseEvent(PyObject *self, PyObject *args)
+{
+  sendMouseEvent();
+  Py_INCREF(Py_None);
+  return Py_None;
+}
+
+
 
 static PyObject*
 tipi_initGpio(PyObject *self, PyObject *args)
@@ -361,10 +392,12 @@ tipi_initGpio(PyObject *self, PyObject *args)
     extern void websocket_init(const char *path_to_web_root);
     extern PyObject* websocket_readMsg(void);
     extern void websocket_sendMsg(unsigned char *, int);
+    extern void websocket_sendMouseEvent(void);
 
     websocket_init(tipiWebSock);
-    sendMsg = websocket_sendMsg;
     readMsg = websocket_readMsg;
+    sendMsg = websocket_sendMsg;
+    sendMouseEvent = websocket_sendMouseEvent;
 
   } else {
 
@@ -404,6 +437,7 @@ static PyMethodDef TipiMethods[] = {
   {"initGpio", tipi_initGpio, METH_VARARGS, "set tipi gpio modes"},
   {"sendMsg", tipi_sendMsg, METH_VARARGS, "send tipi message"},
   {"readMsg", tipi_readMsg, METH_VARARGS, "read tipi message"},
+  {"sendMouseEvent", tipi_sendMouseEvent, METH_VARARGS, "send mouse event"},
   {NULL, NULL, 0, NULL}
 };
 

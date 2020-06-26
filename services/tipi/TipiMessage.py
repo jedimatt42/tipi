@@ -39,3 +39,8 @@ class TipiMessage(object):
         logger.debug(
             "sent msg len %d, rate %d bytes/sec", len(bytes), len(bytes) / elapsed
         )
+
+    #
+    # Trigger sending mouse event
+    def sendMouseEvent(self):
+        self.ports.sendMouseEvent()

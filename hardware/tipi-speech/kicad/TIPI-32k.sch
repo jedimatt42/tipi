@@ -4,9 +4,9 @@ EELAYER END
 $Descr B 17000 11000
 encoding utf-8
 Sheet 1 1
-Title "SS-TIPI - TI-99/4A to RPi adapter for Speech Synth. Case"
-Date "2020-05-09"
-Rev "V1"
+Title "TIPI-32k - TI-99/4A to RPi adapter for Speech Synth. Case"
+Date "2020-06-12"
+Rev "V2"
 Comp "J-Data "
 Comment1 "github.com/jedimatt42/tipi"
 Comment2 "TIPI and ElectricLab & Jedimatt42"
@@ -1517,7 +1517,7 @@ L vs-tipi:Resistor R7
 U 1 1 5ECBABA2
 P 6800 8450
 F 0 "R7" V 6700 8400 50  0000 L CNN
-F 1 "DNP" V 6900 8350 50  0000 L CNN
+F 1 "0" V 6900 8400 50  0000 L CNN
 F 2 "VS-TIPI-kicad:C_0805_HandSoldering" H 6800 8450 50  0001 C CNN
 F 3 "" H 6800 8450 50  0001 C CNN
 	1    6800 8450
@@ -1633,7 +1633,7 @@ Expansion Port in from TI-99/4A
 Text Notes 2200 5750 0    50   ~ 0
 Expansion Port out to Peripherals
 Text Notes 6400 8700 0    50   ~ 0
-Connects/Cuts power from TI
+Connects power from TI to TIPI
 Text Notes 1950 1350 0    50   ~ 0
 TIPI EPROM
 Text Notes 5350 1350 0    50   ~ 0

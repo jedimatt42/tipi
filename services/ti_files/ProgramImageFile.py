@@ -36,7 +36,7 @@ class ProgramImageFile(object):
         tiname = nameParts[len(nameParts) - 1]
 
         header = ti_files.createHeader(ti_files.PROGRAM, tiname, body)
-        fdata = bytearray(256 * (len(body) / 256 + 1) + 128)
+        fdata = bytearray(256 * (len(body) // 256 + 1) + 128)
         fdata[0:127] = header
         fdata[128:] = body
         return ProgramImageFile(fdata)

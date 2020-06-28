@@ -25,8 +25,12 @@ if [ $? == 0 ]; then
   export TIPI_SIG_DELAY=100
 fi
 
-# Uncomment this line to enable websocket server
-#export TIPI_WEBSOCK=/home/tipi/tipi/htdocs
+# touch /home/tipi.js99er to enable websocket server
+echo "checking for operation mode..."
+if [ -e /home/tipi/.js99er ]; then
+  echo "Enabling js99er.net web-socket"
+  export TIPI_WEBSOCK=/home/tipi/tipi/htdocs
+fi
 
 python ./TipiService.py
 

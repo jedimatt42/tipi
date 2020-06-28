@@ -33,6 +33,11 @@ __name__ = "TipiService"
 
 logger = logging.getLogger(__name__)
 
+if os.environ.get('TIPI_WEBSOCK'):
+    logger.info("websocket mode enabled")
+else:
+    logger.info("physical mode enabled")
+
 ##
 # MAIN
 ##

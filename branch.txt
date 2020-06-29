@@ -1,1 +1,1 @@
-branch=emuRelease
+branch=master

@@ -80,6 +80,7 @@ cd /home/tipi
 git clone https://github.com/jedimatt42/tipi.git tipi
 cd /home/tipi/tipi
 git checkout release
+git submodule update --init
 ./setup.sh
 cd setup
 sudo ./post-upgrade.sh

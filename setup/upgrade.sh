@@ -25,5 +25,5 @@ echo "Latest Version: $remoteversion"
 if [ "${1:-}" = "--upgrade" ]; then
   # create a child process, and upgrade all the tipi code out from under ourselves.
   # then run the new post-upgrade.sh script
-  ( cd /home/tipi/tipi && su tipi -c "git fetch && git checkout $branch && git pull" && exec bash -x /home/tipi/tipi/setup/post-upgrade.sh $version)
+  ( cd /home/tipi/tipi && su tipi -c "git fetch && git checkout $branch && git pull && git submodule update --init" && exec bash -x /home/tipi/tipi/setup/post-upgrade.sh $version)
 fi

@@ -18,7 +18,7 @@ if [ ! -e /home/tipi/tipi.uuid ]; then
     python3 - >/home/tipi/tipi.uuid
 fi
 
-if [ -e /home/tipi/.js99er ]; then
+if [ -e /home/tipi/.emulation ]; then
   # mount nfs from host OS
   HOSTIP=`ip route | grep default | cut -d' ' -f3`
   mount -t nfs ${HOSTIP}:/tipi_disk /home/tipi/tipi_disk

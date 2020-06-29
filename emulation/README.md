@@ -14,7 +14,9 @@ touch /home/tipi/.emulation
 
 2. Edit the /etc/fstab and delete the 3 TMPFS entries
 
-3. exit the emulation clean: `sudo shutdown now`
+3. Disable tipiwatchdog.service
+
+4. exit the emulation clean: `sudo shutdown now`
 
 ## Errors in the standard image that might need fixing
 

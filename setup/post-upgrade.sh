@@ -11,6 +11,9 @@ nminor=`echo $nversion | cut -f2 -d.`
 # $nversion is the new version number. $nmajor and $nminor are component integers
 # Variables should enable steps required to get to latest.
 
+if [ -e /home/tipi/.js99er ]; then
+  mv /home/tipi/.js99er /home/tipi/.emulation
+fi
 
 case $fversion in
 0)

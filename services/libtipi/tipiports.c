@@ -6,7 +6,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
+#include <stdarg.h>
 
 // Serial output for RD & RC (BCM pin numbers)
 #define PIN_R_RT 13
@@ -25,6 +25,28 @@
 volatile long delmem = 55;
 
 int delayloop = 50;
+
+//#define LOG
+#ifdef LOG
+static const char *reg_names[] = {"RC","RD","TC","TD"};
+static void log_printf(const char *fmt, ...)
+{
+  static FILE *log = NULL;
+  if (!log) {
+    log = fopen("/var/log/tipi/tipiports.log", "w");
+    fprintf(log, "log opened\n");
+  }
+
+  va_list ap;
+  va_start(ap, fmt);
+  vfprintf(log, fmt, ap);
+  va_end(ap);
+  fflush(log);
+}
+#else
+#define log_printf(...) do{}while(0)
+#endif
+
 
 char* errorsFifo = "/tmp/tipierrors";
 
@@ -104,7 +126,12 @@ static unsigned char readReg(int reg)
       errors++;
     }
   }
-
+  {
+    static unsigned char last[4] = {};
+    if (last[reg] != value)
+      log_printf("%s=>%02x\n", reg_names[reg], value);
+    last[reg] = value;
+  }
   return value;
 }
 
@@ -113,6 +140,7 @@ static void writeReg(unsigned char value, int reg)
   int errors = 0;
 
   int ok = 0;
+  log_printf("%s<=%02x\n", reg_names[reg], value);
 
   while (!ok) {
     setSelect(reg);
@@ -213,6 +241,7 @@ static unsigned char prev_syn = 0;
 /*
  * Block until both sides show control bits reset
  * The TI resets first, and then RPi responds
+ * Returns -1 if BACKOFF timeout expires
  *
  * TC -> 0xF1, RC -> 0xF1
  */
@@ -222,6 +251,7 @@ static int resetProtocol(void)
   int bail = 0;
   int backoff = BACKOFF_DELAY;
   prev_syn = 0;
+  log_printf("RESET waiting\n");
   while (prev_syn != RESET) {
     backoff--;
     if (backoff < 1) {
@@ -229,12 +259,16 @@ static int resetProtocol(void)
       backoff = 1;
       nanosleep(&ts10ms, NULL);
       bail++;
-      if (bail > 50)
+      if (bail > 50) {
+        log_printf("RESET bail\n");
+        PyErr_SetString(PyExc_ValueError, "safepoint");
         return -1; /* raise BackOffException('safepoint') */
+      }
     }
     prev_syn = readReg(SEL_TC);
   }
   // Reset the control signals
+  log_printf("RESET ack\n");
   writeReg(RESET, SEL_RC);
   return 0;
 }
@@ -278,7 +312,8 @@ static unsigned char readByte(void)
 
 static PyObject* gpio_readMsg(void)
 {
-  resetProtocol();
+  if (resetProtocol() < 0)
+    return NULL;
   modeRead();
   int msglen = readByte() << 8;
   msglen |= readByte();
@@ -295,18 +330,23 @@ static PyObject* gpio_readMsg(void)
   return message;
 }
 
-static void gpio_sendMsg(unsigned char *data, int len)
+static PyObject* gpio_sendMsg(unsigned char *data, int len)
 {
-  resetProtocol();
+  if (resetProtocol() < 0)
+    return NULL;
   modeSend();
   sendByte(len >> 8);
   sendByte(len & 0xff);
+
   int i;
   for (i = 0; i < len; i++)
     sendByte(data[i]);
+
+  Py_INCREF(Py_None);
+  return Py_None;
 }
 
-static void gpio_sendMouseEvent(void)
+static PyObject* gpio_sendMouseEvent(void)
 {
   static char buttons = 0;
   static int fd = -1;
@@ -314,8 +354,10 @@ static void gpio_sendMouseEvent(void)
 
   if (fd == -1) {
     fd = open("/dev/input/mice", O_RDONLY | O_NONBLOCK);
-    if (fd == -1)
-      return;
+    if (fd == -1) {
+      Py_INCREF(Py_None);
+      return Py_None;
+    }
   }
   if (read(fd, buf, 3) == 3) {
     buttons = buf[0];
@@ -323,20 +365,20 @@ static void gpio_sendMouseEvent(void)
   }
   buf[3] = buttons;
   // send [dx, -dy, buttons]
-  gpio_sendMsg((unsigned char*)(buf+1), 3);
+  return gpio_sendMsg((unsigned char*)(buf+1), 3);
 }
 
 
 
 static PyObject* (*readMsg)(void) = gpio_readMsg;
-static void (*sendMsg)(unsigned char *, int) = gpio_sendMsg;
-static void (*sendMouseEvent)(void) = gpio_sendMouseEvent;
+static PyObject* (*sendMsg)(unsigned char *, int) = gpio_sendMsg;
+static PyObject* (*sendMouseEvent)(void) = gpio_sendMouseEvent;
 
 
 static PyObject*
 tipi_sendMsg(PyObject *self, PyObject *args)
 {
-  PyObject *arg1;
+  PyObject *arg1, *result;
   if (!PyArg_ParseTuple(args, "O", &arg1))
     return NULL;
 
@@ -348,36 +390,28 @@ tipi_sendMsg(PyObject *self, PyObject *args)
       PyObject *op = PyList_GET_ITEM(arg1, i);
       buf[i] = PyLong_AsLong(op);
     }
-    sendMsg(buf, len);
+    result = sendMsg(buf, len);
 
   } else {
     Py_buffer buffer;
     if (PyObject_GetBuffer(arg1, &buffer, PyBUF_CONTIG_RO) < 0)
       return NULL;
-    sendMsg(buffer.buf, buffer.len);
+    result = sendMsg(buffer.buf, buffer.len);
     PyBuffer_Release(&buffer);
   }
-  Py_INCREF(Py_None);
-  return Py_None;
+  return result;
 }
 
 static PyObject*
 tipi_readMsg(PyObject *self, PyObject *args)
 {
-  PyObject *rc = readMsg();
-  if (rc == NULL) {
-    rc = Py_None;
-    Py_INCREF(rc);
-  }
-  return rc;
+  return readMsg();
 }
 
 static PyObject*
 tipi_sendMouseEvent(PyObject *self, PyObject *args)
 {
-  sendMouseEvent();
-  Py_INCREF(Py_None);
-  return Py_None;
+  return sendMouseEvent();
 }
 
 
@@ -391,15 +425,18 @@ tipi_initGpio(PyObject *self, PyObject *args)
     // functions from websock.c
     extern void websocket_init(const char *path_to_web_root);
     extern PyObject* websocket_readMsg(void);
-    extern void websocket_sendMsg(unsigned char *, int);
-    extern void websocket_sendMouseEvent(void);
+    extern PyObject* websocket_sendMsg(unsigned char *, int);
+    extern PyObject* websocket_sendMouseEvent(void);
 
     websocket_init(tipiWebSock);
     readMsg = websocket_readMsg;
     sendMsg = websocket_sendMsg;
     sendMouseEvent = websocket_sendMouseEvent;
 
+    log_printf("websocket mode\n");
+
   } else {
+    log_printf("gpio mode\n");
 
     // get signalling delay from env
     const char* tipiSigEnv = getenv("TIPI_SIG_DELAY");

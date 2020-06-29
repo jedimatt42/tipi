@@ -20,7 +20,7 @@ class TipiPorts(object):
     def readMsg(self):
         return tipiports.readMsg()
 
-    #
+    # Send mouse event message
     def sendMouseEvent(self):
         return tipiports.sendMouseEvent()
 

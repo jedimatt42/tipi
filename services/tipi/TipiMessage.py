@@ -18,8 +18,9 @@ class TipiMessage(object):
     def receive(self):
         logger.debug("waiting to receive message...")
         startTime = time.time()
-        message = self.ports.readMsg()
-        if message == None:
+        try:
+            message = self.ports.readMsg()
+        except:
             raise BackOffException('safepoint')
         elapsed = time.time() - startTime
         logger.debug(
@@ -34,7 +35,10 @@ class TipiMessage(object):
     def send(self, bytes):
         logger.debug("waiting to send message...")
         startTime = time.time()
-        self.ports.sendMsg(bytes)
+        try:
+            self.ports.sendMsg(bytes)
+        except:
+            raise BackOffException('safepoint')
         elapsed = time.time() - startTime
         logger.debug(
             "sent msg len %d, rate %d bytes/sec", len(bytes), len(bytes) / elapsed
@@ -43,4 +47,8 @@ class TipiMessage(object):
     #
     # Trigger sending mouse event
     def sendMouseEvent(self):
-        self.ports.sendMouseEvent()
+        try:
+            self.ports.sendMouseEvent()
+        except:
+            raise BackOffException('safepoint')
+

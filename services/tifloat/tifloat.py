@@ -12,8 +12,8 @@ def asFloat(val):
         val *= -1
 
     if val >= 100:
-        word0 = int(val / 100) | 0x4100
-        word1 = val % 100
+        word0 = int(val // 100) | 0x4100
+        word1 = int(val % 100)
     else:
         if val == 0:
             word0 = 0

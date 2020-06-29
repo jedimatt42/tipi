@@ -25,5 +25,12 @@ if [ $? == 0 ]; then
   export TIPI_SIG_DELAY=100
 fi
 
+# touch /home/tipi/.emulation to enable websocket server
+echo "checking for operation mode..."
+if [ -e /home/tipi/.emulation ]; then
+  echo "Enabling emulation web-socket"
+  export TIPI_WEBSOCK=/home/tipi/tipi/htdocs
+fi
+
 python ./TipiService.py
 

@@ -1,0 +1,60 @@
+== TIPI For Emulation
+
+This bundle allows using js99er.net TI-99/4A emulation
+with an emulated Raspberry PI running the TIPI 
+peripheral services.
+
+=== Setup
+
+Download and install QEMU:
+
+* https://www.qemu.org/download/#windows
+
+1: Run nfs_tipi_disk.bat to start NFS server
+2: Run tipi-qemu.bat to start TIPI emulation
+
+=== NFS is optional
+
+If you want your TIFILES to live in the tipi_disk folder on your
+host operating system, run the nfs_tipi_disk.bat. This will start
+WinNfsd.exe and export the .\tipi_disk folder as the nfs mount
+localhost:/tipi_disk
+
+When the emulation starts up, the default TIPI support programs
+TELNET and TIPICFG will be installed into that folder.
+
+If wish to leave the tipi_disk inside the sd_image, do nothing.
+That is the default.. you can still use the web ui at localhost:9900 
+to manage your TIFILES.
+
+=== SSH
+
+If you don't like the QEMU terminal, you can SSH in via localhost:9922
+as the user 'tipi' password 'tipi'
+
+That means you can also use scp and sftp clients to manage files.
+
+=== Shutdown
+
+use good linux shutdown practices:
+
+command line: sudo shutdown now
+TIPI web-ui: there is a shutdown item in the left most menu
+4A/emulation: CALL TIPI from basic, 'h' to halt the PI
+
+wait a bit... on the QEMU console you'll see an indication that
+halt failed. ( that means it is done, but the hardware can't power off )
+you can then just close the window.
+
+=== The Bad News
+
+PI.PIO has been reduced so it doesn't fail. It will produce .prn files in 
+the PI emulations /tmp directory. However, the PDF conversion just crashes
+out.. so this has been disabled. 
+
+== Recognition
+
+Big thanks to PeteE of Atariage for reducing the TIPI hardware to a
+web-socket. 
+
+Equally large thanks to Asmusr of Atariage for js99er and the integration work.

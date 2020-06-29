@@ -119,8 +119,8 @@ class CurlFile(object):
             statbyte = open_file.getStatusByte()
         except KeyError:
             statbyte = NativeFile.status("", devname)
-            
-	# not really implemented yet 
+
+	# not really implemented yet
         self.tipi_io.send([SUCCESS])
         self.tipi_io.send([statbyte])
 

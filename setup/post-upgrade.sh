@@ -30,7 +30,7 @@ if [ -e /tmp/test_update ]; then
   TIPI_UPDATE_DEPS=true
 fi
 
-if [ $fmajor -le 1 ] && [ $fminor -le 63 ]; then
+if [ $fmajor -le 1 ]; then
   TIPI_UPDATE_DEPS=true
 fi
 
@@ -74,8 +74,10 @@ fi
 
 #### Should have been part of base sd image creation
 if [ ! -z ${TIPI_BASE_CONFIG:-} ]; then
-usermod -s /bin/bash tipi
-raspi-config nonint do_i2c 0
+  usermod -s /bin/bash tipi
+  if [ ! -e /home/tipi/.emulation ]; then
+    raspi-config nonint do_i2c 0
+  fi
 fi
 
 #### Always update TI binaries (cheap)
@@ -97,28 +99,31 @@ sudo usermod -G tipi,sudo,input,i2c,gpio,adm tipi
 
 #### Restart all TIPI services
 if [ ! -z ${TIPI_RESTART_SERVICES:-} ]; then
-cd /home/tipi/tipi/setup/
+  cd /home/tipi/tipi/setup/
 
-cp *.service /lib/systemd/system/
+  cp *.service /lib/systemd/system/
 
-systemctl enable tipiboot.service
-systemctl enable tipiwatchdog.service
-systemctl enable tipi.service
-systemctl enable tipiweb.service
-systemctl enable tipimon.service
-systemctl enable tipisuper.service
-# systemctl enable tipibutton.service
+  systemctl enable tipiboot.service
+  systemctl enable tipi.service
+  systemctl enable tipiweb.service
+  systemctl enable tipimon.service
+  systemctl enable tipisuper.service
+  # systemctl enable tipibutton.service
 
-# the order below matters
-systemctl restart tipiboot.service
-systemctl restart tipiwatchdog.service
-systemctl restart tipimon.service
-systemctl restart tipiweb.service
-# systemctl restart tipibutton.service
-systemctl restart tipi.service
+  # the order below matters
+  systemctl restart tipiboot.service
+  systemctl restart tipimon.service
+  systemctl restart tipiweb.service
+  # systemctl restart tipibutton.service
+  systemctl restart tipi.service
 
-# last we'll restart the super service which is our parent process.
-systemctl restart tipisuper.service
+  if [ ! -e /home/tipi/.emulation ]; then
+    systemctl enable tipiwatchdog.service
+    systemctl restart tipiwatchdog.service
+  fi
+
+  # last we'll restart the super service which is our parent process.
+  systemctl restart tipisuper.service
 fi
 
 echo "upgrade complete"

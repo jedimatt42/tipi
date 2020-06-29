@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <export version="D">
   <design>
-    <source>C:\Users\jgpar\Documents\TI99\TIPI\VS-TIPI-kicad-V1\VS-Tipi.sch</source>
-    <date>5/9/2020 12:57:01 PM</date>
+    <source>C:\Users\jgpar\Documents\TI99\TIPI\TIPI-32k-kicad-V2\TIPI-32k.sch</source>
+    <date>6/12/2020 9:34:26 PM</date>
     <tool>Eeschema (5.1.5)-3</tool>
     <sheet number="1" name="/" tstamps="/">
       <title_block>
-        <title>SS-TIPI - TI-99/4A to RPi adapter for Speech Synth. Case</title>
+        <title>TIPI-32k - TI-99/4A to RPi adapter for Speech Synth. Case</title>
         <company>J-Data </company>
-        <rev>V1</rev>
-        <date>2020-05-09</date>
-        <source>VS-Tipi.sch</source>
+        <rev>V2</rev>
+        <date>2020-06-12</date>
+        <source>TIPI-32k.sch</source>
         <comment number="1" value="github.com/jedimatt42/tipi"/>
         <comment number="2" value="TIPI and ElectricLab &amp; Jedimatt42"/>
         <comment number="3" value="(C) 1983 - J-Data (Open source actually)"/>
@@ -22,7 +22,7 @@
     <comp ref="P1">
       <value>TI-99_Sideport</value>
       <footprint>peb-edge-card:ti99-exp-edge</footprint>
-      <libsource lib="vs-tipi" part="TI-99_Sideport" description="TI-99/4A Sideport - 32k header style"/>
+      <libsource lib="vs-tipi" part="TI-99_Sideport" description=""/>
       <sheetpath names="/" tstamps="/"/>
       <tstamp>5917E4FB</tstamp>
     </comp>
@@ -96,7 +96,7 @@
       <fields>
         <field name="LCSC">C17630</field>
       </fields>
-      <libsource lib="vs-tipi" part="Resistor" description="Resistor, small US symbol"/>
+      <libsource lib="vs-tipi" part="Resistor" description=""/>
       <sheetpath names="/" tstamps="/"/>
       <tstamp>594FDB4A</tstamp>
     </comp>
@@ -130,14 +130,14 @@
       <fields>
         <field name="LCSC">C17414</field>
       </fields>
-      <libsource lib="vs-tipi" part="Resistor" description="Resistor, small US symbol"/>
+      <libsource lib="vs-tipi" part="Resistor" description=""/>
       <sheetpath names="/" tstamps="/"/>
       <tstamp>59612F26</tstamp>
     </comp>
     <comp ref="R6">
       <value>10k</value>
       <footprint>Resistors_SMD:R_0805_HandSoldering</footprint>
-      <libsource lib="vs-tipi" part="Resistor" description="Resistor, small US symbol"/>
+      <libsource lib="vs-tipi" part="Resistor" description=""/>
       <sheetpath names="/" tstamps="/"/>
       <tstamp>59612F85</tstamp>
     </comp>
@@ -202,7 +202,7 @@
       <fields>
         <field name="LCSC">C17513</field>
       </fields>
-      <libsource lib="vs-tipi" part="Resistor" description="Resistor, small US symbol"/>
+      <libsource lib="vs-tipi" part="Resistor" description=""/>
       <sheetpath names="/" tstamps="/"/>
       <tstamp>599E6C64</tstamp>
     </comp>
@@ -233,7 +233,7 @@
     <comp ref="J1">
       <value>TI-99_Sideport</value>
       <footprint>peb-edge-card:ti99-exp-edge</footprint>
-      <libsource lib="vs-tipi" part="TI-99_Sideport" description="TI-99/4A Sideport - 32k header style"/>
+      <libsource lib="vs-tipi" part="TI-99_Sideport" description=""/>
       <sheetpath names="/" tstamps="/"/>
       <tstamp>5EA54236</tstamp>
     </comp>
@@ -243,7 +243,7 @@
       <fields>
         <field name="LCSC">C17414</field>
       </fields>
-      <libsource lib="vs-tipi" part="Resistor" description="Resistor, small US symbol"/>
+      <libsource lib="vs-tipi" part="Resistor" description=""/>
       <sheetpath names="/" tstamps="/"/>
       <tstamp>59612E43</tstamp>
     </comp>
@@ -253,14 +253,14 @@
       <fields>
         <field name="LCSC">C17513</field>
       </fields>
-      <libsource lib="vs-tipi" part="Resistor" description="Resistor, small US symbol"/>
+      <libsource lib="vs-tipi" part="Resistor" description=""/>
       <sheetpath names="/" tstamps="/"/>
       <tstamp>594FDDEA</tstamp>
     </comp>
     <comp ref="R7">
-      <value>DNP</value>
+      <value>0</value>
       <footprint>VS-TIPI-kicad:C_0805_HandSoldering</footprint>
-      <libsource lib="vs-tipi" part="Resistor" description="Resistor, small US symbol"/>
+      <libsource lib="vs-tipi" part="Resistor" description=""/>
       <sheetpath names="/" tstamps="/"/>
       <tstamp>5ECBABA2</tstamp>
     </comp>
@@ -596,8 +596,6 @@
       </pins>
     </libpart>
     <libpart lib="vs-tipi" part="Resistor">
-      <description>Resistor, small US symbol</description>
-      <docs>~</docs>
       <footprints>
         <fp>R_*</fp>
       </footprints>
@@ -611,7 +609,6 @@
       </pins>
     </libpart>
     <libpart lib="vs-tipi" part="TI-99_Sideport">
-      <description>TI-99/4A Sideport - 32k header style</description>
       <footprints>
         <fp>header</fp>
         <fp>2x22</fp>
@@ -789,7 +786,7 @@
       <uri>C:\Program Files\KiCad\share\kicad\library/Device.lib</uri>
     </library>
     <library logical="vs-tipi">
-      <uri>C:\Users\jgpar\Documents\TI99\TIPI\VS-TIPI-kicad-V1/vs-tipi.lib</uri>
+      <uri>C:\Users\jgpar\Documents\TI99\TIPI\TIPI-32k-kicad-V2/vs-tipi.lib</uri>
     </library>
   </libraries>
   <nets>

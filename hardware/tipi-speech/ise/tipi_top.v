@@ -3,10 +3,10 @@
 // Company: 
 // Engineer:  J-Data 99% reuse from TIPI
 // 
-// Create Date:    13:20:25 07/15/2017 
+// Create Date:    06/16/2020 
 // Design Name: 
-// Module Name:    tipi_top 
-// Project Name:   VS-Tipi
+// Module Name:    tipi_top
+// Project Name:   Tipi/32K
 // Target Devices:  XC95144XL-10TQ100
 // Tool versions:  17.1
 // Description: 
@@ -14,7 +14,7 @@
 // Dependencies: 
 //
 // Revision: 
-// Revision 0.00 - File Created
+// Revision V2 - File Created
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
@@ -68,7 +68,7 @@ assign ti_extint = 1'bz; // try to avoid triggering this interrupt ( temporarily
 wire ti_cruout = ti_a[15];
 wire [0:3]cru_state;
 wire cru_regout;
-crubits cru(~crub, ti_cruclk, ti_memen, ti_ph3, ti_a[0:14], ti_cruout, cru_regout, cru_state);
+crubits cru((~crub[0:3] & 4'b0111), ti_cruclk, ti_memen, ti_ph3, ti_a[0:14], ti_cruout, cru_regout, cru_state);
 wire cru_dev_en = cru_state[0];
 assign ti_cruin = cru_regout;
 assign r_reset = ~cru_state[1];

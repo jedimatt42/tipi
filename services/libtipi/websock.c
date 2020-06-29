@@ -97,10 +97,10 @@ static unsigned int file_count = 0;
 static void log_printf(const char *fmt, ...)
 {
 	static FILE *log = NULL;
-	
+
 	if (!log)
 		log = fopen("/var/log/tipi/websock.log", "w");
-	
+
 	va_list ap;
 	va_start(ap, fmt);
 	vfprintf(log, fmt, ap);
@@ -138,7 +138,7 @@ static int scan_filter(const struct dirent *d)
 		struct stat st;
 		if (file_count >= ARRAY_SIZE(files))
 			break;
-		
+
 		asprintf(&path, "%s%s/%s", web_root, subdir, d->d_name);
 		stat(path, &st);
 
@@ -147,13 +147,12 @@ static int scan_filter(const struct dirent *d)
 		file_count++;
 
 		//printf("found %s %ld\n", path, st.st_size);
-		
+
 		break;
 	}
 	default:
 		break;
 	}
-	
 	return 0;
 }
 
@@ -232,7 +231,7 @@ static char* base64_encode(const unsigned char *src, unsigned int len)
 	unsigned int pad = 2 - ((len + 2) % 3);
 	unsigned int out = 4 * ((len + 2) / 3);
 	char *dest = malloc(out+1);
-	
+
 	char map[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 	unsigned int i;
 	for (i = 0; i < out; i++) {
@@ -285,9 +284,9 @@ static int websocket_read(int fd, int *opcode, unsigned char *data, int data_siz
   *opcode = buf[0] & 0xf;
   len = buf[1] & 0x7f;
   mask = buf[1] & 0x80 ? 1 : 0;
-  
+
   log_printf("opcode=%d len=%d   %02x %02x rc=%d\n", *opcode, len, buf[0], buf[1], rc);
-  
+
   if (len == 126) {
     // 16-bit len
     if (read(fd, buf, 2) < 2) return -1;
@@ -337,9 +336,9 @@ static void websocket_write(int fd, int opcode, unsigned int mask, unsigned char
 {
   unsigned char header[32];
   unsigned int header_len = 2;
-  
-  if (opcode != OPCODE_CONTINUATION && 
-      opcode != OPCODE_TEXT && 
+
+  if (opcode != OPCODE_CONTINUATION &&
+      opcode != OPCODE_TEXT &&
       opcode != OPCODE_BINARY &&
       opcode != OPCODE_CLOSE &&
       opcode != OPCODE_PING &&
@@ -489,7 +488,7 @@ static int websocket_serve(void)
 	int ms = 100; // milliseconds
 	int rc = poll(pfd, ARRAY_SIZE(pfd), ms);
 	if (rc <= 0)
-		return 0;
+		return -1;
 
 	// read any data from the websocket
 	if (client_fd != -1 && (pfd[1].revents & POLLIN)) {
@@ -522,17 +521,17 @@ static int websocket_serve(void)
 			websocket_write(client_fd, OPCODE_PONG, 0/*mask*/, data, len);
 		}
 	}
-	
+
 	// read any requests from the HTTP server socket
 	if ((pfd[0].revents & POLLIN) == 0)
 		return 0;
-	
+
 	struct sockaddr_in addr;
 	unsigned int addrlen = sizeof(addr);
 	int fd = accept(srv_fd, (struct sockaddr *)&addr, (socklen_t*)&addrlen);
 	if (fd < 0)
 		return 0;
-	
+
 	char buffer[4096];
 	rc = read(fd, buffer, sizeof(buffer)-1);
 	if (rc <= 0)
@@ -547,15 +546,15 @@ static int websocket_serve(void)
 	if (!http)
 		goto badrequest;
 	http[0] = 0; // terminate filename
-	
+
 	uri_decode(filename); // in-place
-	
+
 	char *headers[20];
 	unsigned int header_count = 0;
 	{
 		unsigned int i = http - buffer;
 		unsigned int len = rc;
-		
+
 		while (i < len) {
 			if (buffer[i] == '\n' || buffer[i] == '\r') {
 				if (buffer[i+1] != '\n' && buffer[i+1] != '\r') {
@@ -567,11 +566,11 @@ static int websocket_serve(void)
 			}
 			i++;
 		}
-		
+
 		//log_printf("filename = %s\n", filename);
 		//for (i = 0; i < header_count; i++)
 		//	log_printf("%s\n", headers[i]);
-		
+
 		for (i = 0; i < header_count; i++) {
 			if (strcasecmp(headers[i], "Upgrade: websocket") == 0 &&
 				strcmp(filename, "/tipi") == 0)
@@ -579,7 +578,7 @@ static int websocket_serve(void)
 		}
 	}
 
-	
+
 	if (strcmp(filename, "/") == 0)
 		filename = "/index.html"; // hardcoded
 
@@ -595,7 +594,7 @@ static int websocket_serve(void)
 
 		src_fd = open(files[i].path, O_RDONLY);
 		log_printf("%s %d %s\n\n\n", files[i].path, src_fd, content_type);
-		
+
 		if (src_fd == -1)
 			goto notfound;
 
@@ -620,7 +619,7 @@ static int websocket_serve(void)
 		close(fd);
 		return 0;
 	}
-	
+
 notfound:
 	{
 		char resp[] = 
@@ -647,14 +646,14 @@ badrequest:
 	}
 	return 0;
 
-upgrade_websocket:	
+upgrade_websocket:
 	{
 		char *protocol = "Sec-WebSocket-Protocol:",
 		     *websocket_key = "Sec-WebSocket-Key:",
 		     *version = "Sec-WebSocket-Version:",
 		     *guid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11",
 		     *key = NULL;
-		
+
 		unsigned int i;
 		// find the key
 		for (i = 0; i < header_count; i++) {
@@ -678,7 +677,7 @@ upgrade_websocket:
 		SHA1Final(results, &sha);
 
 		char *accept = base64_encode(results, sizeof(results));
-		
+
 		char resp[200];
 		int hdr_len = sprintf(resp, 
 			"HTTP/1.1 101 Switching Protocols\r\n"
@@ -689,7 +688,7 @@ upgrade_websocket:
 			accept);
 		log_printf("%d %s", hdr_len, resp);
 		write(fd, resp, hdr_len);
-		
+
 		if (client_fd != -1) {
 			close(client_fd);  // close existing client
 		}
@@ -728,30 +727,37 @@ void websocket_writeByte(unsigned char value, int reg)
   websocket_serveReg(reg);
 }
 
-static void resetProtocol(void)
+static int resetProtocol(void)
 {
   while (!resetSync)
-    websocket_serve();
+    if (websocket_serve() < 0)
+      return -1;
   resetSync = 0;
+  return 0;
 }
 
-void websocket_sendMsg(unsigned char *data, int len)
+PyObject* websocket_sendMsg(unsigned char *data, int len)
 {
-  resetProtocol();
+  if (resetProtocol() < 0)
+    return NULL;
   websocket_write(client_fd, OPCODE_BINARY, 0/*mask*/, data, len);
+  Py_INCREF(Py_None);
+  return Py_None;
 }
 
 PyObject* websocket_readMsg(void)
 {
-  resetProtocol();
+  if (resetProtocol() < 0)
+    return NULL;
   while (!readMsg)
-    websocket_serve();
+    if (websocket_serve() < 0)
+      return NULL;
   PyObject *rc = readMsg;
   readMsg = NULL;
   return rc;
 }
 
-void websocket_sendMouseEvent(void)
+PyObject* websocket_sendMouseEvent(void)
 {
   // send [dx, -dy, buttons]
   signed char msg[] = {
@@ -761,18 +767,8 @@ void websocket_sendMouseEvent(void)
   dx -= msg[0];
   dy -= msg[1];
   //log_printf("%s: %d %d %d\n", __func__, msg[0], msg[1], msg[2]);
-  websocket_sendMsg((unsigned char*)msg, 3);
+  return websocket_sendMsg((unsigned char*)msg, 3);
 }
 
 
-
-#ifdef MAIN
-int main(int argc, char *argv[])
-{
-	websocket_init("/home/pete/Dropbox/ti994a/Js99er/src/");
-	while (1) {
-		websocket_readByte(SEL_TD);
-	}
-}
-#endif
 

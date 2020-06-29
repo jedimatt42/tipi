@@ -1,0 +1,5 @@
+kernel-qemu-4.19.50-buster binary
+nfs_tipi_disk.bat text eol=crlf
+tipi-qemu.bat text eol=crlf
+versatile-pb-buster.dtb binary
+WinNFSd.exe binary

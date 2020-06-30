@@ -44,6 +44,8 @@ fi
 
 #### Perform steps
 
+su tipi -c "cd /home/tipi/tipi && git submodule update --init"
+
 if [ ! -z ${TIPI_RESTART_SERVICES:-} ]; then
 systemctl stop tipi.service
 systemctl stop tipiweb.service
@@ -54,6 +56,7 @@ fi
 
 if [ ! -z ${TIPI_UPDATE_DEPS:-} ]; then
 apt-get update
+apt-get upgrade -y
 apt-get install -y libsqlite3-dev
 apt-get install -y python-pil
 apt-get install -y python3-dev

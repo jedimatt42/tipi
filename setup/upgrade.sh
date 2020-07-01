@@ -17,6 +17,12 @@ if [ "$branch" = "unstable" ]; then
   branch=release
 fi
 
+RASP_VER=`( . /etc/os-release; echo $VERSION_CODENAME )`
+if [ "$RASP_VER" = "buster" ]; then
+  # Allow buster users to upgrade, but leave stretch behind
+  branch=buster_release
+fi
+
 remoteversion=`curl https://raw.githubusercontent.com/jedimatt42/tipi/$branch/version.txt 2>/dev/null | sed -n 's/^version=\(.*\)$/\1/p'`
 
 echo "Current Version: $version"

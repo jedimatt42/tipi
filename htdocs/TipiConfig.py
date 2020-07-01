@@ -21,7 +21,7 @@ CONFIG_DEFAULTS = {
     "URI3": "",
     "TIPI_NAME": "TIPI",
     "WIFI_SSID": "",
-    "WIFI_PSK": ""
+    "WIFI_PSK": "",
 }
 
 
@@ -45,11 +45,11 @@ class TipiConfig(object):
         """ read config values from file """
         if os.path.exists(self.tipi_config):
             self.mtime = os.path.getmtime(self.tipi_config)
-            with open(self.tipi_config, 'r') as in_file:
+            with open(self.tipi_config, "r") as in_file:
                 self.records = dict(CONFIG_DEFAULTS)
                 for line in in_file.readlines():
-                    key = line.split('=')[0].strip()
-                    value = line.split('=')[1].strip()
+                    key = line.split("=")[0].strip()
+                    value = line.split("=")[1].strip()
                     self.records[key] = value
                     LOGGER.debug("read record: %s = %s", key, value)
             self.sorted_keys = list(self.records.keys())
@@ -59,7 +59,7 @@ class TipiConfig(object):
 
     def save(self):
         """ write the in-memory config out to disk to share and persist """
-        with open(self.tipi_config, 'w') as out_file:
+        with open(self.tipi_config, "w") as out_file:
             for key in self.sorted_keys:
                 out_file.write(key + "=" + self.records[key])
                 out_file.write("\n")
@@ -98,10 +98,11 @@ class TipiConfig(object):
         return self.records.get(key.strip(), default)
 
     def __triggerWifiConfig(self):
-        with open("/tmp/wificonfig", 'w') as out_file:
+        with open("/tmp/wificonfig", "w") as out_file:
             out_file.write(self.records["WIFI_SSID"])
-            out_file.write('\n')
+            out_file.write("\n")
             out_file.write(self.records["WIFI_PSK"])
-            out_file.write('\n')
+            out_file.write("\n")
+
 
 SINGLETON = TipiConfig()

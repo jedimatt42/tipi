@@ -4,16 +4,16 @@ import sys
 import traceback
 import math
 import logging
-from ti_files import ti_files
+from . import ti_files
 from Pab import *
 
 logger = logging.getLogger(__name__)
 
 dv80suffixes = (".cmd", ".txt", ".a99", ".b99", ".bas", ".xb", ".tb")
 
-class NativeFile(object):
 
-    def __init__(self, records, recordLength, statByte,pab):
+class NativeFile(object):
+    def __init__(self, records, recordLength, statByte, pab):
         self.records = records
         self.currentRecord = 0
         self.recordLength = recordLength
@@ -29,9 +29,10 @@ class NativeFile(object):
         try:
             if recordType(pab) == VARIABLE:
                 recLen = recordLength(pab)
-                if recordLength(pab) == 0: 
+                if recordLength(pab) == 0:
                     recLen = 80
-                records = NativeFile.loadLines(unix_file_name, recLen)
+                encoding = 'utf-8' if url else 'ascii'
+                records = NativeFile.loadLines(unix_file_name, recLen, encoding)
                 logger.info("loaded %d lines", len(records))
                 logger.info("records: %s", records)
                 statByte = STVARIABLE
@@ -45,7 +46,7 @@ class NativeFile(object):
                 statByte = 0
                 if dataType(pab):
                     statByte |= STINTERNAL
-                
+
             return NativeFile(records, recLen, statByte, pab)
 
         except Exception as e:
@@ -53,22 +54,22 @@ class NativeFile(object):
             raise
 
     @staticmethod
-    def loadLines(fp, recLen):
+    def loadLines(fp, recLen, encoding='ascii'):
         i = 0
         records = []
-        with open(fp) as f:
+        with open(fp, 'r') as f:
             for i, l in enumerate(f):
-                bytes = bytearray(l.rstrip())
+                bytes = bytearray(l.rstrip(), encoding)
                 if len(bytes) > 0:
                     records += NativeFile.divide_chunks(bytes, recLen)
                 else:
-                    records += [ bytearray() ]
+                    records += [bytearray()]
         return records
 
     @staticmethod
     def loadBytes(fp, recLen):
         records = []
-        with open(fp) as f:
+        with open(fp, 'rb') as f:
             bytes = bytearray(f.read())
             records += NativeFile.divide_chunks(bytes, recLen, True)
         return records
@@ -78,11 +79,11 @@ class NativeFile(object):
         for i in range(0, len(l), n):
             if pad:
                 y = bytearray(n)
-                s = l[i:i+n]
-                y[0:len(s)] = s
+                s = l[i : i + n]
+                y[0 : len(s)] = s
                 yield y
             else:
-                yield l[i:i + n]
+                yield l[i : i + n]
 
     @staticmethod
     def status(fp, url=""):
@@ -124,5 +125,3 @@ class NativeFile(object):
 
     def close(self, localPath):
         pass
-
-

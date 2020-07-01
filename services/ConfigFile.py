@@ -57,14 +57,14 @@ class ConfigFile(object):
             value = self.tipi_config.get(key)
             msg = key + "=" + value
             self.tipi_io.send([SUCCESS])
-            self.tipi_io.send(bytearray(msg))
+            self.tipi_io.send(bytearray(msg, 'ascii'))
             self.currentRecord += 1
             return
         self.tipi_io.send([EOPATTR])
 
     def write(self, pab, devname):
         self.tipi_io.send([SUCCESS])
-        msg = str(self.tipi_io.receive())
+        msg = str(self.tipi_io.receive(), 'ascii')
         key = msg.split('=')[0].strip()
         value = msg.split('=')[1].strip()
         self.tipi_config.set(key, value)
@@ -72,7 +72,7 @@ class ConfigFile(object):
 
     def status(self, pab, devname):
         self.tipi_io.send([SUCCESS])
-	if len(self.tipi_config.keys()) < (self.currentRecord + 1):
+        if len(self.tipi_config.keys()) < (self.currentRecord + 1):
             self.tipi_io.send([STVARIABLE | STLEOF])
             return
         self.tipi_io.send([STVARIABLE])

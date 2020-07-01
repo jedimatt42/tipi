@@ -13,15 +13,17 @@ tipi_config = TipiConfig.instance()
 
 TIPI_DIR = "/home/tipi/tipi_disk"
 
+
 def __driveMapping(key):
     path = tipi_config.get(key)
-    path = path.replace('.', "/")
+    path = path.replace(".", "/")
     if path != "":
         path = TIPI_DIR + "/" + path
     return path
 
+
 def devnameToLocal(devname):
-    parts = str(devname).split('.')
+    parts = str(devname).split(".")
     path = ""
     if parts[0] == "TIPI":
         path = TIPI_DIR
@@ -53,15 +55,16 @@ def devnameToLocal(devname):
 
     return path
 
+
 # Transform long host filename to 10 character TI filename
 def asTiShortName(name):
-    parts = name.split('/')
-    lastpart = parts[len(parts)-1]
-    name = lastpart.replace('.', '/')
+    parts = name.split("/")
+    lastpart = parts[len(parts) - 1]
+    name = lastpart.replace(".", "/")
     if len(name) <= 10:
         return name
     else:
-        utf8bytes = name.encode('utf-8')
+        utf8bytes = name.encode("utf-8")
         crc = Crc15.calc(bytearray(utf8bytes)[6:])
         shortname = "{}`{}".format(utf8bytes[:6], baseN(crc, 36))
         return str(shortname)
@@ -69,7 +72,9 @@ def asTiShortName(name):
 
 def baseN(num, b, numerals="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"):
     return ((num == 0) and numerals[0]) or (
-        baseN(num // b, b, numerals).lstrip(numerals[0]) + numerals[num % b])
+        baseN(num // b, b, numerals).lstrip(numerals[0]) + numerals[num % b]
+    )
+
 
 # Use the context of actual files to transform TI file names to possibly
 # long TI names
@@ -87,9 +92,8 @@ def findpath(path, part):
             # Now we must find all the names in 'path' and see which one we
             # should load.
             candidates = list(
-                filter(
-                    lambda x: asTiShortName(x) == part,
-                    os.listdir(path)))
+                filter(lambda x: asTiShortName(x) == part, os.listdir(path))
+            )
             if candidates:
                 return candidates[0]
 

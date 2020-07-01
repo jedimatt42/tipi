@@ -1,0 +1,21 @@
+GPL license: https://www.gnu.org/licenses/gpl-3.0.en.html
+
+WinNfsD is distributed under the GPL license
+  source: https://github.com/winnfsd/winnfsd
+  license: GPL
+
+Raspberry PI kernels for QEMU are distributed under the GPL license
+  source: https://github.com/dhruvvyas90/qemu-rpi-kernel
+  license: GPL
+
+the Raspberry PI Raspbian Lite image ‘Buster’ edition
+  url: https://www.raspberrypi.org/downloads/raspbian/
+  license: GPL
+
+Ralph Benzinger’s xdt99 suite
+  source: https://github.com/endlos99/xdt99
+  license: https://github.com/endlos99/xdt99/blob/master/COPYING
+
+RWAP/PrinterToPDF modifications available at github/jedimatt42
+  license: https://github.com/RWAP/PrinterToPDF/blob/master/LICENSE
+  modifications: https://github.com/jedimatt42/PrinterToPDF

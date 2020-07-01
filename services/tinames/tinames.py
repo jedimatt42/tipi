@@ -14,6 +14,7 @@ tipi_config = TipiConfig.instance()
 
 TIPI_DIR = "/home/tipi/tipi_disk"
 
+
 def __driveMapping(key):
     path = tipi_config.get(key)
 
@@ -23,12 +24,13 @@ def __driveMapping(key):
     if path == ".":
         return TIPI_DIR
 
-    path = '/'.join([x.replace('/','.') for x in path.split('.')])
+    path = "/".join([x.replace("/", ".") for x in path.split(".")])
     path = TIPI_DIR + "/" + path
     return path
 
+
 def __scanForVolume(volume):
-    disks = ("DSK1_DIR","DSK2_DIR","DSK3_DIR", "DSK4_DIR")
+    disks = ("DSK1_DIR", "DSK2_DIR", "DSK3_DIR", "DSK4_DIR")
     for disk in disks:
         path = __driveMapping(disk)
         if path != None and path.endswith("/" + volume):
@@ -43,8 +45,9 @@ def __scanForVolume(volume):
         return path
     return None
 
+
 def devnameToLocal(devname):
-    parts = str(devname).split('.')
+    parts = str(devname).split(".")
     path = None
     startpart = 1
     if parts[0] == "TIPI":
@@ -80,25 +83,29 @@ def devnameToLocal(devname):
 
     return path
 
+
 # Transform long host filename to 10 character TI filename
 def asTiShortName(name):
-    parts = name.split('/')
-    lastpart = parts[len(parts)-1]
-    name = lastpart.replace('.', '/')
+    parts = name.split("/")
+    lastpart = parts[len(parts) - 1]
+    name = lastpart.replace(".", "/")
     return encodeName(name)
+
 
 def encodeName(name):
     if len(name) <= 10:
         return name
     else:
-        crc = Crc15.calc(bytearray(name[6:]))
+        crc = Crc15.calc(bytearray(name[6:], 'ascii'))
         shortname = "{}`{}".format(name[:6], baseN(crc, 36))
-        return str(shortname)
+        return shortname
 
 
 def baseN(num, b, numerals="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"):
     return ((num == 0) and numerals[0]) or (
-        baseN(num // b, b, numerals).lstrip(numerals[0]) + numerals[num % b])
+        baseN(num // b, b, numerals).lstrip(numerals[0]) + numerals[num % b]
+    )
+
 
 # Use the context of actual files to transform TI file names to possibly
 # long TI names
@@ -116,13 +123,13 @@ def findpath(path, part):
             # Now we must find all the names in 'path' and see which one we
             # should load.
             candidates = list(
-                filter(
-                    lambda x: asTiShortName(x) == part,
-                    os.listdir(path)))
+                filter(lambda x: asTiShortName(x) == part, os.listdir(path))
+            )
             if candidates:
                 return candidates[0]
 
     return part
+
 
 def local2tipi(localpath):
     """ transform a unix local path to a ti path relative to TIPI. """
@@ -132,4 +139,3 @@ def local2tipi(localpath):
         return tipart.replace("/", ".")
     else:
         return ""
-

@@ -1,10 +1,10 @@
 import logging
-from ti_files import ti_files
+from . import ti_files
 
 logger = logging.getLogger(__name__)
 
-class ProgramImageFile(object):
 
+class ProgramImageFile(object):
     def __init__(self, bytes):
         self.header = bytes[:128]
         self.body = bytes[128:]
@@ -32,11 +32,11 @@ class ProgramImageFile(object):
 
     @staticmethod
     def create(device_name, unix_file_name, body):
-        nameParts = str(device_name).split('.')
+        nameParts = str(device_name).split(".")
         tiname = nameParts[len(nameParts) - 1]
 
         header = ti_files.createHeader(ti_files.PROGRAM, tiname, body)
-        fdata = bytearray(256 * (len(body) / 256 + 1) + 128)
+        fdata = bytearray(256 * (len(body) // 256 + 1) + 128)
         fdata[0:127] = header
         fdata[128:] = body
         return ProgramImageFile(fdata)

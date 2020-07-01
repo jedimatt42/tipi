@@ -23,7 +23,7 @@ def get_context_conn():
     """
     db = getattr(g, '_database', None)
     if db is None:
-	db = g._database = sqlite3.connect(db_name)
+        db = g._database = sqlite3.connect(db_name)
     return db
 
 def get_mon_conn():
@@ -33,7 +33,7 @@ def get_mon_conn():
     """
     global global_conn
     if not global_conn:
-	global_conn = sqlite3.connect(db_name)
+        global_conn = sqlite3.connect(db_name)
     return global_conn
 
 def get_conn():

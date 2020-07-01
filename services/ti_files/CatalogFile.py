@@ -4,8 +4,8 @@ import sys
 import traceback
 import math
 import logging
-import NativeFile
-from ti_files import ti_files
+from . import NativeFile
+from . import ti_files
 from tinames import tinames
 from tifloat import tifloat
 from Pab import *
@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 
 tipi_config = TipiConfig.instance()
 
-class CatalogFile(object):
 
+class CatalogFile(object):
     def __init__(self, localpath, devname, long):
         self.recNum = 0
         self.localpath = localpath
@@ -67,9 +67,9 @@ class CatalogFile(object):
 
     def __loadRecords(self):
         recs = []
-        recs += [ self.__createVolumeData() ]
+        recs += [self.__createVolumeData()]
         recs += self.__createFileCatRecords()
-        recs += [ self.__encodeDirRecord("", 0, 0, 0) ]
+        recs += [self.__encodeDirRecord("", 0, 0, 0)]
         return recs
 
     def __createVolumeData(self):
@@ -78,7 +78,7 @@ class CatalogFile(object):
         logger.debug("volumeName stage1: %s", volumeName)
 
         try:
-            sector_count = max(2,min(9999, int(tipi_config.get('SECTOR_COUNT'))))
+            sector_count = max(2, min(9999, int(tipi_config.get("SECTOR_COUNT"))))
         except:
             sector_count = 1440
 
@@ -88,24 +88,30 @@ class CatalogFile(object):
         if self.localpath == "/home/tipi/tipi_disk":
             volumeName = "TIPI"
         elif self.devname.startswith(("DSK.")):
-            volumeName = self.devname.split('.')[1]
+            volumeName = self.devname.split(".")[1]
         else:
-            drive = self.devname.split('.')[0]
+            drive = self.devname.split(".")[0]
             if drive == "TIPI" or drive == "DSK0":
                 volumeName = "TIPI"
             else:
-                parts = tipi_config.get(drive + "_DIR").split('.')
+                parts = tipi_config.get(drive + "_DIR").split(".")
                 volumeName = parts[-1]
-            
+
         logger.debug("volumeName: %s", volumeName)
         return self.__encodeVolRecord(volumeName, 0, sector_count, sector_count - 2)
 
     def __createFileCatRecords(self):
         if self.devname == "DSK.":
-            return { }
+            return {}
 
-        files = sorted(list(filter(lambda x: 
-            self.__include(os.path.join(self.localpath, x)), os.listdir(self.localpath))))
+        files = sorted(
+            list(
+                filter(
+                    lambda x: self.__include(os.path.join(self.localpath, x)),
+                    os.listdir(self.localpath),
+                )
+            )
+        )
         return map(self.__createFileRecord, files)
 
     def __include(self, fp):
@@ -121,7 +127,7 @@ class CatalogFile(object):
                 return self.__encodeDirRecord(f, 6, 2, 0)
 
             if ti_files.isTiFile(fp):
-                fh = open(fp, 'rb')
+                fh = open(fp, "rb")
 
                 header = bytearray(fh.read()[:128])
 
@@ -154,26 +160,28 @@ class CatalogFile(object):
 
     def __encodeVolRecord(self, name, ftype, sectors, recordLength):
         if self.longnames:
-            recname = name
+            recname = bytearray(name, 'ascii')
             buff = bytearray(28 + len(recname))
         else:
-            recname = tinames.encodeName(name)
+            recname = bytearray(tinames.encodeName(name), 'ascii')
             buff = bytearray(38)
 
         return self.__encodeCatRecord(buff, recname, ftype, sectors, recordLength)
 
     def __encodeDirRecord(self, name, ftype, sectors, recordLength):
         if self.longnames:
-            recname = name
+            recname = bytearray(name, 'ascii')
             buff = bytearray(28 + len(recname))
         else:
-            recname = tinames.asTiShortName(name)
+            recname = bytearray(tinames.asTiShortName(name), 'ascii')
             buff = bytearray(38)
 
         return self.__encodeCatRecord(buff, recname, ftype, sectors, recordLength)
-            
+
     def __encodeCatRecord(self, buff, recname, ftype, sectors, recordLength):
-        logger.debug("cat record: %s, %d, %d, %d", recname, ftype, sectors, recordLength)
+        logger.debug(
+            "cat record: %s, %d, %d, %d", recname, ftype, sectors, recordLength
+        )
 
         buff[0] = len(recname)
         i = 1

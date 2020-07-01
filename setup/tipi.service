@@ -6,7 +6,6 @@ After=network.target tipiboot.service tipimon.service tipiweb.service
 Type=simple
 ExecStart=/home/tipi/tipi/services/tipi.sh
 Restart=always
-StartLimitIntervalSec=0
 User=tipi
 
 [Install]

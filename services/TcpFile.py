@@ -52,19 +52,19 @@ class TcpFile(object):
         self.tipi_io.send([SUCCESS])
 
     def closeConnection(self, devname):
-	msg = bytearray(3)
-	msg[0] = 0x22
-	msg[1] = self.handles[devname]
-	msg[2] = 0x02
-	self.tisockets.processRequest(msg)
-	del(self.handles[devname])
+        msg = bytearray(3)
+        msg[0] = 0x22
+        msg[1] = self.handles[devname]
+        msg[2] = 0x02
+        self.tisockets.processRequest(msg)
+        del(self.handles[devname])
 
     def unbind(self, devname):
         msg = bytearray(3)
         msg[0] = 0x22
         msg[1] = 0x00
         msg[2] = 0x06
-	self.tisockets.processRequest(msg)
+        self.tisockets.processRequest(msg)
 
     def open(self, pab, devname):
         logger.debug("open devname: %s", devname)
@@ -89,27 +89,28 @@ class TcpFile(object):
         return
 
     def connectClient(self, host, port):
-	handleId = self.tisockets.allocateHandleId()
-	address = host + ':' + port
-	msg = bytearray(len(address) + 3)
-	msg[0] = 0x22
-	msg[1] = handleId
-	msg[2] = 0x01
-	msg[3:] = address
-	res = self.tisockets.processRequest(msg)
-	if res == BAD:
-	    raise Exception("error opening socket")
-	self.handles[devname] = handleId
+        handleId = self.tisockets.allocateHandleId()
+        address = host + ':' + port
+        msg = bytearray(len(address) + 3)
+        msg[0] = 0x22
+        msg[1] = handleId
+        msg[2] = 0x01
+        msg[3:] = bytearray(address, 'ascii')
+        res = self.tisockets.processRequest(msg)
+        if res == BAD:
+            raise Exception("error opening socket")
+        self.handles[devname] = handleId
 
     def bindServer(self, host, port):
         iface_addr = host + ':' + port
+        logger.info(f'BIND, interface address: {iface_addr}')
         msg = bytearray(len(iface_addr) + 3)
         msg[0] = 0x22
         # from DSR level 3 io, we'll only do one listening port
         # it's an old computer.
         msg[1] = 0x00
         msg[2] = 0x05
-        msg[3:] = iface_addr
+        msg[3:] = bytearray(iface_addr, 'ascii')
         res = self.tisockets.processRequest(msg)
         if res == BAD:
             raise Exception("error binding port")
@@ -142,7 +143,7 @@ class TcpFile(object):
             # the zero back through the read operation.
             logger.info("accept success, handle: %d, devname: %s", res[0], devname)
             self.tipi_io.send([SUCCESS])
-            self.tipi_io.send(bytearray(str(res[0])))
+            self.tipi_io.send(bytearray(str(int(res[0])), 'ascii'))
 
     def readConnection(self, pab, devname):
         handleId = self.handles[devname]
@@ -179,7 +180,7 @@ class TcpFile(object):
         self.tipi_io.send([SUCCESS])
 
     def parseDev(self, devname):
-        parts = str(devname).split("=")[1].split(":")
+        parts = devname.split("=")[1].split(":")
         host_iface = parts[0]
         if '.' in parts[1]:
             parts = parts[1].split(".")

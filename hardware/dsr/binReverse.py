@@ -10,11 +10,10 @@ from array import array
 # I want to re-enable my Rev1 board, so I'm resurrecting this code.
 #
 
-fh = open("tipi.bin", 'rb')
+fh = open("tipi.bin", "rb")
 
-with open("tipi.bin", 'rb') as fin:
-    with open("tipi-reversed.bin", 'wb') as fout:
+with open("tipi.bin", "rb") as fin:
+    with open("tipi-reversed.bin", "wb") as fout:
         bytes = bytearray(fin.read())
         for byte in bytes:
             fout.write(chr(int(bin(byte)[2:].zfill(8)[::-1], 2)))
-

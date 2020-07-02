@@ -25,9 +25,6 @@ class Status(object):
                         str(parts[0]).strip().upper(),
                         str(parts[1]).strip()))
 
-        with open("/home/tipi/tipi.uuid", 'r') as fh_in:
-            self.__records.append("UUID={}".format(fh_in.readline()))
-
         # This needs to work even if there is no network.. thus a catch all.
         try:
             upgradeCheck = check_output(["/home/tipi/tipi/setup/upgrade.sh"])

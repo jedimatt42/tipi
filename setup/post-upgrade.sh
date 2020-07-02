@@ -1,6 +1,18 @@
 #!/bin/bash
 
 fversion=${1:-0}
+
+. /home/tipi/tipi/branch.txt
+RASP_VER=`( . /etc/os-release; echo $VERSION_CODENAME )`
+if [ "$branch" = "release" ]; then
+  if [ "$RASP_VER" = "buster" ]; then
+    # Allow buster users to upgrade, but leave stretch behind
+    branch=buster_release
+    # re-kick with new code
+    ( cd /home/tipi/tipi && su tipi -c "git fetch && git checkout $branch && git pull" && exec bash -x /home/tipi/tipi/setup/post-upgrade.sh $fversion)
+  fi
+fi
+
 fmajor=`echo $fversion | cut -f1 -d.`
 fminor=`echo $fversion | cut -f2 -d.`
 nversion=`cat /home/tipi/tipi/version.txt | sed -n 's/^version=\(.*\)$/\1/p'`

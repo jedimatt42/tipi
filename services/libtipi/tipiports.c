@@ -464,6 +464,11 @@ tipi_initGpio(PyObject *self, PyObject *args)
     digitalWrite(PIN_R_CLK, 0);
     digitalWrite(PIN_R_DOUT, 0);
     digitalWrite(PIN_R_LE, 0);
+
+    // need to set RC and RD to 0 so 4A knows 
+    // pi is back online during certain events
+    writeReg(0, SEL_RD);
+    writeReg(0, SEL_RC);
   }
 
   Py_INCREF(Py_None);

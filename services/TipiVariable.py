@@ -25,7 +25,7 @@ class TipiVariable(object):
     def processRequest(self, message):
         logger.info(message)
         # Now that we have message, let's parse it:
-        ti_message = message.split(chr(0x1E))
+        ti_message = str(message, 'ascii').split(chr(0x1E))
 
         caller_guid = ti_message[0] if len(ti_message) >= 1 else ""  # Program's GUID
         context = (
@@ -128,7 +128,7 @@ class TipiVariable(object):
                 "REMOTE_HOST" not in self.ti_global
                 or "REMOTE_PORT" not in self.ti_global
             ):
-                return bytearray("0" + chr(0x1E) + "ERROR")
+                return bytearray("0" + chr(0x1E) + "ERROR", 'ascii')
 
             self.ti_vars[response] = ""  # Blank out our old response
 
@@ -193,13 +193,13 @@ class TipiVariable(object):
                 if (
                     'File "' in data or "Traceback" in data
                 ):  # BAD! Usually means compilation error on far end, esp when running via inetd.
-                    return bytearray("0" + chr(0x1E) + "ERROR")
+                    return bytearray("0" + chr(0x1E) + "ERROR", 'ascii')
 
             except:
                 self.ti_vars[response] = "ERROR"
 
                 self.store(caller_guid)
-                return bytearray("0" + chr(0x1E) + "ERROR")
+                return bytearray("0" + chr(0x1E) + "ERROR", 'ascii')
 
             finally:
                 sock.close()
@@ -208,7 +208,7 @@ class TipiVariable(object):
 
             self.store(caller_guid)  # Write our vars to our local file
 
-            return bytearray("1" + chr(0x1E) + self.ti_vars[response])
+            return bytearray("1" + chr(0x1E) + self.ti_vars[response], 'ascii')
 
         elif (
             action == "R" or action == "RS"
@@ -228,9 +228,9 @@ class TipiVariable(object):
                     self.store(caller_guid)
 
                     if action == "R":
-                        return bytearray("1" + chr(0x1E) + first_item)
+                        return bytearray("1" + chr(0x1E) + first_item, 'ascii')
                     else:
-                        return bytearray(first_item)
+                        return bytearray(first_item, 'ascii')
 
                 else:
                     response = self.ti_vars[str(var_key1)]
@@ -241,15 +241,15 @@ class TipiVariable(object):
                     self.store(caller_guid)
 
                     if action == "R":
-                        return bytearray("1" + chr(0x1E) + response)
+                        return bytearray("1" + chr(0x1E) + response, 'ascii')
                     else:
-                        return bytearray(response)
+                        return bytearray(response, 'ascii')
 
             else:
                 if action == "R":
-                    return bytearray("0" + chr(0x1E) + "ERROR")
+                    return bytearray("0" + chr(0x1E) + "ERROR", 'ascii')
                 else:
-                    return bytearray("ERROR")
+                    return bytearray("ERROR", 'ascii')
 
         return bytearray()
 
@@ -275,6 +275,6 @@ class TipiVariable(object):
     def handle(self, bytes):
         # Handle all tipi_io here, so main logic is just dealing with bytes in and out
         message = self.tipi_io.receive()
-        self.tipi_io.send(self.processRequest(str(message)))
+        self.tipi_io.send(self.processRequest(str(message, 'ascii')))
 
         return True

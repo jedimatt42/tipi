@@ -23,7 +23,7 @@ class TipiVariable(object):
         self.tipi_io = tipi_io
 
     def processRequest(self, message):
-        logger.info(message)
+        logger.debug(f'request: {message}')
         # Now that we have message, let's parse it:
         ti_message = str(message, 'ascii').split(chr(0x1E))
 
@@ -53,7 +53,7 @@ class TipiVariable(object):
         var_key6 = ti_message[15] if len(ti_message) >= 16 else ""  # var key
         var_val6 = ti_message[16] if len(ti_message) >= 17 else ""  # var val
 
-        response = str(results_var) if len(results_var) else ""
+        response = results_var if len(results_var) else ""
 
         # Load our existing variables into a dict:
         self.ti_vars = {}
@@ -75,8 +75,8 @@ class TipiVariable(object):
 
             f.close
 
-        if os.path.isfile(str(global_file)):
-            with open(str(global_file), "r") as f:
+        if os.path.isfile(global_file):
+            with open(global_file, "r") as f:
                 for line in f:
                     line = line.rstrip(
                         "\n\r"
@@ -128,6 +128,7 @@ class TipiVariable(object):
                 "REMOTE_HOST" not in self.ti_global
                 or "REMOTE_PORT" not in self.ti_global
             ):
+                logger.error("REMOTE HOST NOT SET")
                 return bytearray("0" + chr(0x1E) + "ERROR", 'ascii')
 
             self.ti_vars[response] = ""  # Blank out our old response
@@ -186,9 +187,10 @@ class TipiVariable(object):
                 sock.connect(server_address)
 
                 # Send data
-                sock.sendall(message + "\n")
+                sock.sendall(bytearray(message + "\n", 'ascii'))
 
                 data = sock.recv(1024)
+                data = str(data, 'ascii')
 
                 if (
                     'File "' in data or "Traceback" in data
@@ -196,6 +198,7 @@ class TipiVariable(object):
                     return bytearray("0" + chr(0x1E) + "ERROR", 'ascii')
 
             except:
+                logger.exception('server error')
                 self.ti_vars[response] = "ERROR"
 
                 self.store(caller_guid)
@@ -219,7 +222,7 @@ class TipiVariable(object):
                 # Need to check to see if variable is queued, uses ASCII 31 (Unit Separator) to delimit.
                 # If so, we want to pop off the first one and return it.
                 if chr(0x1E) in str(self.ti_vars[str(var_key1)]):
-                    items = str(self.ti_vars[str(var_key1)]).split(chr(0x1E))
+                    items = self.ti_vars[str(var_key1)].split(chr(0x1E))
 
                     first_item = items.pop(0)
 
@@ -275,6 +278,7 @@ class TipiVariable(object):
     def handle(self, bytes):
         # Handle all tipi_io here, so main logic is just dealing with bytes in and out
         message = self.tipi_io.receive()
-        self.tipi_io.send(self.processRequest(str(message, 'ascii')))
+        response = self.processRequest(message)
+        self.tipi_io.send(response)
 
         return True

@@ -23,7 +23,7 @@ class TipiVariable(object):
         self.tipi_io = tipi_io
 
     def processRequest(self, message):
-        logger.info(f'request: {message}')
+        logger.debug(f'request: {message}')
         # Now that we have message, let's parse it:
         ti_message = str(message, 'ascii').split(chr(0x1E))
 
@@ -128,6 +128,7 @@ class TipiVariable(object):
                 "REMOTE_HOST" not in self.ti_global
                 or "REMOTE_PORT" not in self.ti_global
             ):
+                logger.error("REMOTE HOST NOT SET")
                 return bytearray("0" + chr(0x1E) + "ERROR", 'ascii')
 
             self.ti_vars[response] = ""  # Blank out our old response
@@ -186,11 +187,10 @@ class TipiVariable(object):
                 sock.connect(server_address)
 
                 # Send data
-                logger.info(f'sock.sendall: {message}')
                 sock.sendall(bytearray(message + "\n", 'ascii'))
 
                 data = sock.recv(1024)
-                logger.info(f'sock.recv: {data}')
+                data = str(data, 'ascii')
 
                 if (
                     'File "' in data or "Traceback" in data
@@ -198,6 +198,7 @@ class TipiVariable(object):
                     return bytearray("0" + chr(0x1E) + "ERROR", 'ascii')
 
             except:
+                logger.exception('server error')
                 self.ti_vars[response] = "ERROR"
 
                 self.store(caller_guid)
@@ -206,7 +207,7 @@ class TipiVariable(object):
             finally:
                 sock.close()
 
-                self.ti_vars[response] = str(data, 'ascii')
+                self.ti_vars[response] = data
 
             self.store(caller_guid)  # Write our vars to our local file
 
@@ -278,7 +279,6 @@ class TipiVariable(object):
         # Handle all tipi_io here, so main logic is just dealing with bytes in and out
         message = self.tipi_io.receive()
         response = self.processRequest(message)
-        logger.info(f'response: {message}')
         self.tipi_io.send(response)
 
         return True

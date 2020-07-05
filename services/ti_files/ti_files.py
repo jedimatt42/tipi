@@ -20,8 +20,7 @@ def isTiFile(filename):
         if os.path.exists(filename) and os.stat(filename).st_size >= 128:
             fh = open(filename, 'rb')
             header = bytearray(fh.read()[:9])
-            isGood = isValid(header)
-            return isGood
+            return isValid(header)
     except Exception as e:
         logger.error(e, exc_info=True)
         pass
@@ -29,6 +28,23 @@ def isTiFile(filename):
         if fh is not None:
             fh.close()
     return False
+
+def get_file_type(filename):
+    fh = None
+    try:
+        if os.path.exists(filename) and os.stat(filename).st_size >= 128:
+            fh = open(filename, 'rb')
+            header = bytearray(fh.read()[:128])
+            isGood = isValid(header)
+            if isGood:
+                return shortFileType(header)
+    except Exception as e:
+        logger.error(e, exc_info=True)
+        pass
+    finally:
+        if fh is not None:
+            fh.close()
+    return "native"
 
 
 def isProgram(bytes):
@@ -147,6 +163,22 @@ def catFileType(bytes):
             return 1 * protected
 
     return 0
+
+
+def shortFileType(bytes):
+    if isInternal(bytes):
+        type = "I"
+    else:
+        type = "D"
+    if isVariable(bytes):
+        type += "V"
+    else:
+        type += "F"
+
+    if isProgram(bytes):
+        type = "PRG"
+
+    return type
 
 
 def flagsToString(bytes):

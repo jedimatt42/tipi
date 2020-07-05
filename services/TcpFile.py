@@ -71,7 +71,7 @@ class TcpFile(object):
         try:
             (host, port, binding) = self.parseDev(devname)
             if not binding:
-                self.connectClient(host, port)
+                self.connectClient(devname, host, port)
             elif binding == "BIND":
                 self.bindServer(host, port)
             elif binding:
@@ -88,7 +88,7 @@ class TcpFile(object):
         self.tipi_io.send([recLen])
         return
 
-    def connectClient(self, host, port):
+    def connectClient(self, devname, host, port):
         handleId = self.tisockets.allocateHandleId()
         address = host + ':' + port
         msg = bytearray(len(address) + 3)

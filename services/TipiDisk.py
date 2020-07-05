@@ -281,6 +281,12 @@ class TipiDisk(object):
                 basicSuffixes
             ):
                 prog_file = BasicFile.load(unix_name)
+            elif 'DV' == ti_files.get_file_type(unix_name) and unix_name.lower().endswith(
+                basicSuffixes
+            ):
+                # if it has a basic suffix, lets try to coerce it
+                # from DISPLAY VARIABLE maybe
+                prog_file = BasicFile.load(unix_name)
             else:
                 prog_file = ProgramImageFile.load(unix_name)
 

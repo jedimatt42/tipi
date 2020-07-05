@@ -1,6 +1,7 @@
 import logging
 from . import ti_files
 from subprocess import call
+from . import VariableRecordFile 
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +69,15 @@ class BasicFile(object):
 
     @staticmethod
     def toBasic(fp, tmpfp):
+        try:
+            dv80fp = "/tmp/dv80_bas_tmp"
+            cmdargs = ["python3", "/home/tipi/xdt99/xdm99.py", "-P", fp, "-o", dv80fp]
+            logger.info("issuing command: " + str(cmdargs))
+            if call(cmdargs) == 0:
+                fp = dv80fp
+        except:
+            logger.exception('not able to load dv80 records')
+
         cmdargs = ["python3", "/home/tipi/xdt99/xbas99.py", "-c", "-o", tmpfp, fp]
         logger.info("issuing command: " + str(cmdargs))
         if call(cmdargs) != 0:
@@ -82,6 +92,15 @@ class BasicFile(object):
 
     @staticmethod
     def tidbit(fp, tmpfp):
+        try:
+            dv80fp = "/tmp/dv80_tid_tmp"
+            cmdargs = ["python3", "/home/tipi/xdt99/xdm99.py", "-P", fp, "-o", dv80fp]
+            logger.info("issuing command: " + str(cmdargs))
+            if call(cmdargs) == 0:
+                fp = dv80fp
+        except:
+            logger.exception('not able to load dv80 records')
+
         cmdargs = ["php", "/home/tipi/tidbit/tidbit_cmd.php", fp, "100", "10", tmpfp]
         logger.info("issuing command: " + str(cmdargs))
         if call(cmdargs) != 0:

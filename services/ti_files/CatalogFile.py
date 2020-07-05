@@ -135,9 +135,8 @@ class CatalogFile(object):
                 sectors = ti_files.getSectors(header) + 1
                 recordlen = ti_files.recordLength(header)
                 return self.__encodeDirRecord(f, ft, sectors, recordlen)
-
             # else it is a native file
-            if fp.lower().endswith(NativeFile.dv80suffixes):
+            elif fp.lower().endswith(NativeFile.dv80suffixes):
                 # dis/var
                 ft = 2
                 recCount = self.__line_count(fp)

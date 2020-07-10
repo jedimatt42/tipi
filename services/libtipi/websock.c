@@ -759,11 +759,11 @@ PyObject* websocket_readMsg(void)
 
 PyObject* websocket_sendMouseEvent(void)
 {
-  // send [dx, -dy, buttons]
+  // send [dx, -dy, buttons | 8]
   signed char msg[] = {
     dx < -128 ? -128 : dx > 127 ? 127 : dx,
     dy < -128 ? -128 : dy > 127 ? 127 : dy,
-    buttons};
+    buttons | 8};
   dx -= msg[0];
   dy -= msg[1];
   //log_printf("%s: %d %d %d\n", __func__, msg[0], msg[1], msg[2]);

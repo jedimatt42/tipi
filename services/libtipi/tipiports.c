@@ -126,12 +126,14 @@ static unsigned char readReg(int reg)
       errors++;
     }
   }
+#ifdef LOG
   {
     static unsigned char last[4] = {};
     if (last[reg] != value)
       log_printf("%s=>%02x\n", reg_names[reg], value);
     last[reg] = value;
   }
+#endif
   return value;
 }
 
@@ -255,9 +257,8 @@ static int resetProtocol(void)
   while (prev_syn != RESET) {
     backoff--;
     if (backoff < 1) {
-      struct timespec ts10ms = {0/*s*/, 10000000/*ns*/};
       backoff = 1;
-      nanosleep(&ts10ms, NULL);
+      usleep(10000/*us*/); // 10ms
       bail++;
       if (bail > 50) {
         log_printf("RESET bail\n");
@@ -317,6 +318,11 @@ static PyObject* gpio_readMsg(void)
   modeRead();
   int msglen = readByte() << 8;
   msglen |= readByte();
+
+  if (msglen == 0) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
 
   PyObject *message = PyByteArray_FromStringAndSize("", 0);
   PyByteArray_Resize(message, msglen);

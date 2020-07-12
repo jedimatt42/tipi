@@ -1,2 +1,2 @@
-version=2.4
-reldate=2020-07-05
+version=2.5
+reldate=2020-07-12

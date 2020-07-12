@@ -23,9 +23,9 @@ class TipiVariable(object):
         self.tipi_io = tipi_io
 
     def processRequest(self, message):
-        logger.debug(f'request: {message}')
+        logger.info(f'request: {message}')
         # Now that we have message, let's parse it:
-        ti_message = str(message, 'ascii').split(chr(0x1E))
+        ti_message = str(message, 'latin1').split(chr(0x1E))
 
         caller_guid = ti_message[0] if len(ti_message) >= 1 else ""  # Program's GUID
         context = (
@@ -129,7 +129,7 @@ class TipiVariable(object):
                 or "REMOTE_PORT" not in self.ti_global
             ):
                 logger.error("REMOTE HOST NOT SET")
-                return bytearray("0" + chr(0x1E) + "ERROR", 'ascii')
+                return bytearray("0" + chr(0x1E) + "ERROR", 'latin1')
 
             self.ti_vars[response] = ""  # Blank out our old response
 
@@ -187,22 +187,22 @@ class TipiVariable(object):
                 sock.connect(server_address)
 
                 # Send data
-                sock.sendall(bytearray(message + "\n", 'ascii'))
+                sock.sendall(bytearray(message + "\n", 'latin1'))
 
                 data = sock.recv(1024)
-                data = str(data, 'ascii')
+                data = str(data, 'latin1')
 
                 if (
                     'File "' in data or "Traceback" in data
                 ):  # BAD! Usually means compilation error on far end, esp when running via inetd.
-                    return bytearray("0" + chr(0x1E) + "ERROR", 'ascii')
+                    return bytearray("0" + chr(0x1E) + "ERROR", 'latin1')
 
             except:
                 logger.exception('server error')
                 self.ti_vars[response] = "ERROR"
 
                 self.store(caller_guid)
-                return bytearray("0" + chr(0x1E) + "ERROR", 'ascii')
+                return bytearray("0" + chr(0x1E) + "ERROR", 'latin1')
 
             finally:
                 sock.close()
@@ -211,7 +211,7 @@ class TipiVariable(object):
 
             self.store(caller_guid)  # Write our vars to our local file
 
-            return bytearray("1" + chr(0x1E) + self.ti_vars[response], 'ascii')
+            return bytearray("1" + chr(0x1E) + self.ti_vars[response], 'latin1')
 
         elif (
             action == "R" or action == "RS"
@@ -231,9 +231,9 @@ class TipiVariable(object):
                     self.store(caller_guid)
 
                     if action == "R":
-                        return bytearray("1" + chr(0x1E) + first_item, 'ascii')
+                        return bytearray("1" + chr(0x1E) + first_item, 'latin1')
                     else:
-                        return bytearray(first_item, 'ascii')
+                        return bytearray(first_item, 'latin1')
 
                 else:
                     response = self.ti_vars[str(var_key1)]
@@ -244,15 +244,15 @@ class TipiVariable(object):
                     self.store(caller_guid)
 
                     if action == "R":
-                        return bytearray("1" + chr(0x1E) + response, 'ascii')
+                        return bytearray("1" + chr(0x1E) + response, 'latin1')
                     else:
-                        return bytearray(response, 'ascii')
+                        return bytearray(response, 'latin1')
 
             else:
                 if action == "R":
-                    return bytearray("0" + chr(0x1E) + "ERROR", 'ascii')
+                    return bytearray("0" + chr(0x1E) + "ERROR", 'latin1')
                 else:
-                    return bytearray("ERROR", 'ascii')
+                    return bytearray("ERROR", 'latin1')
 
         return bytearray()
 

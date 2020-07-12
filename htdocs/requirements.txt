@@ -6,3 +6,4 @@ Werkzeug>=0.15.3
 click>=6.7
 crccheck>=0.6
 inotify>=0.2.9
+unidecode>=1.1.1

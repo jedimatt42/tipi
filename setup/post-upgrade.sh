@@ -30,7 +30,7 @@ if [ -e /tmp/test_update ]; then
   TIPI_UPDATE_DEPS=true
 fi
 
-if [ $fmajor -le 2 ] && [ $fminor -le 1 ]; then
+if [ $fmajor -le 2 ] && [ $fminor -le 4 ]; then
   TIPI_UPDATE_DEPS=true
 fi
 

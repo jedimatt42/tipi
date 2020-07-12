@@ -11,7 +11,7 @@
 #define GPLWS ((unsigned int*)0x83E0)
 #define DSRTS ((unsigned char*)0x401A)
 
-#define TIPICFG_VER "10"
+#define TIPICFG_VER "11"
 #define PI_CONFIG "PI.CONFIG"
 #define PI_STATUS "PI.STATUS"
 #define PI_UPGRADE "PI.UPGRADE"
@@ -47,12 +47,12 @@ void toggleAutomap();
 void spinnerMessage(int seconds, const char* msg);
 void spinnerPoll(const char* msg);
 void statusMessage(const char* msg);
-
-void getstr(int x, int y, char* var);
+void getTIPIPcbDetails();
+void getstr(int x, int y, char *var);
 
 const char spinner[4] = { '-', 92, '|', '/' };
 
-char ipaddress[79]; // generically k=v values from files would be at most 78 characters. 
+char ipaddress[79]; // generically k=v values from files would be at most 78 characters.
 char version[79];
 char latest[79];
 int crubase;
@@ -72,12 +72,16 @@ int wifi_dirty;
 int disks_dirty;
 int has_upgrade;
 
+#define CRU_ENABLE(c) __asm__("mov %0,r12\n\tsbo 0" : : "r"(c) : "r12")
+
+#define CRU_DISABLE(c) __asm__("mov %0,r12\n\tsbz 0" : : "r"(c) : "r12")
+
 inline void enableTipi() {
-  __asm__("mov %0,r12\n\tsbo 0" : : "r"(crubase) : "r12");
+  CRU_ENABLE(crubase);
 }
 
 inline void disableTipi() {
-  __asm__("mov %0,r12\n\tsbz 0" : : "r"(crubase) : "r12");
+  CRU_DISABLE(crubase);
 }
 
 unsigned char getRC() {
@@ -109,7 +113,7 @@ void showValue(int x, int y, const char* val) {
 void showQMenu() {
   gotoxy(0,22);
   cputs("CFG: Q)uit, ");
-  cputs("R)eload");  
+  cputs("R)eload");
   if (disks_dirty || wifi_dirty) {
     gotoxy(19,22);
     cputs(", W)rite");
@@ -117,8 +121,8 @@ void showQMenu() {
     cclearxy(19,22,8);
   }
   gotoxy(0,23);
-  cputs(" PI: H)alt, ");  
-  cputs("re(B)oot");  
+  cputs(" PI: H)alt, ");
+  cputs("re(B)oot");
 }
 
 void printDsrTimestamp() {
@@ -228,7 +232,7 @@ void main()
   unsigned char key = 0;
   do {
     gotoxy(23,35);
-    
+
     while(!kbhit()) {}
 
     key = cgetc();
@@ -330,6 +334,40 @@ void main()
   __asm__("clr r0\n\tblwp *r0");
 }
 
+void tipi_lib_init()
+{
+  crubase = 0x1000;
+  while (crubase < 0x2000)
+  {
+    enableTipi();
+    unsigned int *dsrrom = (unsigned int *)0x4000;
+    dsrrom += 4; // 4 words, not bytes
+
+    if (*dsrrom != 0)
+    {
+      dsrrom = ((unsigned int *)*dsrrom) + 2;
+      unsigned char *dsrname = (unsigned char *)dsrrom;
+      // TIPI will always have device TIPI first in dsrlnk list.
+      if (dsrname[0] == 4 && dsrname[1] == 'T' && dsrname[2] == 'I' && dsrname[3] == 'P' && dsrname[4] == 'I')
+      {
+        disableTipi();
+        return;
+      }
+    }
+    disableTipi();
+    crubase += 0x0100;
+  }
+  crubase = 0x0000;
+}
+
+void getTIPIPcbDetails() {
+  tipi_lib_init();
+  if (crubase) {
+    showCrubase(crubase);
+    printDsrTimestamp();
+  }
+}
+
 void loadPiStatus() {
   struct PAB pab;
 
@@ -339,12 +377,6 @@ void loadPiStatus() {
     return;
   }
 
-  // see if we can steal the crubase
-  // should work immediately after a dsrlnk if interrupts are off.
-  crubase = GPLWS[12];
-  showCrubase(crubase);
-  printDsrTimestamp();
-
   int recNo = 0;
   ferr = DSR_ERR_NONE;
   while(ferr == DSR_ERR_NONE) {
@@ -352,7 +384,7 @@ void loadPiStatus() {
     ferr = dsr_read(&pab, 0);
     gotoxy(0,22);
     if (ferr == DSR_ERR_NONE) {
-      // Now FBUF has the data... 
+      // Now FBUF has the data...
       vdpmemread(FBUF, cbuf, pab.CharCount);
       cbuf[pab.CharCount] = 0;
       processStatusLine(cbuf);
@@ -398,7 +430,7 @@ void processStatusLine(char* cbuf) {
 
 void loadPiConfig() {
   struct PAB pab;
-  
+
   unsigned char ferr = dsr_openDV(&pab, PI_CONFIG, FBUF, DSR_TYPE_INPUT);
   if (ferr) {
     cprintf(" ERROR: %x", ferr);
@@ -412,7 +444,7 @@ void loadPiConfig() {
     ferr = dsr_read(&pab, 0);
     gotoxy(0,22);
     if (ferr == DSR_ERR_NONE) {
-      // Now FBUF has the data... 
+      // Now FBUF has the data...
       vdpmemread(FBUF, cbuf, pab.CharCount);
       cbuf[pab.CharCount] = 0;
       processConfigLine(cbuf);
@@ -442,6 +474,7 @@ void loadPiConfig() {
 void reload() {
   disks_dirty = 0;
   wifi_dirty = 0;
+  getTIPIPcbDetails();
   loadPiConfig();
   loadPiStatus();
 }
@@ -571,7 +604,7 @@ void savePiConfig() {
 
   gotoxy(0,4);
   cputs("Saving PI.CONFIG");
-  
+
   unsigned char ferr = dsr_openDV(&pab, PI_CONFIG, FBUF, DSR_TYPE_APPEND);
   if (ferr) {
     cprintf(" ERROR: %x", ferr);
@@ -741,7 +774,7 @@ unsigned char dsr_close(struct PAB* pab) {
 
 // the data read is in FBUF, the length read in pab->CharCount
 // typically passing 0 in for record number will let the controller
-// auto-increment it. 
+// auto-increment it.
 unsigned char dsr_read(struct PAB* pab, int recordNumber) {
   pab->OpCode = DSR_READ;
   pab->RecordNumber = recordNumber;

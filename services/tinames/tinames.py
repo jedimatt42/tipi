@@ -5,6 +5,7 @@ import string
 import logging
 from crccheck.crc import Crc15
 from TipiConfig import TipiConfig
+from unidecode import unidecode
 
 # Transform a name supplied by the 4A into our storage path
 
@@ -93,11 +94,13 @@ def asTiShortName(name):
 
 
 def encodeName(name):
-    if len(name) <= 10:
+    bytes = bytearray(name, 'utf-8')
+    if len(bytes) == len(name) and len(name) <= 10:
         return name
     else:
-        crc = Crc15.calc(bytearray(name[6:], 'ascii'))
-        shortname = "{}`{}".format(name[:6], baseN(crc, 36))
+        crc = Crc15.calc(bytearray(name, 'utf-8'))
+        prefix = unidecode(name)[:6]
+        shortname = f'{prefix}`{baseN(crc, 36)}'
         return shortname
 
 

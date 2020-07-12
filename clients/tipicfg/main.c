@@ -226,7 +226,6 @@ void main()
   setupScreen();
 
   layoutScreen();
-  getTIPIPcbDetails();
 
   reload();
 
@@ -475,6 +474,7 @@ void loadPiConfig() {
 void reload() {
   disks_dirty = 0;
   wifi_dirty = 0;
+  getTIPIPcbDetails();
   loadPiConfig();
   loadPiStatus();
 }

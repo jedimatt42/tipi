@@ -319,11 +319,6 @@ static PyObject* gpio_readMsg(void)
   int msglen = readByte() << 8;
   msglen |= readByte();
 
-  if (msglen == 0) {
-    Py_INCREF(Py_None);
-    return Py_None;
-  }
-
   PyObject *message = PyByteArray_FromStringAndSize("", 0);
   PyByteArray_Resize(message, msglen);
   Py_buffer buffer;

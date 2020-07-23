@@ -27,7 +27,11 @@ case $fversion in
 esac
 
 if [ -e /tmp/test_update ]; then
-  TIPI_UPDATE_DEPS=true
+  TIPI_UPDATE_LIBTIPI=true
+fi
+
+if [ $fmajor -le 2 ] && [ $fminor -le 5 ]; then
+  TIPI_UPDATE_LIBTIPI=true
 fi
 
 if [ $fmajor -le 2 ] && [ $fminor -le 4 ]; then
@@ -47,24 +51,28 @@ fi
 su tipi -c "cd /home/tipi/tipi && git submodule update --init"
 
 if [ ! -z ${TIPI_RESTART_SERVICES:-} ]; then
-systemctl stop tipi.service
-systemctl stop tipiweb.service
-systemctl stop tipimon.service
-systemctl stop tipiwatchdog.service
-systemctl stop tipiboot.service
+  systemctl stop tipi.service
+  systemctl stop tipiweb.service
+  systemctl stop tipimon.service
+  systemctl stop tipiwatchdog.service
+  systemctl stop tipiboot.service
 fi
 
 if [ ! -z ${TIPI_UPDATE_DEPS:-} ]; then
-apt-get update
-apt-get upgrade -y
-apt-get install -y libsqlite3-dev
-apt-get install -y python-pil
-apt-get install -y python3-dev
-# moves to the python3 version of xdt99
-su tipi -c "cd /home/tipi/xdt99/; git pull"
+  apt-get update
+  apt-get upgrade -y
+  apt-get install -y libsqlite3-dev
+  apt-get install -y python-pil
+  apt-get install -y python3-dev
+  # moves to the python3 version of xdt99
+  su tipi -c "cd /home/tipi/xdt99/; git pull"
 
-su tipi -c "/home/tipi/tipi/services/update-deps.sh"
-su tipi -c "/home/tipi/tipi/htdocs/update-deps.sh"
+  su tipi -c "/home/tipi/tipi/services/update-deps.sh"
+  su tipi -c "/home/tipi/tipi/htdocs/update-deps.sh"
+fi
+
+if [ ! -z ${TIPI_UPDATE_LIBTIPI:-} ]; then
+  su tipi -c "/home/tipi/tipi/services/libtipi/rebuild.sh"
 fi
 
 if [ ! -f "/usr/bin/php" ]; then

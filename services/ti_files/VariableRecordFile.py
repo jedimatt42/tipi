@@ -195,7 +195,11 @@ class VariableRecordFile(object):
 
 
 def load_internal(unix_file_name):
-    pab = bytearray(8)
-    pab[1] = (VARIABLE << 4) + (INPUT << 1)
-    pab[4] = 80
-    return VariableRecordFile.load(unix_file_name, pab).records
+    try:
+        pab = bytearray(8)
+        pab[1] = (VARIABLE << 4) + (INPUT << 1)
+        pab[4] = 80
+        return VariableRecordFile.load(unix_file_name, pab).records
+    except:
+        return []
+

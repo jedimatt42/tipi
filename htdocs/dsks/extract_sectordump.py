@@ -15,7 +15,7 @@ def rollDiskName(diskname):
     last = parts[-1:][0]
     if last.isnumeric():
         parts[-1:] = [str(1 + int(last))]
-        return string.join(parts, "_")
+        return "_".join(parts)
     else:
         return diskname + "_1"
 

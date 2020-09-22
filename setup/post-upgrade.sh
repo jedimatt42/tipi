@@ -42,7 +42,7 @@ if [ $fmajor -le 1 ] && [ $fminor -le 47 ]; then
   TIPI_PURGE_CACHE=true
 fi
 
-if [ ! -d "/home/tipi/PrinterToPDF" ]; then
+if [ ! -e "/home/tipi/PrinterToPDF/printerToPDF" ]; then
   TIPI_PRINTING_UPDATE=true
 fi
 

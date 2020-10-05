@@ -77,13 +77,13 @@ class TipiDisk(object):
         logPab(pab)
         localPath = tinames.devnameToLocal(devname)
         if localPath is None:
-            logger.info("Passing to other controllers")
+            logger.info("(1) Passing to other controllers")
             self.sendErrorCode(EDVNAME)
             return
 
         logger.debug("  local file: " + localPath)
         if mode(pab) == INPUT and not os.path.exists(localPath):
-            logger.info("Passing to other controllers")
+            logger.info("(2) Passing to other controllers")
             self.sendErrorCode(EDVNAME)
             return
 

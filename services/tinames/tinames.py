@@ -53,8 +53,6 @@ def devnameToLocal(devname):
     startpart = 1
     if parts[0] == "TIPI":
         path = TIPI_DIR
-    elif parts[0] == "WDS1":
-        path = TIPI_DIR
     elif parts[0] == "DSK0":
         path = TIPI_DIR
     elif parts[0] == "DSK1":
@@ -79,8 +77,8 @@ def devnameToLocal(devname):
             path += "/" + findpath(path, part)
             logger.debug("building path: %s", path)
 
-    path = str(path)
-    logger.debug("%s -> %s", devname, path)
+    path = str(path).strip()
+    logger.info("%s -> %s", devname, path)
 
     return path
 

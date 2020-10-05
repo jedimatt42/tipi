@@ -208,7 +208,7 @@ class CatalogFile(object):
 
     def __line_count(self, fp):
         i = 0
-        with open(fp) as f:
+        with open(fp, encoding='utf-8', errors='ignore') as f:
             for i, l in enumerate(f):
                 pass
         return i + 1

@@ -172,7 +172,6 @@ class VariableRecordFile(object):
 
         if offset != 0:
             sector[offset] = 0xFF
-            offset += 1
             sectors += [sector]
         sectorCount = len(sectors)
 

@@ -31,7 +31,7 @@ class NativeFile(object):
                 recLen = recordLength(pab)
                 if recordLength(pab) == 0:
                     recLen = 80
-                encoding = 'utf-8' if url else 'ascii'
+                encoding = 'utf-8' if url else 'latin1'
                 records = NativeFile.loadLines(unix_file_name, recLen, encoding)
                 logger.info("loaded %d lines", len(records))
                 logger.info("records: %s", records)
@@ -54,10 +54,10 @@ class NativeFile(object):
             raise
 
     @staticmethod
-    def loadLines(fp, recLen, encoding='ascii'):
+    def loadLines(fp, recLen, encoding='latin1'):
         i = 0
         records = []
-        with open(fp, 'r') as f:
+        with open(fp, 'r', encoding=encoding) as f:
             for i, l in enumerate(f):
                 bytes = bytearray(l.rstrip(), encoding)
                 if len(bytes) > 0:

@@ -30,6 +30,10 @@ if [ -e /tmp/test_update ]; then
   TIPI_UPDATE_LIBTIPI=true
 fi
 
+if [ $fmajor -le 2 ] && [ $fminor -le 9 ]; then
+  TIPI_REPAIR_VAR_FIADS=true
+fi
+
 if [ $fmajor -le 2 ] && [ $fminor -le 5 ]; then
   TIPI_UPDATE_LIBTIPI=true
 fi
@@ -107,6 +111,12 @@ fi
 
 #### Update tipi user group membership
 sudo usermod -G tipi,sudo,input,i2c,gpio,adm tipi
+
+#### Repair bad TIPI Variable record FIADS
+if [ ! -z ${TIPI_REPAIR_VAR_FIADS:-} ]; then
+  echo "Repairing broken FIADs"
+  su tipi -c "(cd /home/tipi/tipi/services; . ./ENV/bin/activate; python -m ti_files.fix_dv_fiads)"
+fi
 
 #### Restart all TIPI services
 if [ ! -z ${TIPI_RESTART_SERVICES:-} ]; then

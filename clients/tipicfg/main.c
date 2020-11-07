@@ -368,6 +368,26 @@ void getTIPIPcbDetails() {
   }
 }
 
+int upgradeAvailable(char* latest, char* current) {
+  int lmajor = atoi(latest);
+  while (latest[0] != '.') {
+    latest++;
+  }
+  int lminor = atoi(latest+1);
+  int cmajor = atoi(current);
+  while (current[0] != '.') {
+    current++;
+  }
+  int cminor = atoi(current+1);
+  if (lmajor > cmajor) {
+    return 1;
+  }
+  if (lmajor == cmajor && lminor > cminor) {
+    return 1;
+  }
+  return 0;
+}
+
 void loadPiStatus() {
   struct PAB pab;
 
@@ -394,7 +414,7 @@ void loadPiStatus() {
 
   showValue(25, 0, version);
   showValue(25, 1, ipaddress);
-  if (strcmp(latest, version) > 0) {
+  if (upgradeAvailable(latest, version)) {
     gotoxy(0, 4);
     cputs("U) upgrade to ");
     cputs(latest);

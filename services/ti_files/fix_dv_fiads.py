@@ -15,9 +15,13 @@ logger = logging.getLogger(__name__)
 
 def is_broken(data):
     eof_offset = ti_files.eofOffset(data)
-    if eof_offset:
-        ridx = ((ti_files.getSectors(data) - 1) * 256) + 128 + eof_offset
-        return data[ridx-1] == 0xff and data[ridx] == 0x00
+    try:
+        if eof_offset:
+            ridx = ((ti_files.getSectors(data) - 1) * 256) + 128 + eof_offset
+            return data[ridx-1] == 0xff and data[ridx] == 0x00
+    except:
+        # if files are empty the calculated eof index will be out of range
+        pass
     return False
 
 def fix_eof(file_path, data):

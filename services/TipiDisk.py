@@ -10,6 +10,7 @@ from ti_files.FixedRecordFile import FixedRecordFile
 from ti_files.VariableRecordFile import VariableRecordFile
 from ti_files.VariableRecordFile import load_internal
 from ti_files.CatalogFile import CatalogFile
+from ti_files.CatalogFileTimestamps import CatalogFileTimestamps
 from ti_files.NativeFile import NativeFile
 from ti_files.BasicFile import BasicFile
 from ti_files import ti_files
@@ -89,7 +90,10 @@ class TipiDisk(object):
 
         if os.path.isdir(localPath):
             try:
-                cat_file = CatalogFile.load(localPath, pab, devname)
+                if recordLength(pab) == 0 or recordLength(pab) == 146:
+                    cat_file = CatalogFileTimestamps.load(localPath, pab, devname)
+                else:
+                    cat_file = CatalogFile.load(localPath, pab, devname)
                 self.sendSuccess()
                 self.tipi_io.send([cat_file.getRecordLength()])
                 self.openFiles[localPath] = cat_file

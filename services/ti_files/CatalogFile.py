@@ -22,7 +22,7 @@ class CatalogFile(object):
         self.localpath = localpath
         self.devname = devname
         self.longnames = long
-        self.records = self.__loadRecords()
+        self.records = []
 
     @staticmethod
     def load(path, pab, devname):
@@ -33,9 +33,13 @@ class CatalogFile(object):
                 #       for implementation of long file name handling
                 if recordLength(pab) == 0 or recordLength(pab) == 38:
                     # TODO: load all the directory records upfront
-                    return CatalogFile(path, devname, False)
+                    cat = CatalogFile(path, devname, False)
+                    cat.loadRecords()
+                    return cat
             if recordType(pab) == VARIABLE and recordLength(pab) == 0:
-                return CatalogFile(path, devname, True)
+                cat =CatalogFile(path, devname, True)
+                cat.loadRecords()
+                return cat
         raise Exception("bad record type")
 
     def getRecordLength(self):
@@ -65,14 +69,14 @@ class CatalogFile(object):
             return None
         return self.records[idx]
 
-    def __loadRecords(self):
+    def loadRecords(self):
         recs = []
-        recs += [self.__createVolumeData()]
-        recs += self.__createFileCatRecords()
-        recs += [self.__encodeDirRecord("", 0, 0, 0)]
-        return recs
+        recs += [self.createVolumeData()]
+        recs += self.createFileCatRecords()
+        recs += [self.encodeDirRecord("", 0, 0, 0)]
+        self.records = recs
 
-    def __createVolumeData(self):
+    def createVolumeData(self):
         logger.debug("localpath: %s", self.localpath)
         volumeName = os.path.basename(self.localpath)
         logger.debug("volumeName stage1: %s", volumeName)
@@ -83,7 +87,7 @@ class CatalogFile(object):
             sector_count = 1440
 
         if self.devname == "DSK.":
-            return self.__encodeVolRecord("", 0, sector_count, sector_count - 2)
+            return self.encodeVolRecord("", 0, sector_count, sector_count - 2)
 
         if self.localpath == "/home/tipi/tipi_disk":
             volumeName = "TIPI"
@@ -98,33 +102,33 @@ class CatalogFile(object):
                 volumeName = parts[-1]
 
         logger.debug("volumeName: %s", volumeName)
-        return self.__encodeVolRecord(volumeName, 0, sector_count, sector_count - 2)
+        return self.encodeVolRecord(volumeName, 0, sector_count, sector_count - 2)
 
-    def __createFileCatRecords(self):
+    def createFileCatRecords(self):
         if self.devname == "DSK.":
             return {}
 
         files = sorted(
             list(
                 filter(
-                    lambda x: self.__include(os.path.join(self.localpath, x)),
+                    lambda x: self.include(os.path.join(self.localpath, x)),
                     os.listdir(self.localpath),
                 )
             )
         )
-        return map(self.__createFileRecord, files)
+        return map(self.createFileRecord, files)
 
-    def __include(self, fp):
-        logger.debug("__include %s", fp)
+    def include(self, fp):
+        logger.debug("include %s", fp)
         return os.path.isdir(fp) or ti_files.isTiFile(fp) or os.path.isfile(fp)
 
-    def __createFileRecord(self, f):
+    def createFileRecord(self, f):
         logger.debug("createFileRecord %s", f)
         fh = None
         try:
             fp = os.path.join(self.localpath, f)
             if os.path.isdir(fp):
-                return self.__encodeDirRecord(f, 6, 2, 0)
+                return self.encodeDirRecord(f, 6, 2, 0)
 
             if ti_files.isTiFile(fp):
                 fh = open(fp, "rb")
@@ -134,12 +138,12 @@ class CatalogFile(object):
                 ft = ti_files.catFileType(header)
                 sectors = ti_files.getSectors(header) + 1
                 recordlen = ti_files.recordLength(header)
-                return self.__encodeDirRecord(f, ft, sectors, recordlen)
+                return self.encodeDirRecord(f, ft, sectors, recordlen)
             # else it is a native file
             elif fp.lower().endswith(NativeFile.dv80suffixes):
                 # dis/var
                 ft = 2
-                recCount = self.__line_count(fp)
+                recCount = self.line_count(fp)
                 recSize = 80
             else:
                 # dis/fix
@@ -147,7 +151,7 @@ class CatalogFile(object):
                 stats = os.stat(fp)
                 recCount = stats.st_size / 128 + 1
                 recSize = 128
-            return self.__encodeDirRecord(f, ft, recCount, recSize)
+            return self.encodeDirRecord(f, ft, recCount, recSize)
 
         except Exception as e:
             traceback.print_exc()
@@ -157,7 +161,7 @@ class CatalogFile(object):
             if fh is not None:
                 fh.close()
 
-    def __encodeVolRecord(self, name, ftype, sectors, recordLength):
+    def encodeVolRecord(self, name, ftype, sectors, recordLength):
         if self.longnames:
             recname = bytearray(name, 'utf-8')
             buff = bytearray(28 + len(recname))
@@ -165,9 +169,9 @@ class CatalogFile(object):
             recname = bytearray(tinames.encodeName(name), 'utf-8')
             buff = bytearray(38)
 
-        return self.__encodeCatRecord(buff, recname, ftype, sectors, recordLength)
+        return self.encodeCatRecord(buff, recname, ftype, sectors, recordLength)
 
-    def __encodeDirRecord(self, name, ftype, sectors, recordLength):
+    def encodeDirRecord(self, name, ftype, sectors, recordLength):
         if self.longnames:
             recname = bytearray(name, 'utf-8')
             buff = bytearray(28 + len(recname))
@@ -175,9 +179,9 @@ class CatalogFile(object):
             recname = bytearray(tinames.asTiShortName(name), 'utf-8')
             buff = bytearray(38)
 
-        return self.__encodeCatRecord(buff, recname, ftype, sectors, recordLength)
+        return self.encodeCatRecord(buff, recname, ftype, sectors, recordLength)
 
-    def __encodeCatRecord(self, buff, recname, ftype, sectors, recordLength):
+    def encodeCatRecord(self, buff, recname, ftype, sectors, recordLength):
         logger.debug(
             "cat record: %s, %d, %d, %d", recname, ftype, sectors, recordLength
         )
@@ -206,7 +210,7 @@ class CatalogFile(object):
 
         return buff
 
-    def __line_count(self, fp):
+    def line_count(self, fp):
         i = 0
         with open(fp, encoding='utf-8', errors='ignore') as f:
             for i, l in enumerate(f):

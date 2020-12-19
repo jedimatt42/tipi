@@ -97,13 +97,15 @@ class FixedRecordFile(object):
         recNo = recordNumber(pab)
         if self.filetype == RELATIVE:
             self.currentRecord = recNo
+        logger.info(f'currentRecord: {self.currentRecord}')
         if self.currentRecord >= len(self.records):
             logger.info("growing records")
             self.records += [bytearray(self.recordLength)] * (
                 1 + self.currentRecord - len(self.records)
             )
-        record = self.records[self.currentRecord]
-        record[: len(rdata)] = bytearray(rdata)
+        new_record = bytearray(self.recordLength)
+        new_record[: len(rdata)] = bytearray(rdata)
+        self.records[self.currentRecord] = new_record
         logger.info(
             "set record %d to bytes of length %d", self.currentRecord, len(rdata)
         )

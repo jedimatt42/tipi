@@ -30,6 +30,7 @@ CONFIG_DEFAULTS = {
     "MOUSE_SCALE": "50",
     "TZ": "America/Los_Angeles",
     "SECTOR_COUNT": "1440",
+    "DIR_SORT": "FIRST",
 }
 
 

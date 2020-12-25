@@ -71,7 +71,7 @@ def isVariable(bytes):
 
 
 def isValid(bytes):
-    return bytes[0] == 0x07 and str(bytes[1:8], 'ascii') == "TIFILES"
+    return bytes[0] == 0x07 and str(bytes[1:8], 'latin1') == "TIFILES"
 
 
 def setTiFile(bytes):
@@ -130,7 +130,7 @@ def setRecordCount(bytes, count):
 
 
 def tiName(bytes):
-    return str(bytes[0x10:0x1A], 'ascii')
+    return str(bytes[0x10:0x1A], 'latin1')
 
 
 def setName(bytes, shortName):
@@ -238,7 +238,7 @@ def createHeader(flags, tiname, data):
     header[9] = sectors & 0xFF
     header[12] = eofOffset
 
-    header[0x10:0x1A] = bytearray(tiname.ljust(10,' '), 'ascii')
+    header[0x10:0x1A] = bytearray(tiname.ljust(10,' '), 'latin1')
     return header
 
 

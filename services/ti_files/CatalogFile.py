@@ -108,19 +108,54 @@ class CatalogFile(object):
         if self.devname == "DSK.":
             return {}
 
-        files = sorted(
-            list(
-                filter(
-                    lambda x: self.include(os.path.join(self.localpath, x)),
-                    os.listdir(self.localpath),
+        dir_sort = tipi_config.get("DIR_SORT")
+        if dir_sort not in ("MIXED", "FIRST", "LAST"):
+            dir_sort = "FIRST"
+
+        if dir_sort == "MIXED":
+            files = sorted(
+                list(
+                    filter(
+                        lambda x: self.include(os.path.join(self.localpath, x)),
+                        os.listdir(self.localpath),
+                    )
                 )
             )
-        )
+        else:
+            dirs = sorted(
+                list(
+                    filter(
+                        lambda x: self.includedirs(os.path.join(self.localpath, x)),
+                        os.listdir(self.localpath),
+                    )
+                )
+            )
+            files = sorted(
+                list(
+                    filter(
+                        lambda x: self.includefiles(os.path.join(self.localpath, x)),
+                        os.listdir(self.localpath),
+                    )
+                )
+            )
+            if dir_sort == "FIRST":
+                files = dirs + files
+            elif dir_sort == "LAST":
+                files += dirs
+
         return map(self.createFileRecord, files)
 
     def include(self, fp):
         logger.debug("include %s", fp)
         return os.path.isdir(fp) or ti_files.isTiFile(fp) or os.path.isfile(fp)
+
+    def includefiles(self, fp):
+        logger.debug("includefiles %s", fp)
+        return ti_files.isTiFile(fp) or os.path.isfile(fp)
+
+    def includedirs(self, fp):
+        logger.debug("includedirs %s", fp)
+        return os.path.isdir(fp)
 
     def createFileRecord(self, f):
         logger.debug("createFileRecord %s", f)

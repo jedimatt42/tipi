@@ -6,8 +6,10 @@ import logging
 from Pab import *
 from ti_files import ti_files
 from tinames import tinames
+from TipiConfig import TipiConfig
 
 logger = logging.getLogger(__name__)
+tipi_config = TipiConfig.instance()
 
 class LevelTwo(object):
 
@@ -100,16 +102,14 @@ class LevelTwo(object):
         logger.info("unit: %d, path: %s", unit, pathname)
         
         # test if device is mapped
-        localfilename = self.getLocalName(unit,"")
-        if localfilename is None:
-            logger.info("passing request to next device")
-            self.tipi_io.send([EDVNAME])
-            return True
-
-        if not os.path.exists(localfilename):
-            logger.info("device not mapped")
-            self.tipi_io.send([EDEVERR])
-            return True
+        if unit:
+            # only check unit greater than 0. TIPI is unit 0 and doesn't
+            # get mapped
+            mapped = tipi_config.get(f"DSK{unit}_DIR")
+            if not mapped:
+                logger.info("device not mapped")
+                self.tipi_io.send([EDEVERR])
+                return True
 
         target = tinames.devnameToLocal(pathname)
         if not (os.path.exists(target) and os.path.isdir(target)):

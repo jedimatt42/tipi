@@ -58,7 +58,7 @@ class StatusFile(object):
             if dataType(pab) == DISPLAY:
                 readRec = self.getRecNo(pab)
 
-                if readRec >= self.tipiStatus.len():
+                if readRec >= len(self.tipiStatus):
                     self.tipi_io.send([EEOF])
                     return
                 else:
@@ -76,7 +76,7 @@ class StatusFile(object):
                 self.tipi_io.send([SUCCESS])
                 statbyte = STVARIABLE
                 readRec = self.getRecNo(pab)
-                if readRec >= self.tipiStatus.len():
+                if readRec >= len(self.tipiStatus):
                     statbyte |= STLEOF
                 self.tipi_io.send([statbyte])
                 return

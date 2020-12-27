@@ -48,5 +48,5 @@ class Status(object):
     def record(self, idx):
         return self.__records[idx]
 
-    def len(self):
+    def __len__(self):
         return len(self.__records)

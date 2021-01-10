@@ -130,6 +130,10 @@ directory mask=0755
 force user=tipi
 ```
 
+## Test WIFI Connectivity
+
+Make sure wifi was working before archiving the image. 
+
 ### Capture SD Card Image
 
 On a linux system dump the sdcard to an image. Then mount the image and clear unused blocks before zipping.

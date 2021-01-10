@@ -21,7 +21,7 @@ def configureWifi(wificonfig):
         os.remove(wificonfig)
 
         # adjust settings for network 0
-        with open("/etc/wpa_supplicant/wpa_supplicant.conf", "w") as fh_out:
+        with open("/boot/wpa_supplicant.conf", "w") as fh_out:
             with open(
                 "/home/tipi/tipi/services/templates/wpa_supplicant.conf"
             ) as fh_in:

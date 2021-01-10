@@ -13,6 +13,8 @@ Go to the [Wiki](https://github.com/jedimatt42/tipi/wiki) for end user installat
 Assumes base image is Raspbian Lite
 
 Use raspi-config to install locales and set default, en_US_utf8.
+Note: installing all locales takes forever, and slows future updates.
+install en-US-UTF8, en-GB-UTF8, de-DE-UTF8, and en-CA-UTF8
 
 Use raspi-config to enable i2c, ssh, and grow the root filesystem.
 reboot.
@@ -57,8 +59,8 @@ sudo passwd tipi
 Make sure git is installed (after setting up tmpfs folders, update will be required)
 
 ```
-sudo apt-get update
-sudo apt-get install git
+sudo apt update
+sudo apt install git
 ```
 
 ## Install services
@@ -79,7 +81,7 @@ is for the 'tipi' user.
 cd /home/tipi
 git clone https://github.com/jedimatt42/tipi.git tipi
 cd /home/tipi/tipi
-git checkout release
+git checkout buster_release
 git submodule update --init
 ./setup.sh
 cd setup
@@ -94,7 +96,7 @@ sudo ./post-upgrade.sh
 * add telnetd for localhost access
 
 ```
-sudo apt-get install telnetd
+sudo apt install telnetd
 ```
 
    edit /etc/hosts.allow: 
@@ -127,6 +129,10 @@ create mask=0644
 directory mask=0755
 force user=tipi
 ```
+
+## Test WIFI Connectivity
+
+Make sure wifi was working before archiving the image. 
 
 ### Capture SD Card Image
 

@@ -1,6 +1,5 @@
 EESchema Schematic File Version 4
-LIBS:tipi-peb-cache
-EELAYER 26 0
+EELAYER 30 0
 EELAYER END
 $Descr B 17000 11000
 encoding utf-8
@@ -26,7 +25,7 @@ F 3 "" H 14000 3300 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L tipi-peb-rescue:27C256 U2
+L tipi-peb-rescue:27C256-tipi-peb-rescue U2
 U 1 1 5917F7B0
 P 2050 2100
 F 0 "U2" H 1900 3100 50  0000 C CNN
@@ -37,7 +36,7 @@ F 3 "" H 2050 2100 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L tipi-peb-rescue:74LS245 U7
+L tipi-peb-rescue:74LS245-tipi-peb-rescue U7
 U 1 1 5917F86D
 P 10250 9400
 F 0 "U7" H 10350 9975 50  0000 L BNN
@@ -48,7 +47,7 @@ F 3 "" H 10250 9400 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L tipi-peb-rescue:C_Small C9
+L tipi-peb-rescue:C_Small-tipi-peb-rescue C9
 U 1 1 5917FDFE
 P 8500 850
 F 0 "C9" H 8510 920 50  0000 L CNN
@@ -113,7 +112,7 @@ JTAG_TDO
 Text GLabel 9750 6300 2    60   Input ~ 0
 JTAG_TMS
 $Comp
-L tipi-peb-rescue:AVR-JTAG-10 JTAG1
+L tipi-peb-rescue:AVR-JTAG-10-tipi-peb-rescue JTAG1
 U 1 1 591AA716
 P 14650 1500
 F 0 "JTAG1" H 14480 1830 50  0000 C CNN
@@ -312,7 +311,7 @@ DSR_B1
 Text GLabel 7350 3000 0    60   Output ~ 0
 TI_CRUIN
 $Comp
-L tipi-peb-rescue:LM1117-3.3 U8
+L tipi-peb-rescue:LM1117-3.3-tipi-peb-rescue U8
 U 1 1 594EAE75
 P 14450 4250
 F 0 "U8" H 14550 4000 50  0000 C CNN
@@ -334,7 +333,7 @@ F 3 "" H 14450 4550 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L tipi-peb-rescue:CP1_Small C16
+L tipi-peb-rescue:CP1_Small-tipi-peb-rescue C16
 U 1 1 594EB02A
 P 14850 4350
 F 0 "C16" H 14860 4420 50  0000 L CNN
@@ -345,7 +344,7 @@ F 3 "" H 14850 4350 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L tipi-peb-rescue:CP1_Small C14
+L tipi-peb-rescue:CP1_Small-tipi-peb-rescue C14
 U 1 1 594EB077
 P 14050 4350
 F 0 "C14" H 14060 4420 50  0000 L CNN
@@ -367,7 +366,7 @@ F 3 "" H 15000 4250 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L tipi-peb-rescue:LED_ALT D1
+L tipi-peb-rescue:LED_ALT-tipi-peb-rescue D1
 U 1 1 594FDAB3
 P 12350 1200
 F 0 "D1" H 12350 1300 50  0000 C CNN
@@ -378,7 +377,7 @@ F 3 "" H 12350 1200 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L tipi-peb-rescue:R R6
+L tipi-peb-rescue:R-tipi-peb-rescue R6
 U 1 1 594FDB4A
 P 12750 1200
 F 0 "R6" V 12830 1200 50  0000 C CNN
@@ -400,7 +399,7 @@ F 3 "" H 13000 1200 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L tipi-peb-rescue:R R5
+L tipi-peb-rescue:R-tipi-peb-rescue R5
 U 1 1 594FDDEA
 P 11650 900
 F 0 "R5" V 11730 900 50  0000 C CNN
@@ -411,7 +410,7 @@ F 3 "" H 11650 900 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L tipi-peb-rescue:Q_NPN_BCE Q1
+L tipi-peb-rescue:Q_NPN_BCE-tipi-peb-rescue Q1
 U 1 1 594FDE57
 P 11900 1100
 F 0 "Q1" H 12100 1150 50  0000 L CNN
@@ -435,7 +434,7 @@ $EndComp
 Text GLabel 11400 900  0    60   Input ~ 0
 LED0
 $Comp
-L tipi-peb-rescue:Conn_02x04_Counter_Clockwise CRUBASE1
+L tipi-peb-rescue:Conn_02x04_Counter_Clockwise-tipi-peb-rescue CRUBASE1
 U 1 1 594FE925
 P 11800 2350
 F 0 "CRUBASE1" H 11800 2600 50  0000 C CNN
@@ -475,7 +474,7 @@ F 3 "" H 15100 2900 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L tipi-peb-rescue:Conn_02x05_Counter_Clockwise RPi1
+L tipi-peb-rescue:Conn_02x05_Counter_Clockwise-tipi-peb-rescue RPi1
 U 1 1 594FFC97
 P 14350 3000
 F 0 "RPi1" H 14350 3300 50  0000 C CNN
@@ -511,7 +510,7 @@ NoConn ~ 14700 1500
 NoConn ~ 14700 1600
 NoConn ~ 14450 1600
 $Comp
-L tipi-peb-rescue:C_Small C2
+L tipi-peb-rescue:C_Small-tipi-peb-rescue C2
 U 1 1 59595B0D
 P 2250 1000
 F 0 "C2" H 2260 1070 50  0000 L CNN
@@ -533,7 +532,7 @@ F 3 "" H 2250 800 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L tipi-peb-rescue:C_Small C13
+L tipi-peb-rescue:C_Small-tipi-peb-rescue C13
 U 1 1 595963F1
 P 10400 8550
 F 0 "C13" H 10410 8620 50  0000 L CNN
@@ -577,7 +576,7 @@ F 3 "" H 10400 8400 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L tipi-peb-rescue:R_Small R7
+L tipi-peb-rescue:R_Small-tipi-peb-rescue R7
 U 1 1 59612E43
 P 13900 2050
 F 0 "R7" H 13930 2070 50  0000 L CNN
@@ -588,7 +587,7 @@ F 3 "" H 13900 2050 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L tipi-peb-rescue:R_Small R8
+L tipi-peb-rescue:R_Small-tipi-peb-rescue R8
 U 1 1 59612F26
 P 14100 2050
 F 0 "R8" H 14130 2070 50  0000 L CNN
@@ -599,7 +598,7 @@ F 3 "" H 14100 2050 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L tipi-peb-rescue:R_Small R9
+L tipi-peb-rescue:R_Small-tipi-peb-rescue R9
 U 1 1 59612F85
 P 14300 2050
 F 0 "R9" H 14330 2070 50  0000 L CNN
@@ -632,7 +631,7 @@ F 3 "" H 11450 2450 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L tipi-peb-rescue:C_Small C10
+L tipi-peb-rescue:C_Small-tipi-peb-rescue C10
 U 1 1 596F064F
 P 8750 850
 F 0 "C10" H 8760 920 50  0000 L CNN
@@ -643,7 +642,7 @@ F 3 "" H 8750 850 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L tipi-peb-rescue:C_Small C11
+L tipi-peb-rescue:C_Small-tipi-peb-rescue C11
 U 1 1 596F06B9
 P 9000 850
 F 0 "C11" H 9010 920 50  0000 L CNN
@@ -665,7 +664,7 @@ F 3 "" H 9500 750 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L tipi-peb-rescue:C_Small C12
+L tipi-peb-rescue:C_Small-tipi-peb-rescue C12
 U 1 1 596F06CB
 P 9250 850
 F 0 "C12" H 9260 920 50  0000 L CNN
@@ -698,7 +697,7 @@ F 3 "" H 9500 950 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L tipi-peb-rescue:C_Small C7
+L tipi-peb-rescue:C_Small-tipi-peb-rescue C7
 U 1 1 596F0DF9
 P 8250 850
 F 0 "C7" H 8260 920 50  0000 L CNN
@@ -709,7 +708,7 @@ F 3 "" H 8250 850 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L tipi-peb-rescue:C_Small C6
+L tipi-peb-rescue:C_Small-tipi-peb-rescue C6
 U 1 1 596F0E6D
 P 8000 850
 F 0 "C6" H 8010 920 50  0000 L CNN
@@ -720,7 +719,7 @@ F 3 "" H 8000 850 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L tipi-peb-rescue:C_Small C5
+L tipi-peb-rescue:C_Small-tipi-peb-rescue C5
 U 1 1 596F0E7F
 P 7750 850
 F 0 "C5" H 7760 920 50  0000 L CNN
@@ -742,7 +741,7 @@ F 3 "" H 9000 7050 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L tipi-peb-rescue:XC95144XL-TQ100 U6
+L tipi-peb-rescue:XC95144XL-TQ100-tipi-peb-rescue U6
 U 1 1 596EEAA9
 P 8550 4100
 F 0 "U6" H 7700 6750 50  0000 C CNN
@@ -753,7 +752,7 @@ F 3 "" H 8500 4150 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L tipi-peb-rescue:R R4
+L tipi-peb-rescue:R-tipi-peb-rescue R4
 U 1 1 599E6C64
 P 11450 2300
 F 0 "R4" V 11530 2300 50  0000 C CNN
@@ -807,7 +806,7 @@ TI_D6
 Text GLabel 1200 5200 0    60   BiDi ~ 0
 TI_D7
 $Comp
-L tipi-peb-rescue:74HC244 U5
+L tipi-peb-rescue:74HC244-tipi-peb-rescue U5
 U 1 1 59C69B40
 P 8150 9400
 F 0 "U5" H 8250 10050 50  0000 L CNN
@@ -818,7 +817,7 @@ F 3 "" H 8150 9400 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L tipi-peb-rescue:74HC244 U4
+L tipi-peb-rescue:74HC244-tipi-peb-rescue U4
 U 1 1 59C69BE6
 P 5800 9400
 F 0 "U4" H 5900 10050 50  0000 L CNN
@@ -829,7 +828,7 @@ F 3 "" H 5800 9400 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L tipi-peb-rescue:74HC244 U3
+L tipi-peb-rescue:74HC244-tipi-peb-rescue U3
 U 1 1 59C69C7A
 P 3750 9400
 F 0 "U3" H 3850 10050 50  0000 L CNN
@@ -894,7 +893,7 @@ F 3 "" H 7850 10050 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 $Comp
-L tipi-peb-rescue:R R2
+L tipi-peb-rescue:R-tipi-peb-rescue R2
 U 1 1 59C6B529
 P 5350 10050
 F 0 "R2" V 5430 10050 50  0000 C CNN
@@ -905,7 +904,7 @@ F 3 "" H 5350 10050 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L tipi-peb-rescue:R R3
+L tipi-peb-rescue:R-tipi-peb-rescue R3
 U 1 1 59C6B916
 P 7700 10050
 F 0 "R3" V 7780 10050 50  0000 C CNN
@@ -916,7 +915,7 @@ F 3 "" H 7700 10050 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L tipi-peb-rescue:R R1
+L tipi-peb-rescue:R-tipi-peb-rescue R1
 U 1 1 59C6CE84
 P 3300 10100
 F 0 "R1" V 3380 10100 50  0000 C CNN
@@ -1171,7 +1170,7 @@ TI_WE
 Text GLabel 2300 6900 2    60   Output ~ 0
 TI_WE
 $Comp
-L tipi-peb-rescue:74LS138 U1
+L tipi-peb-rescue:74LS138-tipi-peb-rescue U1
 U 1 1 59C72E85
 P 1850 9300
 F 0 "U1" H 1950 9800 50  0000 C CNN
@@ -1204,7 +1203,7 @@ Wire Wire Line
 Wire Wire Line
 	3150 9600 3150 9800
 $Comp
-L tipi-peb-rescue:C_Small C1
+L tipi-peb-rescue:C_Small-tipi-peb-rescue C1
 U 1 1 59C76A23
 P 2000 8550
 F 0 "C1" H 2010 8620 50  0000 L CNN
@@ -1231,7 +1230,7 @@ Wire Wire Line
 	1850 8650 1850 8850
 Connection ~ 1850 8650
 $Comp
-L tipi-peb-rescue:C_Small C3
+L tipi-peb-rescue:C_Small-tipi-peb-rescue C3
 U 1 1 59C76B96
 P 3900 8500
 F 0 "C3" H 3910 8570 50  0000 L CNN
@@ -1270,7 +1269,7 @@ Wire Wire Line
 Wire Wire Line
 	3750 8600 3750 8700
 $Comp
-L tipi-peb-rescue:C_Small C4
+L tipi-peb-rescue:C_Small-tipi-peb-rescue C4
 U 1 1 59C76D70
 P 5950 8500
 F 0 "C4" H 5960 8570 50  0000 L CNN
@@ -1309,7 +1308,7 @@ Wire Wire Line
 Wire Wire Line
 	5800 8600 5800 8700
 $Comp
-L tipi-peb-rescue:C_Small C8
+L tipi-peb-rescue:C_Small-tipi-peb-rescue C8
 U 1 1 59C76E70
 P 8300 8500
 F 0 "C8" H 8310 8570 50  0000 L CNN
@@ -1389,7 +1388,7 @@ F 3 "" H 13900 4250 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 $Comp
-L tipi-peb-rescue:LM7805_TO220 U9
+L tipi-peb-rescue:LM7805_TO220-tipi-peb-rescue U9
 U 1 1 59E1BD59
 P 14450 5200
 F 0 "U9" H 14300 5325 50  0000 C CNN
@@ -1411,7 +1410,7 @@ F 3 "" H 13950 5200 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 $Comp
-L tipi-peb-rescue:CP1_Small C15
+L tipi-peb-rescue:CP1_Small-tipi-peb-rescue C15
 U 1 1 59E1BE91
 P 14050 5300
 F 0 "C15" H 14060 5370 50  0000 L CNN
@@ -1422,7 +1421,7 @@ F 3 "" H 14050 5300 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L tipi-peb-rescue:CP1_Small C17
+L tipi-peb-rescue:CP1_Small-tipi-peb-rescue C17
 U 1 1 59E1BF3C
 P 14850 5300
 F 0 "C17" H 14860 5370 50  0000 L CNN
@@ -1650,7 +1649,7 @@ Wire Wire Line
 	3150 9600 3250 9600
 Connection ~ 3150 9800
 $Comp
-L tipi-peb-rescue:R R10
+L tipi-peb-rescue:R-tipi-peb-rescue R10
 U 1 1 59EF200E
 P 850 8100
 F 0 "R10" V 930 8100 50  0000 C CNN
@@ -1661,7 +1660,7 @@ F 3 "" H 850 8100 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L tipi-peb-rescue:R R11
+L tipi-peb-rescue:R-tipi-peb-rescue R11
 U 1 1 59EF20E5
 P 1200 7850
 F 0 "R11" V 1280 7850 50  0000 C CNN
@@ -1712,7 +1711,7 @@ NoConn ~ 14650 2800
 Wire Wire Line
 	1000 9650 1250 9650
 $Comp
-L tipi-peb-rescue:R R12
+L tipi-peb-rescue:R-tipi-peb-rescue R12
 U 1 1 5ADB77AD
 P 2900 9400
 F 0 "R12" V 2980 9400 50  0000 C CNN
@@ -1798,7 +1797,7 @@ Wire Wire Line
 	15000 3350 15000 3100
 Connection ~ 15000 3100
 $Comp
-L tipi-peb-rescue:R R13
+L tipi-peb-rescue:R-tipi-peb-rescue R13
 U 1 1 5B0C3DBA
 P 15000 3500
 F 0 "R13" V 15080 3500 50  0000 C CNN
@@ -1811,7 +1810,7 @@ $EndComp
 Wire Wire Line
 	15000 3650 15150 3650
 $Comp
-L tipi-peb-rescue:GS3 J1
+L tipi-peb-rescue:GS3-tipi-peb-rescue J1
 U 1 1 5B12C05D
 P 750 8600
 F 0 "J1" H 800 8800 50  0000 C CNN
@@ -1822,7 +1821,7 @@ F 3 "" H 750 8600 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L tipi-peb-rescue:GS3 J2
+L tipi-peb-rescue:GS3-tipi-peb-rescue J2
 U 1 1 5B12C0F2
 P 1100 8300
 F 0 "J2" H 1150 8500 50  0000 C CNN

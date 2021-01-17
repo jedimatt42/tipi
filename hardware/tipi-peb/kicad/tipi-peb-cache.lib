@@ -132,11 +132,11 @@ X LCP* 9 -550 1000 200 R 50 50 1 1 O
 ENDDRAW
 ENDDEF
 #
-# tipi-peb-rescue_27C256
+# tipi-peb-rescue_27C256-tipi-peb-rescue
 #
-DEF tipi-peb-rescue_27C256 U 0 40 Y Y 1 F N
+DEF tipi-peb-rescue_27C256-tipi-peb-rescue U 0 40 Y Y 1 F N
 F0 "U" -150 1000 50 H V C CNN
-F1 "tipi-peb-rescue_27C256" 0 -1000 50 H V C CNN
+F1 "tipi-peb-rescue_27C256-tipi-peb-rescue" 0 -1000 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 DRAW
@@ -172,11 +172,11 @@ X A1 9 -700 800 300 R 50 50 1 1 I
 ENDDRAW
 ENDDEF
 #
-# tipi-peb-rescue_74HC244
+# tipi-peb-rescue_74HC244-tipi-peb-rescue
 #
-DEF tipi-peb-rescue_74HC244 U 0 10 Y Y 1 F N
+DEF tipi-peb-rescue_74HC244-tipi-peb-rescue U 0 10 Y Y 1 F N
 F0 "U" 100 650 50 H V L CNN
-F1 "tipi-peb-rescue_74HC244" 50 -650 50 H V L CNN
+F1 "tipi-peb-rescue_74HC244-tipi-peb-rescue" 50 -650 50 H V L CNN
 F2 "" 0 0 50 H V C CNN
 F3 "" 0 0 50 H V C CNN
 $FPLIST
@@ -211,11 +211,11 @@ X 2Y3 9 500 -200 100 L 50 50 1 1 O
 ENDDRAW
 ENDDEF
 #
-# tipi-peb-rescue_74LS138
+# tipi-peb-rescue_74LS138-tipi-peb-rescue
 #
-DEF tipi-peb-rescue_74LS138 U 0 40 Y Y 1 F N
+DEF tipi-peb-rescue_74LS138-tipi-peb-rescue U 0 40 Y Y 1 F N
 F0 "U" 100 500 50 H V C CNN
-F1 "tipi-peb-rescue_74LS138" 150 -549 50 H V C CNN
+F1 "tipi-peb-rescue_74LS138-tipi-peb-rescue" 150 -549 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 DRAW
@@ -239,11 +239,11 @@ X O6 9 600 -250 300 L 50 50 1 1 O V
 ENDDRAW
 ENDDEF
 #
-# tipi-peb-rescue_74LS245
+# tipi-peb-rescue_74LS245-tipi-peb-rescue
 #
-DEF tipi-peb-rescue_74LS245 U 0 10 Y Y 1 F N
+DEF tipi-peb-rescue_74LS245-tipi-peb-rescue U 0 10 Y Y 1 F N
 F0 "U" 100 575 50 H V L BNN
-F1 "tipi-peb-rescue_74LS245" 50 -575 50 H V L TNN
+F1 "tipi-peb-rescue_74LS245-tipi-peb-rescue" 50 -575 50 H V L TNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 DRAW
@@ -273,11 +273,11 @@ X A7 9 -700 -200 300 R 50 50 1 1 T
 ENDDRAW
 ENDDEF
 #
-# tipi-peb-rescue_AVR-JTAG-10
+# tipi-peb-rescue_AVR-JTAG-10-tipi-peb-rescue
 #
-DEF tipi-peb-rescue_AVR-JTAG-10 CON 0 40 Y Y 1 F N
+DEF tipi-peb-rescue_AVR-JTAG-10-tipi-peb-rescue CON 0 40 Y Y 1 F N
 F0 "CON" -170 330 50 H V C CNN
-F1 "tipi-peb-rescue_AVR-JTAG-10" -340 -330 50 H V L BNN
+F1 "tipi-peb-rescue_AVR-JTAG-10-tipi-peb-rescue" -340 -330 50 H V L BNN
 F2 "AVR-JTAG-10" -570 20 50 V I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -312,11 +312,11 @@ X ~ 9 -200 -200 100 R 40 40 1 1 P
 ENDDRAW
 ENDDEF
 #
-# tipi-peb-rescue_CP1_Small
+# tipi-peb-rescue_CP1_Small-tipi-peb-rescue
 #
-DEF tipi-peb-rescue_CP1_Small C 0 10 N N 1 F N
+DEF tipi-peb-rescue_CP1_Small-tipi-peb-rescue C 0 10 N N 1 F N
 F0 "C" 10 70 50 H V L CNN
-F1 "tipi-peb-rescue_CP1_Small" 10 -80 50 H V L CNN
+F1 "tipi-peb-rescue_CP1_Small-tipi-peb-rescue" 10 -80 50 H V L CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -332,11 +332,11 @@ X ~ 2 0 -100 80 U 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# tipi-peb-rescue_C_Small
+# tipi-peb-rescue_C_Small-tipi-peb-rescue
 #
-DEF tipi-peb-rescue_C_Small C 0 10 N N 1 F N
+DEF tipi-peb-rescue_C_Small-tipi-peb-rescue C 0 10 N N 1 F N
 F0 "C" 10 70 50 H V L CNN
-F1 "tipi-peb-rescue_C_Small" 10 -80 50 H V L CNN
+F1 "tipi-peb-rescue_C_Small-tipi-peb-rescue" 10 -80 50 H V L CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -350,11 +350,11 @@ X ~ 2 0 -100 80 U 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# tipi-peb-rescue_Conn_02x04_Counter_Clockwise
+# tipi-peb-rescue_Conn_02x04_Counter_Clockwise-tipi-peb-rescue
 #
-DEF tipi-peb-rescue_Conn_02x04_Counter_Clockwise J 0 40 Y N 1 F N
+DEF tipi-peb-rescue_Conn_02x04_Counter_Clockwise-tipi-peb-rescue J 0 40 Y N 1 F N
 F0 "J" 50 200 50 H V C CNN
-F1 "tipi-peb-rescue_Conn_02x04_Counter_Clockwise" 50 -300 50 H V C CNN
+F1 "tipi-peb-rescue_Conn_02x04_Counter_Clockwise-tipi-peb-rescue" 50 -300 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -382,11 +382,11 @@ X Pin_8 8 300 100 150 L 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# tipi-peb-rescue_Conn_02x05_Counter_Clockwise
+# tipi-peb-rescue_Conn_02x05_Counter_Clockwise-tipi-peb-rescue
 #
-DEF tipi-peb-rescue_Conn_02x05_Counter_Clockwise J 0 40 Y N 1 F N
+DEF tipi-peb-rescue_Conn_02x05_Counter_Clockwise-tipi-peb-rescue J 0 40 Y N 1 F N
 F0 "J" 50 300 50 H V C CNN
-F1 "tipi-peb-rescue_Conn_02x05_Counter_Clockwise" 50 -300 50 H V C CNN
+F1 "tipi-peb-rescue_Conn_02x05_Counter_Clockwise-tipi-peb-rescue" 50 -300 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -418,11 +418,11 @@ X Pin_9 9 300 100 150 L 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# tipi-peb-rescue_GS3
+# tipi-peb-rescue_GS3-tipi-peb-rescue
 #
-DEF tipi-peb-rescue_GS3 J 0 40 Y N 1 F N
+DEF tipi-peb-rescue_GS3-tipi-peb-rescue J 0 40 Y N 1 F N
 F0 "J" 50 200 50 H V C CNN
-F1 "tipi-peb-rescue_GS3" 50 -199 50 H V C CNN
+F1 "tipi-peb-rescue_GS3-tipi-peb-rescue" 50 -199 50 H V C CNN
 F2 "Connectors:GS3" 88 -74 50 V I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -438,11 +438,11 @@ X G3 3 -150 -100 100 R 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# tipi-peb-rescue_LED_ALT
+# tipi-peb-rescue_LED_ALT-tipi-peb-rescue
 #
-DEF tipi-peb-rescue_LED_ALT D 0 40 Y N 1 F N
+DEF tipi-peb-rescue_LED_ALT-tipi-peb-rescue D 0 40 Y N 1 F N
 F0 "D" 0 100 50 H V C CNN
-F1 "tipi-peb-rescue_LED_ALT" 0 -100 50 H V C CNN
+F1 "tipi-peb-rescue_LED_ALT-tipi-peb-rescue" 0 -100 50 H V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -459,11 +459,11 @@ X A 2 150 0 100 L 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# tipi-peb-rescue_LM1117-3.3
+# tipi-peb-rescue_LM1117-3.3-tipi-peb-rescue
 #
-DEF tipi-peb-rescue_LM1117-3.3 U 0 10 Y Y 1 F N
+DEF tipi-peb-rescue_LM1117-3.3-tipi-peb-rescue U 0 10 Y Y 1 F N
 F0 "U" -150 125 50 H V C CNN
-F1 "tipi-peb-rescue_LM1117-3.3" 0 125 50 H V L CNN
+F1 "tipi-peb-rescue_LM1117-3.3-tipi-peb-rescue" 0 125 50 H V L CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -480,11 +480,11 @@ X VI 3 -300 0 100 R 50 50 1 1 W
 ENDDRAW
 ENDDEF
 #
-# tipi-peb-rescue_LM7805_TO220
+# tipi-peb-rescue_LM7805_TO220-tipi-peb-rescue
 #
-DEF tipi-peb-rescue_LM7805_TO220 U 0 10 Y Y 1 F N
+DEF tipi-peb-rescue_LM7805_TO220-tipi-peb-rescue U 0 10 Y Y 1 F N
 F0 "U" -150 125 50 H V C CNN
-F1 "tipi-peb-rescue_LM7805_TO220" 0 125 50 H V L CNN
+F1 "tipi-peb-rescue_LM7805_TO220-tipi-peb-rescue" 0 125 50 H V L CNN
 F2 "TO_SOT_Packages_THT:TO-220_Vertical" 0 225 50 H I C CIN
 F3 "" 0 -50 50 H I C CNN
 $FPLIST
@@ -498,11 +498,11 @@ X VO 3 300 0 100 L 50 50 1 1 w
 ENDDRAW
 ENDDEF
 #
-# tipi-peb-rescue_Q_NPN_BCE
+# tipi-peb-rescue_Q_NPN_BCE-tipi-peb-rescue
 #
-DEF tipi-peb-rescue_Q_NPN_BCE Q 0 0 Y N 1 F N
+DEF tipi-peb-rescue_Q_NPN_BCE-tipi-peb-rescue Q 0 0 Y N 1 F N
 F0 "Q" 200 50 50 H V L CNN
-F1 "tipi-peb-rescue_Q_NPN_BCE" 200 -50 50 H V L CNN
+F1 "tipi-peb-rescue_Q_NPN_BCE-tipi-peb-rescue" 200 -50 50 H V L CNN
 F2 "" 200 100 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 DRAW
@@ -517,11 +517,11 @@ X E 3 100 -200 100 U 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# tipi-peb-rescue_R
+# tipi-peb-rescue_R-tipi-peb-rescue
 #
-DEF tipi-peb-rescue_R R 0 0 N Y 1 F N
+DEF tipi-peb-rescue_R-tipi-peb-rescue R 0 0 N Y 1 F N
 F0 "R" 80 0 50 V V C CNN
-F1 "tipi-peb-rescue_R" 0 0 50 V V C CNN
+F1 "tipi-peb-rescue_R-tipi-peb-rescue" 0 0 50 V V C CNN
 F2 "" -70 0 50 V I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -535,11 +535,11 @@ X ~ 2 0 -150 50 U 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# tipi-peb-rescue_R_Small
+# tipi-peb-rescue_R_Small-tipi-peb-rescue
 #
-DEF tipi-peb-rescue_R_Small R 0 10 N N 1 F N
+DEF tipi-peb-rescue_R_Small-tipi-peb-rescue R 0 10 N N 1 F N
 F0 "R" 30 20 50 H V L CNN
-F1 "tipi-peb-rescue_R_Small" 30 -40 50 H V L CNN
+F1 "tipi-peb-rescue_R_Small-tipi-peb-rescue" 30 -40 50 H V L CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -552,11 +552,11 @@ X ~ 2 0 -100 30 U 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# tipi-peb-rescue_XC95144XL-TQ100
+# tipi-peb-rescue_XC95144XL-TQ100-tipi-peb-rescue
 #
-DEF tipi-peb-rescue_XC95144XL-TQ100 U 0 30 Y Y 1 F N
+DEF tipi-peb-rescue_XC95144XL-TQ100-tipi-peb-rescue U 0 30 Y Y 1 F N
 F0 "U" -850 2650 50 H V C CNN
-F1 "tipi-peb-rescue_XC95144XL-TQ100" 700 -2650 50 H V C CNN
+F1 "tipi-peb-rescue_XC95144XL-TQ100-tipi-peb-rescue" 700 -2650 50 H V C CNN
 F2 "Housings_QFP:TQFP-100_14x14mm_Pitch0.5mm" 1250 -2750 50 H I C CNN
 F3 "" -50 50 50 H I C CNN
 $FPLIST

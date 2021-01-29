@@ -30,6 +30,10 @@ if [ -e /tmp/test_update ]; then
   TIPI_UPDATE_LIBTIPI=true
 fi
 
+if [ $fmajor -le 2 ] && [ $fminor -le 17 ]; then
+  TIPI_PRINTING_UPDATE=true
+fi
+
 if [ $fmajor -le 2 ] && [ $fminor -le 11 ]; then
   TIPI_REPAIR_VAR_FIADS=true
 fi

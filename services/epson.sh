@@ -11,9 +11,9 @@ function topdf() {
 
   echo "Converting spool ${source} to PDF pages"
   if [ ! -z ${PAPER:-} ]; then
-    ./printerToPDF -8 -o /home/tipi/pdfs -f font2/SIEMENS.C16 -p 0 -m 0 ./Test1.prn
+    ./printerToPDF -o /home/tipi/pdfs -f font2/SIEMENS.C16 -p 0 -m 0 ./Test1.prn
   else
-    ./printerToPDF -8 -o /home/tipi/pdfs -f font2/SIEMENS.C16 -p 2 -m 0 ./Test1.prn
+    ./printerToPDF -o /home/tipi/pdfs -f font2/SIEMENS.C16 -p 216,280 -m 6,0,1,0 ./Test1.prn
   fi
 
   mkdir -p /home/tipi/pdf_share

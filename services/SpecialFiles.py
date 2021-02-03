@@ -7,6 +7,7 @@ from RebootFile import RebootFile
 from ShutdownFile import ShutdownFile
 from StatusFile import StatusFile
 from TcpFile import TcpFile
+from UdpFile import UdpFile
 from TipiConfig import TipiConfig
 from UpgradeFile import UpgradeFile
 from VariablesFile import VariablesFile
@@ -29,6 +30,7 @@ class SpecialFiles(object):
             ShutdownFile.filename(): ShutdownFile(self.tipi_io),
             StatusFile.filename(): StatusFile(self.tipi_io),
             TcpFile.filename(): TcpFile(self.tipi_io),
+            UdpFile.filename(): UdpFile(self.tipi_io),
             UpgradeFile.filename(): UpgradeFile(self.tipi_io),
             VariablesFile.filename(): VariablesFile(self.tipi_io),
         }

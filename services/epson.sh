@@ -2,24 +2,19 @@
 
 source=$1
 
-# pageWidth,pageLength,leftMargin,rightMargin,topMargin,bottomMargin
-PAPER_A4=5954,8417,85,85,85,85
-PAPER_LETTER=6120,7920,85,85,22,22
-
 function topdf() {
   fname=`basename --suffix=.prn $source`
   cd /home/tipi/PrinterToPDF
   mv $source ./Test1.prn
 
   PAPER=`echo $source | grep _a4`
-  if [ ! -z ${PAPER:-} ]; then
-    export PAPER_DIMS=$PAPER_A4
-  else
-    export PAPER_DIMS=$PAPER_LETTER
-  fi
 
   echo "Converting spool ${source} to PDF pages"
-  ./printerToPDF 3 0 font2/SIEMENS.C16 1 sdloff /home/tipi/pdfs
+  if [ ! -z ${PAPER:-} ]; then
+    ./printerToPDF -o /home/tipi/pdfs -f font2/SIEMENS.C16 -p 0 -m 0 ./Test1.prn
+  else
+    ./printerToPDF -o /home/tipi/pdfs -f font2/SIEMENS.C16 -p 216,280 -m 6,0,1,0 ./Test1.prn
+  fi
 
   mkdir -p /home/tipi/pdf_share
 

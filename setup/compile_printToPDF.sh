@@ -2,13 +2,14 @@
 
 function build() {
   cd /home/tipi
-  if [ ! -e PrinterToPDF ];
+  if [ -d PrinterToPDF ];
   then
-    git clone https://github.com/jedimatt42/PrinterToPDF.git
+    rm -fr /home/tipi/PrinterToPDF
   fi
+  git clone https://github.com/RWAP/PrinterToPDF.git
   cd PrinterToPDF
   git pull
-  gcc PrinterConvert.c `sdl-config --cflags --libs` -o printerToPDF -lrt -lhpdf -lpng
+  make printerToPDF
 }
 
 build

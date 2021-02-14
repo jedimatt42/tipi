@@ -99,6 +99,10 @@ class PioFile(object):
 
     def write(self, pab, devname):
         logger.info("write special? {}".format(devname))
+        if self.data_filename is None:
+            self.tipi_io.send([EDEVERR])
+            return
+
         self.tipi_io.send([SUCCESS])
         data = self.tipi_io.receive()
         self.last_record = data

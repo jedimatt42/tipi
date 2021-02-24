@@ -23,7 +23,6 @@ class CurlFile(object):
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
         self.files = {}
-        self.record = {}
 
     def handle(self, pab, devname):
         logPab(pab)
@@ -48,7 +47,6 @@ class CurlFile(object):
         self.tipi_io.send([SUCCESS])
         try:
             del(self.files[devname])
-            del(self.record[devname])
         except BaseException:
             pass
 
@@ -59,7 +57,6 @@ class CurlFile(object):
             logger.info("url: %s", url)
             file = self.fetch(url, pab)
             self.files[devname] = file
-            self.record[devname] = 0
         except BaseException:
             logger.exception("failed")
             self.tipi_io.send([EFILERR])
@@ -96,7 +93,7 @@ class CurlFile(object):
                 self.tipi_io.send([EFILERR])
                 return
 
-            recNum = self.record[devname]
+            recNum = recordNumber(pab)
             rdata = open_file.readRecord(recNum)
             if rdata is None:
                 logger.info("received None for record %d", recNum)

@@ -10,7 +10,6 @@ VDWRITE	EQU	>4000		; ORI w/register holder target vdp write address.
 
 ; Useful values if you have the WP in a register since VDP requires byte addressing
 ; these can be used with offset addressing, like @R9LB(R10) after preparing R10 with STWP R10
-R0MB	EQU	>00
 R0LB	EQU	>01
 R1MB	EQU	>02
 R1LB	EQU	>03
@@ -67,13 +66,13 @@ VWTR
 	DATA	uvmtr
 
 uvmtr
-	MOV	@R0MB(R13),R0
+	MOV	*R13,R0
 	ORI	R0,>8000
 	.setvdpra R0
 	RTWP
 
 ; VDP Multiple Byte Write 
-; R0 - VDP RAM desitination address
+; R0 - VDP RAM destination address
 ; R1 - CPU RAM source address
 ; R2 - number of bytes to write
 VMBW
@@ -81,7 +80,7 @@ VMBW
 	DATA	uvmbw
 
 uvmbw
-	MOV	@R0MB(R13),R0
+	MOV	*R13,R0
 	MOV	@R1MB(R13),R1
 	MOV	@R2MB(R13),R2
 	.setvdpwa R0
@@ -99,7 +98,7 @@ VMBR
 	DATA	uvmbr
 
 uvmbr
-	MOV	@R0MB(R13),R0
+	MOV	*R13,R0
 	MOV	@R1MB(R13),R1
 	MOV	@R2MB(R13),R2
 	.setvdpra R1
@@ -118,7 +117,7 @@ VDPCPY
 	DATA	uvdpcpy
 
 uvdpcpy
-	MOV	@R0MB(R13),R0
+	MOV	*R13,R0
 	MOV	@R1MB(R13),R1
 	MOV	@R2MB(R13),R2
 !	.setvdpra R1

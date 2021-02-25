@@ -199,10 +199,10 @@ hread
 	.setvdpwa R3
 	MOVB	R0,@VDPWD
 
-updaterec	; if RELATIVE mode, then we have to increment the record number
+updaterec	; if FIXED record type, then we have to increment the record number
 	MOV	@OPCODE(R10),R1	; we'll only look at the 2nd byte @FLGSTS
-	ANDI	R1,1		; file-type 1 is RELATIVE
-	JEQ	retdone		; if SEQUENTIAL, then we are done.
+	ANDI	R1,>0010	; Mask record-type bit
+	JNE	retdone		; if VARIABLE, then we are done.
 
 	MOV 	@RECNUM(R10),R1	; increment the VDP PAB record number
 	INC	R1

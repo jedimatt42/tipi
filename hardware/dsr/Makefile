@@ -14,7 +14,7 @@ clean:
 	-rm tipi*.bin timestamp.gen >/dev/null 2>&1
 
 tipi.bin: $(sources) timestamp.gen
-	python3 /home/tipi/xdt99/xas99.py -R -b -L tipi.list -o $@ rom.a99
+	xas99.py -R -b -L tipi.list -o $@ rom.a99
 	dd if=/dev/null of=$@ bs=1 count=0 seek=32768
 
 timestamp.gen:

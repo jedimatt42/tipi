@@ -24,7 +24,7 @@ FILELOOP
 	BL	@recvmsg
 	CI	R9,SUCCESS	; If PI returns success
 	JEQ	GETDATA		;  jump to look at header
-	B	@LOADERR	;  otherwise error out
+	JMP	LOADERR		;  otherwise error out
 
 GETDATA
 	; load the next stream into the VDP buffer
@@ -57,7 +57,7 @@ SKIPADDR
 
 	MOV	@RET,@GPLWS+R4MB	; store EA5 launch address
 
-	B	@OPT5		; setup the ea5 environment, and launch
+	JMP	OPT5		; setup the ea5 environment, and launch
 
 INCPABNAM
 	LI	R0,VDPPAB	; reset PAB for this file
@@ -78,7 +78,7 @@ INCPABNAM
 	AI	R1,>0100	;   inc MSB by 1
 	.setvdpwa R0
 	MOVB	R1,@VDPWD	; Write new character to PAB
-	B	@FILELOOP
+	JMP	FILELOOP
 
 LOADERR
 	; just reset the console by falling through here.

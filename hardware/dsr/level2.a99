@@ -109,7 +109,7 @@ directinp			; read file bytes
 	JEQ	disuc
 	SRC	R3,3
 	MOVB	R3,@L2STAT
-	B	@l2derr
+	JMP	l2derr
 disuc
 	MOVB	R3,@L2STAT	; clear error status on success
 
@@ -128,7 +128,7 @@ disuc
 	LI	R0,256		; this is actually ignored. set maximum bytes to read
 	MOV	*R8,R1
 	BL	@vrecvmsg	; read blocks into vdp buffer
-	B	@l2derr		; return as handled
+	JMP	l2derr		; return as handled
 
 directout			; write file bytes
 	LIMI	0
@@ -162,7 +162,7 @@ directout			; write file bytes
 	JEQ	dosuc
 	SRC	R3,3
 	MOVB	R3,@L2STAT
-	B	@l2derr		; return now if there was error
+	JMP	l2derr		; return now if there was error
 dosuc
 	CLR	R0
 	MOVB	@BLOCKCNT,R0	; block count * 256 ( by being in the MSB )
@@ -181,11 +181,11 @@ l2done
 	JEQ	dosuc2
 	SRC	R3,3
 	MOVB	R3,@L2STAT
-	B	@l2derr
+	JMP	l2derr
 dosuc2
 	MOVB	R3,@L2STAT	; turn success into 0
 
-	B	@l2derr
+	JMP	l2derr
 
 
 l2derr				; handle errors from direct input or direct output
@@ -210,7 +210,7 @@ setpath				; set current directory for a unit/drive
 	MOV	@PATHNAM,R1
 	INC	R1
 	BL	@vsendmsg	; send path string
-	B	@getl2resp
+	JMP	getl2resp
 
 createdir			; create a subdirectory
 	LIMI	0
@@ -224,7 +224,7 @@ createdir			; create a subdirectory
 	LI	R0,10
 	MOV	@WFILNAM,R1
 	BL	@vsendmsg	; send new directory name
-	B	@getl2resp
+	JMP	getl2resp
 
 deldir				; delete a directory
 	LIMI	0
@@ -238,7 +238,7 @@ deldir				; delete a directory
 	LI	R0,10
 	MOV	@WFILNAM,R1
 	BL	@vsendmsg	; send new directory name
-	B	@getl2resp
+	JMP	getl2resp
 
 drename				; directory rename
 	LIMI	0
@@ -255,7 +255,7 @@ drename				; directory rename
 	LI	R0,10
 	MOV	@WOLDNAM,R1
 	BL	@vsendmsg	; send old name
-	B	@getl2resp
+	JMP	getl2resp
 
 retl2err
 	MOV	R7,R11
@@ -278,10 +278,10 @@ getl2resp
 	JEQ	l2suc
 	SRC	R0,3
 	MOVB	R0,@L2STAT
-	B	@retl2err
+	JMP	retl2err
 l2suc
 	MOVB	R0,@L2STAT	; clear special PI success code and proceed to return
-	B	@retl2err
+	JMP	retl2err
 
 setfiles			; Buffer allocation routine
 	LIMI	0
@@ -289,7 +289,7 @@ setfiles			; Buffer allocation routine
 	CI	R12,>1100	; check if is filling in for floppy controller.
 	JNE	retl2sk		;   if not, skip, hoping real FDC will get called.
 	BL	@dofiles
-	B	@retl2err
+	JMP	retl2err
 
 dofiles
 	CLR	R1
@@ -335,6 +335,5 @@ filesret
 
 
 perfile	DATA 	518		; size of buffer per file
-basestk DATA	>3def
 
 

@@ -94,7 +94,7 @@ bcallfiles			; implementation of CALL FILES(x)
 	JNE	berror
 	MOV	@>832C,R8	; reload vdp token pointer
 	AI	R8,12		; adjust token pointer
-	B	@bok
+	JMP	bok
 
 bskip
 	RT

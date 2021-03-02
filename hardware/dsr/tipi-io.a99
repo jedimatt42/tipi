@@ -99,9 +99,9 @@ vsdone
 	RT
 	
 
-;;; REQUEST a message from the RPi - expects a word containing the length of the message followed by the payload.
+;;; REQUEST a message from the RPi - expects the PI to send a word containing the length of the message followed by the payload.
 ; Register usage:
-;   R0 - receive buffer size. Result is number of bytes loaded into buffer.
+;   R0 - Set to number of bytes loaded into buffer upon completion
 ;   R1 - cpu address of buffer
 ;   Destroys R0 - R8
 recvmsg
@@ -126,9 +126,9 @@ rnext
 rrt
 	RT
 
-;;; REQUEST a message from the RPi - expects a word containing the length of the message followed by the payload.
+;;; REQUEST a message from the RPi - expects the PI to send a word containing the length of the message followed by the payload.
 ; Register usage:
-;   R0 - receive buffer size. Result is number of bytes loaded into buffer.
+;   R0 - Set to number of bytes loaded into buffer upon completion
 ;   R1 - vdp address of buffer
 ;   Destroys R2, R3, and R4
 vrecvmsg

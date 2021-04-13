@@ -8,24 +8,39 @@ fbufheader
 	EVEN
 
 ; Power UP routine to reset TIPI latches.
-onreset				; 
+onreset				;
 	STWP	R5		; Hold WP for EQU based offsets.
 
 	CLR	@TDOUT		; Clear TIPI data output
 	CLR	@TCOUT		; Clear control output
 
-; trigger reset signal to RPi
+; If the PI is alive, trigger it to dirty RCIN
+	LI  R1,>F100   ; this is the brief reset echo for
+	                ; synchronizing the ack counter
+	MOVB R1,@TCOUT  ; send that to the PI.
+	LI	R2,>0400	; setup a limited loop
+!	MOVB @RCIN,R1   ; read the ack register from TIPI
+	CI	R1,>F100    ;
+	JEQ crureset    ; escape out of the limited retry loop
+	DEC R2
+	JNE -!			; if we leave hear early, RCIN will be 0xF1
+					; and later we get to check that full reset
+					; happened by RCIN becoming 0x00
+
+; Trigger reset signal to RPi
+; This kills the TipiService and restarts it asynchronously.
+crureset
 	SBO	1		; turn on the second cru bit
-	LI	R1,>0200
+	LI	R1,>0400
 !	DEC	R1
 	JNE	-!
-	
+
 ; turn off the reset signal so RPi service can finish starting
 	SBZ	1
 
 ; setup disk buffers if crubase is that of floppy controller
 	CI	R12,>1100
-	JNE	done
+	JNE	tipizero
 	LI	R2,>37D7	; room for 3 file buffers
 	MOV	R2,@VDPSTACK
 	LI	R1,VDPWA
@@ -40,7 +55,12 @@ fheadcopy
 	CI	R2,5
 	JNE	fheadcopy
 
+; Wait for TIPI to zero out RCIN when TipiService starts.
+tipizero
+	CLR	R1
+	MOVB	@RCIN, R1
+	JNE	tipizero
+
 ; Return to TI startup
-done
 	RT			; return to console
 

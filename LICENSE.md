@@ -7,8 +7,22 @@ Codex http://www.dreamcodex.com/fonts.php
 
 # TIPI License
 
-The source code, design files, and software are licensed 
-under the following GPL3 license:
+## TI-99/4A Software
+
+The client software and driver (DSR) software designed to execute on the
+TI-99/4A are licensed under UNLICENSE. Subdirectories with an UNLICENSE.txt 
+override the applicability of the other generally applied license.
+
+This includes the following subdirectories:
+
+* hardware
+* examples
+* clients
+
+## PI Software stack
+
+The following GPL3 license applies to the software and design components 
+that execute on the Raspberry PI.
 
 ### GNU GENERAL PUBLIC LICENSE
 

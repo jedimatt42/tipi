@@ -1,6 +1,5 @@
 build
 work
-*-rescue.lib
 *.bak
 *-bak
 *.pyc

@@ -20,7 +20,6 @@ tipimon_lock = "/tmp/tipimon.lock"
 
 
 def createLock():
-    logger.info("locking")
     lf = open(tipimon_lock, "w")
     lf.write("nonsense")
     lf.close()
@@ -29,7 +28,6 @@ def createLock():
 def releaseLock():
     if os.path.isfile(tipimon_lock):
         os.remove(tipimon_lock)
-        logger.info("released lock")
 
 
 def main():

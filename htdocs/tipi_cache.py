@@ -95,7 +95,6 @@ def deleteFileInfo(name):
         
 
 def lookupFileInfo(name):
-    logger.debug("looking up file info for %s", name)
     sql = get_conn().cursor()
     sqlargs = (name,)
     sql.execute('SELECT * FROM fileheader WHERE name == ?', sqlargs)
@@ -115,9 +114,7 @@ def lookupFileInfo(name):
     }
 
 def updateFileInfo(name):
-    logger.info("Updating %s", name)
     if os.path.isdir(name):
-        logger.debug("skipping directory")
         return
     sqlargs = _getFileInfo(name)
     sql = get_conn().cursor()
@@ -131,8 +128,6 @@ def updateFileInfo(name):
     return sqlargs
 
 def _getFileInfo(name):
-    logger.info("Looking at %s", name)
-
     dv80suffixes = (".txt", ".a99", ".b99", ".bas", ".xb", ".tb")
     basicSuffixes = (".b99", ".bas", ".xb", ".tb")
         
@@ -165,8 +160,6 @@ def _getFileInfo(name):
     if type == 'INT/VAR 254' and ti_files.isTiBasicPrg(name):
         icon = 'basic'
 
-    logger.info("%s is of type %s, icon %s", name, type, icon)
-        
     return (name, icon, type, tiname, size, isprotected)
     
 if __name__ == '__main__':

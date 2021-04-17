@@ -35,7 +35,7 @@ crureset
 ; Trigger reset signal to RPi
 ; This kills the TipiService and restarts it asynchronously.
 	SBO	1		; turn on the second cru bit
-	LI	R1,>0800
+	LI	R1,>2000
 !	DEC	R1
 	JNE	-!
 
@@ -60,11 +60,18 @@ fheadcopy
 	JNE	fheadcopy
 
 ; Wait for TIPI to zero out RCIN when TipiService starts.
+	LI	R3,>FFFF
+	LI	R2,>FFFF
 tipizero
 	CLR	R1
-	MOVB	@RCIN, R1
+	CB	@RCIN, R1
+	JEQ done
+	DEC	R2
+	JNE	tipizero
+	DEC	R3
 	JNE	tipizero
 
 ; Return to TI startup
+done
 	RT			; return to console
 

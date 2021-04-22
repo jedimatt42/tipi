@@ -20,8 +20,11 @@ tipi.bin: $(sources) timestamp.gen
 timestamp.gen:
 	TIMESTAMP=`date --iso-8601="seconds"`; ( echo "	TEXT	\"$$TIMESTAMP\""; echo "	BYTE	0"; echo "	EVEN" ) >timestamp.gen
 
-.PHONY: burn 
+.PHONY: burn flash
 
 burn: tipi.bin
 	minipro -p "AM27C256@DIP28" -w tipi.bin -y
+
+flash: tipi.bin
+	minipro -p "AT29C256@DIP28" -w tipi.bin -y
 

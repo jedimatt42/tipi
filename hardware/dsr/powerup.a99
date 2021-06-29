@@ -8,18 +8,19 @@ fbufheader
 	EVEN
 
 ; Power UP routine to reset TIPI latches.
-onreset				; 
+onreset				;
 	STWP	R5		; Hold WP for EQU based offsets.
 
 	CLR	@TDOUT		; Clear TIPI data output
 	CLR	@TCOUT		; Clear control output
 
-; trigger reset signal to RPi
+; Trigger reset signal to RPi
+; This kills the TipiService and restarts it asynchronously.
 	SBO	1		; turn on the second cru bit
-	LI	R1,>0200
+	LI	R1,>2000
 !	DEC	R1
 	JNE	-!
-	
+
 ; turn off the reset signal so RPi service can finish starting
 	SBZ	1
 

@@ -106,6 +106,7 @@ fi
 #### Always update TI binaries (cheap)
 su tipi -c "cp /home/tipi/tipi/setup/bin/TIPI* /home/tipi/tipi_disk/"
 su tipi -c "mkdir -p /home/tipi/tipi_disk/NET; cp /home/tipi/tipi/setup/bin/NET/* /home/tipi/tipi_disk/NET/"
+su tipi -c "mkdir -p /home/tipi/tipi_disk/TMOUSE; cp /home/tipi/tipi/setup/bin/TMOUSE/* /home/tipi/tipi_disk/TMOUSE/"
 
 #### Rebuild the printing to PDF converter and add samba share
 if [ ! -z ${TIPI_PRINTING_UPDATE:-} ]; then

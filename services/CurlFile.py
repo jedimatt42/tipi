@@ -1,4 +1,5 @@
 import os
+import subprocess
 import traceback
 import logging
 from ti_files import ti_files
@@ -191,7 +192,8 @@ class CurlFile(object):
         agent = self.agent_str()
 
         tmpname = '/tmp/CF'
-        cmd = "wget --user-agent={} -O {} {}".format(agent, tmpname, url)
+    
+        cmd = "/usr/bin/wget --user-agent={} -O {} {}".format(agent, tmpname, url)
         logger.info("cmd: %s", cmd)
         code = os.system(cmd)
         if code != 0:
@@ -212,10 +214,15 @@ class CurlFile(object):
         agent = self.agent_str()
 
         tmpname = '/tmp/CF'
-        cmd = "curl -A {} -F 'TIFILES=@{}' {}".format(agent, tmpname, url)
+
+        cmd = "/usr/bin/curl -v -A {} -F 'TIFILES=@{}' {} -o /dev/null".format(agent, tmpname, url)
         logger.info("cmd: %s", cmd)
-        code = os.system(cmd)
-        if code != 0:
+        output = subprocess.getoutput(cmd)
+
+        logger.info("output: %s", output)
+
+        # ensure the server responds with a 200 series status code
+        if not '< HTTP/1.1 2' in output:
             raise Exception("error uploading resource")
 
     def parseDev(self, devname):

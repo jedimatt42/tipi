@@ -159,3 +159,10 @@ class TlsSocket(object):
         except Exception:
             pass
 
+    def allocateHandleId(self):
+        handleId = 1
+        while handleId < 256:
+            if handleId not in self.handles.keys():
+                return handleId
+        logger.info("out of handles")
+        return 0

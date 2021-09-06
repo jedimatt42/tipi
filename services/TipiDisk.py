@@ -12,7 +12,7 @@ from ti_files.VariableRecordFile import load_internal
 from ti_files.CatalogFile import CatalogFile
 from ti_files.CatalogFileTimestamps import CatalogFileTimestamps
 from ti_files.NativeFile import NativeFile
-from ti_files.BasicFile import BasicFile
+from ti_files.BasicFile import BasicFile, basicSuffixes
 from ti_files import ti_files
 from array import array
 from tipi.TipiMessage import TipiMessage
@@ -23,8 +23,6 @@ from Pab import *
 from TipiConfig import TipiConfig
 
 logger = logging.getLogger(__name__)
-
-basicSuffixes = (".b99", ".bas", ".xb", ".tb")
 
 tipi_config = TipiConfig.instance()
 

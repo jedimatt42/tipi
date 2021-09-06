@@ -1,10 +1,11 @@
 import os
+import subprocess
 import traceback
 import logging
 from ti_files import ti_files
 from Pab import *
 from ti_files.NativeFile import NativeFile
-from ti_files.BasicFile import BasicFile
+from ti_files.BasicFile import BasicFile, basicSuffixes
 from ti_files.ProgramImageFile import ProgramImageFile
 from ti_files.FixedRecordFile import FixedRecordFile
 from ti_files.VariableRecordFile import VariableRecordFile
@@ -16,7 +17,7 @@ class CurlFile(object):
 
     @staticmethod
     def filename():
-        # open file in "input" for GET, "output" for POST
+        # open file in "input" for GET
         #   PI.HTTP://ti994a.cwfk.net/tipi.html
         return ("HTTP:", "http:", "HTTPS:", "https:")
 
@@ -37,6 +38,8 @@ class CurlFile(object):
             self.status(pab, devname)
         elif op == LOAD:
             self.load(pab, devname)
+        elif op == SAVE:
+            self.save(pab, devname)
         elif op == RESTORE:
             self.restore(pab, devname)
         else:
@@ -124,13 +127,9 @@ class CurlFile(object):
     def load(self, pab, devname):
         logger.info("load devname - %s", devname)
         try:
-            tmpname = '/tmp/CF'
             url = self.parseDev(devname)
-            cmd = "wget -O {} {}".format(tmpname, url)
-            logger.info("cmd: %s", cmd)
-            code = os.system(cmd)
-            if code != 0:
-                raise Exception("error downloading resource")
+            tmpname = self.http_get(url, pab)
+
             if (not ti_files.isTiFile(tmpname)) and devname.lower().endswith(basicSuffixes):
                 prog_file = BasicFile.load(tmpname)
             else:
@@ -153,13 +152,56 @@ class CurlFile(object):
             self.tipi_io.send([EFILERR])
             logger.exception("failed to load file - %s", devname)
 
-    def fetch(self, url, pab):
+    def save(self, pab, devname):
+        logger.info("save devname - %s", devname)
+        try:
+            url = self.parseDev(devname)
+            tmpname = '/tmp/CF'
+
+            self.tipi_io.send([SUCCESS])
+            fdata = self.tipi_io.receive()
+            logger.debug("received program image")
+
+            if devname.lower().endswith(basicSuffixes):
+                prog_file = BasicFile.create(fdata)
+            else:
+                prog_file = ProgramImageFile.create(devname, tmpname, fdata)
+            logger.debug("created file object")
+            prog_file.save(tmpname)
+
+            self.http_post(url, pab)
+
+            self.tipi_io.send([SUCCESS])
+        except Exception as e:
+            logger.exception("failed to save PROGRAM")
+            self.tipi_io.send([EFILERR])
+        return
+
+
+    def agent_str(self):
+        version = "unknown"
+        with open("/home/tipi/tipi/version.txt", "r") as v_in:
+            for line in v_in.readlines():
+                parts = line.split("=")
+                if str(parts[0]).strip().upper() == "VERSION":
+                    version = str(parts[1]).strip()
+
+        return "ti994a-Tipi/{}".format(version)
+
+    def http_get(self, url, pab):
+        agent = self.agent_str()
+
         tmpname = '/tmp/CF'
-        cmd = "wget -O {} {}".format(tmpname, url)
+    
+        cmd = "/usr/bin/wget --user-agent={} -O {} {}".format(agent, tmpname, url)
         logger.info("cmd: %s", cmd)
         code = os.system(cmd)
         if code != 0:
             raise Exception("error downloading resource")
+        return tmpname
+
+    def fetch(self, url, pab):
+        tmpname = self.http_get(url, pab)
         if ti_files.isTiFile(tmpname):
             if recordType(pab) == FIXED:
                 return FixedRecordFile.load(tmpname, pab)
@@ -167,6 +209,21 @@ class CurlFile(object):
                 return VariableRecordFile.load(tmpname, pab)
         else:
             return NativeFile.load(tmpname, pab, url)
+
+    def http_post(self, url, pab):
+        agent = self.agent_str()
+
+        tmpname = '/tmp/CF'
+
+        cmd = "/usr/bin/curl -v -A {} -F 'TIFILES=@{}' {} -o /dev/null".format(agent, tmpname, url)
+        logger.info("cmd: %s", cmd)
+        output = subprocess.getoutput(cmd)
+
+        logger.info("output: %s", output)
+
+        # ensure the server responds with a 200 series status code
+        if not '< HTTP/1.1 2' in output:
+            raise Exception("error uploading resource")
 
     def parseDev(self, devname):
         return str(devname[3:])

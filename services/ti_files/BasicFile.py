@@ -5,6 +5,7 @@ from . import VariableRecordFile
 
 logger = logging.getLogger(__name__)
 
+basicSuffixes = (".b99", ".bas", ".xb", ".tb")
 
 class BasicFile(object):
     def __init__(self, bytes):

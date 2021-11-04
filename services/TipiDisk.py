@@ -370,6 +370,12 @@ class TipiDisk(object):
         except Exception as e:
             logger.debug("removing open file on delete: file was not open! Good")
         try:
+            if ti_files.isTiFile(unix_name):
+                fh = open(unix_name, "rb")
+                header = bytearray(fh.read())[:128]
+                if ti_files.isProtected(header):
+                    self.sendErrorCode(EWPROT)
+                    return
             os.unlink(unix_name)
             self.sendSuccess()
         except Exception as e:

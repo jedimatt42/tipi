@@ -90,6 +90,12 @@ sudo ./post-upgrade.sh
 
 ## Other items to setup
 
+Disable apache2 which is misconfigured and not-used
+
+```
+sudo apt systemctl disable apache2.service
+```
+
 * (for distributing an image, I don't do this) change the password for user pi
 * change the hostname (raspi-config)
 * install samba share for /home/tipi/tipi_disk

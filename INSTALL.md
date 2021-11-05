@@ -16,7 +16,7 @@ Use raspi-config to install locales and set default, en_US_utf8.
 Note: installing all locales takes forever, and slows future updates.
 install en-US-UTF8, en-GB-UTF8, de-DE-UTF8, and en-CA-UTF8
 
-Use raspi-config to enable i2c, ssh, and grow the root filesystem.
+Use raspi-config to enable ssh, and grow the root filesystem.
 reboot.
 
 ## Replace log and tmp folders with tmpfs to prolong SD card life
@@ -49,7 +49,6 @@ Create a service user 'tipi' with the following commands:
 sudo useradd --create-home --system --user-group tipi
 sudo adduser tipi gpio
 sudo adduser tipi input
-sudo adduser tipi i2c
 sudo adduser tipi sudo
 sudo passwd tipi
 ```

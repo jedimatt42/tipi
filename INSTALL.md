@@ -147,6 +147,10 @@ sudo kpartx -a sdimage.img
 
 You should be able to now mount the rootfs, or /dev/mapper/loop??p2.  On ubuntu like desktops the volume names will show up in the UI for removable media... 
 
+Edit and Remove personal settings found in
+- home/tipi/tipi.config
+- etc/wpa_supplicant/wpa_supplicant.conf
+
 Then clear the space:
 
 ```

@@ -74,42 +74,50 @@ class TipiDisk(object):
     def handleOpen(self, pab, devname):
         logger.info("Opcode 0 Open - %s", devname)
         logPab(pab)
-        localPath = tinames.devnameToLocal(devname)
-        if localPath is None:
+        unix_name = tinames.devnameToLocal(devname)
+        if unix_name is None:
             logger.info("(1) Passing to other controllers")
             self.sendErrorCode(EDVNAME)
             return
 
-        logger.debug("  local file: " + localPath)
-        if mode(pab) == INPUT and not os.path.exists(localPath):
+        logger.debug("  local file: " + unix_name)
+        if mode(pab) == INPUT and not os.path.exists(unix_name):
             logger.info("(2) Passing to other controllers")
             self.sendErrorCode(EDVNAME)
             return
 
-        if os.path.isdir(localPath):
+        if os.path.isdir(unix_name):
             try:
                 if recordLength(pab) == 0 or recordLength(pab) == 146:
-                    cat_file = CatalogFileTimestamps.load(localPath, pab, devname)
+                    cat_file = CatalogFileTimestamps.load(unix_name, pab, devname)
                 else:
-                    cat_file = CatalogFile.load(localPath, pab, devname)
+                    cat_file = CatalogFile.load(unix_name, pab, devname)
                 self.sendSuccess()
                 self.tipi_io.send([cat_file.getRecordLength()])
-                self.openFiles[localPath] = cat_file
+                self.openFiles[unix_name] = cat_file
                 return
             except Exception as e:
                 self.sendErrorCode(EOPATTR)
                 logger.exception("failed to open dir - %s", devname)
                 return
 
-        if os.path.exists(localPath):
+        if os.path.exists(unix_name):
             try:
-                if ti_files.isTiFile(localPath):
+                if ti_files.isTiFile(unix_name):
+                    # check protect flag
+                    if mode(pab) != INPUT:
+                        fh = open(unix_name, "rb")
+                        header = bytearray(fh.read())[:128]
+                        if ti_files.isProtected(header):
+                           self.sendErrorCode(EWPROT)
+                           return
+
                     if recordType(pab) == FIXED:
-                        open_file = FixedRecordFile.load(localPath, pab)
+                        open_file = FixedRecordFile.load(unix_name, pab)
                     else:
-                        open_file = VariableRecordFile.load(localPath, pab)
+                        open_file = VariableRecordFile.load(unix_name, pab)
                 else:
-                    open_file = NativeFile.load(localPath, pab)
+                    open_file = NativeFile.load(unix_name, pab)
 
                 if open_file is None:
                     self.sendErrorCode(EOPATTR)
@@ -119,7 +127,7 @@ class TipiDisk(object):
 
                 self.sendSuccess()
                 self.tipi_io.send([fillInRecordLen])
-                self.openFiles[localPath] = open_file
+                self.openFiles[unix_name] = open_file
                 return
 
             except Exception as e:
@@ -128,12 +136,12 @@ class TipiDisk(object):
                 return
 
         else:
-            if self.parentExists(localPath):
+            if self.parentExists(unix_name):
                 if recordType(pab) == VARIABLE:
-                    open_file = VariableRecordFile.create(devname, localPath, pab)
+                    open_file = VariableRecordFile.create(devname, unix_name, pab)
                 else:
-                    open_file = FixedRecordFile.create(devname, localPath, pab)
-                self.openFiles[localPath] = open_file
+                    open_file = FixedRecordFile.create(devname, unix_name, pab)
+                self.openFiles[unix_name] = open_file
                 self.sendSuccess()
                 self.tipi_io.send([open_file.getRecordLength()])
                 return
@@ -147,22 +155,22 @@ class TipiDisk(object):
     def handleClose(self, pab, devname):
         logger.debug("Opcode 1 Close - %s", devname)
         logPab(pab)
-        localPath = tinames.devnameToLocal(devname)
+        unix_name = tinames.devnameToLocal(devname)
 
-        if localPath is None:
+        if unix_name is None:
             logger.info("Passing to other controllers")
             self.sendErrorCode(EDVNAME)
             return
 
-        if localPath not in self.openFiles:
+        if unix_name not in self.openFiles:
             # not open by us, maybe some other controller handled it.
             self.sendErrorCode(EDVNAME)
             return
 
         try:
-            open_file = self.openFiles[localPath]
-            open_file.close(localPath)
-            del self.openFiles[localPath]
+            open_file = self.openFiles[unix_name]
+            open_file.close(unix_name)
+            del self.openFiles[unix_name]
             self.sendSuccess()
         except Exception as e:
             self.sendErrorCode(EFILERR)
@@ -171,21 +179,21 @@ class TipiDisk(object):
     def handleRead(self, pab, devname):
         logger.debug("Opcode 2 Read - %s", devname)
         logPab(pab)
-        localPath = tinames.devnameToLocal(devname)
+        unix_name = tinames.devnameToLocal(devname)
         recNum = recordNumber(pab)
 
-        if localPath is None:
+        if unix_name is None:
             logger.info("Passing to other controllers")
             self.sendErrorCode(EDVNAME)
             return
 
-        if localPath not in self.openFiles:
+        if unix_name not in self.openFiles:
             # pass to a different device.
             self.sendErrorCode(EDVNAME)
             return
 
         try:
-            open_file = self.openFiles[localPath]
+            open_file = self.openFiles[unix_name]
 
             if not open_file.isLegal(pab):
                 logger.error("illegal read mode for %s", devname)
@@ -207,21 +215,21 @@ class TipiDisk(object):
     def handleWrite(self, pab, devname):
         logger.info("Opcode 3 Write - %s", devname)
         logPab(pab)
-        localPath = tinames.devnameToLocal(devname)
+        unix_name = tinames.devnameToLocal(devname)
         recNum = recordNumber(pab)
 
-        if localPath is None:
+        if unix_name is None:
             logger.info("Passing to other controllers")
             self.sendErrorCode(EDVNAME)
             return
 
-        if localPath not in self.openFiles:
+        if unix_name not in self.openFiles:
             # pass to a different device.
             self.sendErrorCode(EDVNAME)
             return
 
         try:
-            open_file = self.openFiles[localPath]
+            open_file = self.openFiles[unix_name]
             if open_file == None:
                 self.sendErrorCode(EFILERR)
                 return
@@ -241,22 +249,22 @@ class TipiDisk(object):
     def handleRestore(self, pab, devname):
         logger.info("Opcode 4 Restore - %s", devname)
         logPab(pab)
-        localPath = tinames.devnameToLocal(devname)
+        unix_name = tinames.devnameToLocal(devname)
 
         recNum = recordNumber(pab)
 
-        if localPath is None:
+        if unix_name is None:
             logger.info("Passing to other controllers")
             self.sendErrorCode(EDVNAME)
             return
 
-        if localPath not in self.openFiles:
+        if unix_name not in self.openFiles:
             # pass as well
             self.sendErrorCode(EDVNAME)
             return
 
         try:
-            open_file = self.openFiles[localPath]
+            open_file = self.openFiles[unix_name]
             if open_file == None:
                 self.sendErrorCode(EFILERR)
                 return
@@ -337,6 +345,13 @@ class TipiDisk(object):
 
         logger.debug("saving program to %s", unix_name)
         if self.parentExists(unix_name):
+            # check protect flag
+            if ti_files.isTiFile(unix_name):
+                fh = open(unix_name, "rb")
+                header = bytearray(fh.read())[:128]
+                if ti_files.isProtected(header):
+                    self.sendErrorCode(EWPROT)
+                    return
             self.sendSuccess()
             fdata = self.tipi_io.receive()
             logger.debug("received program image")
@@ -370,6 +385,13 @@ class TipiDisk(object):
         except Exception as e:
             logger.debug("removing open file on delete: file was not open! Good")
         try:
+            # check protect flag
+            if ti_files.isTiFile(unix_name):
+                fh = open(unix_name, "rb")
+                header = bytearray(fh.read())[:128]
+                if ti_files.isProtected(header):
+                    self.sendErrorCode(EWPROT)
+                    return
             os.unlink(unix_name)
             self.sendSuccess()
         except Exception as e:

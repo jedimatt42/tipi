@@ -249,9 +249,9 @@ class LevelTwo(object):
         if os.path.exists(localfilename) and ti_files.isTiFile(localfilename):
             fh = open(localfilename, "rb")
             header = bytearray(fh.read())[:128]
-            if ti_files.isProtected(header):
-                self.tipi_io.send([EWPROT])
-                return True
+            # if ti_files.isProtected(header):
+            #     self.tipi_io.send([EWPROT])
+            #     return True
 
         startbyte = 128 + (startblock * 256)
         endbyte = startbyte + (blocks * 256)

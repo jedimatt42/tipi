@@ -1,2 +1,2 @@
-version=2.26
-reldate=2021-11-04
+version=2.27
+reldate=2021-11-14

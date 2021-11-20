@@ -15,8 +15,15 @@ def status():
 
     status = { 
         "backups": backups,
-        "status": "inprogress"
+        "status": "inprogress" if os.path.exists("/tmp/tipi_backup") else "none"
     }
 
     return status
+
+
+def backup_now():
+    with open("/tmp/tipi_backup", "w") as f:
+        f.write("now")
+    time.sleep(1)
+
 

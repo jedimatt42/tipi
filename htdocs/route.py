@@ -191,7 +191,7 @@ def backup():
 
 @app.route("/backupnow", methods=["POST"])
 def backup_now():
-    backup = tipi_backup.backup_now()
+    tipi_backup.backup_now()
     return redirect("/backup")
 
 

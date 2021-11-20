@@ -3,6 +3,24 @@
 {% block content %}
 
 <script>
+function startTimer(duration) {
+  var timer = duration;
+  if ("{{ status }}" == "inprogress") {
+    setInterval(function () {
+      if (--timer < 0) {
+        timer = duration;
+      }
+      if (timer == 0) {
+        window.location.reload();
+      }
+    }, 1000);
+  }
+}
+    
+window.onload = function () {
+    startTimer(5);
+};
+
 function checkFields(f) {
     if (f.upload_file.value == '') {
        alert("Please select a file from your computer to upload to TIPI");
@@ -32,7 +50,13 @@ function uploadOnClick() {
 <p>Create an archive of tipi specific data and configuration.</p>
 
 {% if status == "inprogress" %}
-<blockquote>creating archive...</blockquote>
+<blockquote>Creating archive...</blockquote>
+{% else %}
+<div id="backupForm">
+  <form name="backup" action="/backupnow" method=post>
+    <input type=submit name="backupnow" value="Backup Now">
+  </form>
+</div>
 {% endif %}
 
 </div>

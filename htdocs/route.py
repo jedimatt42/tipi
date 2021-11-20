@@ -7,9 +7,11 @@
 
 import string
 import tipi_admin
+import tipi_backup
 import tipi_editor
 import tipi_files
 import tipi_uploads
+import os
 from flask_socketio import SocketIO
 
 from flask import *
@@ -177,6 +179,38 @@ def rebootnow():
 def shutdownnow():
     tipi_admin.shutdown()
     return render_template("shutdown.html")
+
+
+# Tipi Backup
+
+@app.route("/backup", methods=["GET"])
+def backup():
+    backup = tipi_backup.status()
+    return render_template("backup.html", **backup)
+
+
+@app.route("/backupnow", methods=["POST"])
+def backup_now():
+    backup = tipi_backup.backup_now()
+    return redirect("/backup")
+
+
+@app.route("/backupdl/<path:path>", methods=["GET"])
+def backupdl(path):
+    resp = make_response(
+        send_from_directory("/home/tipi", os.path.basename(path))
+    )
+    resp.cache_control.no_store = True
+    resp.cache_control.public = False
+    resp.cache_control.max_age = None
+    return resp
+
+
+@app.route("/backupul", methods=["POST"])
+def backupul():
+    path = request.form.get("path")
+    tipi_backup.save(path, request.files.getlist("upload_file"))
+    return redirect("/backup")
 
 
 ## Utility

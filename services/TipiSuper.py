@@ -85,3 +85,17 @@ while True:
         os.remove("/tmp/tz")
         if exitcode:
             raise Exception("failed to set timezone {}".format(timezone))
+
+    elif os.path.exists("/tmp/tipi_backup"):
+        callargs = ["/home/tipi/tipi/setup/backup.sh"]
+        exitcode = call(callargs)
+        # do this last so webui can watch for it to go away
+        os.remove("/tmp/tipi_backup")
+        if exitcode:
+            raise Exception("failed to create backup")
+
+    elif os.path.exists("/tmp/tipi_restore"):
+        callargs = ["/home/tipi/tipi/setup/restore.sh"]
+        exitcode = call(callargs)
+        if exitcode:
+            raise Exception("failed to create backup")

@@ -94,3 +94,8 @@ while True:
         if exitcode:
             raise Exception("failed to create backup")
 
+    elif os.path.exists("/tmp/tipi_restore"):
+        callargs = ["/home/tipi/tipi/setup/restore.sh"]
+        exitcode = call(callargs)
+        if exitcode:
+            raise Exception("failed to create backup")

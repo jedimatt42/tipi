@@ -31,7 +31,7 @@ def backup_now():
 def restore_now(backup_file):
     if backup_file is not None:
         with open("/tmp/tipi_restore", "w") as f:
-            f.write(backup_file)
+            f.write(f"/home/tipi/{backup_file}")
         time.sleep(1)
 
 

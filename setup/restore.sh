@@ -35,6 +35,7 @@ if [ -f ${WPATMP:-nofile} ]; then
     reboot now
   else
     rm -f $WPATMP 
+    rm -f /tmp/tipi_restore
   fi
 fi
 

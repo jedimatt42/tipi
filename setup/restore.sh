@@ -31,9 +31,12 @@ tar -xvzf $BACKUP \
 if [ -f ${WPATMP:-nofile} ]; then
   if [ "x${WPA:-no}" == "xyes" ]; then
     mv $WPATMP /boot/wpa_supplicant.conf
+    rm $BACKUP
+    reboot now
   else
     rm -f $WPATMP 
   fi
 fi
+
 
 

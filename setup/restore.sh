@@ -21,6 +21,10 @@ fi
 
 WPATMP=/home/tipi/tmp_wpa_supplicant.conf
 
+echo "stop conflicting services"
+systemctl stop tipimon.service
+systemctl stop tipi.service
+
 echo "restoring backup from $BACKUP"
 
 tar -xvzf $BACKUP \
@@ -32,12 +36,18 @@ if [ -f ${WPATMP:-nofile} ]; then
   if [ "x${WPA:-no}" == "xyes" ]; then
     mv $WPATMP /boot/wpa_supplicant.conf
     rm $BACKUP
+    echo "rebooting..."
     reboot now
-  else
-    rm -f $WPATMP 
-    rm -f /tmp/tipi_restore
+    sleep 10
   fi
 fi
+
+rm -f $WPATMP 
+rm -f /tmp/tipi_restore
+# If we don't reboot we should restart the services
+echo "stop conflicting services"
+systemctl restart tipimon.service
+systemctl restart tipi.service
 
 
 

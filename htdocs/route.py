@@ -17,7 +17,7 @@ from flask_socketio import SocketIO
 from flask import *
 
 app = Flask(__name__)
-app.config["DEBUG"] = False
+app.config["DEBUG"] = True
 app.config["TESTING"] = False
 app.config["ENV"] = "development"
 socketio = SocketIO(app)
@@ -183,6 +183,14 @@ def shutdownnow():
 
 # Tipi Backup
 
+
+@app.route("/restorenow", methods=["POST"])
+def restore_now():
+    backup_file = request.form.get("backup_file")
+    tipi_backup.restore_now(backup_file)
+    return redirect("/backup")
+
+
 @app.route("/backup", methods=["GET"])
 def backup():
     backup = tipi_backup.status()
@@ -208,8 +216,7 @@ def backupdl(path):
 
 @app.route("/backupul", methods=["POST"])
 def backupul():
-    path = request.form.get("path")
-    tipi_backup.save(path, request.files.getlist("upload_file"))
+    tipi_backup.upload(request.files.getlist("upload_file"))
     return redirect("/backup")
 
 

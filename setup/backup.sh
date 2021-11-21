@@ -44,4 +44,5 @@ tar -cvzf ${ARCHIVE} \
 
 chown tipi.tipi ${ARCHIVE}
 rm -f ${WPATMP}
+rm -f ${FILE_LIST}
 

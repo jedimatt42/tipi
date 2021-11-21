@@ -139,6 +139,14 @@ a {
     padding: 40px;
 }
 
+.backup_container {
+    padding: 40px;
+}
+
+.restore_container {
+    padding: 40px;
+}
+
 .log_container {
     padding: 40px;
     overflow-y: auto;

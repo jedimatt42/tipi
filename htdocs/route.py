@@ -7,15 +7,17 @@
 
 import string
 import tipi_admin
+import tipi_backup
 import tipi_editor
 import tipi_files
 import tipi_uploads
+import os
 from flask_socketio import SocketIO
 
 from flask import *
 
 app = Flask(__name__)
-app.config["DEBUG"] = False
+app.config["DEBUG"] = True
 app.config["TESTING"] = False
 app.config["ENV"] = "development"
 socketio = SocketIO(app)
@@ -177,6 +179,45 @@ def rebootnow():
 def shutdownnow():
     tipi_admin.shutdown()
     return render_template("shutdown.html")
+
+
+# Tipi Backup
+
+
+@app.route("/restorenow", methods=["POST"])
+def restore_now():
+    backup_file = request.form.get("backup_file")
+    tipi_backup.restore_now(backup_file)
+    return redirect("/backup")
+
+
+@app.route("/backup", methods=["GET"])
+def backup():
+    backup = tipi_backup.status()
+    return render_template("backup.html", **backup)
+
+
+@app.route("/backupnow", methods=["POST"])
+def backup_now():
+    tipi_backup.backup_now()
+    return redirect("/backup")
+
+
+@app.route("/backupdl/<path:path>", methods=["GET"])
+def backupdl(path):
+    resp = make_response(
+        send_from_directory("/home/tipi", os.path.basename(path))
+    )
+    resp.cache_control.no_store = True
+    resp.cache_control.public = False
+    resp.cache_control.max_age = None
+    return resp
+
+
+@app.route("/backupul", methods=["POST"])
+def backupul():
+    tipi_backup.upload(request.files.getlist("upload_file"))
+    return redirect("/backup")
 
 
 ## Utility

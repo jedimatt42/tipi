@@ -3,6 +3,12 @@
 # Things here run as root on system boot to make way for 
 # standard boot services.
 
+# Check /boot for a backup file
+BACKUP=`ls -1 /boot/tipi-backup-*.tar.gz 2>/dev/null`
+if [ -f ${BACKUP:-notfile} ]; then
+  /home/tipi/tipi/setup/restore.sh $BACKUP
+fi
+
 # /var/log is a tmpfs, need to add permissions on each boot
 if [ ! -e /var/log/tipi ]; then
   mkdir /var/log/tipi

@@ -147,11 +147,11 @@ SCALE
 	JGT	POSITIVE
 	SETO	R2
 POSITIVE
-	LI	R5,5
-	MPY	R0,R5
-	LI	R0,8
-	DIV	R0,R5
-	MOV	R5,R0
+	; LI	R5,5
+	; MPY	R0,R5
+	; LI	R0,8
+	; DIV	R0,R5
+	; MOV	R5,R0
 	MOV	@ZOOM,@ZOOM
 	JEQ	NOZOOM
 	ANDI	R0,1		; if zoom, move at most 1 pixel

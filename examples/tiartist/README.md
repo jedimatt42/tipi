@@ -28,4 +28,6 @@ starting point on second click.
 
 Middle mouse button is space-menu. It activates on release of the button.
 
-The speed will never be perfect, but it reminds me of back in the day.
+Right mouse button restricts movement to a single pixel, so in draw mode you'll never get gaps. But this is more of a throw-back UX compromise. You have to adjust how you move to get sweeping motions.
+
+The speed will never be perfect, but it reminds me of back in the day. For best results use a low DPI mouse as you can find.

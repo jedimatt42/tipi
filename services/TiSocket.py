@@ -231,5 +231,6 @@ class TiSocket(object):
         while handleId < 256:
             if handleId not in self.handles.keys():
                 return handleId
+            handleId += 1
         logger.info("out of handles")
         return 0

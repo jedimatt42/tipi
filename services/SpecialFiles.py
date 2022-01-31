@@ -13,6 +13,7 @@ from TipiConfig import TipiConfig
 from UpgradeFile import UpgradeFile
 from VariablesFile import VariablesFile
 from PioFile import PioFile
+from LogFile import LogFile
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ class SpecialFiles(object):
             ConfigFile.filename(): ConfigFile(self.tipi_io),
             CurlFile.filename(): CurlFile(self.tipi_io),
             PioFile.filename(): PioFile(self.tipi_io),
+            LogFile.filename(): LogFile(self.tipi_io),
             RebootFile.filename(): RebootFile(self.tipi_io),
             ShutdownFile.filename(): ShutdownFile(self.tipi_io),
             StatusFile.filename(): StatusFile(self.tipi_io),

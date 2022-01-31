@@ -3,6 +3,7 @@ import logging
 import logging.handlers
 import os
 import errno
+import yaml
 from tipi.TipiMessage import TipiMessage
 from tipi.TipiMessage import BackOffException
 from SpecialFiles import SpecialFiles
@@ -20,6 +21,14 @@ if not os.path.isdir(logpath):
 
 LOG_FILENAME = logpath + "/tipi.log"
 logging.getLogger("").setLevel(logging.INFO)
+
+if os.path.exists("/home/tipi/tipi/services/loggers.yml"):
+    with open("/home/tipi/tipi/services/loggers.yml", 'r') as stream:
+        loggers_config = yaml.load(stream, Loader=yaml.FullLoader)
+        for key in loggers_config.keys():
+            logging.getLogger(key).setLevel(logging._nameToLevel.get(loggers_config.get(key)))
+
+
 loghandler = logging.handlers.RotatingFileHandler(
     LOG_FILENAME, maxBytes=(1000 * 1024), backupCount=2
 )

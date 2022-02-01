@@ -150,6 +150,9 @@ class VariableRecordFile(object):
             except Exception as e:
                 logger.exception("Failed to save file %s", localPath)
 
+    def eager_write(self, localPath):
+        self.close(localPath)
+
     def __packRecords(self):
         sectors = []
         sector = bytearray(256)

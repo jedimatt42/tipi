@@ -159,6 +159,9 @@ class FixedRecordFile(object):
             except Exception as e:
                 logger.exception("Failed to save fixed file %s", localPath)
 
+    def eager_write(self, localPath):
+        self.close(localPath)
+
     def __packRecords(self):
         recLen = self.recordLength
         sectors = []

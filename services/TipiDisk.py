@@ -142,6 +142,9 @@ class TipiDisk(object):
                 else:
                     open_file = FixedRecordFile.create(devname, unix_name, pab)
                 self.openFiles[unix_name] = open_file
+                # write eager
+                if tipi_config.get("EAGER_WRITE") == "on":
+                    open_file.eager_write(unix_name)
                 self.sendSuccess()
                 self.tipi_io.send([open_file.getRecordLength()])
                 return
@@ -237,6 +240,9 @@ class TipiDisk(object):
             self.sendSuccess()
             bytes = self.tipi_io.receive()
             open_file.writeRecord(bytes, pab)
+            # write eager
+            if tipi_config.get("EAGER_WRITE") == "on":
+                open_file.eager_write(unix_name)
             self.sendSuccess()
             return
 

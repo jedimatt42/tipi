@@ -125,3 +125,7 @@ class NativeFile(object):
 
     def close(self, localPath):
         pass
+
+    def eager_write(self, localPath):
+        pass
+

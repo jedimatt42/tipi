@@ -31,6 +31,7 @@ CONFIG_DEFAULTS = {
     "TZ": "America/Los_Angeles",
     "SECTOR_COUNT": "1440",
     "DIR_SORT": "FIRST",
+    "EAGER_WRITE": "off",
 }
 
 

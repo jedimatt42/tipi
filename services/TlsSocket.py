@@ -119,6 +119,7 @@ class TlsSocket(object):
             existing = self.handles[handleId]
             existing.sendall(bytes[3:])
             logger.debug("wrote %d bytes to socket: %d", len(bytes[3:]), handleId)
+            logger.debug("socket write data: %s", str(bytes[3:], 'latin1'))
             return GOOD
         except Exception:
             del self.handles[handleId]
@@ -138,6 +139,7 @@ class TlsSocket(object):
             limit = (bytes[3] << 8) + bytes[4]
             data = bytearray(existing.recv(limit))
             logger.info("read %d bytes from %d", len(data), handleId)
+            logger.debug("socket read data: %s", str(data, 'latin1'))
             return data
         except socket.error as e:
             err = e.args[0]

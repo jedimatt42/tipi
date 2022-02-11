@@ -4,6 +4,8 @@ cd /home/tipi/tipi/services
 
 source ENV/bin/activate
 
+export TIPI_SIG_DELAY=$(grep TIPI_SIG_DELAY /home/tipi/tipi.config | cut -f2 -d=)
+
 if [ -z ${TIPI_SIG_DELAY:-} ]; then
   # default signalling delay for unknown device will be slow
   export TIPI_SIG_DELAY=200

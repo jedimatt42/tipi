@@ -1,4 +1,4 @@
-/* 
+/*
   websock.c - Websocket server for tipiports
 
   Copyright (C) 2020  Pete Eberlein
@@ -21,28 +21,38 @@
 /*
   Creates a simple HTTPD server on "http://localhost:9901/"
   Accepts one websocket connection on "ws://localhost:9901/tipi"
-  
+
   Websocket server is started by env variable "TIPI_WEBSOCK"
-  which is set to the web root directory, where file requests are 
+  which is set to the web root directory, where file requests are
   searched.
 
+  OBSOLETE:
   Websocket sends/receives register changes formatted as "Rx=nnn"
   where "Rx" is one of: TD TC RD RC
   and "nnn" is decimal byte value
 
   Except the above protocol introduces too much latency to be usable.
+
   Instead we send whole messages as binary websocket frames.
   The length of the message doesn't need to encoded - there is one message
   per websocket frame, so it is the length of the websocket frame.
 
   In addtion, the following text messages are used:
   "RESET" will exit the server and restart (when the TI emulation is RESET)
-  "SYNC" at the start of each message (when TC=0xf1 and RC=0xf1)
   "MOUSE buttons dx dy" will accumulate mouse motion and relay when requested
+
+  OBSOLETE:
+  "SYNC" at the start of each message (when TC=0xf1 and RC=0xf1)
+
+  However the server will immediately send an text message containing "ASYNC"
+  indicating its ability to process messages asynchronously, allowing for lower
+  latency, but requires the clientbuffering received messages in a FIFO.  If an
+  older client ignores this messsage and sends a "SYNC", the server will switch
+  to synchronous mode and wait for a "SYNC" before each message transaction.
 
   See https://github.com/jedimatt42/tipi/blob/master/hardware/dsr/tipi-io.a99
   for latched register addresses in DSR, reproduced here:
-  
+
 TDOUT	EQU	>5FFF		; TI Data (output)
 TCOUT	EQU	>5FFD		; TI Control Signal (output)
 RDIN	EQU	>5FFB		; PI Data (input)
@@ -59,6 +69,7 @@ RCIN	EQU	>5FF9		; PI Control Signal (input)
 #include <sys/socket.h>
 #include <stdlib.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <string.h>
 #include <poll.h>
 #include <ctype.h>
@@ -76,13 +87,6 @@ RCIN	EQU	>5FF9		; PI Control Signal (input)
 
 #define PORT 9901
 
-#define SEL_RC 0
-#define SEL_RD 1
-#define SEL_TC 2
-#define SEL_TD 3
-static unsigned char regs[4] = {};
-static const char *reg_names[4] = {"RC","RD","TC","TD"};
-
 static const char *web_root = NULL;
 static int web_root_len;
 static int client_fd = -1; // websocket client socket
@@ -91,6 +95,11 @@ static struct {
 	off_t size;
 } files[1024];
 static unsigned int file_count = 0;
+static enum {
+	ASYNC,
+	NEEDS_SYNC,
+	GOT_SYNC,
+} sync_mode = ASYNC;
 
 //#define LOG
 #ifdef LOG
@@ -270,6 +279,7 @@ enum {
 };
 
 static PyObject *readMsg = NULL;
+static int readLen = 0;
 
 // read one websocket frame up to data_size, returning actual size
 static int websocket_read(int fd, int *opcode, unsigned char *data, int data_size)
@@ -312,6 +322,7 @@ static int websocket_read(int fd, int *opcode, unsigned char *data, int data_siz
     if (readMsg == NULL)
       readMsg = PyByteArray_FromStringAndSize("", 0);
     PyByteArray_Resize(readMsg, len);
+    readLen = len;
     if (PyObject_GetBuffer(readMsg, &buffer, PyBUF_CONTIG) < 0)
       return -1;
     data = buffer.buf;
@@ -381,21 +392,6 @@ static void websocket_write(int fd, int opcode, unsigned int mask, unsigned char
   write(fd, data, len);
 }
 
-static void set_reg_from_string(char *s)
-{
-  unsigned int i;
-  for (i = 0; i < ARRAY_SIZE(regs); i++) {
-    if (s[0] == reg_names[i][0] &&
-        s[1] == reg_names[i][1] &&
-        s[2] == '=') {
-      regs[i] = atoi(s+3);
-      log_printf("%s=%d   %s\n", reg_names[i], regs[i], s);
-      break;
-    }
-  }
-}
-
-
 
 static int buttons = 0, dx = 0, dy = 0;
 
@@ -419,25 +415,18 @@ static void move_mouse(char *s)
   dy += atoi(++s);
 }
 
-static void websocket_serveReg(int reg)
-{
-  log_printf("%s value=%d reg=%d client_fd=%d\n", __func__, regs[reg], reg, client_fd);
-  if (client_fd != -1) {
-    char buf[32];
-    int len = sprintf(buf, "%s=%d", reg_names[reg], regs[reg]);
-    websocket_write(client_fd, OPCODE_TEXT, 0/*mask*/, (unsigned char*)buf, len);
-  }
-}
-
-static int server_create(void)
+static int server_create(int domain /* AF_INET or AF_INET6 */)
 {
 	struct sockaddr_in addr;
+	struct sockaddr_in6 addr6;
+	struct sockaddr *paddr;
 	int opt = 1;
-	int addrlen = sizeof(addr);
+	int addrlen;
 	int fd;
 
-	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
+	if ((fd = socket(domain, SOCK_STREAM, 0)) == 0) {
 		perror("socket");
+		log_printf("socket: %s\n", strerror(errno));
 		goto err;
 	}
 
@@ -445,18 +434,31 @@ static int server_create(void)
 		perror("setsockopt SO_REUSEADDR|SO_REUSEPORT");
 		//goto err;
 	}
+	if (domain == AF_INET) {
+		addr.sin_family = AF_INET;
+		addr.sin_addr.s_addr = INADDR_ANY;
+		addr.sin_port = htons(PORT);
+		addrlen = sizeof(addr);
+		paddr = (struct sockaddr*)&addr;
+	} else if (domain == AF_INET6) {
+		addr6.sin6_family = AF_INET6;
+		addr6.sin6_addr = in6addr_any;
+		addr6.sin6_port = htons(PORT);
+		addrlen = sizeof(addr6);
+		paddr = (struct sockaddr*)&addr6;
+	} else {
+		goto err;
+	}
 
-	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = INADDR_ANY;
-	addr.sin_port = htons(PORT);
-
-	if (bind(fd, (struct sockaddr*)&addr, addrlen) < 0) {
+	if (bind(fd, paddr, addrlen) < 0) {
 		perror("bind");
+		log_printf("bind: %s\n", strerror(errno));
 		goto err;
 	}
 
 	if (listen(fd, 3) < 0) {
 		perror("listen");
+		log_printf("listen: %s\n", strerror(errno));
 		goto err;
 	}
 	return fd;
@@ -466,32 +468,32 @@ err:
 	return -1;
 }
 
-static int resetSync = 0;
-
 // open the server socket, accept any pending connection, perform upgrade, poll open websocket
 static int websocket_serve(void)
 {
-	static int srv_fd = -1; // server socket
+	static int srv_fd = -1, srv6_fd = -1; // server sockets
 
 	if (srv_fd == -1) {
-		srv_fd = server_create();
+		srv_fd = server_create(AF_INET);
 		if (srv_fd == -1)
 			goto shutdown;
-		log_printf("server started fd=%d\n", srv_fd);
+		srv6_fd = server_create(AF_INET6);
+		log_printf("server started fd=%d ipv6=%d\n", srv_fd, srv6_fd);
 	}
 
 	struct pollfd pfd[] = {
 		{ .fd = srv_fd, .events = POLLIN },
+		{ .fd = srv6_fd, .events = POLLIN },
 		{ .fd = client_fd, .events = POLLIN },
 	};
 
 	int ms = 100; // milliseconds
 	int rc = poll(pfd, ARRAY_SIZE(pfd), ms);
 	if (rc <= 0)
-		return -1;
+		return -1; // timeout or socket error
 
 	// read any data from the websocket
-	if (client_fd != -1 && (pfd[1].revents & POLLIN)) {
+	if (client_fd != -1 && (pfd[2].revents & POLLIN)) {
 		unsigned char data[128];
 		int opcode = 0;
 		int len = websocket_read(client_fd, &opcode, data, sizeof(data));
@@ -509,26 +511,30 @@ static int websocket_serve(void)
 			if (strcmp(str, "RESET") == 0) {
 				log_printf("RESET received\n");
 				goto shutdown;
-
 			} else if (strcmp(str, "SYNC") == 0) {
-				resetSync = 1;
+				log_printf("SYNC received\n");
+				sync_mode = GOT_SYNC;
 			} else if (strncmp(str, "MOUSE ", 6) == 0) {
 				move_mouse(str);
-			} else {
-				set_reg_from_string(str);
 			}
 		} else if (opcode == OPCODE_PING) {
 			websocket_write(client_fd, OPCODE_PONG, 0/*mask*/, data, len);
 		}
 	}
 
-	// read any requests from the HTTP server socket
-	if ((pfd[0].revents & POLLIN) == 0)
-		return 0;
+	int fd = -1;  // client fd
 
-	struct sockaddr_in addr;
-	unsigned int addrlen = sizeof(addr);
-	int fd = accept(srv_fd, (struct sockaddr *)&addr, (socklen_t*)&addrlen);
+	// read any requests from the HTTP server socket
+	if ((pfd[0].revents & POLLIN) != 0) {
+		struct sockaddr_in addr;
+		unsigned int addrlen = sizeof(addr);
+		fd = accept(srv_fd, (struct sockaddr *)&addr, (socklen_t*)&addrlen);
+	} else if ((pfd[1].revents & POLLIN) != 0) {
+		struct sockaddr_in6 addr;
+		unsigned int addrlen = sizeof(addr);
+		fd = accept(srv6_fd, (struct sockaddr *)&addr, (socklen_t*)&addrlen);
+	}
+
 	if (fd < 0)
 		return 0;
 
@@ -604,7 +610,7 @@ static int websocket_serve(void)
 			"Content-Length: %ld\r\n"
 			"%s%s%s"
 			"\r\n",
-			size,
+			(long int)size,
 			content_type ? "Content-Type: " : "",
 			content_type ? content_type : "",
 			content_type ? "\r\n" : "");
@@ -622,7 +628,7 @@ static int websocket_serve(void)
 
 notfound:
 	{
-		char resp[] = 
+		char resp[] =
 			"HTTP/1.1 404 Not found\r\n"
 			"Connection: close\r\n"
 			"Content-Type: text/plain\r\n"
@@ -635,7 +641,7 @@ notfound:
 
 badrequest:
 	{
-		char resp[] = 
+		char resp[] =
 			"HTTP/1.1 400 Bad request\r\n"
 			"Connection: close\r\n"
 			"Content-Type: text/plain\r\n"
@@ -693,6 +699,13 @@ upgrade_websocket:
 			close(client_fd);  // close existing client
 		}
 		client_fd = fd;
+		int one = 1; // Disable Nagle's algorithm for lowest latency
+		setsockopt(client_fd, SOL_TCP, TCP_NODELAY,&one, sizeof(one));
+
+		// use asynchronous mode until told otherwise
+		sync_mode = ASYNC;
+		// tell the client we support async mode
+		websocket_write(client_fd, OPCODE_TEXT, 0/*mask*/, (unsigned char*)"ASYNC", 5);
 	}
 	return 0;
 
@@ -700,6 +713,10 @@ shutdown:
 	if (srv_fd != -1) {
 		close(srv_fd);
 		srv_fd = -1;
+	}
+	if (srv6_fd != -1) {
+		close(srv6_fd);
+		srv6_fd = -1;
 	}
 	if (client_fd != -1) {
 		websocket_write(client_fd, OPCODE_CLOSE, 0, NULL, 0);
@@ -711,35 +728,22 @@ shutdown:
 }
 
 
+static const char* sync_str(void)
+{
+	return sync_mode == ASYNC ? "ASYNC" :
+		sync_mode == NEEDS_SYNC ? "NEEDS_SYNC" :
+		sync_mode == GOT_SYNC ? "GOT_SYNC" : "err";
+}
 
 /* These functions will be called from tipiports.c */
 
-unsigned char websocket_readByte(int reg)
-{
-  websocket_serve();
-  return regs[reg];
-}
-
-
-void websocket_writeByte(unsigned char value, int reg)
-{
-  regs[reg] = value;
-  websocket_serveReg(reg);
-}
-
-static int resetProtocol(void)
-{
-  while (!resetSync)
-    if (websocket_serve() < 0)
-      return -1;
-  resetSync = 0;
-  return 0;
-}
-
 PyObject* websocket_sendMsg(unsigned char *data, int len)
 {
-  if (resetProtocol() < 0)
-    return NULL;
+  log_printf("sendMsg len=%d sync=%s\n", len, sync_str());
+  while (sync_mode == NEEDS_SYNC)
+    websocket_serve();
+  if (sync_mode == GOT_SYNC)
+    sync_mode = NEEDS_SYNC;
   websocket_write(client_fd, OPCODE_BINARY, 0/*mask*/, data, len);
   Py_INCREF(Py_None);
   return Py_None;
@@ -747,11 +751,14 @@ PyObject* websocket_sendMsg(unsigned char *data, int len)
 
 PyObject* websocket_readMsg(void)
 {
-  if (resetProtocol() < 0)
-    return NULL;
+  //log_printf("readMsg sync=%s\n", sync_str());
+  while (sync_mode == NEEDS_SYNC)
+    if (websocket_serve() < 0) return NULL;
   while (!readMsg)
-    if (websocket_serve() < 0)
-      return NULL;
+    if (websocket_serve() < 0) return NULL;
+  if (sync_mode == GOT_SYNC)
+    sync_mode = NEEDS_SYNC;
+  log_printf("readMsg len=%d\n", readLen);
   PyObject *rc = readMsg;
   readMsg = NULL;
   return rc;
@@ -769,6 +776,4 @@ PyObject* websocket_sendMouseEvent(void)
   //log_printf("%s: %d %d %d\n", __func__, msg[0], msg[1], msg[2]);
   return websocket_sendMsg((unsigned char*)msg, 3);
 }
-
-
 

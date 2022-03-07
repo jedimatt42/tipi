@@ -30,6 +30,10 @@ if [ -e /tmp/test_update ]; then
   TIPI_UPDATE_LIBTIPI=true
 fi
 
+if [ $fmajor -le 2 ] && [ $fminor -le 31 ]; then
+  TIPI_UPDATE_LIBTIPI=true
+fi
+
 if [ $fmajor -le 2 ] && [ $fminor -le 22 ]; then
   TIPI_UPDATE_DEPS=true
 fi

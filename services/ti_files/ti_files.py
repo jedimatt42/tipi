@@ -21,6 +21,8 @@ def isTiFile(filename):
             fh = open(filename, 'rb')
             header = bytearray(fh.read()[:9])
             return isValid(header)
+    except IsADirectoryError:
+        pass
     except Exception as e:
         logger.error(e, exc_info=True)
         pass

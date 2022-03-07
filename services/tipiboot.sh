@@ -28,11 +28,10 @@ if [ -e /home/tipi/.emulation ]; then
   # mount nfs from host OS
   HOSTIP=`ip route | grep default | cut -d' ' -f3`
   mount -t nfs ${HOSTIP}:/tipi_disk /home/tipi/tipi_disk
-else
-  # disable power management for the wifi
-  iwconfig wlan0 power off
 fi
 
+# disable power management for the wifi
+iwconfig wlan0 power off
 
 cp -R -a /home/tipi/tipi/setup/bin/* /home/tipi/tipi_disk/
 

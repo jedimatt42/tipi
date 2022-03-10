@@ -424,7 +424,7 @@ static int server_create(int domain /* AF_INET or AF_INET6 */)
 	int addrlen;
 	int fd;
 
-	if ((fd = socket(domain, SOCK_STREAM, 0)) == 0) {
+	if ((fd = socket(domain, SOCK_STREAM, 0)) < 0) {
 		perror("socket");
 		log_printf("socket: %s\n", strerror(errno));
 		goto err;

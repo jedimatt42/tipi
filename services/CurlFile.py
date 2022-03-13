@@ -208,7 +208,7 @@ class CurlFile(object):
             else:
                 return VariableRecordFile.load(tmpname, pab)
         else:
-            return NativeFile.load(tmpname, pab, url)
+            return NativeFile.load(tmpname, pab, "", url)
 
     def http_post(self, url, pab):
         agent = self.agent_str()

@@ -101,9 +101,11 @@ class TipiDisk(object):
                 logger.exception("failed to open dir - %s", devname)
                 return
 
-        if os.path.exists(unix_name):
+        native_flags = tinames.nativeFlags(devname)
+
+        if mode(pab) != OUTPUT and os.path.exists(unix_name):
             try:
-                if ti_files.isTiFile(unix_name):
+                if not native_flags and ti_files.isTiFile(unix_name):
                     # check protect flag
                     if mode(pab) != INPUT:
                         fh = open(unix_name, "rb")
@@ -117,7 +119,7 @@ class TipiDisk(object):
                     else:
                         open_file = VariableRecordFile.load(unix_name, pab)
                 else:
-                    open_file = NativeFile.load(unix_name, pab)
+                    open_file = NativeFile.load(unix_name, pab, native_flags)
 
                 if open_file is None:
                     self.sendErrorCode(EOPATTR)
@@ -137,7 +139,9 @@ class TipiDisk(object):
 
         else:
             if self.parentExists(unix_name):
-                if recordType(pab) == VARIABLE:
+                if native_flags:
+                    open_file = NativeFile.create(unix_name, pab, native_flags)
+                elif recordType(pab) == VARIABLE:
                     open_file = VariableRecordFile.create(devname, unix_name, pab)
                 else:
                     open_file = FixedRecordFile.create(devname, unix_name, pab)

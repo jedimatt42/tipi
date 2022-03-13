@@ -24,6 +24,17 @@ class NativeFile(object):
         self.filetype = fileType(pab)
         self.pab = pab
         self.native_flags = native_flags
+        if self.native_flags == "?W":
+            host_eol = tipi_config.get("HOST_EOL", '\r\n')
+            # bad input / safe default
+            line_ending = '\r\n'
+            if host_eol == "CRLF":
+                self.line_ending = '\r\n'
+            elif host_eol == "LF":
+                self.line_ending = '\n'
+        else:
+            self.line_ending = ''
+
 
     @staticmethod
     def load(unix_file_name, pab, native_flags, url=""):
@@ -161,12 +172,15 @@ class NativeFile(object):
     def close(self, localPath):
         if self.dirty:
             try:
-                if dataType(self.pab) == DISPLAY:
-                    with open(localPath, "w") as fh:
-                        self.writeLines(fh)
-                else:
-                    raise Exception("only DISPLAY format supported")
-                self.dirty = False
+                if self.native_flags == "?W":
+                    if dataType(self.pab) == DISPLAY:
+                        self.writeLines(localPath)
+                    else:
+                        raise Exception("only DISPLAY format supported")
+                    self.dirty = False
+                elif self.native_flags == "?X":
+                    self.writeBinary(localPath)
+
             except Exception as e:
                 logger.exception("Failed to save file %s", localPath)
                 raise e
@@ -174,14 +188,12 @@ class NativeFile(object):
     def eager_write(self, localPath):
         self.close(localPath)
 
-    def writeLines(self, fh):
-        host_eol = tipi_config.get("HOST_EOL", '\r\n')
-        # bad input / safe default
-        line_ending = '\r\n'
-        if host_eol == "CRLF":
-            line_ending = '\r\n'
-        elif host_eol == "LF":
-            line_ending = '\n'
+    def writeLines(self, localPath):
+        with open(localPath, "w") as fh:
+            fh.writelines(str(line, 'latin1') + self.line_ending for line in self.records)
 
-        fh.writelines(str(line, 'latin1') + line_ending for line in self.records)
+    def writeBinary(self, localPath):
+        with open(localPath, "wb") as fh:
+            for record in self.records:
+                fh.write(record)
 

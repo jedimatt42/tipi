@@ -15,6 +15,11 @@ tipi_config = TipiConfig.instance()
 
 TIPI_DIR = "/home/tipi/tipi_disk"
 
+TEXT_WINDOWS = '?W'
+FORCE_TIFILES = '?T'
+FORCE_NATIVE = '?X'
+NATIVE_FLAGS = [ TEXT_WINDOWS, FORCE_TIFILES, FORCE_NATIVE ]
+
 
 def __driveMapping(key):
     path = tipi_config.get(key)
@@ -47,6 +52,17 @@ def __scanForVolume(volume):
     return None
 
 
+def nativeFlags(devname):
+    parts = str(devname).split(".")
+    startpart = 1
+    if parts[0] == "DSK":
+        startpart = 2
+    flags = parts[startpart]
+    if flags in NATIVE_FLAGS:
+        return flags
+    return ""
+
+
 def devnameToLocal(devname):
     parts = str(devname).split(".")
     path = None
@@ -70,6 +86,10 @@ def devnameToLocal(devname):
     if path == None or path == "":
         logger.info("no path matched")
         return None
+
+    # skip native file modes when finding linux path
+    if parts[startpart] in NATIVE_FLAGS:
+        startpart = startpart + 1
 
     for part in parts[startpart:]:
         if part != "":

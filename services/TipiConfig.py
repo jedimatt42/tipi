@@ -32,6 +32,7 @@ CONFIG_DEFAULTS = {
     "SECTOR_COUNT": "1440",
     "DIR_SORT": "FIRST",
     "EAGER_WRITE": "off",
+    "HOST_EOL": "CRLF",
 }
 
 

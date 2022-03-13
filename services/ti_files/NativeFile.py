@@ -5,26 +5,32 @@ import traceback
 import math
 import logging
 from . import ti_files
+from TipiConfig import TipiConfig
 from Pab import *
 
 logger = logging.getLogger(__name__)
 
 dv80suffixes = (".cmd", ".txt", ".a99", ".b99", ".bas", ".xb", ".tb")
 
+tipi_config = TipiConfig.instance()
 
 class NativeFile(object):
-    def __init__(self, records, recordLength, statByte, pab):
+    def __init__(self, records, recordLength, statByte, pab, native_flags):
+        self.dirty = False
         self.records = records
         self.currentRecord = 0
         self.recordLength = recordLength
         self.statByte = statByte
         self.filetype = fileType(pab)
+        self.pab = pab
+        self.native_flags = native_flags
 
     @staticmethod
-    def load(unix_file_name, pab, url=""):
+    def load(unix_file_name, pab, native_flags, url=""):
         logger.info("loading as native file: %s", url)
-        if mode(pab) != INPUT:
-            raise Exception("Native files are read only")
+
+        if mode(pab) == OUTPUT:
+            return NativeFile.create(unix_file_name, pab, native_flags)
 
         try:
             if recordType(pab) == VARIABLE:
@@ -47,11 +53,31 @@ class NativeFile(object):
                 if dataType(pab):
                     statByte |= STINTERNAL
 
-            return NativeFile(records, recLen, statByte, pab)
+            nf = NativeFile(records, recLen, statByte, pab, native_flags)
+            if mode(pab) == APPEND:
+                nf.currentRecord = len(records)
+            return nf
 
         except Exception as e:
             logger.exception("not a valid NativeFile %s", unix_file_name)
             raise
+
+    @staticmethod
+    def create(unix_file_name, pab, native_flags):
+        logger.info("creating as native file")
+        if recordType(pab) == VARIABLE:
+            recLen = recordLength(pab)
+            if recordLength(pab) == 0:
+                recLen = 80
+            statByte = STVARIABLE
+        else:
+            recLen = recordLength(pab)
+            if recordLength(pab) == 0:
+                recLen = 128
+            statByte = 0
+            if dataType(pab):
+                statByte |= STINTERNAL
+        return NativeFile([], recLen, statByte, pab, native_flags)
 
     @staticmethod
     def loadLines(fp, recLen, encoding='latin1'):
@@ -108,6 +134,15 @@ class NativeFile(object):
         else:
             self.currentRecord = 0
 
+    def writeRecord(self, rdata, pab):
+        self.dirty = True
+        if self.currentRecord >= len(self.records):
+            self.records += [bytearray(0)] * (
+                1 + self.currentRecord - len(self.records)
+            )
+        self.records[self.currentRecord] = bytearray(rdata)
+        self.currentRecord += 1
+
     def readRecord(self, idx):
         if self.filetype == RELATIVE:
             self.currentRecord = idx
@@ -124,8 +159,29 @@ class NativeFile(object):
         return self.recordLength
 
     def close(self, localPath):
-        pass
+        if self.dirty:
+            try:
+                if dataType(self.pab) == DISPLAY:
+                    with open(localPath, "w") as fh:
+                        self.writeLines(fh)
+                else:
+                    raise Exception("only DISPLAY format supported")
+                self.dirty = False
+            except Exception as e:
+                logger.exception("Failed to save file %s", localPath)
+                raise e
 
     def eager_write(self, localPath):
-        pass
+        self.close(localPath)
+
+    def writeLines(self, fh):
+        host_eol = tipi_config.get("HOST_EOL", '\r\n')
+        # bad input / safe default
+        line_ending = '\r\n'
+        if host_eol == "CRLF":
+            line_ending = '\r\n'
+        elif host_eol == "LF":
+            line_ending = '\n'
+
+        fh.writelines(str(line, 'latin1') + line_ending for line in self.records)
 

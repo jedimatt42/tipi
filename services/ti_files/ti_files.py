@@ -244,6 +244,11 @@ def createHeader(flags, tiname, data):
     return header
 
 
+def setHeaderFilename(tiname, data):
+    data[0x10:0x1A] = bytearray(tiname.ljust(10,' '), 'latin1')
+    return data
+
+
 def validateDataType(fdata, dataType):
     if dataType != 0 and isInternal(fdata) != 0:
         return

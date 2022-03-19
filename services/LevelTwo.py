@@ -86,7 +86,14 @@ class LevelTwo(object):
             logger.info("target file already exists: %s", newlocalname)
             self.tipi_io.send([EDEVERR])
 
-        os.rename(origlocalname,newlocalname)
+        if os.path.isdir(origlocalname):
+            os.rename(origlocalname,newlocalname)
+        else:
+            bytes = self.getFileBytes(origlocalname)
+            bytes = ti_files.setHeaderFilename(newfilename, bytes)
+            self.saveFile(newlocalname, bytes)
+            os.unlink(origlocalname)
+
         logger.info("file renamed to: %s", newlocalname)
         self.tipi_io.send([SUCCESS])
         return True
@@ -193,7 +200,7 @@ class LevelTwo(object):
         total = ((((len(fbytes)-128) / 256) + 1) * 256) + 128
         logger.debug("requested bytes total: %d, start: %d, end: %d", total, bytestart, byteend)
 
-        if blocks != 0 and (bytestart > total or byteend > total):
+        if blocks != 0 and (bytestart >= total or byteend > total):
             logger.error("request exceeds file size: t: %d, s: %d, e: %d", total, bytestart, byteend)
             self.tipi_io.send([EDEVERR])
             return True
@@ -253,13 +260,14 @@ class LevelTwo(object):
             #     self.tipi_io.send([EWPROT])
             #     return True
 
-        startbyte = 128 + (startblock * 256)
-        endbyte = startbyte + (blocks * 256)
+        bytestart = 128 + (startblock * 256)
+        byteend = bytestart + (blocks * 256)
+        logger.debug("requested bytes start: %d, end: %d", bytestart, byteend)
 
         if os.path.exists(localfilename) and blocks != 0:
             fbytes = self.getFileBytes(localfilename)
         else:
-            raw = bytearray(endbyte - 128)
+            raw = bytearray(byteend - 128)
             header = ti_files.createHeader(0, filename, raw)
             logger.debug("header len %d, raw len %d", len(header), len(raw))
             fbytes = header + raw
@@ -269,6 +277,14 @@ class LevelTwo(object):
             fbytes[10:16] = finfo[0:6]
             self.saveFile(localfilename, fbytes)
 
+        if blocks != 0:
+            logger.info("tifiles.getSectors: %d", ti_files.getSectors(fbytes))
+            total = 128 + (256 * ti_files.getSectors(fbytes))
+            if bytestart >= total or byteend > total:
+                logger.error("request exceeds file size: t: %d, s: %d, e: %d", total, bytestart, byteend)
+                self.tipi_io.send([EDEVERR])
+                return True
+
         logger.info("Accepting request")
         self.tipi_io.send([SUCCESS])
 
@@ -276,7 +292,7 @@ class LevelTwo(object):
             return True
 
         blockdata = self.tipi_io.receive()
-        fbytes[startbyte:endbyte] = blockdata
+        fbytes[bytestart:byteend] = blockdata
         self.saveFile(localfilename, fbytes)
 
         self.tipi_io.send([SUCCESS])

@@ -240,12 +240,13 @@ def createHeader(flags, tiname, data):
     header[9] = sectors & 0xFF
     header[12] = eofOffset
 
-    header[0x10:0x1A] = bytearray(tiname.ljust(10,' '), 'latin1')
+    header = setHeaderFilename(tiname, header)
     return header
 
 
 def setHeaderFilename(tiname, data):
-    data[0x10:0x1A] = bytearray(tiname.ljust(10,' '), 'latin1')
+    paddedname = bytearray(tiname.ljust(10, ' '), 'latin1')
+    data[0x10:0x1A] = paddedname
     return data
 
 

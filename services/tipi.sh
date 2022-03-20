@@ -34,6 +34,10 @@ echo "checking for operation mode..."
 if [ -e /home/tipi/.emulation ]; then
   echo "Enabling emulation web-socket"
   export TIPI_WEBSOCK=/home/tipi/tipi/htdocs
+  grep "PDF_ENABLED=0" /home/tipi/.emulation >/dev/null
+  if [ $? == 0 ]; then
+    export TIPI_NO_PDF=true
+  fi
 else
   # the libtipi code will use 50 if not set at all, but that shouldn't be possible
   echo "TIPI_SIG_DELAY=${TIPI_SIG_DELAY:-50}"

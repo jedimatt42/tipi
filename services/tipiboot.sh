@@ -25,9 +25,12 @@ if [ ! -e /home/tipi/tipi.uuid ]; then
 fi
 
 if [ -e /home/tipi/.emulation ]; then
-  # mount nfs from host OS
-  HOSTIP=`ip route | grep default | cut -d' ' -f3`
-  mount -t nfs ${HOSTIP}:/tipi_disk /home/tipi/tipi_disk
+  grep "NFS_ENABLED=1" /home/tipi/.emulation >/dev/null
+  if [ $? == 0 ]; then
+    # mount nfs from host OS
+    HOSTIP=`ip route | grep default | cut -d' ' -f3`
+    mount -t nfs ${HOSTIP}:/tipi_disk /home/tipi/tipi_disk
+  fi
 fi
 
 # disable power management for the wifi

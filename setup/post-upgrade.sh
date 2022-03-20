@@ -75,7 +75,7 @@ if [ ! -z ${TIPI_RESTART_SERVICES:-} ]; then
 fi
 
 if [ ! -z ${TIPI_UPDATE_DEPS:-} ]; then
-  apt-get update
+  apt-get update -y
   apt-get upgrade -y
   apt-get install -y libsqlite3-dev
   apt-get install -y python-pil

@@ -26,7 +26,7 @@ fi
 
 if [ -e /home/tipi/.emulation ]; then
   grep "NFS_ENABLED=1" /home/tipi/.emulation >/dev/null
-  if [ $? == 0 ]; then
+  if [ $? = 0 ]; then
     # mount nfs from host OS
     HOSTIP=`ip route | grep default | cut -d' ' -f3`
     mount -t nfs ${HOSTIP}:/tipi_disk /home/tipi/tipi_disk

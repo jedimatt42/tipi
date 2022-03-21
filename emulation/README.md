@@ -1,35 +1,35 @@
-# Preparing Emulation bundle
+# TIPI support of popular emulators
 
-Include the files in this directory in a zip with a modified sd card.
+TIPI is not an emulation of TI-99/4A hardware. It is a unique and independent implementation of storage, network, and other peripherals. Emulation in this context refers to TI-99/4A emulators that support TIPI features.
 
-## To modify the sd image
+Classic99 implements some TIPI device and message level protocols directly. It is baked in. 
 
-Run the emulation with the standard TIPI hardware sdimage
+js99er.net supports connecting to a running set of TIPI services either on a real Raspberry PI or through a QEMU based PI emulation running the real TIPI services.
 
-1. Enable emulation mode:
+## Using QEMU
 
-```
-touch /home/tipi/.emulation
-```
+Run the emulation with the latest TIPI hardware sdimage.
 
-2. Edit the /etc/fstab and delete the 3 TMPFS entries
+1. Enable emulation mode, by running `/home/tipi/emulation/emu-setup.sh` and responding to the prompts
 
-3. Disable tipiwatchdog.service
+2. Edit the `/etc/fstab` and delete the 3 TMPFS entries. The QEMU configuration does not have enough RAM for so much TMPFS usage.
+
+3. Disable tipiwatchdog.service - it's not needed, and may crash since GPIO isn't actually available: `sudo systemctl disable tipiwatchdog.service`
 
 4. exit the emulation clean: `sudo shutdown now`
 
-## Errors in the standard image that might need fixing
+### Options in the standard image that might need fixing
 
 raspi-config should be run to change the locale, and 
 keyboard defaults for the system
 
-# Using a real PI
+## Using a real PI
 
 You can use a real PI, and the latest SD image. You will have to setup the networking following the Raspberry PI documentation: [headless network setup](https://www.raspberrypi.com/documentation/computers/configuration.html#setting-up-a-headless-raspberry-pi)
 
-Be sure to touch the `ssh` file in the `boot` partition so sshd is enabled. Then you can get in and use raspi-config to setup other things.
+Be sure to touch the `ssh` file in the `boot` partition so sshd is enabled. Then you can get in and use raspi-config to setup locale, hostname, and other items.
 
-To enable the websocket mode of talking to js99er, you just need to perform the `touch /home/tipi/.emulation` and then reboot or restart the tipi.service. 
+Enable emulation mode, by running `/home/tipi/emulation/emu-setup.sh` and responding to the prompts. On a real Raspberry PI, PDF conversion can be enabled, and you probably don't want tipi_disk mounted via NFS.
 
 You should leave the tmpfs and other services as they are for a normal PI setup.
 

@@ -124,7 +124,7 @@ class PioFile(object):
         logger.info("status special? {}".format(devname))
 
     def convert(self, prn_name):
-        if os.environ.get('TIPI_WEBSOCK'):
+        if os.environ.get('TIPI_NO_PDF'):
             logger.info("skipping PDF conversion")
             return
         logger.info("converting {} to PDF".format(prn_name))

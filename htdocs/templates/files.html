@@ -52,9 +52,19 @@ function uploadOnClick() {
 <div class="files_container">
 
 <table cellspacing=4 cellpadding=0 border=0 width="80%">
+
+    <tr><td colspan=9>Drive Mapping</td></tr>
+    <tr><td colspan=9>&nbsp;DSK1. = {{ config.get("DSK1_DIR") }}</td></tr>
+    <tr><td colspan=9>&nbsp;DSK2. = {{ config.get("DSK2_DIR") }}</td></tr>
+    <tr><td colspan=9>&nbsp;DSK3. = {{ config.get("DSK3_DIR") }}</td></tr>
+    <tr><td colspan=9>&nbsp;DSK4. = {{ config.get("DSK4_DIR") }}</td></tr>
+
+    <tr>
+        <td colspan=9><hr/></td>
+    </tr>
     <tr><td colspan=9> Total files: {{ total_files }} </td></tr>
     <tr>
-        <td colspan=9> Displaying contents of &nbsp; <b>{{ display_path }}</b> 
+        <td colspan=9> Displaying contents of &nbsp; <b>{{ tipi_path }}</b> 
         </td>
     </tr>
 
@@ -112,6 +122,10 @@ function uploadOnClick() {
                 <option value="">Select Action</option>
                 <option value="delete">Delete</option>
                 <option value="tifiles">Convert v9t9 to TIFILES</option>
+                <option value="mapdsk1">Map to DSK1</option>
+                <option value="mapdsk2">Map to DSK2</option>
+                <option value="mapdsk3">Map to DSK3</option>
+                <option value="mapdsk4">Map to DSK4</option>
             </select>
             <input type="submit" value="Submit"/>
         </td>
@@ -135,7 +149,11 @@ function uploadOnClick() {
     <td valign=center align=center> {{ tipi_file.icon|safe }} </td>
     <td valign=center> {{ tipi_file.name|safe }} </td>
     <td valign=center align=left> {{ tipi_file.type }} </td>
+    {% if tipi_file.type == "DIR" and tipi_file.mapname in mapped.keys() %}
+    <td valign=center align=right> <b> {{ mapped.get(tipi_file.mapname) }} </b> </td>
+    {% else %}
     <td valign=center align=right> {{ tipi_file.size }} </td>
+    {% endif %}
     <td valign=center> &nbsp; &nbsp; {{ tipi_file.date }} </td>
     <td valign=center> &nbsp; &nbsp; {{ tipi_file.edit_link|safe }} </td>
     <td valign=center> &nbsp; &nbsp; {{ tipi_file.dl_link|safe }} </td>

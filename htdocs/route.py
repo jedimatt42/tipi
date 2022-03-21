@@ -3,7 +3,9 @@
 # TIPI web administration
 #
 # Corey J. Anderson ElectricLab.com 2017
-# et al.
+# Matthew Splett jedimatt42.com
+
+from ConfigLogging import configure_logging
 
 import string
 import tipi_admin
@@ -11,10 +13,13 @@ import tipi_backup
 import tipi_editor
 import tipi_files
 import tipi_uploads
+import tipi_map
 import os
 from flask_socketio import SocketIO
 
 from flask import *
+
+configure_logging()
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -108,6 +113,42 @@ def convert():
     path = request.form.get("path")
     files = request.form.getlist("selected")
     tipi_files.convert(path, files)
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+
+@app.route("/mapdsk1", methods=["POST"])
+def mapdsk1():
+    path = request.form.get("path")
+    files = request.form.getlist("selected")
+    tipi_map.mapdrive("DSK1_DIR", path, files)
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+
+@app.route("/mapdsk2", methods=["POST"])
+def mapdsk2():
+    path = request.form.get("path")
+    files = request.form.getlist("selected")
+    tipi_map.mapdrive("DSK2_DIR", path, files)
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+
+@app.route("/mapdsk3", methods=["POST"])
+def mapdsk3():
+    path = request.form.get("path")
+    files = request.form.getlist("selected")
+    tipi_map.mapdrive("DSK3_DIR", path, files)
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+
+@app.route("/mapdsk4", methods=["POST"])
+def mapdsk4():
+    path = request.form.get("path")
+    files = request.form.getlist("selected")
+    tipi_map.mapdrive("DSK4_DIR", path, files)
     rp = createFileUrl(path)
     return redirect(rp)
 

@@ -6,12 +6,15 @@
 from ti_files import ti_files
 from ti_files import v9t9_files
 from tinames import tinames
+from TipiConfig import TipiConfig
 import os
 import shutil
 import time
 import errno
 import logging
 import tipi_cache
+
+tipi_config = TipiConfig.instance()
 
 logger = logging.getLogger(__name__)
 
@@ -132,6 +135,8 @@ def catalog(path):
 
             item = "/" + item
 
+            mapping_path = item[1:].replace('/', '.')
+
             tipi_subdirs.append(
                 {
                     "name": item_display_path,
@@ -139,6 +144,7 @@ def catalog(path):
                     "icon": '<a href="/files%s"><img src="/images/folder_icon.png" width=22 border=0></a>'
                     % item,
                     "longname": None,
+                    "mapname": mapping_path,
                 }
             )
 
@@ -186,11 +192,25 @@ def catalog(path):
 
     tipi_dir_listing = tipi_subdirs
     tipi_dir_listing.extend(tipi_files)
+    tipi_path = ("TIPI." + path.replace('/', '.') + '.') if path else "TIPI."
 
     return {
         "tipi_dir_listing": tipi_dir_listing,
         "total_files": len(tipi_files),
         "display_path": "/" + path,
+        "tipi_path": tipi_path,
         "rp": "/files/" + path,
         "path": path,
+        "config": {
+            "DSK1_DIR": tipi_config.get("DSK1_DIR"),
+            "DSK2_DIR": tipi_config.get("DSK2_DIR"),
+            "DSK3_DIR": tipi_config.get("DSK3_DIR"),
+            "DSK4_DIR": tipi_config.get("DSK4_DIR"),
+        },
+        "mapped": { 
+            tipi_config.get("DSK1_DIR"): "DSK1",
+            tipi_config.get("DSK2_DIR"): "DSK2",
+            tipi_config.get("DSK3_DIR"): "DSK3",
+            tipi_config.get("DSK4_DIR"): "DSK4",
+        },
     }

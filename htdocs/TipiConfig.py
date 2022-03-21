@@ -9,19 +9,30 @@ data will be lost.
 
 import os
 import logging
+import time
+import re
+from ti_files import ti_files
 
 LOGGER = logging.getLogger(__name__)
 
 CONFIG_DEFAULTS = {
+    "AUTO": "off",
     "DSK1_DIR": "",
     "DSK2_DIR": "",
     "DSK3_DIR": "",
+    "DSK4_DIR": "",
     "URI1": "",
     "URI2": "",
     "URI3": "",
     "TIPI_NAME": "TIPI",
     "WIFI_SSID": "",
     "WIFI_PSK": "",
+    "MOUSE_SCALE": "50",
+    "TZ": "America/Los_Angeles",
+    "SECTOR_COUNT": "1440",
+    "DIR_SORT": "FIRST",
+    "EAGER_WRITE": "off",
+    "HOST_EOL": "CRLF",
 }
 
 
@@ -41,19 +52,22 @@ class TipiConfig(object):
         """ return the singleton config object """
         return SINGLETON
 
+    def applyrecords(self, records):
+        for line in records:
+            key = str(line).split("=")[0].strip()
+            value = str(line).split("=")[1].strip()
+            self.records[key] = value
+            LOGGER.debug("read record: %s = %s", key, value)
+        self.sorted_keys = list(self.records.keys())
+        self.sorted_keys.sort()
+
     def load(self):
         """ read config values from file """
         if os.path.exists(self.tipi_config):
             self.mtime = os.path.getmtime(self.tipi_config)
+            self.records = dict(CONFIG_DEFAULTS)
             with open(self.tipi_config, "r") as in_file:
-                self.records = dict(CONFIG_DEFAULTS)
-                for line in in_file.readlines():
-                    key = line.split("=")[0].strip()
-                    value = line.split("=")[1].strip()
-                    self.records[key] = value
-                    LOGGER.debug("read record: %s = %s", key, value)
-            self.sorted_keys = list(self.records.keys())
-            self.sorted_keys.sort()
+                self.applyrecords(in_file.readlines())
         else:
             LOGGER.info("config file missing: %s", self.tipi_config)
 
@@ -67,6 +81,8 @@ class TipiConfig(object):
         # Some config events require action
         if "WIFI_SSID" in self.changes or "WIFI_PSK" in self.changes:
             self.__triggerWifiConfig()
+        if "TZ" in self.changes:
+            self.__triggerTimezone()
 
         # reset changed settings
         self.changes = set()
@@ -87,10 +103,16 @@ class TipiConfig(object):
         newvalue = value.strip()
         oldvalue = self.records.get(key, "")
         if oldvalue != newvalue:
-            self.records[key.strip()] = value.strip()
+            if key.endswith("_DIR"):
+                newvalue = self.__sanitizeMapping(newvalue)
+            self.records[key] = newvalue
             self.sorted_keys = list(self.records.keys())
             self.sorted_keys.sort()
             self.changes.add(key)
+
+    def settmp(self, key, value):
+        """ Update item, but do not add to changes. """
+        self.records[key.strip()] = value.strip()
 
     def get(self, key, default=None):
         """ Fetch a config item """
@@ -103,6 +125,25 @@ class TipiConfig(object):
             out_file.write("\n")
             out_file.write(self.records["WIFI_PSK"])
             out_file.write("\n")
+
+    def __triggerTimezone(self):
+        with open("/tmp/tz", "w") as out_file:
+            out_file.write(self.records["TZ"])
+            out_file.write("\n")
+        while os.path.exists("/tmp/tz"):
+            time.sleep(0.5)
+
+    def __sanitizeMapping(self, newvalue):
+        if newvalue == "." or newvalue == "TIPI." or newvalue == "TIPI":
+            return "."
+        newvalue = re.sub("[.]+", ".", newvalue)
+        if newvalue.endswith("."):
+            newvalue = newvalue[:-1]
+        if newvalue.startswith("."):
+            newvalue = newvalue[1:]
+        if newvalue.startswith("TIPI."):
+            newvalue = newvalue[5:]
+        return newvalue
 
 
 SINGLETON = TipiConfig()

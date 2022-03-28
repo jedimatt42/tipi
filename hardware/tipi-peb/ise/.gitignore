@@ -34,4 +34,12 @@ _xmsgs
 xlnx_auto_0_xdb
 tipi_top_html
 _ngo
+*.exe
+*.cmd
+*.xmsgs
+isim/
+*.wdb
+tipi_top.tim
+tipi_top.tspec
+xilinxsim.ini
 

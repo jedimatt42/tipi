@@ -21,7 +21,7 @@ module crubits(
     output [0:3]bits
 );
 
-reg [0:3] bits_q;
+reg [0:3] bits_q = 0;
 
 always @(negedge ti_cru_clk) begin
   if ((addr[0:3] == 4'b0001) && (addr[4:7] == cru_base)) begin 
@@ -34,7 +34,7 @@ end
 
 assign bits = bits_q;
 
-reg dataout;
+reg dataout = 1'bz;
 
 always @(negedge ti_ph3) begin
   if (ti_memen && (addr[0:3] == 4'b0001) && (addr[4:7] == cru_base)) begin

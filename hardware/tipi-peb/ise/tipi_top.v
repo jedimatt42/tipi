@@ -20,10 +20,12 @@
 //////////////////////////////////////////////////////////////////////////////////
 `include "crubits.v"
 `include "latch_8bit.v"
-`include "shift_pload_sout.v"
-`include "shift_sin_pout.v"
+`include "rpi_reg_select.v"
+`include "shift_pload_nib_out.v"
+`include "shift_nib_in_pout.v"
 `include "tristate_8bit.v"
 `include "mux2_8bit.v"
+
 module tipi_top(
 		output led0,
 		
@@ -36,13 +38,8 @@ module tipi_top(
 		output dsr_en,
 		
 		input r_clk,
-		// 0 = Data or 1 = Control byte selection
-		input r_cd,
-		input r_dout,
 		input r_le,
-		// R|T 0 = RPi or 1 = TI originating data 
-		input r_rt,
-		output r_din,
+		inout [0:3] r_nib,
 		output r_reset,
 
 		input ti_cruclk,
@@ -76,18 +73,16 @@ assign dsr_b1 = cru_state[3];
 // assign dsr_b1 = 1'b1; // Active LOW is PGM on 27C64
 
 // Latches && Shift Registers for TI to RPi communication - TC & TD
+wire [3:0]reg_sel;
+rpi_reg_select select_nibble(r_reset, r_clk, r_nib, reg_sel);
 
 // Register selection:
-// r_rt and r_dc combine to select the rd rc td and tc registers. 
-// we will assert that r_rt == 0 is RPi output register
-//                     r_rt == 1 is TI output register
-//                     r_dc == 0 is data register
-//                     r_dc == 1 is control register
+//   first nibble of 3 nibble sequence selects register.
 // The following aliases should help.
-wire tipi_rc = ~r_rt && ~r_cd;
-wire tipi_rd = ~r_rt && r_cd;
-wire tipi_tc = r_rt && ~r_cd;
-wire tipi_td = r_rt && r_cd; 
+wire tipi_rc = reg_sel[0];
+wire tipi_rd = reg_sel[1];
+wire tipi_tc = reg_sel[2];
+wire tipi_td = reg_sel[3];
 
 // address comparisons
 wire rc_addr = ti_a == 16'h5ff9;
@@ -95,47 +90,41 @@ wire rd_addr = ti_a == 16'h5ffb;
 wire tc_addr = ti_a == 16'h5ffd;
 wire td_addr = ti_a == 16'h5fff;
 
-// TD Latch
+// TD Latch - TI writable byte for data output
 wire tipi_td_le = (cru_dev_en && ~ti_we && ~ti_memen && td_addr);
 wire [0:7]rpi_td;
 latch_8bit td(tipi_td_le, tp_d, rpi_td);
 
-// TC Latch
+// TC Latch - TI writable byte for protocol control
 wire tipi_tc_le = (cru_dev_en && ~ti_we && ~ti_memen && tc_addr);
 wire [0:7]rpi_tc;
 latch_8bit tc(tipi_tc_le, tp_d, rpi_tc);
 
-// TD Shift output
-wire td_out;
-shift_pload_sout shift_td(r_clk, tipi_td, r_le, rpi_td, td_out);
+// TD Shift output - Raspberry PI readable TI Data byte
+wire [3:0]td_out;
+shift_pload_nib_out shift_td(r_clk, tipi_td, r_le, rpi_td, td_out);
 
-// TC Shift output
-wire tc_out;
-shift_pload_sout shift_tc(r_clk, tipi_tc, r_le, rpi_tc, tc_out);
+// TC Shift output - Raspberry PI readable TI Control byte
+wire [3:0]tc_out;
+shift_pload_nib_out shift_tc(r_clk, tipi_tc, r_le, rpi_tc, tc_out);
 
 
 // Data from the RPi, to be read by the TI.
 
 // RD
 wire [0:7]tipi_db_rd;
-wire rd_parity;
-shift_sin_pout shift_rd(r_clk, tipi_rd, r_le, r_dout, tipi_db_rd, rd_parity);
+shift_nib_in_pout shift_rd(r_clk, tipi_rd, r_le, r_nib, tipi_db_rd);
 
 // RC
 wire [0:7]tipi_db_rc;
-wire rc_parity;
-shift_sin_pout shift_rc(r_clk, tipi_rc, r_le, r_dout, tipi_db_rc, rc_parity);
+shift_nib_in_pout shift_rc(r_clk, tipi_rc, r_le, r_nib, tipi_db_rc);
 
-// Select if output is from the data or control register
-reg r_din_mux;
-always @(posedge r_clk) begin
-  if (r_rt & r_cd) r_din_mux <= td_out;
-  else if (r_rt & ~r_cd) r_din_mux <= tc_out;
-  else if (~r_rt & r_cd) r_din_mux <= rd_parity;
-  else r_din_mux <= rc_parity;
-end
-assign r_din = r_din_mux;
+// RPI r_nib nibble transfer mux
 
+// r_nib as input -> reg_sel_in, rc_in, rd_in. 
+// r_nib needs to output either tc_out or td_out based on 
+//  tipi_tc or tipi_td;
+assign r_nib = tipi_tc ? tc_out : (tipi_td ? td_out : 4'bz);
 
 //-- Databus control
 wire tipi_read = cru_dev_en && ~ti_memen && ti_dbin;

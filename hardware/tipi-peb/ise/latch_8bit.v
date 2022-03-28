@@ -11,7 +11,7 @@ module latch_8bit(
     output [0:7]dout
 );
 
-reg [0:7] latch_q;
+reg [0:7] latch_q = 0;
 
 always @(posedge le) begin
   latch_q <= din;

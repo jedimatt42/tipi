@@ -2,9 +2,9 @@
 
 TIPI is not an emulation of TI-99/4A hardware. It is a unique and independent implementation of storage, network, and other peripherals. Emulation in this context refers to TI-99/4A emulators that support TIPI features.
 
-Classic99 implements some TIPI device and message level protocols directly. It is baked in. 
-
-js99er.net supports connecting to a running set of TIPI services either on a real Raspberry PI or through a QEMU based PI emulation running the real TIPI services.
+- js99er.net supports connecting to a running set of TIPI services either on a real Raspberry PI or through a QEMU based PI emulation running the real TIPI services.
+- MAME v0.242 adds TIPI support: [Atariage MAME Release Thread](https://atariage.com/forums/topic/259551-new-mame-release/?do=findComment&comment=5032740)
+- Classic99 implements some TIPI device and message level protocols directly. It is baked in. 
 
 ## Using QEMU
 

@@ -424,7 +424,7 @@ static int server_create(int domain /* AF_INET or AF_INET6 */)
 	int addrlen;
 	int fd;
 
-	if ((fd = socket(domain, SOCK_STREAM, 0)) == 0) {
+	if ((fd = socket(domain, SOCK_STREAM, 0)) < 0) {
 		perror("socket");
 		log_printf("socket: %s\n", strerror(errno));
 		goto err;
@@ -753,9 +753,9 @@ PyObject* websocket_readMsg(void)
 {
   //log_printf("readMsg sync=%s\n", sync_str());
   while (sync_mode == NEEDS_SYNC)
-    if (websocket_serve() < 0) return NULL;
+    websocket_serve();
   while (!readMsg)
-    if (websocket_serve() < 0) return NULL;
+    websocket_serve();
   if (sync_mode == GOT_SYNC)
     sync_mode = NEEDS_SYNC;
   log_printf("readMsg len=%d\n", readLen);

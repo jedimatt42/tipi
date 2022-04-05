@@ -20,7 +20,7 @@ Then on the PI start the diagnostic tool:
 
 ```
 export TIPI_SIG_DELAY=100
-python tipi/TipiPorts.py
+python TipiDebug.py
 ```
 
 It will print out that it is setting some addresses on the TI
@@ -33,6 +33,7 @@ Check those addresses in EasyBug. If your crubase is >1000:
 
 At the '?' prompt enter the cru command: 'C1000' and press enter.
 then enter '1', and '.', the transcript will look like:
+(you might want C1100 or whatever crubase your TIPI is set to)
 
 ```
 ?C1000
@@ -45,9 +46,9 @@ Enter "M5FF9" and press enter 4 times. Transcript:
 
 ```
 ?M5FF9
- M5FF9  = 55  ->
+ M5FF9  = 5A  ->
  M5FFA  = 00  ->
- M5FFB  = AA  ->
+ M5FFB  = A5  ->
  M5FFC  = 00  ->
 ```
 
@@ -70,21 +71,16 @@ On the PI you should see your 81 and FF values show up.
 Likely output on the PI will look like (if it's working)
 
 ```
-test set M5FF9 = 0x55, M5FFB = 0xAA
-M5FFD = 0x00 M5FFF = 0x0
-M5FFD = 0x81 M5FFF = 0x0
-M5FFD = 0x81 M5FFF = 0x0
-M5FFD = 0x81 M5FFF = 0xff
+wrote M5FF9: 0x5A, M5FFB: 0xA5
+read M5FFD: 0x00, M5FFF: 0x0
+...
+read M5FFD: 0x81, M5FFF: 0xff
+...
 ```
 
 This is as low as we can go without a signal analyzer.
-Seriously noisy lines can cause this to hang before it
-prints 'test set ...' as single bit parity checking
-is performed. If the numbers show up but are not correct,
-then it is bad enough that we are having multi-bit parity
-errors. 
 
-You can try killing the TipiPorts.py script, setting the
-TIPI_SIG_DELAY variable to a larger number, and then
-retry.
+If you get some muddled values back, you can try 
+increasing the value of TIPI_SIG_DELAY and rerun
+the script.
 

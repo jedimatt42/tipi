@@ -3,6 +3,10 @@ from tipi.TipiPorts import TipiPorts
 import RPi.GPIO as GPIO
 import time
 
+##
+## For instructions see LOW_LEVEL_TESTING.md
+##
+
 PIN_R_RT=13
 PIN_R_CD=21
 PIN_R_CLK=6

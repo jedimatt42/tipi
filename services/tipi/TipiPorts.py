@@ -1,7 +1,12 @@
 import sys
+import os
 import logging
 import time
-import tipiports
+
+if os.getenv('TIPI_WEBSOCK', None):
+  import tipiports_websocket as tipiports
+else:
+  import tipiports_gpio as tipiports
 
 logger = logging.getLogger(__name__)
 

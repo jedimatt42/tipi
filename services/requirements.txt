@@ -1,9 +1,7 @@
 crccheck==0.6
 netifaces==0.10.6
-pycurl==7.43.0
+pycurl==7.45.1
 pygtail==0.7.0
-RPi.GPIO==0.7.0
-tipiports==1.0
 virtualenv>=20.0.8
 pre-commit==2.5.1
 unidecode>=1.1.1

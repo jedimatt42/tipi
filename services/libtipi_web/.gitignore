@@ -1,0 +1,4 @@
+build
+env
+*.egg-info
+sha1

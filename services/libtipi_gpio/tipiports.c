@@ -1,12 +1,14 @@
 
 #include <Python.h>
-#include <wiringPi.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <stdarg.h>
+
+#include <wiringPi.h>
 
 // Serial output for RD & RC (BCM pin numbers)
 #define PIN_R_RT 13
@@ -79,7 +81,6 @@ void writeErrors(int errors) {
   write(fd, (void*)&errors, 2);
   close(fd);
 }
-
 
 static unsigned char readReg(int reg)
 {
@@ -369,12 +370,9 @@ static PyObject* gpio_sendMouseEvent(void)
   return gpio_sendMsg((unsigned char*)(buf+1), 3);
 }
 
-
-
 static PyObject* (*readMsg)(void) = gpio_readMsg;
 static PyObject* (*sendMsg)(unsigned char *, int) = gpio_sendMsg;
 static PyObject* (*sendMouseEvent)(void) = gpio_sendMouseEvent;
-
 
 static PyObject*
 tipi_sendMsg(PyObject *self, PyObject *args)
@@ -420,57 +418,39 @@ tipi_sendMouseEvent(PyObject *self, PyObject *args)
 static PyObject*
 tipi_initGpio(PyObject *self, PyObject *args)
 {
-  // determine websocket mode and web path from env
-  const char* tipiWebSock = getenv("TIPI_WEBSOCK");
-  if (tipiWebSock != NULL) {
-    // functions from websock.c
-    extern void websocket_init(const char *path_to_web_root);
-    extern PyObject* websocket_readMsg(void);
-    extern PyObject* websocket_sendMsg(unsigned char *, int);
-    extern PyObject* websocket_sendMouseEvent(void);
+  log_printf("gpio mode\n");
 
-    websocket_init(tipiWebSock);
-    readMsg = websocket_readMsg;
-    sendMsg = websocket_sendMsg;
-    sendMouseEvent = websocket_sendMouseEvent;
-
-    log_printf("websocket mode\n");
-
+  // get signalling delay from env
+  const char* tipiSigEnv = getenv("TIPI_SIG_DELAY");
+  if (tipiSigEnv==NULL) {
+    delayloop = 0;
   } else {
-    log_printf("gpio mode\n");
-
-    // get signalling delay from env
-    const char* tipiSigEnv = getenv("TIPI_SIG_DELAY");
-    if (tipiSigEnv==NULL) {
-      delayloop = 0;
-    } else {
-      delayloop = atoi(tipiSigEnv);
-    }
-
-    wiringPiSetupGpio();
-
-    pinMode(PIN_R_RT, OUTPUT);
-    pinMode(PIN_R_CD, OUTPUT);
-    pinMode(PIN_R_CLK, OUTPUT);
-    pinMode(PIN_R_DOUT, OUTPUT);
-    pinMode(PIN_R_LE, OUTPUT);
-    pinMode(PIN_R_DIN, INPUT);
-    // This line is driven from CPLD directly
-    // enable the pull up on the input pin
-    // to enhance CPLD ability to signal HIGH
-    pullUpDnControl(PIN_R_DIN, PUD_UP);
-
-    digitalWrite(PIN_R_RT, 0);
-    digitalWrite(PIN_R_CD, 0);
-    digitalWrite(PIN_R_CLK, 0);
-    digitalWrite(PIN_R_DOUT, 0);
-    digitalWrite(PIN_R_LE, 0);
-
-    // need to set RC and RD to 0 so 4A knows 
-    // pi is back online during certain events
-    writeReg(0, SEL_RD);
-    writeReg(0, SEL_RC);
+    delayloop = atoi(tipiSigEnv);
   }
+
+  wiringPiSetupGpio();
+
+  pinMode(PIN_R_RT, OUTPUT);
+  pinMode(PIN_R_CD, OUTPUT);
+  pinMode(PIN_R_CLK, OUTPUT);
+  pinMode(PIN_R_DOUT, OUTPUT);
+  pinMode(PIN_R_LE, OUTPUT);
+  pinMode(PIN_R_DIN, INPUT);
+  // This line is driven from CPLD directly
+  // enable the pull up on the input pin
+  // to enhance CPLD ability to signal HIGH
+  pullUpDnControl(PIN_R_DIN, PUD_UP);
+
+  digitalWrite(PIN_R_RT, 0);
+  digitalWrite(PIN_R_CD, 0);
+  digitalWrite(PIN_R_CLK, 0);
+  digitalWrite(PIN_R_DOUT, 0);
+  digitalWrite(PIN_R_LE, 0);
+
+  // need to set RC and RD to 0 so 4A knows 
+  // pi is back online during certain events
+  writeReg(0, SEL_RD);
+  writeReg(0, SEL_RC);
 
   Py_INCREF(Py_None);
   return Py_None;
@@ -486,14 +466,14 @@ static PyMethodDef TipiMethods[] = {
 
 static struct PyModuleDef TipiModule = {
   PyModuleDef_HEAD_INIT,
-  "tipiports",
+  "tipiports_gpio",
   NULL, /* module documentation */
   -1,  /* global variable state */
   TipiMethods
 };
 
 PyMODINIT_FUNC
-PyInit_tipiports(void)
+PyInit_tipiports_gpio(void)
 {
   return PyModule_Create(&TipiModule);
 }

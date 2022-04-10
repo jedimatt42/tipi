@@ -1,4 +1,5 @@
 build
+dist
 env
 *.egg-info
 sha1

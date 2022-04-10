@@ -18,7 +18,7 @@ echo installing tipiports_websocket
 ( cd libtipi_web; python ./setup.py install )
 
 # build the tipiports_gpio library, but only if on a Raspberry PI OS
-if [ -e /etc/rpi-issuue ]; then
+if [ -e /etc/rpi-issue ]; then
   ( cd libtipi_gpio; python ./setup.py install )
 else
   echo skipping tipiports_gpio

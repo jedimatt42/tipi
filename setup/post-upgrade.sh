@@ -96,7 +96,10 @@ if [ ! -z ${TIPI_UPDATE_DEPS:-} ]; then
 fi
 
 if [ ! -z ${TIPI_UPDATE_LIBTIPI:-} ]; then
-  su tipi -c "/home/tipi/tipi/services/setup.sh"
+  # don't need to do this if we did a full dep update
+  if [ -z ${TIPI_UPDATE_DEPS:-} ]; then
+    su tipi -c "/home/tipi/tipi/services/setup.sh"
+  fi
 fi
 
 if [ ! -f "/usr/bin/php" ]; then

@@ -98,7 +98,7 @@ fi
 if [ ! -z ${TIPI_UPDATE_LIBTIPI:-} ]; then
   # don't need to do this if we did a full dep update
   if [ -z ${TIPI_UPDATE_DEPS:-} ]; then
-    su tipi -c "/home/tipi/tipi/services/setup.sh"
+    su tipi -c "/home/tipi/tipi/services/update-deps.sh"
   fi
 fi
 

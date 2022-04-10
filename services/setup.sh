@@ -8,7 +8,12 @@ virtualenv --python=python3 --system-site-packages ENV
 
 . ./ENV/bin/activate
 
-pip install -r requirements.txt
+# build the tipiports_gpio library, but only if on a Raspberry PI OS
+if [ -e /etc/rpi-issue ]; then
+  ( cd libtipi_gpio; python ./setup.py install )
+else
+  echo skipping tipiports_gpio
+fi
 
 # build the tipiports_websocket library
 if [ ! -d libtipi_web/sha1 ]; then
@@ -17,10 +22,9 @@ fi
 echo installing tipiports_websocket
 ( cd libtipi_web; python ./setup.py install )
 
-# build the tipiports_gpio library, but only if on a Raspberry PI OS
+pip install -r requirements.txt
+
 if [ -e /etc/rpi-issue ]; then
-  ( cd libtipi_gpio; python ./setup.py install )
-else
-  echo skipping tipiports_gpio
+  pip install -r gpio_requirements.txt
 fi
 

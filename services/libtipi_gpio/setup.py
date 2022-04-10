@@ -3,6 +3,7 @@ from distutils.core import setup, Extension
 moduletipi = Extension(
     'tipiports_gpio',
     sources=['tipiports.c'],
+    libraries=['wiringPi'],
     extra_compile_args=['-O3'])
 
 setup(

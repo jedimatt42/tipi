@@ -13,7 +13,9 @@ logger = logging.getLogger(__name__)
 
 tipi_config = TipiConfig.instance()
 
-TIPI_DIR = "/home/tipi/tipi_disk"
+TIPI_DIR = os.getenv("TIPI_DISK")
+if not TIPI_DIR:
+    raise Exception("TIPI_DISK env variable must be set")
 
 TEXT_WINDOWS = '?W'
 FORCE_TIFILES = '?T'

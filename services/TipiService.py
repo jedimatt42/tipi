@@ -15,15 +15,16 @@ from TipiDisk import TipiDisk
 #
 # Setup logging
 #
-logpath = "/home/tipi/log"
+tipi_dir = os.getenv("TIPI_DIR")
+logpath = os.getenv("TIPI_CONF") + "/log"
 if not os.path.isdir(logpath):
     os.makedirs(logpath)
 
-LOG_FILENAME = logpath + "/tipi.log"
+LOG_FILENAME = f"{logpath}/tipi.log"
 logging.getLogger("").setLevel(logging.INFO)
 
-if os.path.exists("/home/tipi/tipi/services/loggers.yml"):
-    with open("/home/tipi/tipi/services/loggers.yml", 'r') as stream:
+if os.path.exists(f"{tipi_dir}/services/loggers.yml"):
+    with open(f"{tipi_dir}/services/loggers.yml", 'r') as stream:
         loggers_config = yaml.load(stream, Loader=yaml.FullLoader)
         for key in loggers_config.keys():
             logging.getLogger(key).setLevel(logging._nameToLevel.get(loggers_config.get(key)))

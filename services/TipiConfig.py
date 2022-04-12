@@ -40,7 +40,7 @@ class TipiConfig(object):
     """ Encapsulation of tipi.config file, and in memory config values """
 
     def __init__(self):
-        self.tipi_config = "/home/tipi/tipi.config"
+        self.tipi_config = os.getenv("TIPI_CONF") + "/tipi.config"
         self.records = dict(CONFIG_DEFAULTS)
         self.sorted_keys = []
         self.mtime = 0

@@ -4,5 +4,6 @@ work
 *-bak
 *.pyc
 .vscode
+.tipi_settings
 ENV
 __pycache__

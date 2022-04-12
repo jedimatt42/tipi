@@ -89,7 +89,7 @@ class CatalogFile(object):
         if self.devname == "DSK.":
             return self.encodeVolRecord("", 0, sector_count, sector_count - 2)
 
-        if self.localpath == "/home/tipi/tipi_disk":
+        if self.localpath == tinames.TIPI_DIR:
             volumeName = "TIPI"
         elif self.devname.startswith(("DSK.")):
             volumeName = self.devname.split(".")[1]

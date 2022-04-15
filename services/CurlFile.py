@@ -12,6 +12,8 @@ from ti_files.VariableRecordFile import VariableRecordFile
 
 logger = logging.getLogger(__name__)
 
+tipi_dir = os.getenv("TIPI_DIR")
+
 
 class CurlFile(object):
 
@@ -180,7 +182,7 @@ class CurlFile(object):
 
     def agent_str(self):
         version = "unknown"
-        with open("/home/tipi/tipi/version.txt", "r") as v_in:
+        with open(f"{tipi_dir}/version.txt", "r") as v_in:
             for line in v_in.readlines():
                 parts = line.split("=")
                 if str(parts[0]).strip().upper() == "VERSION":

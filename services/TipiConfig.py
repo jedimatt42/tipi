@@ -1,6 +1,6 @@
 """
 This config object will be used by in process and external process
-services. It is externally shared as /home/tipi/tipi.config, and
+services. It is externally shared as $TIPI_CONF/tipi.config, and
 internally by providing the TipiConfig.instance() accessor.
 If an external actor has updated the file it will be reloaded
 automatically with any read operation (get & keys). Unsaved

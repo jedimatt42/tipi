@@ -1,3 +1,4 @@
+import os
 import logging
 from . import ti_files
 from subprocess import call
@@ -6,6 +7,10 @@ from . import VariableRecordFile
 logger = logging.getLogger(__name__)
 
 basicSuffixes = (".b99", ".bas", ".xb", ".tb")
+
+tipi_conf = os.getenv("TIPI_CONF")
+xdt99_dir = f"{tipi_conf}/xdt99"
+tidbit_dir = f"{tipi_conf}/tidbit"
 
 class BasicFile(object):
     def __init__(self, bytes):
@@ -72,21 +77,21 @@ class BasicFile(object):
     def toBasic(fp, tmpfp):
         try:
             dv80fp = "/tmp/dv80_bas_tmp"
-            cmdargs = ["python3", "/home/tipi/xdt99/xdm99.py", "-P", fp, "-o", dv80fp]
+            cmdargs = ["python3", f"{xdt99_dir}/xdm99.py", "-P", fp, "-o", dv80fp]
             logger.info("issuing command: " + str(cmdargs))
             if call(cmdargs) == 0:
                 fp = dv80fp
         except:
             logger.exception('not able to load dv80 records')
 
-        cmdargs = ["python3", "/home/tipi/xdt99/xbas99.py", "-c", "-o", tmpfp, fp]
+        cmdargs = ["python3", f"{xdt99_dir}/xbas99.py", "-c", "-o", tmpfp, fp]
         logger.info("issuing command: " + str(cmdargs))
         if call(cmdargs) != 0:
             raise Exception("Invalid BASIC Source")
 
     @staticmethod
     def toText(tmpfp, fp):
-        cmdargs = ["python3", "/home/tipi/xdt99/xbas99.py", "-d", "-o", fp, tmpfp]
+        cmdargs = ["python3", f"{xdt99_dir}/xbas99.py", "-d", "-o", fp, tmpfp]
         logger.info("issuing command: " + str(cmdargs))
         if call(cmdargs) != 0:
             raise Exception("Invalid BASIC Program")
@@ -95,14 +100,14 @@ class BasicFile(object):
     def tidbit(fp, tmpfp):
         try:
             dv80fp = "/tmp/dv80_tid_tmp"
-            cmdargs = ["python3", "/home/tipi/xdt99/xdm99.py", "-P", fp, "-o", dv80fp]
+            cmdargs = ["python3", f"{xdt99_dir}/xdm99.py", "-P", fp, "-o", dv80fp]
             logger.info("issuing command: " + str(cmdargs))
             if call(cmdargs) == 0:
                 fp = dv80fp
         except:
             logger.exception('not able to load dv80 records')
 
-        cmdargs = ["php", "/home/tipi/tidbit/tidbit_cmd.php", fp, "100", "10", tmpfp]
+        cmdargs = ["php", f"{tidbit_dir}/tidbit_cmd.php", fp, "100", "10", tmpfp]
         logger.info("issuing command: " + str(cmdargs))
         if call(cmdargs) != 0:
             raise Exception("Invalid Tidbit Source")

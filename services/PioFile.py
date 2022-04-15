@@ -10,6 +10,7 @@ crlf = bytearray(2)
 crlf[0] = 13
 crlf[1] = 10
 
+tipi_dir = os.getenv("TIPI_DIR")
 
 class PioFile(object):
     @staticmethod
@@ -128,7 +129,7 @@ class PioFile(object):
             logger.info("skipping PDF conversion")
             return
         logger.info("converting {} to PDF".format(prn_name))
-        callargs = ["/home/tipi/tipi/services/epson.sh", prn_name]
+        callargs = [f"{tipi_dir}/services/epson.sh", prn_name]
         if call(callargs) != 0:
             logger.error("failed to convert to pdf: {}".format(prn_name))
         else:

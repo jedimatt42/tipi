@@ -6,6 +6,7 @@ import sys
 import time
 from subprocess import call
 
+tipi_dir = os.getenv("TIPI_DIR")
 
 def configureWifi(wificonfig):
     # wait a couple seconds so file will be complete.
@@ -23,7 +24,7 @@ def configureWifi(wificonfig):
         # adjust settings for network 0
         with open("/boot/wpa_supplicant.conf", "w") as fh_out:
             with open(
-                "/home/tipi/tipi/services/templates/wpa_supplicant.conf"
+                f"{tipi_dir}/services/templates/wpa_supplicant.conf"
             ) as fh_in:
                 for line in fh_in:
                     line = line.replace("${SSID}", ssid)
@@ -73,7 +74,7 @@ while True:
     # Upgrade TIPI services
     elif os.path.exists("/tmp/tipiupgrade"):
         os.remove("/tmp/tipiupgrade")
-        callargs = ["/home/tipi/tipi/setup/upgrade.sh", "--upgrade"]
+        callargs = [f"{tipi_dir}/setup/upgrade.sh", "--upgrade"]
         if call(callargs) != 0:
             raise Exception("failed to run tipi upgrade")
 
@@ -87,7 +88,7 @@ while True:
             raise Exception("failed to set timezone {}".format(timezone))
 
     elif os.path.exists("/tmp/tipi_backup"):
-        callargs = ["/home/tipi/tipi/setup/backup.sh"]
+        callargs = [f"{tipi_dir}/setup/backup.sh"]
         exitcode = call(callargs)
         # do this last so webui can watch for it to go away
         os.remove("/tmp/tipi_backup")
@@ -95,7 +96,7 @@ while True:
             raise Exception("failed to create backup")
 
     elif os.path.exists("/tmp/tipi_restore"):
-        callargs = ["/home/tipi/tipi/setup/restore.sh"]
+        callargs = [f"{tipi_dir}/setup/restore.sh"]
         exitcode = call(callargs)
         if exitcode:
             raise Exception("failed to create backup")

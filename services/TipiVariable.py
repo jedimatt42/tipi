@@ -15,7 +15,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-runtime_dir = "/home/tipi/.tipivars/"
+tipi_conf = os.getenv("TIPI_CONF")
+runtime_dir = f"{tipi_conf}/.tipivars/"
 
 
 class TipiVariable(object):

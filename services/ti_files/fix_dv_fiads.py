@@ -1,3 +1,4 @@
+import os
 import logging
 from ConfigLogging import configure_logging
 from . import ti_files
@@ -12,6 +13,8 @@ and repair them.
 configure_logging()
 
 logger = logging.getLogger(__name__)
+
+tipi_disk = os.getenv("TIPI_DISK")
 
 def is_broken(data):
     eof_offset = ti_files.eofOffset(data)
@@ -32,7 +35,7 @@ def fix_eof(file_path, data):
 
 
 if __name__ == "__main__":
-    for path in Path('/home/tipi/tipi_disk').rglob('*'):
+    for path in Path(tipi_disk).rglob('*'):
         if path.is_file():
             posix_path = path.as_posix()
 

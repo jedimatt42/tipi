@@ -1,6 +1,11 @@
 #!/bin/bash
 
-cd /home/tipi/tipi/services
+SCRIPT_DIR=$(dirname $0)
+TIPI_DIR=$(cd $SCRIPT_DIR/..; pwd)
+
+cd $TIPI_DIR/services
+
+source $TIPI_DIR/setup/tipi_paths.sh
 
 source ENV/bin/activate
 

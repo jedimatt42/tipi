@@ -8,24 +8,24 @@ fi
 
 TIMESTAMP=`date -Isecond | sed 's/://g'`
 
-ARCHIVE=/home/tipi/tipi-backup-${TIMESTAMP}.tar.gz 
+ARCHIVE=$TIPI_CONF/tipi-backup-${TIMESTAMP}.tar.gz 
 
-WPATMP=/home/tipi/tmp_wpa_supplicant.conf
+WPATMP=$TIPI_CONF/tmp_wpa_supplicant.conf
 
 FILE_LIST=/tmp/backup_list
-if [ -d /home/tipi/pdf_share ]; then
+if [ -d $TIPI_CONF/pdf_share ]; then
   echo pdf_share >$FILE_LIST
 fi
-if [ -d /home/tipi/tipi_disk ]; then
+if [ -d $TIPI_DISK ]; then
  echo tipi_disk >>$FILE_LIST
 fi
-if [ -d /home/tipi/.tipivars ]; then
+if [ -d $TIPI_CONF/.tipivars ]; then
  echo .tipivars >>$FILE_LIST
 fi
-if [ -f /home/tipi/tipi.config ]; then
+if [ -f $TIPI_CONF/tipi.config ]; then
  echo tipi.config >>$FILE_LIST
 fi
-if [ -f /home/tipi/tipi.uuid ]; then
+if [ -f $TIPI_CONF/tipi.uuid ]; then
  echo tipi.uuid >>$FILE_LIST
 fi
 if [ -f /etc/wpa_supplicant/wpa_supplicant.conf ]; then

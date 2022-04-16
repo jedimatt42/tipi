@@ -1,10 +1,10 @@
 #!/bin/bash
 
 function build() {
-  cd /home/tipi
+  cd $TIPI_CONF
   if [ -d PrinterToPDF ];
   then
-    rm -fr /home/tipi/PrinterToPDF
+    rm -fr $TIPI_CONF/PrinterToPDF
   fi
   git clone https://github.com/RWAP/PrinterToPDF.git
   cd PrinterToPDF

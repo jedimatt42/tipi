@@ -2,6 +2,7 @@
 import logging
 import logging.handlers
 import os
+import sys
 import errno
 import yaml
 from tipi.TipiMessage import TipiMessage
@@ -28,16 +29,19 @@ if os.path.exists("/home/tipi/tipi/services/loggers.yml"):
         for key in loggers_config.keys():
             logging.getLogger(key).setLevel(logging._nameToLevel.get(loggers_config.get(key)))
 
+logformatter = logging.Formatter(
+    "%(asctime)-15s %(name)-12s: %(levelname)-8s %(message)s"
+)
 
 if not os.getenv("TIPI_NO_LOG", None):
     loghandler = logging.handlers.RotatingFileHandler(
         LOG_FILENAME, maxBytes=(1000 * 1024), backupCount=2
     )
-    logformatter = logging.Formatter(
-        "%(asctime)-15s %(name)-12s: %(levelname)-8s %(message)s"
-    )
-    loghandler.setFormatter(logformatter)
-    logging.getLogger("").addHandler(loghandler)
+else:
+    loghandler = logging.StreamHandler(sys.stdout)
+
+loghandler.setFormatter(logformatter)
+logging.getLogger("").addHandler(loghandler)
 
 __name__ = "TipiService"
 

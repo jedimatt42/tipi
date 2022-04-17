@@ -30,6 +30,10 @@ if [ -e /tmp/test_update ]; then
   TIPI_UPDATE_LIBTIPI=true
 fi
 
+if [ $fmajor -le 2 ] && [ $fminor -le 36 ]; then
+  TIPI_UPDATE_LIBTIPI=true
+fi
+
 if [ $fmajor -le 2 ] && [ $fminor -le 35 ]; then
   TIPI_UPDATE_LIBTIPI=true
 fi
@@ -92,7 +96,10 @@ if [ ! -z ${TIPI_UPDATE_DEPS:-} ]; then
 fi
 
 if [ ! -z ${TIPI_UPDATE_LIBTIPI:-} ]; then
-  su tipi -c "/home/tipi/tipi/services/libtipi/rebuild.sh"
+  # don't need to do this if we did a full dep update
+  if [ -z ${TIPI_UPDATE_DEPS:-} ]; then
+    su tipi -c "/home/tipi/tipi/services/update-deps.sh"
+  fi
 fi
 
 if [ ! -f "/usr/bin/php" ]; then

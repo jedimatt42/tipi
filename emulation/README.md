@@ -2,15 +2,15 @@
 
 TIPI is not an emulation of TI-99/4A hardware. It is a unique and independent implementation of storage, network, and other peripherals. Emulation in this context refers to TI-99/4A emulators that support TIPI features.
 
-Classic99 implements some TIPI device and message level protocols directly. It is baked in. 
-
-js99er.net supports connecting to a running set of TIPI services either on a real Raspberry PI or through a QEMU based PI emulation running the real TIPI services.
+- js99er.net supports connecting to a running set of TIPI services either on a real Raspberry PI or through a QEMU based PI emulation running the real TIPI services.
+- MAME v0.242 adds TIPI support: [Atariage MAME Release Thread](https://atariage.com/forums/topic/259551-new-mame-release/?do=findComment&comment=5032740)
+- Classic99 implements some TIPI device and message level protocols directly. It is baked in. 
 
 ## Using QEMU
 
 Run the emulation with the latest TIPI hardware sdimage.
 
-1. Enable emulation mode, by running `/home/tipi/emulation/emu-setup.sh` and responding to the prompts
+1. Enable emulation mode, by running `/home/tipi/emulation/emu_config.sh` and responding to the prompts
 
 2. Edit the `/etc/fstab` and delete the 3 TMPFS entries. The QEMU configuration does not have enough RAM for so much TMPFS usage.
 
@@ -29,7 +29,7 @@ You can use a real PI, and the latest SD image. You will have to setup the netwo
 
 Be sure to touch the `ssh` file in the `boot` partition so sshd is enabled. Then you can get in and use raspi-config to setup locale, hostname, and other items.
 
-Enable emulation mode, by running `/home/tipi/emulation/emu-setup.sh` and responding to the prompts. On a real Raspberry PI, PDF conversion can be enabled, and you probably don't want tipi_disk mounted via NFS.
+Enable emulation mode, by running `/home/tipi/emulation/emu_config.sh` and responding to the prompts. On a real Raspberry PI, PDF conversion can be enabled, and you probably don't want tipi_disk mounted via NFS.
 
 You should leave the tmpfs and other services as they are for a normal PI setup.
 

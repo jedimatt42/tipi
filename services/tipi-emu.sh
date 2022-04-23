@@ -21,6 +21,9 @@ cp -R -a /home/tipi/tipi/setup/bin/* /home/tipi/tipi_disk/
 
 export TIPI_NO_LOG=true
 
+( cd /home/tipi/tipi/htdocs; ./app_run.sh ) 2>&1 &
+( cd /home/tipi/tipi/htdocs; ./tipimon.sh ) 2>&1 &
+
 while true; do
   python ./TipiService.py
   sleep 1

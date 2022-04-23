@@ -20,6 +20,7 @@ if [ ! -d /home/tipi/tipi ]; then
   git submodule update --init
   cd services
   ./setup.sh
+  ( cd ../htdocs; ./setup.sh )
 fi
 
 if [ ! -f /home/tipi/.emulation ]; then

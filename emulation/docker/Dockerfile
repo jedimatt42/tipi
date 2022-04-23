@@ -39,4 +39,5 @@ COPY entrypoint.sh /entrypoint.sh
 
 CMD ["/entrypoint.sh"]
 
+EXPOSE 9900/tcp
 EXPOSE 9901/tcp

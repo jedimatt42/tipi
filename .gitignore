@@ -6,3 +6,4 @@ work
 .vscode
 ENV
 __pycache__
+.tipi_settings

@@ -54,11 +54,70 @@ function uploadOnClick() {
 <table cellspacing=4 cellpadding=0 border=0 width="80%">
 
     <tr><td colspan=9>Drive Mapping</td></tr>
-    <tr><td colspan=9>&nbsp;DSK1. = <a href="{{ config.get("DSK1_URL") }}">{{ config.get("DSK1_DIR") }}</a></td></tr>
-    <tr><td colspan=9>&nbsp;DSK2. = <a href="{{ config.get("DSK2_URL") }}">{{ config.get("DSK2_DIR") }}</a></td></tr>
-    <tr><td colspan=9>&nbsp;DSK3. = <a href="{{ config.get("DSK3_URL") }}">{{ config.get("DSK3_DIR") }}</a></td></tr>
-    <tr><td colspan=9>&nbsp;DSK4. = <a href="{{ config.get("DSK4_URL") }}">{{ config.get("DSK4_DIR") }}</a></td></tr>
+    <tr>
+        <td colspan=9>
+{% if config.get("DSK1_DIR") %}
+	    <form method=post action="/unmapdsk1">
+                <input type=hidden name="path" value="{{ display_path }}">
+	        &nbsp;DSK1. = <a href="{{ config.get("DSK1_URL") }}">{{ config.get("DSK1_DIR") }}</a>&nbsp;
+                <button type="submit" title="Remove Mapping" class="tool_button">
+                    <img src="/images/delete.webp" height="10px"/>
+                </button> 
+	    </form>
+{% else %}
+	&nbsp;DSK1. =
+{% endif %}
+	</td>
+    </tr>
 
+    <tr>
+        <td colspan=9>
+{% if config.get("DSK2_DIR") %}
+	    <form method=post action="/unmapdsk2">
+                <input type=hidden name="path" value="{{ display_path }}">
+	        &nbsp;DSK2. = <a href="{{ config.get("DSK2_URL") }}">{{ config.get("DSK2_DIR") }}</a>&nbsp;
+                <button type="submit" title="Remove Mapping" class="tool_button">
+                    <img src="/images/delete.webp" height="10px"/>
+                </button> 
+	    </form>
+{% else %}
+	&nbsp;DSK2. =
+{% endif %}
+	</td>
+    </tr>
+    <tr>
+        <td colspan=9>
+{% if config.get("DSK3_DIR") %}
+	    <form method=post action="/unmapdsk3">
+                <input type=hidden name="path" value="{{ display_path }}">
+	        &nbsp;DSK3. = <a href="{{ config.get("DSK3_URL") }}">{{ config.get("DSK3_DIR") }}</a>&nbsp;
+                <button type="submit" title="Remove Mapping" class="tool_button">
+                    <img src="/images/delete.webp" height="10px"/>
+                </button> 
+	    </form>
+{% else %}
+	&nbsp;DSK3. =
+{% endif %}
+	</td>
+    </tr>
+    <tr>
+        <td colspan=9>
+{% if config.get("DSK4_DIR") %}
+	    <form method=post action="/unmapdsk4">
+                <input type=hidden name="path" value="{{ display_path }}">
+	        &nbsp;DSK4. = <a href="{{ config.get("DSK4_URL") }}">{{ config.get("DSK4_DIR") }}</a>&nbsp;
+                <button type="submit" title="Remove Mapping" class="tool_button">
+                    <img src="/images/delete.webp" height="10px"/>
+                </button> 
+	    </form>
+{% else %}
+	&nbsp;DSK4. =
+{% endif %}
+	</td>
+    </tr>
+</table>
+
+<table cellspacing=4 cellpadding=0 border=0 width="80%">
     <tr>
         <td colspan=9><hr/></td>
     </tr>

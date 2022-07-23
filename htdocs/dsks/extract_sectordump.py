@@ -5,6 +5,7 @@ import traceback
 import string
 from dsks import pc99tov9t9
 import logging
+import shutil
 
 
 logger = logging.getLogger(__name__)
@@ -85,6 +86,8 @@ def extractDisk(diskfile):
         os.mkdir(dirname)
         for f in files:
             extractFile(sectorfile, f, dirname)
+        # copy sector file to .sectors inside dir
+        shutil.copy(sectorfile, f'{dirname}/.sectors')
         os.unlink(diskfile)
     except:
         logger.exception("failed to extract disk image: " + diskfile)

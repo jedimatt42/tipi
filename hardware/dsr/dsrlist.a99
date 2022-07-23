@@ -90,10 +90,17 @@ basiclnk
 	EVEN
 
 cfilelnk
-	DATA	l2x2
+	DATA	l2x0
 	DATA	bcallfiles
 	BYTE	5
 	TEXT	"FILES"
+	EVEN
+
+l2x0
+	DATA	l2x2
+	DATA	sector
+	BYTE	1
+	BYTE	>10		; lvl2 sector read/write
 	EVEN
 
 l2x2

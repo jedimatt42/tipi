@@ -139,6 +139,20 @@ force user=tipi
 
 Make sure wifi was working before archiving the image. 
 
+### Set the system to grow on boot
+
+-- To be nice, set the image to resize on next boot 
+```
+sudo raspi-config nonint do_expand_rootfs
+```
+
+or edit the init in boot
+```
+init=/usr/lib/raspi-config/init_resize.sh
+```
+
+Don't reboot, just shutdown.
+
 ### Capture SD Card Image
 
 On a linux system dump the sdcard to an image. Then mount the image and clear unused blocks before zipping.

@@ -7,6 +7,8 @@ from Pab import *
 from ti_files import ti_files
 from tinames import tinames
 from TipiConfig import TipiConfig
+from SectorDisk import SectorDisk
+
 
 logger = logging.getLogger(__name__)
 tipi_config = TipiConfig.instance()
@@ -23,6 +25,7 @@ class LevelTwo(object):
           4: ""
         }
         self.handlers = {
+          0x10: self.handleSector,
           0x12: self.handleProtect,
           0x13: self.handleFileRename,
           0x14: self.handleDirectInput,
@@ -39,6 +42,30 @@ class LevelTwo(object):
 
     def defaultHandler(self):
         return False
+
+    def handleSector(self):
+        logger.info("sector request")
+        bytes = self.tipi_io.receive()
+        unit = bytes[0]
+        read_op = bytes[1] != 0
+        bytes = self.tipi_io.receive()
+        sector = bytes[1] + (bytes[0] << 8)
+        logger.info("unit: %d, sector: %d, read: %d", unit, sector, read_op)
+        disk_filename = self.getLocalDisk(unit)
+        if not disk_filename:
+            logger.info("no drive mapped for unit %d", unit)
+            self.tipi_io.send([EDEVERR])
+        if read_op:
+            self.tipi_io.send([SUCCESS])
+            data = SectorDisk.readSector(disk_filename, sector)
+            self.tipi_io.send(data)
+        else:
+            # write op 
+            self.tipi_io.send([SUCCESS])
+            # get data from 4A
+            sector_data = self.tipi_io.receive()
+            SectorDisk.writeSector(disk_filename, sector, sector_data)
+        return True
 
     def handleProtect(self):
         logger.info("protect request")
@@ -316,4 +343,8 @@ class LevelTwo(object):
         logger.debug("saveFile len: %d", len(bytes))
         with open(localname,"wb") as fh:
             fh.write(bytes)
+
+    def getLocalDisk(self,unit):
+        devname = "DSK" + str(unit) + "."
+        return tinames.devnameToLocal(devname)
 

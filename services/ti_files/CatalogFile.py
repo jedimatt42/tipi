@@ -37,7 +37,7 @@ class CatalogFile(object):
                     cat.loadRecords()
                     return cat
             if recordType(pab) == VARIABLE and recordLength(pab) == 0:
-                cat =CatalogFile(path, devname, True)
+                cat = CatalogFile(path, devname, True)
                 cat.loadRecords()
                 return cat
         raise Exception("bad record type")
@@ -147,11 +147,13 @@ class CatalogFile(object):
 
     def include(self, fp):
         logger.debug("include %s", fp)
-        return os.path.isdir(fp) or ti_files.isTiFile(fp) or os.path.isfile(fp)
+        return os.path.isdir(fp) or ti_files.isTiFile(fp) or (
+                os.path.isfile(fp) and not fp.endswith('.sectors'))
 
     def includefiles(self, fp):
         logger.debug("includefiles %s", fp)
-        return ti_files.isTiFile(fp) or os.path.isfile(fp)
+        return ti_files.isTiFile(fp) or (
+                os.path.isfile(fp) and not fp.endswith('.sectors'))
 
     def includedirs(self, fp):
         logger.debug("includedirs %s", fp)

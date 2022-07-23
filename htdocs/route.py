@@ -153,6 +153,38 @@ def mapdsk4():
     return redirect(rp)
 
 
+@app.route("/unmapdsk1", methods=["POST"])
+def unmapdsk1():
+    path = request.form.get("path")
+    tipi_map.unmapdrive("DSK1_DIR")
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+
+@app.route("/unmapdsk2", methods=["POST"])
+def unmapdsk2():
+    path = request.form.get("path")
+    tipi_map.unmapdrive("DSK2_DIR")
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+
+@app.route("/unmapdsk3", methods=["POST"])
+def unmapdsk3():
+    path = request.form.get("path")
+    tipi_map.unmapdrive("DSK3_DIR")
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+
+@app.route("/unmapdsk4", methods=["POST"])
+def unmapdsk4():
+    path = request.form.get("path")
+    tipi_map.unmapdrive("DSK4_DIR")
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+
 #
 # Text editor
 #

@@ -38,14 +38,14 @@ fi
 }
 
 function enableWebsocket {
-echo -n "enable QEMU emulation websocket mode? (y/n) "
+echo -n "enable emulation websocket mode? (y/n) "
 read yn
 if [ ${yn:-} = "n" ]; then
-	echo "QEMU websocket disabled"
+	echo "websocket disabled"
 	rm -f ~/.emulation
 else
 if [ ${yn:-} = "y" ]; then
-	echo "QEMU websocket enabled"
+	echo "websocket enabled"
 	echo "# TIPI Websocket" > ~/.emulation
 	enableNFS
 	enablePDF

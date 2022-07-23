@@ -13,3 +13,9 @@ def mapdrive(key, path, dirs):
     logger.info(f"mapped drive key: {key}, mapping: {mapping}")
     tipi_config.save()
 
+
+def unmapdrive(key):
+    tipi_config.set(key, "")
+    logger.info(f"removed mapped drive key: {key}")
+    tipi_config.save()
+

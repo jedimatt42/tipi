@@ -95,7 +95,9 @@ class UdpFile(object):
         msg[4] = buf_len & 0xFF
         res = self.tisockets.processRequest(msg)
         if res == BAD:
-            raise Exception('error reading socket')
+            logger.info('error reading socket')
+            self.tipi_io.send([EFILERR])
+            return
         self.tipi_io.send([SUCCESS])
         self.tipi_io.send(res)
         return
@@ -113,7 +115,9 @@ class UdpFile(object):
         msg[3:] = data
         res = self.tisockets.processRequest(msg)
         if res == BAD:
-            raise Exception('failed to write to socket')
+            logger.info('failed to write to socket')
+            self.tipi_io.send([EFILERR])
+            return
         self.tipi_io.send([SUCCESS])
 
     def parseDev(self, devname):

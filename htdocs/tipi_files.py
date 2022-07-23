@@ -24,6 +24,7 @@ icons = {
     "basic": '<img src="/images/basic_icon.png" width=22 title="BASIC PROGRAM">',
     "tifile": '<img src="/images/ti_logo_icon.jpg" width=22 title="TIFILES">',
     "native": '<img src="/images/native_icon.png" width=22 title="OS Native File">',
+    "floppy": '<img src="/images/floppy.png" width=22 title="Sector Dump">',
 }
 
 download_template = '<a href="%s"><img src="/images/download_icon.png" width=32 title="Download File"/></a>'
@@ -154,8 +155,11 @@ def catalog(path):
             # Determine file type:
             #
             fileInfo = tipi_cache.lookupFileInfo(item_path)
-            icon = icons[fileInfo["icon"]]
-            type = fileInfo["type"]
+            if item_path.endswith('.sectors'):
+                icon = icons['floppy']
+            else:
+                icon = icons[fileInfo["icon"]]
+            file_type = fileInfo["type"]
             tiname = fileInfo["tiname"]
             size = fileInfo["size"]
             edit_link = ""
@@ -187,7 +191,7 @@ def catalog(path):
                     "edit_link": edit_link,
                     "dl_link": dl_link,
                     "conv_link": conv_link,
-                    "type": type,
+                    "type": file_type,
                     "longname": longname,
                 }
             )

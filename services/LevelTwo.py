@@ -55,6 +55,7 @@ class LevelTwo(object):
         if not disk_filename:
             logger.info("no drive mapped for unit %d", unit)
             self.tipi_io.send([EDEVERR])
+            return True
         if read_op:
             self.tipi_io.send([SUCCESS])
             data = SectorDisk.readSector(disk_filename, sector)

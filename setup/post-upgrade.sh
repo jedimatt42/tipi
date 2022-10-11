@@ -20,6 +20,7 @@ case $fversion in
   TIPI_BASE_CONFIG=true
   TIPI_RESTART_SERVICES=true
   TIPI_UPDATE_DEPS=true
+  TIPI_UPDATE_USBMOUNT=true
   ;;
 *)
   TIPI_RESTART_SERVICES=true
@@ -28,6 +29,10 @@ esac
 
 if [ -e /tmp/test_update ]; then
   TIPI_UPDATE_LIBTIPI=true
+fi
+
+if [ $fmajor -le 2 ] && [ $fminor -le 39 ]; then
+  TIPI_UPDATE_USBMOUNT=true
 fi
 
 if [ $fmajor -le 2 ] && [ $fminor -le 36 ]; then
@@ -142,6 +147,10 @@ if [ ! -z ${TIPI_REPAIR_VAR_FIADS:-} ]; then
   su tipi -c "(cd /home/tipi/tipi/services; . ./ENV/bin/activate; python -m ti_files.fix_dv_fiads)"
 fi
 
+if [ ! -z ${TIPI_UPDATE_USBMOUNT:-} ]; then
+  /home/tipi/tipi/setup/enable_usb_mount.sh
+fi
+
 #### Restart all TIPI services
 if [ ! -z ${TIPI_RESTART_SERVICES:-} ]; then
   cd /home/tipi/tipi/setup/
@@ -154,6 +163,9 @@ if [ ! -z ${TIPI_RESTART_SERVICES:-} ]; then
   systemctl enable tipimon.service
   systemctl enable tipisuper.service
   # systemctl enable tipibutton.service
+  if [ ! -e /home/tipi/.emulation ]; then
+    systemctl enable tipiwatchdog.service
+  fi
 
   # the order below matters
   systemctl restart tipiboot.service
@@ -163,7 +175,6 @@ if [ ! -z ${TIPI_RESTART_SERVICES:-} ]; then
   systemctl restart tipi.service
 
   if [ ! -e /home/tipi/.emulation ]; then
-    systemctl enable tipiwatchdog.service
     systemctl restart tipiwatchdog.service
   fi
 

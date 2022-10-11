@@ -36,13 +36,16 @@ def __driveMapping(key):
 
 
 def __scanForVolume(volume):
+    # If it is literally DSK.TIPI. act like it matches DSK0.
+    if volume == 'TIPI':
+        return TIPI_DIR
+
+    # next check if one of the mapped drives has the name
     disks = ("DSK1_DIR", "DSK2_DIR", "DSK3_DIR", "DSK4_DIR")
     for disk in disks:
         path = __driveMapping(disk)
         if path != None and path.endswith("/" + volume):
             return path
-    # If it it literally DSK.TIPI. act like it matches DSK0.
-    return TIPI_DIR
 
     # None of the Disks are mapped to this volume...
     # fall back to top level directories

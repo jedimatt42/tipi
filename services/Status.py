@@ -9,21 +9,24 @@ logger = logging.getLogger(__name__)
 class Status(object):
     def __init__(self):
         self.__records = []
-        for name in netifaces.interfaces():
-            if not name.startswith("lo"):
-                iface = netifaces.ifaddresses(name)
-                if netifaces.AF_LINK in iface:
-                    self.__records.append(
-                        "MAC_{}={}".format(
-                            str(name).upper(), iface[netifaces.AF_LINK][0]["addr"]
+        try:
+            for name in netifaces.interfaces():
+                if not name.startswith("lo"):
+                    iface = netifaces.ifaddresses(name)
+                    if netifaces.AF_LINK in iface:
+                        self.__records.append(
+                            "MAC_{}={}".format(
+                                str(name).upper(), iface[netifaces.AF_LINK][0]["addr"]
+                            )
                         )
-                    )
-                if netifaces.AF_INET in iface:
-                    self.__records.append(
-                        "IP_{}={}".format(
-                            str(name).upper(), iface[netifaces.AF_INET][0]["addr"]
+                    if netifaces.AF_INET in iface:
+                        self.__records.append(
+                            "IP_{}={}".format(
+                                str(name).upper(), iface[netifaces.AF_INET][0]["addr"]
+                            )
                         )
-                    )
+        except:
+            self.__records.append("ERROR=netifaces")
 
         with open("/home/tipi/tipi/version.txt", "r") as fh_in:
             for line in fh_in.readlines():
@@ -50,3 +53,12 @@ class Status(object):
 
     def __len__(self):
         return len(self.__records)
+
+if __name__ == "__main__":
+    status = Status()
+    max = status.__len__()
+    idx = 0
+    while idx < max:
+        print(status.record(idx))
+        idx += 1
+

@@ -149,6 +149,7 @@ fi
 
 if [ ! -z ${TIPI_UPDATE_USBMOUNT:-} ]; then
   /home/tipi/tipi/setup/enable_usb_mount.sh
+  TIPI_REBOOT=true
 fi
 
 #### Restart all TIPI services
@@ -165,6 +166,10 @@ if [ ! -z ${TIPI_RESTART_SERVICES:-} ]; then
   # systemctl enable tipibutton.service
   if [ ! -e /home/tipi/.emulation ]; then
     systemctl enable tipiwatchdog.service
+  fi
+
+  if [ ! -z ${TIPI_REBOOT:-} ]; then
+    reboot now
   fi
 
   # the order below matters

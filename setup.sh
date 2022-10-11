@@ -3,7 +3,7 @@
 TIPI=/home/tipi/tipi
 cd $TIPI || exit 1
 
-sudo apt-get install \
+sudo apt-get -y install \
  python-dev \
  python3-dev \
  python-virtualenv \
@@ -13,7 +13,8 @@ sudo apt-get install \
  samba \
  sqlite3 \
  libsqlite3-dev \
- php
+ php \
+ usbmount
 
 if [ ! -e /home/tipi/tipi_disk ]; then
   mkdir /home/tipi/tipi_disk

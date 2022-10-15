@@ -1,0 +1,11 @@
+#!/bin/sh
+# This script removes the bind mount and the directory from under tipi_disk
+#
+set -e
+
+echo "Removing $UM_MOUNTPOINT..."
+umount /home/tipi/tipi_disk/USB
+rm -fr /home/tipi/tipi_disk/USB
+echo "Removed /home/tipi/tipi_disk/USB"
+
+exit 0

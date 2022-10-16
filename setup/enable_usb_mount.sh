@@ -9,8 +9,13 @@ if [ -f $UDEVD_SERVICE ]; then
   sed -i s/PrivateMounts=yes/PrivateMounts=no/ /lib/systemd/system/systemd-udevd.service
 fi
 
-if [ ! -e $TIPI_USB ]; then
-  ln -s /media/usb0 $TIPI_USB
-  chown tipi.tipi $TIPI_USB
+if [ -e $TIPI_USB ]; then
+  rm $TIPI_USB
 fi
+
+cp /home/tipi/tipi/setup/01_expose_to_tipi /etc/usbmount/mount.d/
+cp /home/tipi/tipi/setup/01_remove_from_tipi /etc/usbmount/umount.d/
+
+systemctl daemon-reload
+systemctl restart udev.service
 

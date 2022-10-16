@@ -1,0 +1,16 @@
+#!/bin/sh
+# This script bind mounts the usb media to a path under tipi_disk
+
+set -e
+
+TARGET=`echo $UM_MOUNTPOINT | sed "s#/media/usb##"`
+BINDMOUNT=/home/tipi/tipi_disk/USB${TARGET}
+
+if [ ! -d $BINDMOUNT ]; then
+  echo "Mounting $UM_MOUNTPOINT..."
+  mkdir $BINDMOUNT
+  mount --bind $UM_MOUNTPOINT $BINDMOUNT
+  echo "Mounted $UM_MOUNTPOINT"
+fi
+
+exit 0

@@ -16,3 +16,6 @@ fi
 cp /home/tipi/tipi/setup/01_expose_to_tipi /etc/usbmount/mount.d/
 cp /home/tipi/tipi/setup/01_remove_from_tipi /etc/usbmount/umount.d/
 
+systemctl daemon-reload
+systemctl restart udev.service
+

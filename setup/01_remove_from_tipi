@@ -3,9 +3,12 @@
 #
 set -e
 
+TARGET=`echo $UM_MOUNTPOINT | sed "s#/media/usb##"`
+BINDMOUNT=/home/tipi/tipi_disk/USB${TARGET}
+
 echo "Removing $UM_MOUNTPOINT..."
-umount /home/tipi/tipi_disk/USB
-rm -fr /home/tipi/tipi_disk/USB
-echo "Removed /home/tipi/tipi_disk/USB"
+umount $BINDMOUNT
+rmdir $BINDMOUNT
+echo "Removed $BINDMOUNT"
 
 exit 0

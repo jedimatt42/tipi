@@ -92,7 +92,7 @@ sudo ./post-upgrade.sh
 Disable apache2 which is misconfigured and not-used
 
 ```
-sudo apt systemctl disable apache2.service
+sudo systemctl disable apache2.service
 ```
 
 * (for distributing an image, I don't do this) change the password for user pi

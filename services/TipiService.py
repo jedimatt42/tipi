@@ -2,6 +2,7 @@
 import logging
 import logging.handlers
 import os
+import time
 import errno
 import yaml
 from tipi.TipiMessage import TipiMessage
@@ -64,6 +65,7 @@ try:
         try:
             msg = tipi_io.receive()
         except BackOffException:
+            time.sleep(0.10)
             if os.path.exists("/tmp/tipi_safepoint"):
                 logger.info("found /tmp/tipi_safepoint, restarting")
                 os.remove("/tmp/tipi_safepoint")

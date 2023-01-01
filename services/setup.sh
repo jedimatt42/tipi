@@ -10,7 +10,7 @@ virtualenv --python=python3 --system-site-packages ENV
 
 # build the tipiports_chardev library, but only if on a Raspberry PI OS
 if [ -e /etc/rpi-issue ]; then
-  ( cd libtipi_chardev; python ./setup.py install )
+  ( cd libtipi_chardev; python3 ./setup.py install )
 else
   echo skipping tipiports_chardev
 fi
@@ -20,7 +20,7 @@ if [ ! -d libtipi_web/sha1 ]; then
   ( cd libtipi_web; git clone https://github.com/clibs/sha1.git )
 fi
 echo installing tipiports_websocket
-( cd libtipi_web; python ./setup.py install )
+( cd libtipi_web; python3 ./setup.py install )
 
 pip install -r requirements.txt
 

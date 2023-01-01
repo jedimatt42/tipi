@@ -34,13 +34,13 @@ static void log_printf(const char *fmt, ...)
 #define SEL_TC 2
 #define SEL_TD 3
 
-static FILE* tipi_control_file;
-static FILE* tipi_data_file;
+static int* tipi_control_file;
+static int* tipi_data_file;
 
 static void writeReg(unsigned char value, int reg)
 {
   // The PI can write to RC and RD only.
-  FILE* file;
+  int* file;
   if (reg == SEL_RC) {
     file = tipi_control_file;
   } else if (reg == SEL_RD) {
@@ -51,7 +51,7 @@ static void writeReg(unsigned char value, int reg)
 
 static unsigned char readReg(int reg)
 {
-  unsigned char reg;
+  unsigned char value;
   // The PI can read from only TC and TD.
   FILE* file;
   if (reg == SEL_TC) {
@@ -59,8 +59,8 @@ static unsigned char readReg(int reg)
   } else if (reg == SEL_TD) {
     file = tipi_data_file;
   }
-  read(file, &reg, 1);
-  return reg;
+  read(file, &value, 1);
+  return value;
 }
 
 #define RESET 0xf1
@@ -325,7 +325,11 @@ static struct PyModuleDef TipiModule = {
   "tipiports_chardev",
   NULL, /* module documentation */
   -1,  /* global variable state */
-  TipiMethods
+  TipiMethods,
+  NULL,
+  NULL,
+  NULL,
+  NULL
 };
 
 PyMODINIT_FUNC

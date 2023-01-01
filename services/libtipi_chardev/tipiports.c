@@ -53,7 +53,7 @@ static unsigned char readReg(int reg)
 {
   unsigned char value;
   // The PI can read from only TC and TD.
-  FILE* file;
+  int* file;
   if (reg == SEL_TC) {
     file = tipi_control_file;
   } else if (reg == SEL_TD) {

@@ -6,14 +6,13 @@ import time
 if os.getenv('TIPI_WEBSOCK', None):
   import tipiports_websocket as tipiports
 else:
-  import tipiports_gpio as tipiports
+  import tipiports_chardev as tipiports
 
 logger = logging.getLogger(__name__)
 
 
 class TipiPorts(object):
     def __init__(self):
-        logger.info("Using libtipi wiringPi GPIO")
         tipiports.initGpio()
         logger.info("GPIO initialized.")
 

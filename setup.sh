@@ -6,15 +6,14 @@ cd $TIPI || exit 1
 sudo apt-get -y install \
  python-dev \
  python3-dev \
- python-virtualenv \
  libcurl4-openssl-dev \
  libssl-dev \
- wiringpi \
  samba \
  sqlite3 \
  libsqlite3-dev \
  php \
- usbmount
+ usbmount \
+ virtualenv
 
 if [ ! -e /home/tipi/tipi_disk ]; then
   mkdir /home/tipi/tipi_disk

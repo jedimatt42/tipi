@@ -306,4 +306,4 @@ def createFileUrl(path):
 ## Launch app
 
 if __name__ == "__main__":
-    socketio.run(app, "0.0.0.0", 9900)
+    socketio.run(app, "0.0.0.0", 9900,  allow_unsafe_werkzeug=True)

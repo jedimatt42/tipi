@@ -45,9 +45,11 @@ sudo mount /var/log
 Login to the Raspberry PI as user 'pi'. 
 Create a service user 'tipi' with the following commands:
 
+NOTE: For Raspbian bullseye, you will have to create an initial user, and it might as well be 
+the `tipi` user... so then just add the groups.
+
 ```
 sudo useradd --create-home --system --user-group tipi
-sudo adduser tipi gpio
 sudo adduser tipi input
 sudo adduser tipi sudo
 sudo passwd tipi
@@ -67,7 +69,7 @@ sudo apt install git
 Setup the services, by becoming the 'tipi' user, cloning the git repository 
 within the 'tipi' user home directory, and running the setup.sh script.
 
-Become the tipi user
+Become the tipi user, if you are not already:
 
 ```
 sudo su tipi
@@ -80,7 +82,7 @@ is for the 'tipi' user.
 cd /home/tipi
 git clone https://github.com/jedimatt42/tipi.git tipi
 cd /home/tipi/tipi
-git checkout buster_release
+git checkout debian_release
 git submodule update --init
 ./setup.sh
 cd setup
@@ -167,8 +169,9 @@ sudo kpartx -a sdimage.img
 You should be able to now mount the rootfs, or /dev/mapper/loop??p2.  On ubuntu like desktops the volume names will show up in the UI for removable media... 
 
 Edit and Remove personal settings found in
-- home/tipi/tipi.config
-- etc/wpa_supplicant/wpa_supplicant.conf
+- /home/tipi/tipi.config
+- /etc/wpa_supplicant/wpa_supplicant.conf
+- /home/tipi/.ssh/*
 
 Then clear the space:
 

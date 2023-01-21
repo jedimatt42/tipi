@@ -10,7 +10,12 @@ Go to the [Wiki](https://github.com/jedimatt42/tipi/wiki) for end user installat
 
 # Only follow these instructions if you are setting up an SD Card from scratch.
 
-Assumes base image is Raspbian Lite
+Assumes base image is Raspbian Lite (bullseye)
+
+## Pre-boot setup
+
+Before booting the Raspbian SD image, create a createuser.txt, enable ssh, enable wifi by
+following the instructions from [raspberrypi.com](https://raspberrypi.com/documentation/computers/configuration.html#setting-up-a-headless-raspberry-pi)
 
 Use raspi-config to install locales and set default, en_US_utf8.
 Note: installing all locales takes forever, and slows future updates.
@@ -40,20 +45,12 @@ sudo mount /var/tmp
 sudo mount /var/log
 ```
 
-## Create the tipi service user
-
-Login to the Raspberry PI as user 'pi'. 
-Create a service user 'tipi' with the following commands:
-
-NOTE: For Raspbian bullseye, you will have to create an initial user, and it might as well be 
-the `tipi` user... so then just add the groups.
+Reboot
 
 ```
-sudo useradd --create-home --system --user-group tipi
-sudo adduser tipi input
-sudo adduser tipi sudo
-sudo passwd tipi
+sudo reboot now
 ```
+
 
 ## Install Software
 
@@ -61,6 +58,7 @@ Make sure git is installed (after setting up tmpfs folders, update will be requi
 
 ```
 sudo apt update
+sudo apt upgrade
 sudo apt install git
 ```
 
@@ -69,7 +67,7 @@ sudo apt install git
 Setup the services, by becoming the 'tipi' user, cloning the git repository 
 within the 'tipi' user home directory, and running the setup.sh script.
 
-Become the tipi user, if you are not already:
+The `tipi` user should be the only user you know how to login as. Be the `tipi` user
 
 ```
 sudo su tipi
@@ -82,7 +80,7 @@ is for the 'tipi' user.
 cd /home/tipi
 git clone https://github.com/jedimatt42/tipi.git tipi
 cd /home/tipi/tipi
-git checkout debian_release
+git checkout bullseye_release
 git submodule update --init
 ./setup.sh
 cd setup
@@ -90,12 +88,6 @@ sudo ./post-upgrade.sh
 ```
 
 ## Other items to setup
-
-Disable apache2 which is misconfigured and not-used
-
-```
-sudo systemctl disable apache2.service
-```
 
 * (for distributing an image, I don't do this) change the password for user pi
 * change the hostname (raspi-config)

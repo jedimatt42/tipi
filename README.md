@@ -8,10 +8,20 @@ Keep it open for further device extension.
 
 ## Branching
 
-- End users must be on the `release` branch for physical TIPI
-- or for emulation, the `emuRelease` branch
-- `master` branch is full of stuff that doesn't work, won't upgrade correctly, and certainly won't downgrade
-- `master` branch is expert mode only
+(For end users starting from an SD card image, you are already on the correct branch)
+
+- End users must be on the `_release` branch for physical TIPI
+- `main` branch is full of stuff that doesn't work, won't upgrade correctly, and certainly won't downgrade
+- `main` branch is expert mode only
+
+Branches:
+
+```
+  main - current development for latest Raspberry PI OS
+  bullseye_release - beta status 
+  buster_dev - (legacy) for patching upstream of buster_release
+  buster_release - (legacy) for Raspberry PI 2W - 4B+ or Qemu use.
+```
 
 ## Documentation
 

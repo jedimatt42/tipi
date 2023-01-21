@@ -76,6 +76,20 @@ sudo su tipi
 While executing the following, when prompted for a 'sudo' password, it 
 is for the 'tipi' user.
 
+Install the tipi kernel module
+
+```
+cd /home/tipi
+git clone https://github.com/jedimatt42/tipi_kernel_module.git
+cd tipi_kernel_module
+sudo apt install raspberrypi-kernel-headers
+./build.sh
+sudo ./install.sh
+sudo reboot now
+```
+
+Install the tipi services
+
 ```
 cd /home/tipi
 git clone https://github.com/jedimatt42/tipi.git tipi
@@ -83,6 +97,11 @@ cd /home/tipi/tipi
 git checkout bullseye_release
 git submodule update --init
 ./setup.sh
+```
+
+And run the post-upgrade to finish all the incremental configuration
+
+```
 cd setup
 sudo ./post-upgrade.sh
 ```
@@ -111,7 +130,7 @@ in.telnetd: ALL
 ```
 
 
-Changing hostname: /etc/hostname & /etc/hosts
+Use raspi-config to set hostname to: `tipi`
 
 Recommended Samba configuration for /etc/samba/smb.conf:
 

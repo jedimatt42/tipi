@@ -34,6 +34,11 @@ if [ -e /home/tipi/.emulation ]; then
     HOSTIP=`ip route | grep default | cut -d' ' -f3`
     mount -t nfs ${HOSTIP}:/tipi_disk /home/tipi/tipi_disk
   fi
+else
+  # not emulation, so make sure the kernel module is loaded
+  if [ -f /home/tipi/tipi_kernel_module/onboot.sh ]; then
+    /home/tipi/tipi_kernel_module/onboot.sh
+  fi
 fi
 
 # disable power management for the wifi

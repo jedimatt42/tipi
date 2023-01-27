@@ -3,9 +3,6 @@
 # Things here run as root on system boot to make way for 
 # standard boot services.
 
-chmod a+rw /dev/tipi_control
-chmod a+rw /dev/tipi_data
-
 # Check /boot for a backup file
 BACKUP=`ls -1 /boot/tipi-backup-*.tar.gz 2>/dev/null`
 if [ -f ${BACKUP:-notfile} ]; then
@@ -39,6 +36,8 @@ else
   if [ -f /home/tipi/tipi_kernel_module/onboot.sh ]; then
     /home/tipi/tipi_kernel_module/onboot.sh
   fi
+  chmod a+rw /dev/tipi_control
+  chmod a+rw /dev/tipi_data
 fi
 
 # disable power management for the wifi

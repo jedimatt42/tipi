@@ -1,6 +1,6 @@
 crccheck==0.6
 netifaces==0.10.6
-pycurl==7.45.1
+pycurl>=7.45.1
 pygtail==0.7.0
 virtualenv>=20.0.8
 pre-commit==2.5.1

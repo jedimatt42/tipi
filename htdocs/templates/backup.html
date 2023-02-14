@@ -62,17 +62,27 @@ function uploadOnClick() {
 
 <form name="restore" action="/restorenow" method="post">
 <table cellspacing=4 cellpadding=0 border=0>
+{% if backups %}
+  <tr>
+    <th valign=center align=left></th>
+    <th valign=center align=left>Filename</th>
+    <th valign=center align=left>Date</th>
+    <th valign=center align=left>Size</th>
+    <th valign=center align=left>Download</th>
+  </tr>
 {% for backup_file in backups %}
   <tr>
     <td valign=center align=left><input type="radio" name="backup_file" value="{{ backup_file.name }}" /></td>
-    <td valign=center align=left> {{ backup_file.name }} </td>
-    <td valign=center> &nbsp; &nbsp; {{ backup_file.date|safe }} </td>
+    <td valign=center align=left> {{ backup_file.name }} &nbsp; &nbsp; </td>
+    <td valign=center> {{ backup_file.date|safe }} &nbsp; &nbsp; </td>
+    <td valign=center> {{ backup_file.size|safe }} &nbsp; </td>
     <td valign=center>
       <a href="{{ backup_file.dl_link }}"><img src="/images/download_icon.png" width=32 title="Download File"/>
       </a>
     </td>
   </tr>
 {% endfor %}
+{% endif %}
 </table>
 
 <input type=submit name="restore" value="Restore Backup" {{ "disabled" if restore_status == "inprogress" }} />

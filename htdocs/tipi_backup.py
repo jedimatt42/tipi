@@ -20,6 +20,7 @@ def status():
     backups = [ {
             "name": os.path.basename(f),
             "date": get_archive_timestamp(os.path.basename(f)),
+            "size": str(os.path.getsize(f)//1024) + "K",
             "dl_link": f"/backupdl/{os.path.basename(f)}"
         } for f in filelist ]
 

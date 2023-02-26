@@ -131,8 +131,8 @@ def updateFileInfo(name):
 
 def searchFileInfo(globpat):
     sql = get_conn().cursor()
-    sqlargs = (f"*/*{globpat}*", f"*{globpat}*")
-    sql.execute('SELECT * FROM fileheader WHERE name GLOB ? OR tiname GLOB ?', sqlargs)
+    sqlargs = (f"*{globpat}*",)
+    sql.execute('SELECT * FROM fileheader WHERE tiname GLOB ?', sqlargs)
     allrows = sql.fetchall()
     logger.info(f"allrows: {allrows}")
     files = []

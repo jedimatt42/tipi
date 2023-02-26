@@ -1,0 +1,78 @@
+
+{% extends "page_template.html"%}
+{% block content %}
+
+<div class="alert alert-info" role="alert">
+    
+</div>
+
+<div class="files_container">
+
+<table cellspacing=4 cellpadding=0 border=0 width="80%">
+    <tr>
+        <td colspan=9><hr/></td>
+    </tr>
+    <tr>
+      <td>
+      <form method=post action="/search">
+        <input type="text" id="globpat" name="globpat" value="{{ globpat }}" size="50" />
+        <input type="submit" value="Search" />
+      </form>
+      </td>
+    </tr>
+</table>
+
+<table cellspacing=4 cellpadding=0 border=0 width="80%">
+    <tr>
+        <td colspan=9><hr/></td>
+    </tr>
+    <tr><td colspan=9> Total search results: {{ total_files }} </td></tr>
+</table>
+
+<table cellspacing=4 cellpadding=0 border=0>
+  <tr>
+    <td> &nbsp; </td>
+    <td><b>Filename</td>
+    <td><b>Type</td>
+    <td><b>Size</td>
+    <td> &nbsp; &nbsp; <b>Datestamp</td>
+    <td> &nbsp; </td>
+    <td> &nbsp; </td>
+    <td><b>Native name</b></td>
+    <td><b>Directory</b></td>
+  </tr>
+
+{% for tipi_file in tipi_files %}
+  <tr>
+    <td valign=center align=center> {{ tipi_file.icon|safe }} </td>
+    <td valign=center> {{ tipi_file.name|safe }} </td>
+    <td valign=center align=left> {{ tipi_file.type }} </td>
+    {% if tipi_file.type == "DIR" and tipi_file.mapname in mapped.keys() %}
+    <td valign=center align=right> <b> {{ mapped.get(tipi_file.mapname) }} </b> </td>
+    {% else %}
+    <td valign=center align=right> {{ tipi_file.size }} </td>
+    {% endif %}
+    <td valign=center> &nbsp; &nbsp; {{ tipi_file.date }} </td>
+    <td valign=center> &nbsp; &nbsp; {{ tipi_file.edit_link|safe }} </td>
+    <td valign=center> &nbsp; &nbsp; {{ tipi_file.dl_link|safe }} </td>
+{% if tipi_file.longname != None %}
+    <td valign=center> {{ tipi_file.longname|safe }} </td>
+{% else %}
+    <td valign=center> &nbsp; </td>
+{% endif %}
+    <td valign=center align=left> {{ tipi_file.dir_link|safe }} </td>
+  </tr>
+
+{% endfor %}
+
+</table>
+</form>
+</div>
+
+
+<BR><BR>  
+
+{% endblock %}
+
+
+

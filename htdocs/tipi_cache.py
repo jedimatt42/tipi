@@ -102,7 +102,9 @@ def lookupFileInfo(name):
     sql.close()
     if fileInfo == None:
         fileInfo = updateFileInfo(name)
+    return rowToMap(fileInfo)
 
+def rowToMap(fileInfo):
     # fileInfo is currently a positional 'tuple' which sucks... so let's make a
     # map
     return { "name": fileInfo[0],
@@ -126,6 +128,17 @@ def updateFileInfo(name):
     finally:
         sql.close()
     return sqlargs
+
+def searchFileInfo(globpat):
+    sql = get_conn().cursor()
+    sqlargs = (f"*/*{globpat}*", f"*{globpat}*")
+    sql.execute('SELECT * FROM fileheader WHERE name GLOB ? OR tiname GLOB ?', sqlargs)
+    allrows = sql.fetchall()
+    logger.info(f"allrows: {allrows}")
+    files = []
+    for row in allrows:
+        files.append(rowToMap(row))
+    return files
 
 def _getFileInfo(name):
     dv80suffixes = (".txt", ".a99", ".b99", ".bas", ".xb", ".tb")

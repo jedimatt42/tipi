@@ -18,8 +18,11 @@ import os
 from flask_socketio import SocketIO
 
 from flask import *
+import logging
 
 configure_logging()
+
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -294,6 +297,17 @@ def backupul():
     tipi_backup.upload(request.files.getlist("upload_file"))
     return redirect("/backup")
 
+@app.route("/search", methods=["POST"])
+def searchSubmit():
+    globpat = request.form.get("globpat")
+    return redirect(f"/searchq?globpat={globpat}")
+
+@app.route("/searchq", methods=["GET"])
+def searchQuery():
+    globpat = request.args.get("globpat")
+    results = tipi_files.search(globpat)
+    return render_template("search_result.html", **results)
+    
 
 ## Utility
 

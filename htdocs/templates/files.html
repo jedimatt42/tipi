@@ -121,6 +121,20 @@ function uploadOnClick() {
     <tr>
         <td colspan=9><hr/></td>
     </tr>
+    <tr>
+      <td>
+      <form method=post action="/search">
+        <input type="text" id="globpat" name="globpat" size="50" />
+        <input type="submit" value="Search" />
+      </form>
+      </td>
+    </tr>
+</table>
+
+<table cellspacing=4 cellpadding=0 border=0 width="80%">
+    <tr>
+        <td colspan=9><hr/></td>
+    </tr>
     <tr><td colspan=9> Total files: {{ total_files }} </td></tr>
     <tr>
         <td colspan=9> Displaying contents of &nbsp; <b>{{ tipi_path }}</b> 

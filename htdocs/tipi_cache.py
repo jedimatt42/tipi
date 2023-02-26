@@ -63,7 +63,7 @@ def deleteAll():
 def addAll():
     for root, subdirs, files in os.walk(tipi_disk):
         for filename in files:
-            name = os.path.join(root.decode('utf-8'), filename.decode('utf-8'))
+            name = os.path.join(root, filename)
             updateFileInfo(name)
 
 def deleteMissing():
@@ -134,11 +134,10 @@ def searchFileInfo(globpat):
     sqlargs = (f"*{globpat}*",)
     sql.execute('SELECT * FROM fileheader WHERE tiname GLOB ?', sqlargs)
     allrows = sql.fetchall()
-    logger.info(f"allrows: {allrows}")
     files = []
     for row in allrows:
         files.append(rowToMap(row))
-    return files
+    return sorted(files, key=lambda i:("/".join(i["name"].split("/")[:-1]), i["tiname"]))
 
 def _getFileInfo(name):
     dv80suffixes = (".txt", ".a99", ".b99", ".bas", ".xb", ".tb")
@@ -177,4 +176,5 @@ def _getFileInfo(name):
     
 if __name__ == '__main__':
     deleteAll()
+    addAll()
 

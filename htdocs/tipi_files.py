@@ -117,15 +117,6 @@ def catalog(path):
         if len(new_path):
             new_path = "/" + new_path
 
-        tipi_subdirs.append(
-            {
-                "icon": '<div class="tooltip"><a href="/files%s"><img src="/images/dots.png" width=16 border=0 alt="Go to parent directory"></a> &nbsp; <span class="tooltiptext">Return to parent directory</span></div>'
-                % new_path,
-                "name": "&lt;parent&gt;",
-                "longname": None,
-            }
-        )
-
     full_path = tipi_disk_base
 
     if len(path):
@@ -167,7 +158,7 @@ def catalog(path):
         "tipi_dir_listing": tipi_dir_listing,
         "total_files": len(tipi_files),
         "display_path": "/" + path,
-        "tipi_path": tipi_path,
+        "tipi_path": makeBreadcrumbs(tipi_path),
         "rp": "/files/" + path,
         "path": path,
         "config": {
@@ -187,6 +178,20 @@ def catalog(path):
             tipi_config.get("DSK4_DIR"): "DSK4",
         },
     }
+
+
+def makeBreadcrumbs(path):
+    # take a string like TIPI.GAMES.EA5
+    # and return a list of maps each with a link and label field
+    paths = []
+    link = "/files"
+    for step in path.split('.')[:-1]:
+        link += ("/" + step) if step != "TIPI" else ""
+        paths.append({
+            "label": step,
+            "link": link
+        })
+    return paths
 
 
 def fileDisplayData(fileInfo):
@@ -244,7 +249,7 @@ def fileDisplayData(fileInfo):
 
 def search(globpat):
     logger.info("generating search for: %s", globpat)
-    matching_files = tipi_cache.searchFileInfo(globpat)
+    matching_files = tipi_cache.searchFileInfo(globpat) if globpat else []
     tipi_files = []
     for match in matching_files:
         tipi_files.append(fileDisplayData(match))

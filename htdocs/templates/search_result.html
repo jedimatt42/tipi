@@ -6,57 +6,36 @@
     
 </div>
 
-<div class="files_container">
+<div class="search_container">
 
-<table cellspacing=4 cellpadding=0 border=0 width="80%">
-    <tr>
-        <td colspan=9><hr/></td>
-    </tr>
-    <tr>
-      <td>
-      <form method=post action="/search">
-        <input type="text" id="globpat" name="globpat" value="{{ globpat }}" size="50" />
-        <input type="submit" value="Search" />
-      </form>
-      </td>
-    </tr>
-</table>
+<form method=post action="/search">
+    <input type="text" id="globpat" name="globpat" value="{{ globpat }}" size="50" />
+    <input type="submit" value="Search" />
+</form>
+<p>Total search results: {{ total_files }}</p>
 
-<table cellspacing=4 cellpadding=0 border=0 width="80%">
-    <tr>
-        <td colspan=9><hr/></td>
-    </tr>
-    <tr><td colspan=9> Total search results: {{ total_files }} </td></tr>
-</table>
-
-<table cellspacing=4 cellpadding=0 border=0>
-  <tr>
-    <td> &nbsp; </td>
-    <td><b>Directory</b></td>
-    <td><b>Filename</td>
-    <td><b>Type</td>
-    <td><b>Size</td>
-    <td><b>Datestamp</td>
-    <td><b>Native name</b></td>
-  </tr>
+<div class="searchlistheadings">
+    <div class="search-icon"></div>
+    <div class="search-filename">Filename</div>
+    <div class="search-type">Type</div>
+    <div class="search-size">Size</div>
+    <div class="search-timestamp">Datestamp</div>
+    <div class="search-nativename">Native name</div>
+    <div class="search-directory">Directory</div>
+</div>
 
 {% for tipi_file in tipi_files %}
-  <tr>
-    <td valign=center align=center> {{ tipi_file.icon|safe }} </td>
-    <td valign=center align=left> {{ tipi_file.dir_link|safe }} </td>
-    <td valign=center> {{ tipi_file.name|safe }} </td>
-    <td valign=center align=left> {{ tipi_file.type }} </td>
-    <td valign=center align=right> {{ tipi_file.size }} </td>
-    <td valign=center> {{ tipi_file.date }} </td>
-{% if tipi_file.longname != None %}
-    <td valign=center> {{ tipi_file.longname|safe }} </td>
-{% else %}
-    <td valign=center> &nbsp; </td>
-{% endif %}
-  </tr>
+  <div class="searchlistrow">
+    <div class="search-icon"> {{ tipi_file.icon|safe }} </div>
+    <div class="search-filename"> {{ tipi_file.name|safe }} </div>
+    <div class="search-type"> {{ tipi_file.type }} </div>
+    <div class="search-size"> {{ tipi_file.size }} </div>
+    <div class="search-timestamp"> {{ tipi_file.date }} </div>
+    <div class="search-nativename"> {%- if tipi_file.longname -%} {{ tipi_file.longname|safe }} {% endif %} </div>
+    <div class="search-directory"> {{ tipi_file.dir_link|safe }} </div>
+  </div>
 {% endfor %}
 
-</table>
 </form>
 </div>
 

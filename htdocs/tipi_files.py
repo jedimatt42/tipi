@@ -29,7 +29,7 @@ icons = {
 
 download_template = '<a href="%s"><img src="/images/download_icon.png" width=32 title="Download File"/></a>'
 
-editlink_template = '<a href="/edit_basic_file?file_name=%s/%s&path=%s"><img src="/images/edit_icon.png" width=22 title="Edit File"/></a>'
+editlink_template = '<a href="/edit_basic_file?file_name=%s&path=%s"><img src="/images/edit_icon.png" width=22 title="Edit File"/></a>'
 
 dirlink_template = '<a href="/files%s">TIPI.%s</a>'
 
@@ -215,11 +215,10 @@ def fileDisplayData(fileInfo):
     dlpath = item_path.replace(tipi_disk_base, "")
     dl_link = download_template % (dlpath)
     if fileInfo["icon"] == "basic":
-        edit_link = editlink_template % (path, item, path)
+        edit_link = editlink_template % (dlpath, "/".join(dlpath.split("/")[:-1]))
 
     if fileInfo["icon"] == "native":
         conv_link = convlink_template
-        # % (path, item)
 
     if tiname != item:
         longname = item

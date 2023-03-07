@@ -8,9 +8,26 @@
 
 <div class="search_container">
 
-<form method=post action="/search">
-    <input type="text" id="globpat" name="globpat" value="{{ globpat }}" size="50" />
+<form method=get action="/search">
+    <input type="text" id="globpat" name="globpat" value="{{ criteria['globpat'] }}" size="50" />
     <input type="submit" value="Search" />
+    <p>
+    <input type="checkbox" id="matchpaths" name="matchpaths" value="matchpaths"
+           {% if criteria['matchpaths'] %} checked {% endif %} /> 
+    <label for="matchpaths">Match directory names</label>
+    <input type="checkbox" id="type_program" name="type_program" value="type_program"
+           {% if criteria['type_program'] %} checked {% endif %} /> 
+    <label for="type_program">PROGRAM</label>
+    <input type="checkbox" id="type_dv80" name="type_dv80" value="type_dv80"
+           {% if criteria['type_dv80'] %} checked {% endif %} /> 
+    <label for="type_dv80">DIS/VAR 80</label>
+    <input type="checkbox" id="type_df80" name="type_df80" value="type_df80"
+           {% if criteria['type_df80'] %} checked {% endif %} /> 
+    <label for="type_df80">DIS/FIX 80</label>
+    <input type="checkbox" id="type_df128" name="type_df128" value="type_df128"
+           {% if criteria['type_df128'] %} checked {% endif %} /> 
+    <label for="type_df128">DIS/FIX 128</label>
+    </p>
 </form>
 <p>Total search results: {{ total_files }}</p>
 

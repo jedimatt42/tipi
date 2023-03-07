@@ -246,15 +246,15 @@ def fileDisplayData(fileInfo):
     }
 
 
-def search(globpat):
-    logger.info("generating search for: %s", globpat)
-    matching_files = tipi_cache.searchFileInfo(globpat) if globpat else []
+def search(criteria):
+    logger.info("generating search for: %s", criteria)
+    matching_files = tipi_cache.searchFileInfo(criteria) if criteria['globpat'] else []
     tipi_files = []
     for match in matching_files:
         tipi_files.append(fileDisplayData(match))
 
     return { 
-        "globpat": globpat,
+        "criteria": criteria,
         "tipi_files": tipi_files,
         "total_files": len(tipi_files),
         "config": {

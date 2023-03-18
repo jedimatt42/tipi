@@ -21,6 +21,8 @@ Use raspi-config to install locales and set default, en_US_utf8.
 Note: installing all locales takes forever, and slows future updates.
 install en-US-UTF8, en-GB-UTF8, de-DE-UTF8, and en-CA-UTF8
 
+Use raspi-config to disable i2c so that gpio-shutdown can be enabled.
+
 Use raspi-config to enable ssh, and grow the root filesystem.
 reboot.
 

@@ -1,0 +1,65 @@
+
+{% extends "page_template.html"%}
+{% block content %}
+
+<div class="alert alert-info" role="alert">
+    
+</div>
+
+<div class="search_container">
+
+<form method=get action="/search">
+    <input type="text" id="globpat" name="globpat" value="{{ criteria['globpat'] }}" size="50" />
+    <input type="submit" value="Search" />
+    <p>
+    <input type="checkbox" id="matchpaths" name="matchpaths" value="matchpaths"
+           {% if criteria['matchpaths'] %} checked {% endif %} /> 
+    <label for="matchpaths">Match directory names</label>
+    <input type="checkbox" id="type_program" name="type_program" value="type_program"
+           {% if criteria['type_program'] %} checked {% endif %} /> 
+    <label for="type_program">PROGRAM</label>
+    <input type="checkbox" id="type_dv80" name="type_dv80" value="type_dv80"
+           {% if criteria['type_dv80'] %} checked {% endif %} /> 
+    <label for="type_dv80">DIS/VAR 80</label>
+    <input type="checkbox" id="type_df80" name="type_df80" value="type_df80"
+           {% if criteria['type_df80'] %} checked {% endif %} /> 
+    <label for="type_df80">DIS/FIX 80</label>
+    <input type="checkbox" id="type_df128" name="type_df128" value="type_df128"
+           {% if criteria['type_df128'] %} checked {% endif %} /> 
+    <label for="type_df128">DIS/FIX 128</label>
+    </p>
+</form>
+<p>Total search results: {{ total_files }}</p>
+
+<div class="searchlistheadings">
+    <div class="search-icon"></div>
+    <div class="search-filename">Filename</div>
+    <div class="search-type">Type</div>
+    <div class="search-size">Size</div>
+    <div class="search-timestamp">Datestamp</div>
+    <div class="search-nativename">Native name</div>
+    <div class="search-directory">Directory</div>
+</div>
+
+{% for tipi_file in tipi_files %}
+  <div class="searchlistrow">
+    <div class="search-icon"> {{ tipi_file.icon|safe }} </div>
+    <div class="search-filename"> {{ tipi_file.name|safe }} </div>
+    <div class="search-type"> {{ tipi_file.type }} </div>
+    <div class="search-size"> {{ tipi_file.size }} </div>
+    <div class="search-timestamp"> {{ tipi_file.date }} </div>
+    <div class="search-nativename"> {%- if tipi_file.longname -%} {{ tipi_file.longname|safe }} {% endif %} </div>
+    <div class="search-directory"> {{ tipi_file.dir_link|safe }} </div>
+  </div>
+{% endfor %}
+
+</form>
+</div>
+
+
+<BR><BR>  
+
+{% endblock %}
+
+
+

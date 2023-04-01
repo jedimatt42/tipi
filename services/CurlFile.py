@@ -193,7 +193,7 @@ class CurlFile(object):
 
         tmpname = '/tmp/CF'
     
-        cmd = "/usr/bin/wget --user-agent={} -O {} {}".format(agent, tmpname, url)
+        cmd = "/usr/bin/wget --user-agent={} -O {} '{}'".format(agent, tmpname, url)
         logger.info("cmd: %s", cmd)
         code = os.system(cmd)
         if code != 0:

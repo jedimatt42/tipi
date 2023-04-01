@@ -18,8 +18,11 @@ import os
 from flask_socketio import SocketIO
 
 from flask import *
+import logging
 
 configure_logging()
+
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
@@ -58,6 +61,11 @@ def send_css(path):
     return send_from_directory("css", path)
 
 
+@app.route("/mdb/<path:path>")
+def send_mdb5(path):
+    return send_from_directory("mdb5s", path)
+
+
 #
 # File management
 #
@@ -72,6 +80,7 @@ def download(path):
     resp.cache_control.no_store = True
     resp.cache_control.public = False
     resp.cache_control.max_age = None
+    del(resp.headers['Content-Encoding'])
     return resp
 
 
@@ -284,6 +293,7 @@ def backupdl(path):
     resp.cache_control.no_store = True
     resp.cache_control.public = False
     resp.cache_control.max_age = None
+    del(resp.headers['Content-Encoding'])
     return resp
 
 
@@ -292,6 +302,19 @@ def backupul():
     tipi_backup.upload(request.files.getlist("upload_file"))
     return redirect("/backup")
 
+
+@app.route("/search", methods=["GET"])
+def searchQuery():
+    criteria = { }
+    criteria['globpat'] = request.args.get("globpat")
+    criteria['matchpaths'] = request.args.get("matchpaths")
+    criteria['type_program'] = request.args.get("type_program")
+    criteria['type_dv80'] = request.args.get("type_dv80")
+    criteria['type_df80'] = request.args.get("type_df80")
+    criteria['type_df128'] = request.args.get("type_df128")
+    results = tipi_files.search(criteria)
+    return render_template("search_result.html", **results)
+    
 
 ## Utility
 

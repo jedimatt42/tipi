@@ -49,6 +49,11 @@ if [ ${yn:-} = "y" ]; then
 	echo "# TIPI Websocket" > ~/.emulation
 	enableNFS
 	enablePDF
+        echo " "
+        echo "now restart the tipi.service with"
+        echo " "
+        echo "  sudo systemctl restart tipi.service"
+        echo " "
 else
 	badinput
 fi

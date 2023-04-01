@@ -63,7 +63,7 @@ def deleteAll():
 def addAll():
     for root, subdirs, files in os.walk(tipi_disk):
         for filename in files:
-            name = os.path.join(root.decode('utf-8'), filename.decode('utf-8'))
+            name = os.path.join(root, filename)
             updateFileInfo(name)
 
 def deleteMissing():
@@ -102,7 +102,9 @@ def lookupFileInfo(name):
     sql.close()
     if fileInfo == None:
         fileInfo = updateFileInfo(name)
+    return rowToMap(fileInfo)
 
+def rowToMap(fileInfo):
     # fileInfo is currently a positional 'tuple' which sucks... so let's make a
     # map
     return { "name": fileInfo[0],
@@ -126,6 +128,59 @@ def updateFileInfo(name):
     finally:
         sql.close()
     return sqlargs
+
+def searchFileInfo(criteria):
+    sql = get_conn().cursor()
+    sqlargs = {
+        'g': f"*{criteria['globpat']}*"
+    }
+    sqlstatement = 'SELECT * FROM fileheader WHERE (tiname GLOB :g'
+
+    if criteria['matchpaths']:
+        sqlargs['m'] = f"*{criteria['globpat'].replace('.', '/')}*"
+        sqlstatement += ' OR name GLOB :m'
+    sqlstatement += ')'
+
+    types = []
+    if criteria['type_program']:
+        types.append('"PROGRAM"')
+    if criteria['type_dv80']:
+        types.append('"DIS/VAR 80"')
+    if criteria['type_df80']:
+        types.append('"DIS/FIX 80"')
+    if criteria['type_df128']:
+        types.append('"DIS/FIX 128"')
+    if types:
+        sqlstatement += f" AND type IN ({','.join(types)})"
+
+    logger.info("sql: %s", sqlstatement)
+
+    sql.execute(sqlstatement, sqlargs)
+    allrows = sql.fetchall()
+    files = []
+    for row in allrows:
+        files.append(rowToMap(row))
+    return sorted(files, key=lambda i:("/".join(i["name"].split("/")[:-1]), i["tiname"]))
+
+def _getFileInfo(name):
+    dv80suffixes = (".txt", ".a99", ".b99", ".bas", ".xb", ".tb")
+    basicSuffixes = (".b99", ".bas", ".xb", ".tb")
+        
+    header = None
+    
+    with open(name,"rb") as fdata:
+        header = bytearray(fdata.read())[:128]
+
+    valid = ti_files.isValid(header)
+
+    isprotected = 0
+
+    sql.execute(sqlstatement, sqlargs)
+    allrows = sql.fetchall()
+    files = []
+    for row in allrows:
+        files.append(rowToMap(row))
+    return sorted(files, key=lambda i:("/".join(i["name"].split("/")[:-1]), i["tiname"]))
 
 def _getFileInfo(name):
     dv80suffixes = (".txt", ".a99", ".b99", ".bas", ".xb", ".tb")
@@ -164,4 +219,5 @@ def _getFileInfo(name):
     
 if __name__ == '__main__':
     deleteAll()
+    addAll()
 

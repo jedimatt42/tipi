@@ -72,7 +72,6 @@ def download(path):
     resp.cache_control.no_store = True
     resp.cache_control.public = False
     resp.cache_control.max_age = None
-    del(resp.headers['Content-Encoding'])
     return resp
 
 
@@ -285,7 +284,6 @@ def backupdl(path):
     resp.cache_control.no_store = True
     resp.cache_control.public = False
     resp.cache_control.max_age = None
-    del(resp.headers['Content-Encoding'])
     return resp
 
 

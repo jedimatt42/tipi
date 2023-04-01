@@ -27,10 +27,23 @@ systemctl stop tipi.service
 
 echo "restoring backup from $BACKUP"
 
-tar -xvzf $BACKUP \
-  -C /home/tipi \
-  --owner=tipi \
-  --one-file-system \
+file $BACKUP | grep "tar" >/dev/null
+if [ $? -eq 0 ]; then
+  echo "extracting tar archive"
+  tar -xvf $BACKUP \
+    -C /home/tipi \
+    --owner=tipi \
+    --one-file-system
+fi
+
+file $BACKUP | grep "gzip" >/dev/null
+if [ $? -eq 0 ]; then
+  echo "extracting tar.gz archive"
+  tar -xvzf $BACKUP \
+    -C /home/tipi \
+    --owner=tipi \
+    --one-file-system
+fi
 
 if [ -f ${WPATMP:-nofile} ]; then
   if [ "x${WPA:-no}" == "xyes" ]; then

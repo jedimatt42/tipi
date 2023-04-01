@@ -38,6 +38,19 @@ function uploadOnClick() {
   document.getElementById('uploadForm').style.display='block';
   document.getElementById('selectfiles').focus();
 }
+
+function deleteBackup(backup) {
+  const form = document.createElement('form');
+  form.method = 'post';
+  form.action = '/delete-backup';
+  const hiddenField = document.createElement('input');
+  hiddenField.type = 'hidden';
+  hiddenField.name = 'backup_file';
+  hiddenField.value = backup;
+  form.appendChild(hiddenField);;
+  document.body.appendChild(form);
+  form.submit();
+}
 </script>
 
 
@@ -59,7 +72,6 @@ function uploadOnClick() {
 <blockquote>Creating archive...</blockquote>
 {% endif %}
 
-
 <form name="restore" action="/restorenow" method="post">
 <table cellspacing=4 cellpadding=0 border=0>
 {% if backups %}
@@ -80,13 +92,17 @@ function uploadOnClick() {
       <a href="{{ backup_file.dl_link }}"><img src="/images/download_icon.png" width=32 title="Download File"/>
       </a>
     </td>
+    <td valign=center>
+      <button title="Delete Backup" class="tool_button" onclick="deleteBackup( '{{ backup_file.name }}' ); return false;">
+	  <img src="/images/delete.webp" height="10px"/>
+      </button> 
+    </td>
   </tr>
 {% endfor %}
 {% endif %}
 </table>
 
 <input type=submit name="restore" value="Restore Backup" {{ "disabled" if restore_status == "inprogress" }} />
-
 </form>
 
 {% if restore_status == "inprogress" %}

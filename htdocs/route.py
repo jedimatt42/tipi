@@ -303,6 +303,13 @@ def backupul():
     return redirect("/backup")
 
 
+@app.route("/delete-backup", methods=["POST"])
+def delete_backup():
+    backup_file = request.form.get("backup_file")
+    tipi_backup.delete(backup_file)
+    return redirect("/backup")
+
+
 @app.route("/search", methods=["GET"])
 def searchQuery():
     criteria = { }

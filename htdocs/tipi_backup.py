@@ -52,3 +52,9 @@ def upload(fileset):
         filedata.save(localfilename)
 
 
+def delete(backup_file):
+    if backup_file is not None:
+        fullpath = f"/home/tipi/{backup_file}"
+        if os.path.exists(fullpath):
+            os.remove(fullpath)
+

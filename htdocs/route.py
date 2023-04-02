@@ -11,6 +11,7 @@ import string
 import tipi_admin
 import tipi_backup
 import tipi_editor
+import tipi_emulation
 import tipi_files
 import tipi_uploads
 import tipi_map
@@ -309,6 +310,22 @@ def delete_backup():
     tipi_backup.delete(backup_file)
     return redirect("/backup")
 
+
+@app.route("/emulation", methods=["GET"])
+def emulation():
+    status = tipi_emulation.status()
+    return render_template("emulation.html", **status)
+
+
+@app.route("/emulation-update", methods=["POST"])
+def emulation_update():
+    emulation_state = { }
+    emulation_state['enabled'] = request.form.get("enabled") == 'true'
+    emulation_state['pdf'] = request.form.get("pdf") == "pdf"
+    emulation_state['nfs'] = request.form.get("nfs") == "nfs"
+    tipi_emulation.update(emulation_state)
+    return redirect("/emulation")
+    
 
 @app.route("/search", methods=["GET"])
 def searchQuery():

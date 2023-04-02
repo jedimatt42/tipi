@@ -28,6 +28,9 @@ fi
 if [ -f /home/tipi/tipi.uuid ]; then
  echo tipi.uuid >>$FILE_LIST
 fi
+if [ -f /home/tipi/.emulation ]; then
+ echo .emulation >>$FILE_LIST
+fi
 if [ -f /etc/wpa_supplicant/wpa_supplicant.conf ]; then
  cp /etc/wpa_supplicant/wpa_supplicant.conf ${WPATMP}
  chown tipi.tipi ${WPATMP}

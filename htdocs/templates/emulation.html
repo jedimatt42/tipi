@@ -1,0 +1,75 @@
+
+{% extends "page_template.html"%}
+{% block content %}
+
+<script>
+function onRadioChange(radio) {
+  if (radio.id === "enabled_off") {
+    document.getElementById("nfs").disabled="disabled"
+    document.getElementById("pdf").disabled="disabled"
+  }
+  if (radio.id === "enabled_on") {
+    document.getElementById("nfs").disabled=false
+    document.getElementById("pdf").disabled=false
+  }
+
+  return false;
+}
+</script>
+
+<div class="panel panel-default">
+
+<div class="backup_container">
+
+<h2>Emulation Mode</h2>
+
+<p>Configuration to enable TIPI websocket for use with TI-99/4A emulation.</p>
+
+<form name="update_emulation" action="/emulation-update" method="post">
+  <div class="form-row">
+    <input id="enabled_off" type="radio" name="enabled" value="false" 
+      {% if enabled == False %}
+        checked="checked"
+      {% endif %}
+      onchange="onRadioChange(this);"
+    />
+    <label for="enabled_off">TIPI GPIO Mode</label>
+  </div>
+  <div class="form-row">
+    <input id="enabled_on" type="radio" name="enabled" value="true" 
+      {% if enabled == True %}
+        checked="checked"
+      {% endif %}
+      onchange="onRadioChange(this);"
+    />
+    <label for="enabled_on">Emulator Websocket Mode</label>
+  </div>
+  <div class="form-row" style="margin-left: 30px;">
+    <input id="nfs" type="checkbox" name="nfs" value="nfs"
+      {% if nfs == True %}
+        checked="checked" 
+      {% endif %}
+      {% if enabled == False %}
+        disabled 
+      {% endif %}
+    />
+    <label for="nfs">Mount Qemu NFS at tipi_disk</label>
+  </div>
+  <div class="form-row" style="margin-left: 30px;">
+    <input id="pdf" type="checkbox" name="pdf" value="pdf" 
+      {% if pdf == True %}
+        checked="checked" 
+      {% endif %}
+      {% if enabled == False %}
+        disabled 
+      {% endif %}
+    />
+    <label for="pdf">Enable PDF support</label>
+  </div>
+  <div style="margin-top: 8px;">
+    <input type="submit" name="Submit" />
+  </div>
+</form>
+
+{% endblock %}
+

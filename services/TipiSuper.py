@@ -99,3 +99,13 @@ while True:
         exitcode = call(callargs)
         if exitcode:
             raise Exception("failed to create backup")
+
+    elif os.path.exists("/tmp/tipi_restart"):
+        # restart some tipi services
+        callargs = ["/home/tipi/tipi/setup/restart.sh"]
+        exitcode = call(callargs)
+        # do this last so webui can watch for it to go away
+        os.remove("/tmp/tipi_restart")
+        if exitcode:
+            raise Exception("failed to restart services")
+         

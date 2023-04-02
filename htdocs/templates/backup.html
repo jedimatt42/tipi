@@ -89,13 +89,17 @@ function deleteBackup(backup) {
     <td valign=center> {{ backup_file.date|safe }} &nbsp; &nbsp; </td>
     <td valign=center> {{ backup_file.size|safe }} &nbsp; </td>
     <td valign=center>
-      <a href="{{ backup_file.dl_link }}"><img src="/images/download_icon.png" width=32 title="Download File"/>
+      {% if backup_status != "inprogress" %}
+      <a href="{{ backup_file.dl_link }}"><img src="/images/download_icon.png" width=32 title="Download File" />
+      {% endif %}
       </a>
     </td>
     <td valign=center>
+      {% if backup_status != "inprogress" %}
       <button title="Delete Backup" class="tool_button" onclick="deleteBackup( '{{ backup_file.name }}' ); return false;">
 	  <img src="/images/delete.webp" height="10px"/>
       </button> 
+      {% endif %}
     </td>
   </tr>
 {% endfor %}

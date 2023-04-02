@@ -7,10 +7,12 @@ import io
 
 def version():
     version = {}
-    with open("/home/tipi/tipi/version.txt") as vt:
-        for line in vt.readlines():
-            parts = line.split("=")
-            version[str(parts[0].strip().lower())] = str(parts[1].strip())
+    datafiles = [ "version.txt", "branch.txt" ]
+    for f in datafiles:
+        with open(f"/home/tipi/tipi/{f}") as vt:
+            for line in vt.readlines():
+                parts = line.split("=")
+                version[str(parts[0].strip().lower())] = str(parts[1].strip())
     return version
 
 

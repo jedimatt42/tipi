@@ -31,48 +31,8 @@ if [ -e /tmp/test_update ]; then
   TIPI_UPDATE_LIBTIPI=true
 fi
 
-if [ $fmajor -le 2 ] && [ $fminor -le 40 ]; then
-  TIPI_UPDATE_USBMOUNT=true
-fi
-
-if [ $fmajor -le 2 ] && [ $fminor -le 36 ]; then
-  TIPI_UPDATE_LIBTIPI=true
-fi
-
-if [ $fmajor -le 2 ] && [ $fminor -le 35 ]; then
-  TIPI_UPDATE_LIBTIPI=true
-fi
-
-if [ $fmajor -le 2 ] && [ $fminor -le 31 ]; then
-  TIPI_UPDATE_LIBTIPI=true
-fi
-
-if [ $fmajor -le 2 ] && [ $fminor -le 22 ]; then
+if [ $fmajor -le 3 ] && [ $fminor -le 4 ]; then
   TIPI_UPDATE_DEPS=true
-fi
-
-if [ $fmajor -le 2 ] && [ $fminor -le 17 ]; then
-  TIPI_PRINTING_UPDATE=true
-fi
-
-if [ $fmajor -le 2 ] && [ $fminor -le 11 ]; then
-  TIPI_REPAIR_VAR_FIADS=true
-fi
-
-if [ $fmajor -le 2 ] && [ $fminor -le 5 ]; then
-  TIPI_UPDATE_LIBTIPI=true
-fi
-
-if [ $fmajor -le 2 ] && [ $fminor -le 4 ]; then
-  TIPI_UPDATE_DEPS=true
-fi
-
-if [ $fmajor -le 1 ] && [ $fminor -le 47 ]; then
-  TIPI_PURGE_CACHE=true
-fi
-
-if [ ! -e "/home/tipi/PrinterToPDF/printerToPDF" ]; then
-  TIPI_PRINTING_UPDATE=true
 fi
 
 #### Perform steps
@@ -88,16 +48,8 @@ if [ ! -z ${TIPI_RESTART_SERVICES:-} ]; then
 fi
 
 if [ ! -z ${TIPI_UPDATE_DEPS:-} ]; then
-  apt-get update -y
-  apt-get upgrade -y
-  apt-get install -y libsqlite3-dev
-  apt-get install -y python-pil
-  apt-get install -y python3-dev
-  # moves to the python3 version of xdt99
-  su tipi -c "cd /home/tipi/xdt99/; git pull"
-
   su tipi -c "/home/tipi/tipi/services/update-deps.sh"
-  su tipi -c "/home/tipi/tipi/htdocs/update-deps.sh"
+  # su tipi -c "/home/tipi/tipi/htdocs/update-deps.sh"
 fi
 
 if [ ! -z ${TIPI_UPDATE_LIBTIPI:-} ]; then

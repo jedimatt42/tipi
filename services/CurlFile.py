@@ -2,7 +2,9 @@ import os
 import subprocess
 import traceback
 import logging
+import itertools
 from ti_files import ti_files
+from tinames import tinames
 from Pab import *
 from ti_files.NativeFile import NativeFile
 from ti_files.BasicFile import BasicFile, basicSuffixes
@@ -19,7 +21,12 @@ class CurlFile(object):
     def filename():
         # open file in "input" for GET
         #   PI.HTTP://ti994a.cwfk.net/tipi.html
-        return ("HTTP:", "http:", "HTTPS:", "https:")
+        prefixes = ("http:", "https:")
+        # mix case
+        prefixes = tuple(itertools.chain.from_iterable([(e.upper(), e.lower()) for e in prefixes]))
+        # add json native flag
+        prefixes = tuple(itertools.chain.from_iterable([(e, f"?J.{e}") for e in prefixes]))
+        return prefixes
 
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
@@ -34,6 +41,8 @@ class CurlFile(object):
             self.close(pab, devname)
         elif op == READ:
             self.read(pab, devname)
+        elif op == WRITE:
+            self.write(pab, devname)
         elif op == STATUS:
             self.status(pab, devname)
         elif op == LOAD:
@@ -44,7 +53,6 @@ class CurlFile(object):
             self.restore(pab, devname)
         else:
             self.tipi_io.send([EOPATTR])
-
     def close(self, pab, devname):
         logger.info("close devname - %s", devname)
         self.tipi_io.send([SUCCESS])
@@ -58,7 +66,7 @@ class CurlFile(object):
         try:
             url = self.parseDev(devname)
             logger.info("url: %s", url)
-            file = self.fetch(url, pab)
+            file = self.fetch(url, pab, devname)
             self.files[devname] = file
         except BaseException:
             logger.exception("failed")
@@ -108,6 +116,26 @@ class CurlFile(object):
             return
         except Exception:
             logger.exception("failed to read from open file")
+            self.tipi_io.send([EFILERR])
+
+    def write(self, pab, devname):
+        logger.info("write devname - %s", devname)
+        try:
+            open_file = self.files[devname]
+
+            if not open_file.isLegal(pab):
+                logger.error("illegal read mode for %s", devname)
+                self.tipi_io.send([EFILERR])
+                return
+
+            self.tipi_io.send([SUCCESS])
+            bytes = self.tipi_io.receive()
+            open_file.writeRecord(bytes, pab)
+            self.tipi_io.send([SUCCESS])
+            return
+
+        except Exception:
+            logger.exception("failed to write to open file")
             self.tipi_io.send([EFILERR])
 
     def status(self, pab, devname):
@@ -200,7 +228,7 @@ class CurlFile(object):
             raise Exception("error downloading resource")
         return tmpname
 
-    def fetch(self, url, pab):
+    def fetch(self, url, pab, devname):
         tmpname = self.http_get(url, pab)
         if ti_files.isTiFile(tmpname):
             if recordType(pab) == FIXED:
@@ -208,7 +236,7 @@ class CurlFile(object):
             else:
                 return VariableRecordFile.load(tmpname, pab)
         else:
-            return NativeFile.load(tmpname, pab, "", url)
+            return NativeFile.load(tmpname, pab, tinames.nativeFlags(devname), url)
 
     def http_post(self, url, pab):
         agent = self.agent_str()
@@ -226,4 +254,4 @@ class CurlFile(object):
             raise Exception("error uploading resource")
 
     def parseDev(self, devname):
-        return str(devname[3:])
+        return str(devname[3:]).lstrip('?J.')

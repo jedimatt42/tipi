@@ -1,5 +1,6 @@
 import logging
 
+from tinames import tinames
 from ClockFile import ClockFile
 from ConfigFile import ConfigFile
 from CurlFile import CurlFile
@@ -41,11 +42,15 @@ class SpecialFiles(object):
 
     def handle(self, pab, devname):
         logger.debug("Matching special file handler for: %s", devname)
+        native_flags = tinames.nativeFlags(devname)
         if devname.startswith(("URI1.", "URI2.", "URI3.")):
             uriShortcut = devname[:4]
             link = tipi_config.get(uriShortcut)
             if link != "":
-                devname = "PI." + link + "/" + devname[5:]
+                flags = ""
+                if native_flags:
+                   flags = f".{native_flags}"
+                devname = f"PI{flags}.{link}/{devname[5:]}"
                 logger.debug("using %s to map to %s", uriShortcut, devname)
         if devname.startswith("PI."):
             fname = devname[3:]

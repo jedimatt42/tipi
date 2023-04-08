@@ -47,10 +47,18 @@ class JsonFile(object):
     def loadRecords(self, expression):
         logger.info("jmespath expression: " + expression)
         if expression:
-            result = jmespath.search(expression, self.pyData)
-            resultStr = json.dumps(result)
+            try:
+                result = jmespath.search(expression, self.pyData)
+            except jmespath.exceptions.ParseError as e:
+                result = str(e)
         else:
-            resultStr = json.dumps(self.pyData)
+            # if no query expression is provided, return the entire data structure
+            result = self.pyData
+        # if we just have a sting left, then unquote it.
+        if isinstance(result, str):
+            resultStr = result
+        else:
+            resultStr = json.dumps(result, separators=(',',':'), sort_keys=True)
         logger.info("resultStr: " + resultStr)
         if recordType(self.pab) == VARIABLE:
             self.records = JsonFile.loadLines(resultStr, self.recordLength)
@@ -111,7 +119,8 @@ class JsonFile(object):
             self.currentRecord = 0
 
     def writeRecord(self, rdata, pab):
-        self.loadRecords(str(rdata, 'latin1'))
+        query = str(rdata, 'latin1')
+        self.loadRecords(query)
 
     def readRecord(self, idx):
         if self.filetype == RELATIVE:

@@ -3,6 +3,7 @@ import subprocess
 import traceback
 import logging
 from ti_files import ti_files
+from tinames import tinames
 from Pab import *
 from ti_files.NativeFile import NativeFile
 from ti_files.BasicFile import BasicFile, basicSuffixes
@@ -58,7 +59,7 @@ class CurlFile(object):
         try:
             url = self.parseDev(devname)
             logger.info("url: %s", url)
-            file = self.fetch(url, pab)
+            file = self.fetch(url, pab, devname)
             self.files[devname] = file
         except BaseException:
             logger.exception("failed")
@@ -200,7 +201,7 @@ class CurlFile(object):
             raise Exception("error downloading resource")
         return tmpname
 
-    def fetch(self, url, pab):
+    def fetch(self, url, pab, devname):
         tmpname = self.http_get(url, pab)
         if ti_files.isTiFile(tmpname):
             if recordType(pab) == FIXED:
@@ -208,7 +209,7 @@ class CurlFile(object):
             else:
                 return VariableRecordFile.load(tmpname, pab)
         else:
-            return NativeFile.load(tmpname, pab, "", url)
+            return NativeFile.load(tmpname, pab, tinames.nativeFlags(devname), url)
 
     def http_post(self, url, pab):
         agent = self.agent_str()

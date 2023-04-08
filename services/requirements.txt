@@ -5,3 +5,4 @@ pygtail==0.7.0
 virtualenv>=20.0.8
 pre-commit==2.5.1
 unidecode>=1.1.1
+jmespath>=1.0.1

@@ -5,6 +5,8 @@ import traceback
 import math
 import logging
 from . import ti_files
+from .JsonFile import JsonFile
+from tinames.tinames import JSON_NATIVE
 from TipiConfig import TipiConfig
 from Pab import *
 
@@ -39,6 +41,9 @@ class NativeFile(object):
     @staticmethod
     def load(unix_file_name, pab, native_flags, url=""):
         logger.info("loading as native file: %s", url)
+
+        if JSON_NATIVE in native_flags:
+            return JsonFile.load(unix_file_name, pab, native_flags)
 
         if mode(pab) == OUTPUT:
             return NativeFile.create(unix_file_name, pab, native_flags)

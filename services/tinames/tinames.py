@@ -4,6 +4,7 @@ import re
 import string
 import logging
 from crccheck.crc import Crc15
+from pathlib import Path
 from TipiConfig import TipiConfig
 from unidecode import unidecode
 
@@ -20,6 +21,8 @@ FORCE_TIFILES = '?T'
 FORCE_NATIVE = '?X'
 JSON_NATIVE = '?J'
 NATIVE_FLAGS = [ TEXT_WINDOWS, FORCE_TIFILES, FORCE_NATIVE, JSON_NATIVE ]
+
+WILDCARD = '#?'
 
 
 def __driveMapping(key):
@@ -152,6 +155,12 @@ def findpath(path, part):
             )
             if candidates:
                 return candidates[0]
+        if WILDCARD in part:
+            # return the first item that matches the wildcard expression
+            globpart = part.replace(WILDCARD, "*")
+            candidates = [p for p in Path(path).glob(globpart)]
+            if candidates:
+                return candidates[0].name
 
     return part
 

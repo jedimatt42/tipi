@@ -160,6 +160,7 @@ def findpath(path, part):
             globpart = part.replace(WILDCARD, "*")
             candidates = [p for p in Path(path).glob(globpart)]
             if candidates:
+                candidates.sort()
                 return candidates[0].name
 
     return part

@@ -63,7 +63,7 @@ class JsonFile(object):
         else:
             loader = JsonFile.loadBytes
 
-        if isinstance(result, collections.abc.Sequence):
+        if not isinstance(result, str) and isinstance(result, collections.abc.Sequence):
             self.records = []
             for item in result:
                 resultStr = JsonFile.objToJson(item)

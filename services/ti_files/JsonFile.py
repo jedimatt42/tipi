@@ -6,6 +6,7 @@ import math
 import logging
 import json
 import jmespath
+import collections.abc
 from . import ti_files
 from . import JsonFile
 from TipiConfig import TipiConfig
@@ -55,16 +56,30 @@ class JsonFile(object):
             # if no query expression is provided, return the entire data structure
             result = self.pyData
         # if we just have a sting left, then unquote it.
-        if isinstance(result, str):
-            resultStr = result
-        else:
-            resultStr = json.dumps(result, separators=(',',':'), sort_keys=True)
+        resultStr = JsonFile.objToJson(result)
         logger.info("resultStr: " + resultStr)
         if recordType(self.pab) == VARIABLE:
-            self.records = JsonFile.loadLines(resultStr, self.recordLength)
+            loader = JsonFile.loadLines
         else:
-            self.records = JsonFile.loadBytes(resultStr, self.recordLength)
+            loader = JsonFile.loadBytes
+
+        if isinstance(result, collections.abc.Sequence):
+            self.records = []
+            for item in result:
+                resultStr = JsonFile.objToJson(item)
+                self.records += loader(resultStr, self.recordLength)
+        else:
+            self.records = loader(resultStr, self.recordLength)
         self.currentRecord = 0
+
+
+    @staticmethod
+    def objToJson(result):
+        if isinstance(result, str):
+            return result
+        else:
+            return json.dumps(result, separators=(',',':'), sort_keys=True)
+
 
     @staticmethod
     def loadLines(jsonStr, recLen, encoding='latin1'):

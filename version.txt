@@ -1,2 +1,2 @@
-version=3.5
-reldate=2023-04-08
+version=3.6
+reldate=2023-04-14

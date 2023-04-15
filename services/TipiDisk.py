@@ -290,7 +290,7 @@ class TipiDisk(object):
         logger.info("Opcode 5 LOAD - %s", devname)
         logPab(pab)
         maxsize = recordNumber(pab)
-        unix_name = tinames.devnameToLocal(devname)
+        unix_name = tinames.devnameToLocal(devname, prog=True)
 
         if unix_name is None or not os.path.exists(unix_name):
             logger.info("Passing to other controllers")

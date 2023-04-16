@@ -7,6 +7,8 @@ from crccheck.crc import Crc15
 from pathlib import Path
 from TipiConfig import TipiConfig
 from unidecode import unidecode
+from ti_files import ti_files
+from ti_files.BasicFile import basicSuffixes
 
 # Transform a name supplied by the 4A into our storage path
 
@@ -70,7 +72,7 @@ def nativeFlags(devname):
     return ""
 
 
-def devnameToLocal(devname):
+def devnameToLocal(devname, prog=False):
     parts = str(devname).split(".")
     path = None
     startpart = 1
@@ -101,7 +103,10 @@ def devnameToLocal(devname):
     for part in parts[startpart:]:
         if part != "":
             logger.debug("matching path part: %s", part)
-            path += "/" + findpath(path, part)
+            if part == parts[-1]:
+                path += "/" + findpath(path, part, prog=prog)
+            else:
+                path += "/" + findpath(path, part, dir=True)
             logger.debug("building path: %s", path)
 
     path = str(path).strip()
@@ -139,7 +144,7 @@ def baseN(num, b, numerals="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"):
 # long TI names
 
 
-def findpath(path, part):
+def findpath(path, part, prog=False, dir=False):
     part = part.replace("/", ".").replace("\\", ".")
     # if the file actually exists (or dir) then use literal name
     if os.path.exists(os.path.join(path, part)):
@@ -161,9 +166,26 @@ def findpath(path, part):
             candidates = [p for p in Path(path).glob(globpart)]
             if candidates:
                 candidates.sort()
-                return candidates[0].name
-
+                for item in candidates:
+                    if dir:
+                        # item must be a directory... 
+                        if os.path.isdir(os.path.join(path, item.name)):
+                            return item.name
+                    elif prog:
+                        # item must be a Program image, or convertable type
+                        if isProgramLike(os.path.join(path, item.name)):
+                            return item.name
+                    else:
+                        return candidates[0].name
     return part
+
+
+def isProgramLike(path):
+    if os.path.exists(path):
+        type = ti_files.get_file_type(path)
+        if type == "PRG" or (type == "native" and path.lower().endswith(basicSuffixes)):
+            return True
+    return False
 
 
 def local2tipi(localpath):

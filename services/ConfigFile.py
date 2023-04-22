@@ -16,6 +16,7 @@ class ConfigFile(object):
     def __init__(self, tipi_io):
         self.tipi_io = tipi_io
         self.currentRecord = 0
+        self.reclen = 80
         self.tipi_config = TipiConfig.instance()
 
     def handle(self, pab, devname):
@@ -40,11 +41,12 @@ class ConfigFile(object):
 
     def open(self, pab, devname):
         if dataType(pab) == DISPLAY:
-            if recordLength(pab) == 0 or recordLength(pab) == 80:
+            if recordLength(pab) == 0 or recordLength(pab) >= 80:
+                self.reclen = recordLength(pab) if recordLength(pab) else 80
                 self.currentRecord = 0
                 self.tipi_config.load()
                 self.tipi_io.send([SUCCESS])
-                self.tipi_io.send([80])
+                self.tipi_io.send([self.reclen])
                 return
         self.tipi_io.send([EOPATTR])
 
@@ -57,7 +59,7 @@ class ConfigFile(object):
             value = self.tipi_config.get(key)
             msg = key + "=" + value
             self.tipi_io.send([SUCCESS])
-            self.tipi_io.send(bytearray(msg, 'ascii'))
+            self.tipi_io.send(bytearray(msg[:self.reclen], 'ascii'))
             self.currentRecord += 1
             return
         self.tipi_io.send([EOPATTR])

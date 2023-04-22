@@ -145,9 +145,9 @@ class TipiConfig(object):
         items = newvalue.split(',')
         clean_list = []
         for dir in items:
-            # if the user does not include the TIPI. device prefix, add it for them.
-            if not dir.startswith("TIPI."):
-                dir = f"TIPI.{dir}"
+            # if the user includes the TIPI. device prefix, remove it for them.
+            if dir.startswith("TIPI."):
+                dir = dir[5:]
             # if the user does not include the trailing directory separator, add it for them.
             if not dir.endswith("."):
                 dir = f"{dir}."

@@ -29,7 +29,7 @@ class NativeFile(object):
         if self.native_flags == "?W":
             host_eol = tipi_config.get("HOST_EOL", '\r\n')
             # bad input / safe default
-            line_ending = '\r\n'
+            self.line_ending = '\r\n'
             if host_eol == "CRLF":
                 self.line_ending = '\r\n'
             elif host_eol == "LF":
@@ -74,7 +74,7 @@ class NativeFile(object):
                 nf.currentRecord = len(records)
             return nf
 
-        except Exception as e:
+        except Exception:
             logger.exception("not a valid NativeFile %s", unix_file_name)
             raise
 

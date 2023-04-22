@@ -33,6 +33,7 @@ CONFIG_DEFAULTS = {
     "DIR_SORT": "FIRST",
     "EAGER_WRITE": "off",
     "HOST_EOL": "CRLF",
+    "NATIVE_TEXT_DIRS": "",
 }
 
 
@@ -103,8 +104,7 @@ class TipiConfig(object):
         newvalue = value.strip()
         oldvalue = self.records.get(key, "")
         if oldvalue != newvalue:
-            if key.endswith("_DIR"):
-                newvalue = self.__sanitizeMapping(newvalue)
+            newvalue = self.__sanitizeValue(key, newvalue)
             self.records[key] = newvalue
             self.sorted_keys = list(self.records.keys())
             self.sorted_keys.sort()
@@ -112,6 +112,7 @@ class TipiConfig(object):
 
     def settmp(self, key, value):
         """ Update item, but do not add to changes. """
+        value = self.__sanitizeValue(key, value)
         self.records[key.strip()] = value.strip()
 
     def get(self, key, default=None):
@@ -132,6 +133,26 @@ class TipiConfig(object):
             out_file.write("\n")
         while os.path.exists("/tmp/tz"):
             time.sleep(0.5)
+
+    def __sanitizeValue(self, key, newvalue):
+        if key.endswith("_DIR"):
+            return self.__sanitizeMapping(newvalue)
+        if key == "NATIVE_TEXT_DIRS":
+            return self.__sanitizeDirList(newvalue)
+        return newvalue
+
+    def __sanitizeDirList(self, newvalue):
+        items = newvalue.split(',')
+        clean_list = []
+        for dir in items:
+            # if the user does not include the TIPI. device prefix, add it for them.
+            if not dir.startswith("TIPI."):
+                dir = f"TIPI.{dir}"
+            # if the user does not include the trailing directory separator, add it for them.
+            if not dir.endswith("."):
+                dir = f"{dir}."
+            clean_list.append(dir)
+        return ','.join(clean_list)
 
     def __sanitizeMapping(self, newvalue):
         if newvalue == "." or newvalue == "TIPI." or newvalue == "TIPI":

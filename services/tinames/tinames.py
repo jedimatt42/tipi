@@ -69,6 +69,13 @@ def nativeFlags(devname):
     flags = parts[startpart]
     if flags in NATIVE_FLAGS:
         return flags
+
+    # check if any of text_dirs is a prefix of target_path
+    text_dirs = [devnameToLocal(dir) for dir in tipi_config.get("NATIVE_TEXT_DIRS").split(',')]
+    target_path = devnameToLocal(devname)
+    if True in [(td in target_path) for td in text_dirs]:
+        return TEXT_WINDOWS
+
     return ""
 
 

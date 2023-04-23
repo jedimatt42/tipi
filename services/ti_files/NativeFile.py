@@ -1,11 +1,6 @@
-import os
-import io
-import sys
-import traceback
-import math
 import logging
-from . import ti_files
 from .JsonFile import JsonFile
+from .ForthEncoder import ForthEncoder
 from tinames.tinames import JSON_NATIVE
 from TipiConfig import TipiConfig
 from Pab import *
@@ -44,6 +39,9 @@ class NativeFile(object):
 
         if JSON_NATIVE in native_flags:
             return JsonFile.load(unix_file_name, pab, native_flags)
+
+        if unix_file_name.lower().endswith(".fb"):
+            return ForthFile.load(unix_file_name, pab)
 
         if mode(pab) == OUTPUT:
             return NativeFile.create(unix_file_name, pab, native_flags)
@@ -96,10 +94,10 @@ class NativeFile(object):
         return NativeFile([], recLen, statByte, pab, native_flags)
 
     @staticmethod
-    def loadLines(fp, recLen, encoding='latin1'):
+    def loadLines(unix_file_name, recLen, encoding='latin1'):
         i = 0
         records = []
-        with open(fp, 'r', encoding=encoding) as f:
+        with open(unix_file_name, 'r', encoding=encoding) as f:
             for i, l in enumerate(f):
                 bytes = bytearray(l.rstrip(), encoding)
                 if len(bytes) > 0:
@@ -109,9 +107,9 @@ class NativeFile(object):
         return records
 
     @staticmethod
-    def loadBytes(fp, recLen):
+    def loadBytes(unix_file_name, recLen):
         records = []
-        with open(fp, 'rb') as f:
+        with open(unix_file_name, 'rb') as f:
             bytes = bytearray(f.read())
             records += NativeFile.divide_chunks(bytes, recLen, True)
         return records

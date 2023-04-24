@@ -52,7 +52,7 @@ class ForthFile(object):
                    self.blocks.append(bytearray(''.ljust(1024,' '),'ascii'))
                 leading_space = 1 if i > 0 else 0
                 self.blocks[cur_blk][i+leading_space:llen] = bytearray(l, 'ascii')
-                i += llen + 1
+                i += llen + leading_space
 
     def isLegal(self, pab):
         return True

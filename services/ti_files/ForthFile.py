@@ -15,7 +15,7 @@ class ForthFile(object):
         self.loadRecords(unix_file_name)
 
     @staticmethod
-    def load(unix_file_name, pab, native_flags):
+    def load(unix_file_name, pab):
         logger.info("creating as Forth file")
         if recordType(pab) == VARIABLE:
             return None
@@ -28,10 +28,31 @@ class ForthFile(object):
             statByte |= STINTERNAL
         return ForthFile(unix_file_name, statByte, pab)
 
-    # query the data structure and set records based on result string
     def loadRecords(self, unix_file_name):
-        self.records = []
+        self.blocks = []
+        self.blocks.append(bytearray(''.ljust(1024,' '),'ascii'))
         self.currentRecord = 0
+        # read all the text, and pack it into Forth blocks
+        #   if the text exceeds a block before the end of 
+        #   the current block, add a '-->' next block command
+        #   and continue packing into the next block
+        cur_blk = 0
+        i = 0
+        with open(unix_file_name, "r") as f:
+            lines = f.readlines()
+            for l in lines:
+                l = l.strip()
+                l = ' '.join(l.split())
+                logger.info("line: '%s'", l)
+                llen = len(l)
+                if i+llen+5 > 1023:
+                   self.blocks[cur_blk][i+1:i+4] = bytearray("-->", 'ascii') 
+                   cur_blk += 1
+                   i = 0
+                   self.blocks.append(bytearray(''.ljust(1024,' '),'ascii'))
+                leading_space = 1 if i > 0 else 0
+                self.blocks[cur_blk][i+leading_space:llen] = bytearray(l, 'ascii')
+                i += llen + 1
 
     def isLegal(self, pab):
         return True
@@ -59,9 +80,13 @@ class ForthFile(object):
         return record
 
     def getRecord(self, idx):
-        if idx >= len(self.records):
+        byte_idx = idx * 128
+        if byte_idx > len(self.blocks) * 1024:
             return None
-        return self.records[idx]
+        bl_idx = byte_idx // 1024
+        ibl_idx = byte_idx % 1024
+        ebl_idx = ibl_idx + 128
+        return self.blocks[bl_idx][ibl_idx:ebl_idx]
 
     def getRecordLength(self):
         return self.recordLength

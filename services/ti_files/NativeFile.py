@@ -1,6 +1,6 @@
 import logging
 from .JsonFile import JsonFile
-from .ForthEncoder import ForthEncoder
+from .ForthFile import ForthFile
 from tinames.tinames import JSON_NATIVE
 from TipiConfig import TipiConfig
 from Pab import *

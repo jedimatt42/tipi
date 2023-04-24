@@ -12,6 +12,7 @@ import logging
 import time
 import re
 from ti_files import ti_files
+from tinames import tinames
 
 LOGGER = logging.getLogger(__name__)
 
@@ -142,14 +143,17 @@ class TipiConfig(object):
         return newvalue
 
     def __sanitizeDirList(self, newvalue):
+        if newvalue.strip() == "":
+            return ""
         items = newvalue.split(',')
         clean_list = []
         for dir in items:
             # if the user includes the TIPI. device prefix, remove it for them.
-            if dir.startswith("TIPI."):
+            # unless they actually have a TIPI. directory
+            if dir.startswith("TIPI.") and not os.path.isdir("/home/tipi/tipi_disk/TIPI"):
                 dir = dir[5:]
             # if the user does not include the trailing directory separator, add it for them.
-            if not dir.endswith("."):
+            if dir and not dir.endswith("."):
                 dir = f"{dir}."
             clean_list.append(dir)
         return ','.join(clean_list)

@@ -105,7 +105,7 @@ class TipiDisk(object):
 
         if mode(pab) != OUTPUT and os.path.exists(unix_name):
             try:
-                if not native_flags and ti_files.isTiFile(unix_name):
+                if ti_files.isTiFile(unix_name):
                     # check protect flag
                     if mode(pab) != INPUT:
                         fh = open(unix_name, "rb")
@@ -118,7 +118,7 @@ class TipiDisk(object):
                         open_file = FixedRecordFile.load(unix_name, pab)
                     else:
                         open_file = VariableRecordFile.load(unix_name, pab)
-                else:
+                elif native_flags:
                     open_file = NativeFile.load(unix_name, pab, native_flags)
 
                 if open_file is None:

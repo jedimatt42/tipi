@@ -65,7 +65,6 @@ def nativeFlags(devname):
     target_path = devnameToLocal(devname)
     if not target_path:
        return ""
-
     parts = str(devname).split(".")
     startpart = 1
     if parts[0] == "DSK":
@@ -73,14 +72,16 @@ def nativeFlags(devname):
     flags = parts[startpart]
     if flags in NATIVE_FLAGS:
         return flags
+    return nativeTextDir(target_path)
 
+
+def nativeTextDir(target_path):
     # check if any of text_dirs is a prefix of target_path
     native_text_dirs = [f"TIPI.{a.strip()}" for a in tipi_config.get("NATIVE_TEXT_DIRS").split(',') if a]
     if native_text_dirs and len(native_text_dirs):
         text_dirs = [devnameToLocal(dir) for dir in native_text_dirs]
         if True in [(td in target_path) for td in text_dirs]:
             return TEXT_WINDOWS
-
     return ""
 
 

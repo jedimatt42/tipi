@@ -8,6 +8,7 @@ from ti_files import ti_files
 from tinames import tinames
 from TipiConfig import TipiConfig
 from SectorDisk import SectorDisk
+from ti_files.NativeFile import NativeFile
 
 
 logger = logging.getLogger(__name__)
@@ -338,6 +339,11 @@ class LevelTwo(object):
             bytes = bytearray(fh.read())
             if ti_files.isValid(bytes):
                 return bytes
+        if tinames.TEXT_WINDOWS == tinames.nativeTextDir(localname):
+            # try to load the NativeFile, and then ask it to convert to bytes 
+            records = NativeFile.loadLines(localname, 80)
+            # make a VariableRecordFile, pack, and get the bytes
+
         return None
         
     def saveFile(self,localname,bytes):

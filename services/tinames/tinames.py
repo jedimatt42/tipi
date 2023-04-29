@@ -106,7 +106,7 @@ def devnameToLocal(devname, prog=False):
         startpart = 2
 
     if path == None or path == "":
-        logger.info("no path matched")
+        logger.debug("no path matched")
         return None
 
     # skip native file modes when finding linux path

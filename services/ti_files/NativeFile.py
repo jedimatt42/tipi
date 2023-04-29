@@ -103,7 +103,7 @@ class NativeFile(object):
                 if len(bytes) > 0:
                     records += NativeFile.divide_chunks(bytes, recLen)
                 else:
-                    records += [bytearray()]
+                    records += [bytearray("", encoding)]
         return records
 
     @staticmethod

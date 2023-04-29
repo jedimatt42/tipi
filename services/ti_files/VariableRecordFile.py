@@ -11,20 +11,31 @@ logger = logging.getLogger(__name__)
 
 
 class VariableRecordFile(object):
-    def __init__(self, bytes, pab):
-        self.dirty = False
-        self.mode = mode(pab)
-        self.header = bytes[:128]
-        self.recordLength = ti_files.recordLength(self.header)
-        if self.mode != OUTPUT:
-            self.records = self.__loadRecords(bytes[128:])
-        else:
-            self.dirty = True
-            self.records = []
-        if self.mode == APPEND:
-            self.currentRecord = len(self.records)
-        else:
+    def __init__(self, bytes, pab, records=None):
+        if records:
+            # taking the data from somewhere else, like native file magic
+            # bytes needs to be a synthesized header
+            self.header = bytes
+            self.records = records
             self.currentRecord = 0
+            self.recordLength = 80
+            self.mode = APPEND
+            self.dirty = True
+        else:
+            self.dirty = False
+            self.mode = mode(pab)
+            self.header = bytes[:128]
+            self.recordLength = ti_files.recordLength(self.header)
+            if self.mode != OUTPUT:
+                self.records = self.__loadRecords(bytes[128:])
+            else:
+                self.dirty = True
+                self.records = []
+            if self.mode == APPEND:
+                self.currentRecord = len(self.records)
+            else:
+                self.currentRecord = 0
+
 
     @staticmethod
     def create(devname, localPath, pab):
@@ -41,6 +52,17 @@ class VariableRecordFile(object):
         ti_files.setRecordLength(header, recLen)
         ti_files.setRecordsPerSector(header, int(256 / recLen))
         return VariableRecordFile(header, pab)
+
+
+    @staticmethod
+    def fromNative(devname, localPath, records):
+        flags = ti_files.VARIABLE
+        nameParts = str(devname).split(".")
+        tiname = nameParts[len(nameParts) - 1]
+        header = ti_files.createHeader(flags, tiname, bytearray(0))
+        ti_files.setRecordLength(header, 80)
+        return VariableRecordFile(header, pab=None, records=records)
+
 
     @staticmethod
     def load(unix_file_name, pab):
@@ -152,6 +174,9 @@ class VariableRecordFile(object):
 
     def eager_write(self, localPath):
         self.close(localPath)
+
+    def get_bytes(self):
+        return self.__packRecords()
 
     def __packRecords(self):
         sectors = []

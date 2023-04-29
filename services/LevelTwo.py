@@ -9,6 +9,7 @@ from tinames import tinames
 from TipiConfig import TipiConfig
 from SectorDisk import SectorDisk
 from ti_files.NativeFile import NativeFile
+from ti_files.VariableRecordFile import VariableRecordFile
 
 
 logger = logging.getLogger(__name__)
@@ -115,10 +116,10 @@ class LevelTwo(object):
             logger.info("target file already exists: %s", newlocalname)
             self.tipi_io.send([EDEVERR])
 
-        if os.path.isdir(origlocalname):
+        if os.path.isdir(origlocalname) or not ti_files.isTiFile(origlocalname):
             os.rename(origlocalname,newlocalname)
         else:
-            bytes = self.getFileBytes(origlocalname)
+            bytes = self.getFileBytes(origlocalname, unit, filename)
             bytes = ti_files.setHeaderFilename(newfilename, bytes)
             self.saveFile(newlocalname, bytes)
             os.unlink(origlocalname)
@@ -218,9 +219,9 @@ class LevelTwo(object):
             self.tipi_io.send([EDEVERR])
             return True
 
-        fbytes = self.getFileBytes(localfilename)
+        fbytes = self.getFileBytes(localfilename, unit, filename)
         if fbytes is None:
-            logger.error("not TIFILES")
+            logger.error("unsupported file for direct-input")
             self.tipi_io.send([EDEVERR])
             return True
 
@@ -294,7 +295,7 @@ class LevelTwo(object):
         logger.debug("requested bytes start: %d, end: %d", bytestart, byteend)
 
         if os.path.exists(localfilename) and blocks != 0:
-            fbytes = self.getFileBytes(localfilename)
+            fbytes = self.getFileBytes(localfilename, unit, filename)
         else:
             raw = bytearray(byteend - 128)
             header = ti_files.createHeader(0, filename, raw)
@@ -327,22 +328,30 @@ class LevelTwo(object):
         self.tipi_io.send([SUCCESS])
         return True
         
-    def getLocalName(self,unit,filename):
+    def getDevname(self, unit, filename):
         if self.unitpath[unit] != "":
-            devname = self.unitpath[unit] + filename
+            return self.unitpath[unit] + filename
         else:
-            devname = "DSK" + str(unit) + "." + filename
+            return "DSK" + str(unit) + "." + filename
+
+    def getLocalName(self, unit, filename):
+        devname = self.getDevname(unit, filename)
         return tinames.devnameToLocal(devname)
 
-    def getFileBytes(self,localname):
+    def getFileBytes(self, localname, unit, filename):
         with open(localname, 'rb') as fh:
             bytes = bytearray(fh.read())
             if ti_files.isValid(bytes):
                 return bytes
         if tinames.TEXT_WINDOWS == tinames.nativeTextDir(localname):
+            devname = self.getDevname(unit, filename)
             # try to load the NativeFile, and then ask it to convert to bytes 
             records = NativeFile.loadLines(localname, 80)
             # make a VariableRecordFile, pack, and get the bytes
+            return VariableRecordFile.fromNative(devname, localname, records).get_bytes()
+        else:
+            # treat it like a DIS/FIX 128
+            pass
 
         return None
         

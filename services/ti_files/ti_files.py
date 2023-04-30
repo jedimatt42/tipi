@@ -18,34 +18,28 @@ def isTiFile(filename):
     fh = None
     try:
         if os.path.exists(filename) and os.stat(filename).st_size >= 128:
-            fh = open(filename, 'rb')
-            header = bytearray(fh.read()[:9])
-            return isValid(header)
+            with open(filename, 'rb') as fh:
+                header = bytearray(fh.read()[:9])
+                return isValid(header)
     except IsADirectoryError:
         pass
     except Exception as e:
         logger.error(e, exc_info=True)
         pass
-    finally:
-        if fh is not None:
-            fh.close()
     return False
 
 def get_file_type(filename):
     fh = None
     try:
         if os.path.exists(filename) and os.stat(filename).st_size >= 128:
-            fh = open(filename, 'rb')
-            header = bytearray(fh.read()[:128])
-            isGood = isValid(header)
-            if isGood:
-                return shortFileType(header)
+            with open(filename, 'rb') as fh:
+                header = bytearray(fh.read()[:128])
+                isGood = isValid(header)
+                if isGood:
+                    return shortFileType(header)
     except Exception as e:
         logger.error(e, exc_info=True)
         pass
-    finally:
-        if fh is not None:
-            fh.close()
     return "native"
 
 

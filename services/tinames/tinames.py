@@ -9,6 +9,7 @@ from TipiConfig import TipiConfig
 from unidecode import unidecode
 from ti_files import ti_files
 from ti_files.BasicFile import basicSuffixes
+from tinames.NativeFlags import *
 
 # Transform a name supplied by the 4A into our storage path
 
@@ -17,12 +18,6 @@ logger = logging.getLogger(__name__)
 tipi_config = TipiConfig.instance()
 
 TIPI_DIR = "/home/tipi/tipi_disk"
-
-TEXT_WINDOWS = '?W'
-FORCE_TIFILES = '?T'
-FORCE_NATIVE = '?X'
-JSON_NATIVE = '?J'
-NATIVE_FLAGS = [ TEXT_WINDOWS, FORCE_TIFILES, FORCE_NATIVE, JSON_NATIVE ]
 
 WILDCARD = '#?'
 
@@ -123,7 +118,7 @@ def devnameToLocal(devname, prog=False):
             logger.debug("building path: %s", path)
 
     path = str(path).strip()
-    logger.info("%s -> %s", devname, path)
+    logger.debug("%s -> %s", devname, path)
 
     return path
 

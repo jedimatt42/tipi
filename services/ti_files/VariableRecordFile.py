@@ -5,7 +5,9 @@ import math
 import logging
 from . import ti_files
 from tinames import tinames
+from tinames import NativeFlags
 from Pab import *
+from ti_files.NativeFile import NativeFile
 
 logger = logging.getLogger(__name__)
 
@@ -23,10 +25,11 @@ class VariableRecordFile(object):
             self.dirty = True
         else:
             self.dirty = False
-            self.mode = mode(pab)
+            self.mode = APPEND if pab is None else mode(pab)
             self.header = bytes[:128]
             self.recordLength = ti_files.recordLength(self.header)
             if self.mode != OUTPUT:
+                logger.info("loading existing records: %d", len(bytes))
                 self.records = self.__loadRecords(bytes[128:])
             else:
                 self.dirty = True
@@ -62,6 +65,14 @@ class VariableRecordFile(object):
         header = ti_files.createHeader(flags, tiname, bytearray(0))
         ti_files.setRecordLength(header, 80)
         return VariableRecordFile(header, pab=None, records=records)
+
+
+    @staticmethod
+    def toNative(devname, localPath, bytes):
+        logger.info("Loading records from file blocks")
+        records = VariableRecordFile(bytes, pab=None).records
+        logger.info("record count from file: %d", len(records))
+        NativeFile(records, 80, None, None, NativeFlags.TEXT_WINDOWS).writeLines(localPath)
 
 
     @staticmethod
@@ -129,6 +140,7 @@ class VariableRecordFile(object):
         return self.recordLength
 
     def __loadRecords(self, bytes):
+        logger.info("__loadRecords from bytes: %d", len(bytes))
         records = []
         # variable records return sectors instead of actual record count
         sectors = ti_files.recordCount(self.header)
@@ -156,8 +168,9 @@ class VariableRecordFile(object):
                     nextoff += bytes[offset] + 1
                 record = bytearray(bytes[offset + 1 : nextoff])
                 records += [record]
-        except Exception as e:
-            logger.exception("failed to load all records")
+        except Exception:
+            logger.warn("failed to load all records")
+            return []
 
         return records
 

@@ -1,7 +1,7 @@
 import logging
 from .JsonFile import JsonFile
 from .ForthFile import ForthFile
-from tinames.tinames import JSON_NATIVE
+from tinames.NativeFlags import JSON_NATIVE, TEXT_WINDOWS
 from TipiConfig import TipiConfig
 from Pab import *
 
@@ -18,10 +18,11 @@ class NativeFile(object):
         self.currentRecord = 0
         self.recordLength = recordLength
         self.statByte = statByte
-        self.filetype = fileType(pab)
+        if pab:
+            self.filetype = fileType(pab)
         self.pab = pab
         self.native_flags = native_flags
-        if self.native_flags == "?W":
+        if self.native_flags == TEXT_WINDOWS:
             host_eol = tipi_config.get("HOST_EOL", '\r\n')
             # bad input / safe default
             self.line_ending = '\r\n'

@@ -6,6 +6,7 @@ import logging
 from Pab import *
 from ti_files import ti_files
 from tinames import tinames
+from tinames import NativeFlags
 from TipiConfig import TipiConfig
 from SectorDisk import SectorDisk
 from ti_files.NativeFile import NativeFile
@@ -87,7 +88,7 @@ class LevelTwo(object):
         try:
             bytes = self.getFileBytes(localfilename)
             ti_files.setProtected(bytes,protvalue)
-            self.saveFile(localfilename,bytes)
+            self.saveFile(localfilename, bytes, unit, filename)
             self.tipi_io.send([SUCCESS])
         except Exception as e:
             logger.error("Error setting protect bit", exc_info=True)
@@ -121,7 +122,7 @@ class LevelTwo(object):
         else:
             bytes = self.getFileBytes(origlocalname, unit, filename)
             bytes = ti_files.setHeaderFilename(newfilename, bytes)
-            self.saveFile(newlocalname, bytes)
+            self.saveFile(newlocalname, bytes, unit, filename)
             os.unlink(origlocalname)
 
         logger.info("file renamed to: %s", newlocalname)
@@ -239,7 +240,7 @@ class LevelTwo(object):
 
         if blocks == 0:
             startblock = ti_files.getSectors(fbytes)
-            logger.debug("setting total sectors: %d", startblock)
+            logger.info("setting total sectors: %d", startblock)
 
         finfo = bytearray(8)
         finfo[0] = startblock >> 8
@@ -255,7 +256,7 @@ class LevelTwo(object):
 
         if blocks != 0:
             blockdata = fbytes[bytestart:byteend]
-            logger.debug("Sending file data: %d bytes", len(blockdata))
+            logger.info("Sending file data: %d bytes", len(blockdata))
             self.tipi_io.send(blockdata)
 
         return True
@@ -282,33 +283,24 @@ class LevelTwo(object):
             self.tipi_io.send([EDEVERR])
             return True
 
-        # check protect flag
-        if os.path.exists(localfilename) and ti_files.isTiFile(localfilename):
-            fh = open(localfilename, "rb")
-            header = bytearray(fh.read())[:128]
-            # if ti_files.isProtected(header):
-            #     self.tipi_io.send([EWPROT])
-            #     return True
-
         bytestart = 128 + (startblock * 256)
         byteend = bytestart + (blocks * 256)
-        logger.debug("requested bytes start: %d, end: %d", bytestart, byteend)
+        logger.info("requested bytes start: %d, end: %d", bytestart, byteend)
 
         if os.path.exists(localfilename) and blocks != 0:
             fbytes = self.getFileBytes(localfilename, unit, filename)
         else:
             raw = bytearray(byteend - 128)
             header = ti_files.createHeader(0, filename, raw)
-            logger.debug("header len %d, raw len %d", len(header), len(raw))
+            logger.info("header len %d, raw len %d", len(header), len(raw))
             fbytes = header + raw
-            logger.debug("created file bytes: %d", len(fbytes))
+            logger.info("created file bytes: %d", len(fbytes))
 
         if blocks == 0:
             fbytes[10:16] = finfo[0:6]
-            self.saveFile(localfilename, fbytes)
-
-        if blocks != 0:
-            logger.info("tifiles.getSectors: %d", ti_files.getSectors(fbytes))
+            total = 128 + (256 * ti_files.getSectors(fbytes))
+            self.saveFile(localfilename, fbytes, unit, filename)
+        else:
             total = 128 + (256 * ti_files.getSectors(fbytes))
             if bytestart >= total or byteend > total:
                 logger.error("request exceeds file size: t: %d, s: %d, e: %d", total, bytestart, byteend)
@@ -323,7 +315,7 @@ class LevelTwo(object):
 
         blockdata = self.tipi_io.receive()
         fbytes[bytestart:byteend] = blockdata
-        self.saveFile(localfilename, fbytes)
+        self.saveFile(localfilename, fbytes, unit, filename, cleanup=(byteend == total))
 
         self.tipi_io.send([SUCCESS])
         return True
@@ -339,14 +331,18 @@ class LevelTwo(object):
         return tinames.devnameToLocal(devname)
 
     def getFileBytes(self, localname, unit, filename):
+        if os.path.exists(localname + ".tifile"):
+            localname = localname + ".tifile"
         with open(localname, 'rb') as fh:
             bytes = bytearray(fh.read())
-            if ti_files.isValid(bytes):
+            if len(bytes) >= 128 and ti_files.isValid(bytes):
                 return bytes
-        if tinames.TEXT_WINDOWS == tinames.nativeTextDir(localname):
+        if NativeFlags.TEXT_WINDOWS == tinames.nativeTextDir(localname):
+            logger.info("getFileBytes reading lines from native file")
             devname = self.getDevname(unit, filename)
             # try to load the NativeFile, and then ask it to convert to bytes 
             records = NativeFile.loadLines(localname, 80)
+            logger.info("found %d records", len(records))
             # make a VariableRecordFile, pack, and get the bytes
             return VariableRecordFile.fromNative(devname, localname, records).get_bytes()
         else:
@@ -355,10 +351,26 @@ class LevelTwo(object):
 
         return None
         
-    def saveFile(self,localname,bytes):
-        logger.debug("saveFile len: %d", len(bytes))
-        with open(localname,"wb") as fh:
+    def saveFile(self, localname, bytes, unit, filename, cleanup=False):
+        save_name = localname
+        native_text_mode = NativeFlags.TEXT_WINDOWS == tinames.nativeTextDir(localname) and not ti_files.isTiFile(localname)
+        if native_text_mode:
+            save_name = localname + ".tifile"
+
+        logger.info("saveFile len: %d", len(bytes))
+        with open(save_name,"wb") as fh:
             fh.write(bytes)
+
+        if native_text_mode:
+            logger.info("convert %s to native text file %s", save_name, localname)
+            devname = self.getDevname(unit, filename)
+            with open(save_name, 'rb') as fh:
+                allbytes = fh.read()
+                VariableRecordFile.toNative(devname, localname, allbytes)
+                logger.info("save completed.")
+            logger.info("cleaning up %s", save_name)
+            if cleanup:
+                os.unlink(save_name)
 
     def getLocalDisk(self,unit):
         devname = "DSK" + str(unit) + "."

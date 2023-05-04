@@ -11,27 +11,37 @@ logger = logging.getLogger(__name__)
 
 
 class FixedRecordFile(object):
-    def __init__(self, bytes, pab):
-        self.dirty = False
-        self.header = bytes[:128]
-        self.mode = mode(pab)
-        self.filetype = fileType(pab)
-        self.recordLength = ti_files.recordLength(self.header)
-        if self.mode == OUTPUT and self.filetype == SEQUENTIAL:
-            self.records = []
+    def __init__(self, bytes, pab, records=None):
+        if records:
+            # taking the data from somewhere else, like native file magic
+            # bytes needs to be a header
+            self.header = bytes
+            self.records = records
+            self.currentRecord = 0
+            self.recordLength = 128
+            self.mode = APPEND
             self.dirty = True
         else:
-            self.records = self.__loadRecords(bytes[128:])
-        if self.mode == APPEND:
-            self.currentRecord = len(self.records)
-        else:
-            self.currentRecord = 0
-        logger.info(
-            "records loaded: %d, currentRecord: %d, recordLength: %d",
-            len(self.records),
-            self.currentRecord,
-            self.recordLength,
-        )
+            self.dirty = False
+            self.header = bytes[:128]
+            self.mode = mode(pab)
+            self.filetype = fileType(pab)
+            self.recordLength = ti_files.recordLength(self.header)
+            if self.mode == OUTPUT and self.filetype == SEQUENTIAL:
+                self.records = []
+                self.dirty = True
+            else:
+                self.records = self.__loadRecords(bytes[128:])
+            if self.mode == APPEND:
+                self.currentRecord = len(self.records)
+            else:
+                self.currentRecord = 0
+            logger.info(
+                "records loaded: %d, currentRecord: %d, recordLength: %d",
+                len(self.records),
+                self.currentRecord,
+                self.recordLength,
+            )
 
     @staticmethod
     def create(devname, localpath, pab):
@@ -50,6 +60,15 @@ class FixedRecordFile(object):
         recordFile = FixedRecordFile(header, pab)
         recordFile.dirty = True
         return recordFile
+
+    @staticmethod
+    def fromNative(devname, localPath, records):
+        flags = 0
+        nameParts = str(devname).split(".")
+        tiname = nameParts[len(nameParts) - 1]
+        header = ti_files.createHeader(flags, tiname, bytearray(0))
+        ti_files.setRecordLength(header, 128)
+        return FixedRecordFile(header, pab=None, records=records)
 
     @staticmethod
     def load(unix_file_name, pab):
@@ -161,6 +180,9 @@ class FixedRecordFile(object):
 
     def eager_write(self, localPath):
         self.close(localPath)
+
+    def get_bytes(self):
+        return self.__packRecords()
 
     def __packRecords(self):
         recLen = self.recordLength

@@ -9,6 +9,7 @@ from TipiConfig import TipiConfig
 from unidecode import unidecode
 from ti_files import ti_files
 from ti_files.BasicFile import basicSuffixes
+from tinames.NativeFlags import *
 
 # Transform a name supplied by the 4A into our storage path
 
@@ -17,12 +18,6 @@ logger = logging.getLogger(__name__)
 tipi_config = TipiConfig.instance()
 
 TIPI_DIR = "/home/tipi/tipi_disk"
-
-TEXT_WINDOWS = '?W'
-FORCE_TIFILES = '?T'
-FORCE_NATIVE = '?X'
-JSON_NATIVE = '?J'
-NATIVE_FLAGS = [ TEXT_WINDOWS, FORCE_TIFILES, FORCE_NATIVE, JSON_NATIVE ]
 
 WILDCARD = '#?'
 
@@ -65,7 +60,6 @@ def nativeFlags(devname):
     target_path = devnameToLocal(devname)
     if not target_path:
        return ""
-
     parts = str(devname).split(".")
     startpart = 1
     if parts[0] == "DSK":
@@ -73,14 +67,16 @@ def nativeFlags(devname):
     flags = parts[startpart]
     if flags in NATIVE_FLAGS:
         return flags
+    return nativeTextDir(target_path)
 
+
+def nativeTextDir(target_path):
     # check if any of text_dirs is a prefix of target_path
     native_text_dirs = [f"TIPI.{a.strip()}" for a in tipi_config.get("NATIVE_TEXT_DIRS").split(',') if a]
     if native_text_dirs and len(native_text_dirs):
         text_dirs = [devnameToLocal(dir) for dir in native_text_dirs]
         if True in [(td in target_path) for td in text_dirs]:
             return TEXT_WINDOWS
-
     return ""
 
 
@@ -105,7 +101,7 @@ def devnameToLocal(devname, prog=False):
         startpart = 2
 
     if path == None or path == "":
-        logger.info("no path matched")
+        logger.debug("no path matched")
         return None
 
     # skip native file modes when finding linux path
@@ -122,7 +118,7 @@ def devnameToLocal(devname, prog=False):
             logger.debug("building path: %s", path)
 
     path = str(path).strip()
-    logger.info("%s -> %s", devname, path)
+    logger.debug("%s -> %s", devname, path)
 
     return path
 

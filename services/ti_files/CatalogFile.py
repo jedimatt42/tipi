@@ -7,6 +7,7 @@ import logging
 from . import NativeFile
 from . import ti_files
 from tinames import tinames
+from tinames import NativeFlags
 from tifloat import tifloat
 from Pab import *
 from TipiConfig import TipiConfig
@@ -23,6 +24,7 @@ class CatalogFile(object):
         self.devname = devname
         self.longnames = long
         self.records = []
+        self.isNativeTextDir = tinames.nativeFlags(devname) == NativeFlags.TEXT_WINDOWS
 
     @staticmethod
     def load(path, pab, devname):
@@ -177,7 +179,7 @@ class CatalogFile(object):
                 recordlen = ti_files.recordLength(header)
                 return self.encodeDirRecord(f, ft, sectors, recordlen)
             # else it is a native file
-            elif fp.lower().endswith(NativeFile.dv80suffixes):
+            elif fp.lower().endswith(NativeFile.dv80suffixes) or self.isNativeTextDir:
                 # dis/var
                 ft = 2
                 recCount = self.line_count(fp)

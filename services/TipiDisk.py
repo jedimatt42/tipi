@@ -118,7 +118,7 @@ class TipiDisk(object):
                         open_file = FixedRecordFile.load(unix_name, pab)
                     else:
                         open_file = VariableRecordFile.load(unix_name, pab)
-                elif native_flags:
+                else:
                     open_file = NativeFile.load(unix_name, pab, native_flags)
 
                 if open_file is None:

@@ -241,7 +241,7 @@ class LevelTwo(object):
 
         if blocks == 0:
             startblock = ti_files.getSectors(fbytes)
-            logger.info("setting total sectors: %d", startblock)
+            logger.debug("setting total sectors: %d", startblock)
 
         finfo = bytearray(8)
         finfo[0] = startblock >> 8
@@ -257,7 +257,7 @@ class LevelTwo(object):
 
         if blocks != 0:
             blockdata = fbytes[bytestart:byteend]
-            logger.info("Sending file data: %d bytes", len(blockdata))
+            logger.debug("Sending file data: %d bytes", len(blockdata))
             self.tipi_io.send(blockdata)
 
         return True
@@ -293,9 +293,9 @@ class LevelTwo(object):
         else:
             raw = bytearray(byteend - 128)
             header = ti_files.createHeader(0, filename, raw)
-            logger.info("header len %d, raw len %d", len(header), len(raw))
+            logger.debug("header len %d, raw len %d", len(header), len(raw))
             fbytes = header + raw
-            logger.info("created file bytes: %d", len(fbytes))
+            logger.debug("created file bytes: %d", len(fbytes))
 
         if blocks == 0:
             fbytes[10:16] = finfo[0:6]

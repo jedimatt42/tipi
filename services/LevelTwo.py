@@ -11,6 +11,7 @@ from TipiConfig import TipiConfig
 from SectorDisk import SectorDisk
 from ti_files.NativeFile import NativeFile
 from ti_files.VariableRecordFile import VariableRecordFile
+from ti_files.FixedRecordFile import FixedRecordFile
 
 
 logger = logging.getLogger(__name__)
@@ -347,7 +348,12 @@ class LevelTwo(object):
             return VariableRecordFile.fromNative(devname, localname, records).get_bytes()
         else:
             # treat it like a DIS/FIX 128
-            pass
+            logger.info("getFileBytes reading bytes from native file")
+            devname = self.getDevname(unit, filename)
+            records = NativeFile.loadBytes(localname, 128)
+            logger.info("found %d records", len(records))
+            # make a FixedRecordFile, pack, and get the bytes
+            return FixedRecordFile.fromNative(devname, localname, records).get_bytes()
 
         return None
         

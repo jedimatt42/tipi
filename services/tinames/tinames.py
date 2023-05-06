@@ -71,11 +71,13 @@ def nativeFlags(devname):
 
 
 def nativeTextDir(target_path):
+    if not os.path.isfile(target_path):
+        target_path += '/'
     # check if any of text_dirs is a prefix of target_path
     native_text_dirs = [f"TIPI.{a.strip()}" for a in tipi_config.get("NATIVE_TEXT_DIRS").split(',') if a]
     if native_text_dirs and len(native_text_dirs):
         text_dirs = [devnameToLocal(dir) for dir in native_text_dirs]
-        if True in [(td in target_path) for td in text_dirs]:
+        if True in [(f"{td}/" in target_path) for td in text_dirs]:
             return TEXT_WINDOWS
     return ""
 

@@ -48,9 +48,11 @@ class SpecialFiles(object):
             link = tipi_config.get(uriShortcut)
             if link != "":
                 flags = ""
+                ss = 5
                 if native_flags:
                    flags = f".{native_flags}"
-                devname = f"PI{flags}.{link}/{devname[5:]}"
+                   ss = 8
+                devname = f"PI{flags}.{link}/{devname[ss:]}"
                 logger.debug("using %s to map to %s", uriShortcut, devname)
         if devname.startswith("PI."):
             fname = devname[3:]

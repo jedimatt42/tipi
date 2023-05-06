@@ -233,6 +233,10 @@ class LevelTwo(object):
         bytestart = 128 + (startblock * 256)
         byteend = bytestart + (blocks * 256)
         total = len(fbytes)
+        # due to some other bug, round total up to nearest block
+        size_without_header = total - 128
+        blocks_used = size_without_header // 256 + (1 if size_without_header % 256 else 0)
+        total = 128 + (blocks_used * 256)
         logger.debug("requested bytes from file size %d, start: %d, end: %d", total, bytestart, byteend)
 
         if blocks != 0 and (bytestart >= total or byteend > total):

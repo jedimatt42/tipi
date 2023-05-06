@@ -25,24 +25,43 @@ echo "stop conflicting services"
 systemctl stop tipimon.service
 systemctl stop tipi.service
 
-echo "restoring backup from $BACKUP"
+
+echo "restoring archive from $BACKUP"
 
 file $BACKUP | grep "tar" >/dev/null
 if [ $? -eq 0 ]; then
-  echo "extracting tar archive"
-  tar -xvf $BACKUP \
-    -C /home/tipi \
-    --owner=tipi \
-    --one-file-system
+  echo "testing archive from $BACKUP"
+  tar -tvf $BACKUP | grep " tipi_disk/$" >/dev/null
+  if [ $? -eq 0 ]; then
+    echo "extracting tar archive"
+    tar -xvf $BACKUP \
+      -C /home/tipi \
+      --owner=tipi \
+      --one-file-system
+    echo "completed" >/tmp/restore_state
+    chown tipi.tipi /tmp/restore_state
+  else
+    echo "invalid tipi archive" >/tmp/restore_state
+    chown tipi.tipi /tmp/restore_state
+  fi
 fi
 
 file $BACKUP | grep "gzip" >/dev/null
 if [ $? -eq 0 ]; then
-  echo "extracting tar.gz archive"
-  tar -xvzf $BACKUP \
-    -C /home/tipi \
-    --owner=tipi \
-    --one-file-system
+  echo "testing archive from $BACKUP"
+  tar -tvzf $BACKUP | grep " tipi_disk/$" >/dev/null
+  if [ $? -eq 0 ]; then
+    echo "extracting tar.gz archive"
+    tar -xvzf $BACKUP \
+      -C /home/tipi \
+      --owner=tipi \
+      --one-file-system
+    echo "completed" >/tmp/restore_state
+    chown tipi.tipi /tmp/restore_state
+  else
+    echo "invalid tipi archive" >/tmp/restore_state
+    chown tipi.tipi /tmp/restore_state
+  fi
 fi
 
 if [ -f ${WPATMP:-nofile} ]; then

@@ -111,6 +111,8 @@ function deleteBackup(backup) {
 
 {% if restore_status == "inprogress" %}
 <blockquote>Restoring archive...</blockquote>
+{% elif restore_status != "none" %}
+<blockquote>Restoring archive... {{ restore_status }} </blockquote>
 {% endif %}
 </div>
 

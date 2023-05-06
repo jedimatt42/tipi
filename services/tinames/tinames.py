@@ -57,9 +57,6 @@ def __scanForVolume(volume):
 
 
 def nativeFlags(devname):
-    target_path = devnameToLocal(devname)
-    if not target_path:
-       return ""
     parts = str(devname).split(".")
     startpart = 1
     if parts[0] == "DSK":
@@ -67,6 +64,9 @@ def nativeFlags(devname):
     flags = parts[startpart]
     if flags in NATIVE_FLAGS:
         return flags
+    target_path = devnameToLocal(devname)
+    if not target_path:
+       return ""
     return nativeTextDir(target_path)
 
 

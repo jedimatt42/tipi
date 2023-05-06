@@ -87,10 +87,13 @@ class LevelTwo(object):
             return True
 
         try:
-            bytes = self.getFileBytes(localfilename)
-            ti_files.setProtected(bytes,protvalue)
-            self.saveFile(localfilename, bytes, unit, filename)
-            self.tipi_io.send([SUCCESS])
+            if ti_files.isTiFile(localfilename):
+                bytes = self.getFileBytes(localfilename, unit, filename)
+                ti_files.setProtected(bytes,protvalue)
+                self.saveFile(localfilename, bytes, unit, filename)
+                self.tipi_io.send([SUCCESS])
+            else:
+                self.tipi_io.send([EDEVERR])
         except Exception as e:
             logger.error("Error setting protect bit", exc_info=True)
             self.tipi_io.send([EDEVERR])

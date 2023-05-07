@@ -55,7 +55,7 @@ class NativeFile(object):
                 encoding = 'utf-8' if url else 'latin1'
                 records = NativeFile.loadLines(unix_file_name, recLen, encoding)
                 logger.info("loaded %d lines", len(records))
-                logger.info("records: %s", records)
+                logger.debug("records: %s", records)
                 statByte = STVARIABLE
             else:
                 recLen = recordLength(pab)
@@ -63,7 +63,7 @@ class NativeFile(object):
                     recLen = 128
                 records = NativeFile.loadBytes(unix_file_name, recLen)
                 logger.info("loaded %d records", len(records))
-                logger.info("records: %s", records)
+                logger.debug("records: %s", records)
                 statByte = 0
                 if dataType(pab):
                     statByte |= STINTERNAL

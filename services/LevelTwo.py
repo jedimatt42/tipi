@@ -311,7 +311,7 @@ class LevelTwo(object):
         else:
             total = 128 + (256 * ti_files.getSectors(fbytes))
             if bytestart >= total or byteend > total:
-                logger.error("request exceeds file size: t: %d, s: %d, e: %d", total, bytestart, byteend)
+                logger.error("request exceeds file size: %d, start: %d, end: %d", total, bytestart, byteend)
                 self.tipi_io.send([EDEVERR])
                 return True
 
@@ -366,23 +366,26 @@ class LevelTwo(object):
         
     def saveFile(self, localname, bytes, unit, filename, cleanup=False):
         save_name = localname
-        native_text_mode = NativeFlags.TEXT_WINDOWS == tinames.nativeTextDir(localname) and not ti_files.isTiFile(localname)
-        if native_text_mode:
-            save_name = localname + ".tifile"
+        native_text_mode = False
+        if ti_files.isVariable(bytes) and ti_files.recordLength(bytes) == 80 and not ti_files.isInternal(bytes) and not ti_files.isProgram(bytes):
+            native_text_mode = NativeFlags.TEXT_WINDOWS == tinames.nativeTextDir(localname) and not ti_files.isTiFile(localname)
+            if native_text_mode:
+                save_name = localname + ".tifile"
+                logger.info("native_text_mode output enabled")
 
         logger.info("saveFile len: %d", len(bytes))
         with open(save_name,"wb") as fh:
             fh.write(bytes)
 
         if native_text_mode:
-            logger.info("convert %s to native text file %s", save_name, localname)
+            logger.info("converting %s to native text file %s", save_name, localname)
             devname = self.getDevname(unit, filename)
             with open(save_name, 'rb') as fh:
                 allbytes = fh.read()
                 VariableRecordFile.toNative(devname, localname, allbytes)
                 logger.info("save completed.")
-            logger.info("cleaning up %s", save_name)
             if cleanup:
+                logger.info("cleaning up %s", save_name)
                 os.unlink(save_name)
 
     def getLocalDisk(self,unit):

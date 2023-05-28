@@ -11,6 +11,7 @@ from . import ti_files
 from . import JsonFile
 from TipiConfig import TipiConfig
 from Pab import *
+from unidecode import unidecode
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +87,10 @@ class JsonFile(object):
         i = 0
         records = []
 
-        bytes = bytearray(jsonStr.rstrip(), encoding)
+        jsonStr = jsonStr.rstrip()
+        jsonStr = unidecode(jsonStr)
+
+        bytes = bytearray(jsonStr, encoding)
         if len(bytes) > 0:
             records += JsonFile.divide_chunks(bytes, recLen)
         else:

@@ -18,7 +18,6 @@ from array import array
 from tipi.TipiMessage import TipiMessage
 from tifloat import tifloat
 from tinames import tinames
-from SpecialFiles import SpecialFiles
 from Pab import *
 from TipiConfig import TipiConfig
 

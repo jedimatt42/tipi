@@ -5,6 +5,7 @@ import ConfigLogging
 from flask import g
 from ti_files import ti_files
 from tinames import tinames
+from TipiConfig import TipiConfig
 
 #
 # DOA-ish methods for cache of tipi_disk file meta-data. 
@@ -15,6 +16,8 @@ tipi_disk = '/home/tipi/tipi_disk'
 
 global_conn = None
 db_name = '/home/tipi/.tipiweb.db'
+
+tipi_config = TipiConfig.instance()
 
 def get_context_conn():
     """
@@ -102,6 +105,10 @@ def lookupFileInfo(name):
     sql.close()
     if fileInfo == None:
         fileInfo = updateFileInfo(name)
+    if fileInfo[1] == "native":
+        tmpFileInfo = list(fileInfo)
+        tmpFileInfo[2] = "DIS/VAR 80" if isInNativeTextDir(name) else "DIS/FIX 128"
+        fileInfo = tuple(tmpFileInfo)
     return rowToMap(fileInfo)
 
 def rowToMap(fileInfo):
@@ -174,26 +181,6 @@ def _getFileInfo(name):
     valid = ti_files.isValid(header)
 
     isprotected = 0
-
-    sql.execute(sqlstatement, sqlargs)
-    allrows = sql.fetchall()
-    files = []
-    for row in allrows:
-        files.append(rowToMap(row))
-    return sorted(files, key=lambda i:("/".join(i["name"].split("/")[:-1]), i["tiname"]))
-
-def _getFileInfo(name):
-    dv80suffixes = (".txt", ".a99", ".b99", ".bas", ".xb", ".tb")
-    basicSuffixes = (".b99", ".bas", ".xb", ".tb")
-        
-    header = None
-    
-    with open(name,"rb") as fdata:
-        header = bytearray(fdata.read())[:128]
-
-    valid = ti_files.isValid(header)
-
-    isprotected = 0
     icon = "native"
     type = "DIS/FIX 128"
     tiname = tinames.asTiShortName(name)
@@ -216,6 +203,17 @@ def _getFileInfo(name):
         icon = 'basic'
 
     return (name, icon, type, tiname, size, isprotected)
+
+def isInNativeTextDir(target_path):
+    if not os.path.isfile(target_path):
+        target_path += '/'
+    # check if any of text_dirs is a prefix of target_path
+    native_text_dirs = [f"TIPI.{a.strip()}" for a in tipi_config.get("NATIVE_TEXT_DIRS").split(',') if a]
+    if native_text_dirs and len(native_text_dirs):
+        text_dirs = [tinames.devnameToLocal(dir) for dir in native_text_dirs]
+        if True in [(f"{td}/" in target_path) for td in text_dirs]:
+            return True
+    return False
     
 if __name__ == '__main__':
     deleteAll()

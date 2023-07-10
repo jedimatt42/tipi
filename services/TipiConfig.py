@@ -56,10 +56,11 @@ class TipiConfig(object):
 
     def applyrecords(self, records):
         for line in records:
-            key = str(line).split("=")[0].strip()
-            value = str(line).split("=")[1].strip()
-            self.records[key] = value
-            LOGGER.debug("read record: %s = %s", key, value)
+            if "=" in line:
+                key = str(line).split("=")[0].strip()
+                value = str(line).split("=")[1].strip()
+                self.records[key] = value
+                LOGGER.debug("read record: %s = %s", key, value)
         self.sorted_keys = list(self.records.keys())
         self.sorted_keys.sort()
 

@@ -1,6 +1,6 @@
 # Setting up...
 
-## If using the SD-Card image the following has already been performed.
+## If using the SD-Card image the steps in this document have already been performed.
 
 SD Card image is available for download: 
 
@@ -90,6 +90,9 @@ sudo ./install.sh
 sudo reboot now
 ```
 
+NOTE: The ./install.sh step will fail to copy the overlay on a Le Potato
+      Check the Le Potato section of the tipi_kernel_module/README.md 
+
 Install the tipi services
 
 ```
@@ -107,6 +110,8 @@ And run the post-upgrade to finish all the incremental configuration
 cd setup
 sudo ./post-upgrade.sh
 ```
+
+NOTE: On Le Potato some parts of post-upgrade do not work. Completely...
 
 ## Other items to setup
 
@@ -153,6 +158,15 @@ force user=tipi
 ## Test WIFI Connectivity
 
 Make sure wifi was working before archiving the image. 
+
+## Disable apache2.service
+
+I don't know why this keeps coming back... but disable it as it fails to start and is 
+not used.
+
+```
+sudo systemctl disable apache2.service
+```
 
 ### Set the system to grow on boot
 

@@ -18,6 +18,7 @@ from array import array
 from tipi.TipiMessage import TipiMessage
 from tifloat import tifloat
 from tinames import tinames
+from tinames import NativeFlags
 from Pab import *
 from TipiConfig import TipiConfig
 
@@ -138,7 +139,7 @@ class TipiDisk(object):
 
         else:
             if self.parentExists(unix_name):
-                if native_flags:
+                if native_flags and self.recordTypeNativeCompatible(pab, native_flags):
                     open_file = NativeFile.create(unix_name, pab, native_flags)
                 elif recordType(pab) == VARIABLE:
                     open_file = VariableRecordFile.create(devname, unix_name, pab)
@@ -157,6 +158,16 @@ class TipiDisk(object):
                 return
 
         self.sendErrorCode(EFILERR)
+
+    def recordTypeNativeCompatible(self, pab, native_flags):
+        logger.info("native flags: " + native_flags)
+        if dataType(pab) == DISPLAY:
+            if recordType(pab) == VARIABLE and native_flags == NativeFlags.TEXT_WINDOWS and recordLength(pab) == 80:
+                return True
+            elif recordType(pab) == FIXED and native_flags == NativeFlags.FORCE_NATIVE and recordLength(pab) == 128:
+                return True
+        else:
+            return False
 
     def handleClose(self, pab, devname):
         logger.debug("Opcode 1 Close - %s", devname)

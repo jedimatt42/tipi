@@ -195,6 +195,27 @@ def unmapdsk4():
     return redirect(rp)
 
 
+@app.route("/unmapcs1", methods=["POST"])
+def unmapcs1():
+    path = request.form.get("path")
+    tipi_map.unmapdrive("CS1_FILE")
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+
+@app.route("/mapcs1", methods=["POST"])
+def mapcs1():
+    path = request.form.get("path")
+    cs1_input = request.form.get("cs1_input")
+    files = request.form.getlist("selected")
+    if cs1_input and not cs1_input.isspace():
+        tipi_map.mapfile("CS1_FILE", cs1_input)
+    else:
+        tipi_map.mapfile("CS1_FILE", files[0], path=path)
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+
 #
 # Text editor
 #

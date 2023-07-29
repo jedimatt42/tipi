@@ -347,3 +347,7 @@ a {
     flex-direction: row;
     align-items: center;
 }
+
+input[type=text] {
+    margin-left: 8px;
+}

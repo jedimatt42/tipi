@@ -170,6 +170,8 @@ def catalog(path):
             "DSK2_URL": mappedUrl(tipi_config.get("DSK2_DIR")),
             "DSK3_URL": mappedUrl(tipi_config.get("DSK3_DIR")),
             "DSK4_URL": mappedUrl(tipi_config.get("DSK4_DIR")),
+            "CS1_FILE": tipi_config.get("CS1_FILE"),
+            "CS1_URL": mappedUrl(tipi_config.get("CS1_FILE")),
         },
         "mapped": { 
             tipi_config.get("DSK1_DIR"): "DSK1",
@@ -266,6 +268,8 @@ def search(criteria):
             "DSK2_URL": mappedUrl(tipi_config.get("DSK2_DIR")),
             "DSK3_URL": mappedUrl(tipi_config.get("DSK3_DIR")),
             "DSK4_URL": mappedUrl(tipi_config.get("DSK4_DIR")),
+            "CS1_FILE": tipi_config.get("CS1_FILE"),
+            "CS1_URL": mappedUrl(tipi_config.get("CS1_FILE")),
         },
         "mapped": { 
             tipi_config.get("DSK1_DIR"): "DSK1",

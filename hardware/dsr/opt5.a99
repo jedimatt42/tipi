@@ -179,7 +179,7 @@ NOTEDGE
 
 	LWPI	GPLWS
 	LI	R1,>8300
-	LI	R2,>C0
+	LI	R2,>4A    Leave GPLLNK and other console routine sections alone
 !	CLR	*R1+
 	DECT	R2
 	JNE	-!

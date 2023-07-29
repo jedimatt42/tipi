@@ -18,6 +18,7 @@ LOGGER = logging.getLogger(__name__)
 
 CONFIG_DEFAULTS = {
     "AUTO": "off",
+    "CS1_FILE": "",
     "DSK1_DIR": "",
     "DSK2_DIR": "",
     "DSK3_DIR": "",

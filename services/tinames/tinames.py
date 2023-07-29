@@ -36,6 +36,17 @@ def __driveMapping(key):
     return path
 
 
+def __cs1Mapping():
+    path = tipi_config.get("CS1_FILE")
+
+    if path == "" or path is None:
+        return None
+
+    path = "/".join([x.replace("/", ".") for x in path.split(".")])
+    path = TIPI_DIR + "/" + path
+    return path
+
+
 def __scanForVolume(volume):
     # If it is literally DSK.TIPI. act like it matches DSK0.
     if volume == 'TIPI':
@@ -61,6 +72,8 @@ def nativeFlags(devname):
     startpart = 1
     if parts[0] == "DSK":
         startpart = 2
+    if parts[0] == "CS1":
+        return ""
     flags = parts[startpart]
     if flags in NATIVE_FLAGS:
         return flags
@@ -101,13 +114,15 @@ def devnameToLocal(devname, prog=False):
     elif parts[0] == "DSK":
         path = __scanForVolume(parts[1])
         startpart = 2
+    elif parts[0] == "CS1":
+        path = __cs1Mapping()
 
     if path == None or path == "":
         logger.debug("no path matched")
         return None
 
     # skip native file modes when finding linux path
-    if parts[startpart] in NATIVE_FLAGS:
+    if len(parts) > startpart and parts[startpart] in NATIVE_FLAGS:
         startpart = startpart + 1
 
     for part in parts[startpart:]:

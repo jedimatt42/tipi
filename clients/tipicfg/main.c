@@ -574,6 +574,7 @@ void getstr(int x, int y, char* var) {
         cputs(" ");
         break;
       case 7: // F3 - erase line
+        idx = 0;
         var[idx] = 0;
         delidx = idx + 1;
         while(var[delidx] != 0) {

@@ -40,10 +40,45 @@ tipi3
 	EVEN
 
 tipi4
-	DATA	tipid		; next dsr list entry
+	DATA	tipi5		; next dsr list entry
 	DATA	tipidsr
 	BYTE	4
 	TEXT	"DSK4"
+	EVEN
+
+tipi5
+	DATA	tipi6		; next dsr list entry
+	DATA	tipidsr
+	BYTE	4
+	TEXT	"DSK5"
+	EVEN
+
+tipi6
+	DATA	tipi7		; next dsr list entry
+	DATA	tipidsr
+	BYTE	4
+	TEXT	"DSK6"
+	EVEN
+
+tipi7
+	DATA	tipi8		; next dsr list entry
+	DATA	tipidsr
+	BYTE	4
+	TEXT	"DSK7"
+	EVEN
+
+tipi8
+	DATA	tipi9		; next dsr list entry
+	DATA	tipidsr
+	BYTE	4
+	TEXT	"DSK8"
+	EVEN
+
+tipi9
+	DATA	tipid		; next dsr list entry
+	DATA	tipidsr
+	BYTE	4
+	TEXT	"DSK9"
 	EVEN
 
 tipid

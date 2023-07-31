@@ -53,7 +53,7 @@ def __scanForVolume(volume):
         return TIPI_DIR
 
     # next check if one of the mapped drives has the name
-    disks = ("DSK1_DIR", "DSK2_DIR", "DSK3_DIR", "DSK4_DIR")
+    disks = ("DSK1_DIR", "DSK2_DIR", "DSK3_DIR", "DSK4_DIR", "DSK5_DIR", "DSK6_DIR", "DSK7_DIR", "DSK8_DIR", "DSK9_DIR",)
     for disk in disks:
         path = __driveMapping(disk)
         if path != None and path.endswith("/" + volume):
@@ -103,14 +103,8 @@ def devnameToLocal(devname, prog=False):
         path = TIPI_DIR
     elif parts[0] == "DSK0":
         path = TIPI_DIR
-    elif parts[0] == "DSK1":
-        path = __driveMapping("DSK1_DIR")
-    elif parts[0] == "DSK2":
-        path = __driveMapping("DSK2_DIR")
-    elif parts[0] == "DSK3":
-        path = __driveMapping("DSK3_DIR")
-    elif parts[0] == "DSK4":
-        path = __driveMapping("DSK4_DIR")
+    elif parts[0] in ("DSK1", "DSK2", "DSK3", "DSK4", "DSK5", "DSK6", "DSK7", "DSK8", "DSK9",):
+        path = __driveMapping(f"{parts[0]}_DIR")
     elif parts[0] == "DSK":
         path = __scanForVolume(parts[1])
         startpart = 2

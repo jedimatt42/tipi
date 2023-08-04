@@ -40,10 +40,45 @@ tipi3
 	EVEN
 
 tipi4
-	DATA	tipid		; next dsr list entry
+	DATA	tipi5		; next dsr list entry
 	DATA	tipidsr
 	BYTE	4
 	TEXT	"DSK4"
+	EVEN
+
+tipi5
+	DATA	tipi6		; next dsr list entry
+	DATA	tipidsr
+	BYTE	4
+	TEXT	"DSK5"
+	EVEN
+
+tipi6
+	DATA	tipi7		; next dsr list entry
+	DATA	tipidsr
+	BYTE	4
+	TEXT	"DSK6"
+	EVEN
+
+tipi7
+	DATA	tipi8		; next dsr list entry
+	DATA	tipidsr
+	BYTE	4
+	TEXT	"DSK7"
+	EVEN
+
+tipi8
+	DATA	tipi9		; next dsr list entry
+	DATA	tipidsr
+	BYTE	4
+	TEXT	"DSK8"
+	EVEN
+
+tipi9
+	DATA	tipid		; next dsr list entry
+	DATA	tipidsr
+	BYTE	4
+	TEXT	"DSK9"
 	EVEN
 
 tipid
@@ -75,10 +110,17 @@ tipiu2
 	EVEN
 
 tipiu3
-	DATA	>0000		; terminate dsr list.
+	DATA	tipitap   ; terminate dsr list.
 	DATA	tipidsr		; tipi dsr routine pointer
 	BYTE	4		; TIPI Drive name length
 	TEXT	"URI3"		; name of tipi drive
+	EVEN
+
+tipitap
+	DATA	>0000		  ; terminate dsr list.
+	DATA	tipidsr		; tipi dsr routine pointer
+	BYTE	3         ; TAP Drive name length
+	TEXT	"CS1"	  	; name of tipi tap device
 	EVEN
 
 ; Basic routine list ( name must be no more than 7 characters )

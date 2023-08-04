@@ -17,42 +17,54 @@ TIPI_DIR = "/home/tipi/tipi_disk"
 
 def __driveMapping(key):
     path = tipi_config.get(key)
-    path = path.replace(".", "/")
-    if path != "":
-        path = TIPI_DIR + "/" + path
+
+    if path == "" or path is None:
+        return None
+
+    if path == ".":
+        return TIPI_DIR
+
+    path = "/".join([x.replace("/", ".") for x in path.split(".")])
+    path = TIPI_DIR + "/" + path
     return path
 
 
-def devnameToLocal(devname):
+def devnameToLocal(devname, prog=False):
     parts = str(devname).split(".")
-    path = ""
+    path = None
+    startpart = 1
     if parts[0] == "TIPI":
         path = TIPI_DIR
     elif parts[0] == "DSK0":
         path = TIPI_DIR
-    elif parts[0] == "WDS1":
-        path = TIPI_DIR
-    elif parts[0] == "DSK4":
-        path = TIPI_DIR
-    elif parts[0] == "DSK1":
-        path = __driveMapping("DSK1_DIR")
-    elif parts[0] == "DSK2":
-        path = __driveMapping("DSK2_DIR")
-    elif parts[0] == "DSK3":
-        path = __driveMapping("DSK3_DIR")
+    elif parts[0] in ("DSK1", "DSK2", "DSK3", "DSK4", "DSK5", "DSK6", "DSK7", "DSK8", "DSK9",):
+        path = __driveMapping(f"{parts[0]}_DIR")
     elif parts[0] == "DSK":
-        path = TIPI_DIR
+        path = __scanForVolume(parts[1])
+        startpart = 2
+    elif parts[0] == "CS1":
+        path = __cs1Mapping()
 
-    if path == "":
+    if path == None or path == "":
+        logger.debug("no path matched")
         return None
 
-    for part in parts[1:]:
+    # skip native file modes when finding linux path
+    # ignore concept of native flags in web ui
+    # if len(parts) > startpart and parts[startpart] in NATIVE_FLAGS:
+    #     startpart = startpart + 1
+
+    for part in parts[startpart:]:
         if part != "":
             logger.debug("matching path part: %s", part)
-            path += "/" + findpath(path, part)
+            if part == parts[-1]:
+                path += "/" + findpath(path, part, prog=prog)
+            else:
+                path += "/" + findpath(path, part, dir=True)
             logger.debug("building path: %s", path)
 
-    path = str(path)
+    path = str(path).strip()
+    logger.debug("%s -> %s", devname, path)
 
     return path
 
@@ -86,7 +98,7 @@ def baseN(num, b, numerals="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"):
 # long TI names
 
 
-def findpath(path, part):
+def findpath(path, part, prog=False, dir=False):
     part = part.replace("/", ".").replace("\\", ".")
     # if the file actually exists (or dir) then use literal name
     if os.path.exists(os.path.join(path, part)):

@@ -36,13 +36,24 @@ def __driveMapping(key):
     return path
 
 
+def __cs1Mapping():
+    path = tipi_config.get("CS1_FILE")
+
+    if path == "" or path is None:
+        return None
+
+    path = "/".join([x.replace("/", ".") for x in path.split(".")])
+    path = TIPI_DIR + "/" + path
+    return path
+
+
 def __scanForVolume(volume):
     # If it is literally DSK.TIPI. act like it matches DSK0.
     if volume == 'TIPI':
         return TIPI_DIR
 
     # next check if one of the mapped drives has the name
-    disks = ("DSK1_DIR", "DSK2_DIR", "DSK3_DIR", "DSK4_DIR")
+    disks = ("DSK1_DIR", "DSK2_DIR", "DSK3_DIR", "DSK4_DIR", "DSK5_DIR", "DSK6_DIR", "DSK7_DIR", "DSK8_DIR", "DSK9_DIR",)
     for disk in disks:
         path = __driveMapping(disk)
         if path != None and path.endswith("/" + volume):
@@ -61,6 +72,8 @@ def nativeFlags(devname):
     startpart = 1
     if parts[0] == "DSK":
         startpart = 2
+    if parts[0] == "CS1":
+        return ""
     flags = parts[startpart]
     if flags in NATIVE_FLAGS:
         return flags
@@ -90,24 +103,20 @@ def devnameToLocal(devname, prog=False):
         path = TIPI_DIR
     elif parts[0] == "DSK0":
         path = TIPI_DIR
-    elif parts[0] == "DSK1":
-        path = __driveMapping("DSK1_DIR")
-    elif parts[0] == "DSK2":
-        path = __driveMapping("DSK2_DIR")
-    elif parts[0] == "DSK3":
-        path = __driveMapping("DSK3_DIR")
-    elif parts[0] == "DSK4":
-        path = __driveMapping("DSK4_DIR")
+    elif parts[0] in ("DSK1", "DSK2", "DSK3", "DSK4", "DSK5", "DSK6", "DSK7", "DSK8", "DSK9",):
+        path = __driveMapping(f"{parts[0]}_DIR")
     elif parts[0] == "DSK":
         path = __scanForVolume(parts[1])
         startpart = 2
+    elif parts[0] == "CS1":
+        path = __cs1Mapping()
 
     if path == None or path == "":
         logger.debug("no path matched")
         return None
 
     # skip native file modes when finding linux path
-    if parts[startpart] in NATIVE_FLAGS:
+    if len(parts) > startpart and parts[startpart] in NATIVE_FLAGS:
         startpart = startpart + 1
 
     for part in parts[startpart:]:

@@ -326,8 +326,14 @@ a {
     font-weight: bold;
 }
 
+.drive-mappings {
+    display: inline-grid;
+    grid-template-columns: auto auto;
+}
+
 .drive-assignment {
     display: flex;
+    min-width: 15em;
 }
 
 .drive-assignment a {

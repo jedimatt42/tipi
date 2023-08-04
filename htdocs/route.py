@@ -163,6 +163,51 @@ def mapdsk4():
     return redirect(rp)
 
 
+@app.route("/mapdsk5", methods=["POST"])
+def mapdsk5():
+    path = request.form.get("path")
+    files = request.form.getlist("selected")
+    tipi_map.mapdrive("DSK5_DIR", path, files)
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+
+@app.route("/mapdsk6", methods=["POST"])
+def mapdsk6():
+    path = request.form.get("path")
+    files = request.form.getlist("selected")
+    tipi_map.mapdrive("DSK6_DIR", path, files)
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+
+@app.route("/mapdsk7", methods=["POST"])
+def mapdsk7():
+    path = request.form.get("path")
+    files = request.form.getlist("selected")
+    tipi_map.mapdrive("DSK7_DIR", path, files)
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+
+@app.route("/mapdsk8", methods=["POST"])
+def mapdsk8():
+    path = request.form.get("path")
+    files = request.form.getlist("selected")
+    tipi_map.mapdrive("DSK8_DIR", path, files)
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+
+@app.route("/mapdsk9", methods=["POST"])
+def mapdsk9():
+    path = request.form.get("path")
+    files = request.form.getlist("selected")
+    tipi_map.mapdrive("DSK9_DIR", path, files)
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+
 @app.route("/unmapdsk1", methods=["POST"])
 def unmapdsk1():
     path = request.form.get("path")
@@ -191,6 +236,46 @@ def unmapdsk3():
 def unmapdsk4():
     path = request.form.get("path")
     tipi_map.unmapdrive("DSK4_DIR")
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+
+@app.route("/unmapdsk5", methods=["POST"])
+def unmapdsk5():
+    path = request.form.get("path")
+    tipi_map.unmapdrive("DSK5_DIR")
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+
+@app.route("/unmapdsk6", methods=["POST"])
+def unmapdsk6():
+    path = request.form.get("path")
+    tipi_map.unmapdrive("DSK6_DIR")
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+
+@app.route("/unmapdsk7", methods=["POST"])
+def unmapdsk7():
+    path = request.form.get("path")
+    tipi_map.unmapdrive("DSK7_DIR")
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+
+@app.route("/unmapdsk8", methods=["POST"])
+def unmapdsk8():
+    path = request.form.get("path")
+    tipi_map.unmapdrive("DSK8_DIR")
+    rp = createFileUrl(path)
+    return redirect(rp)
+
+
+@app.route("/unmapdsk9", methods=["POST"])
+def unmapdsk9():
+    path = request.form.get("path")
+    tipi_map.unmapdrive("DSK9_DIR")
     rp = createFileUrl(path)
     return redirect(rp)
 

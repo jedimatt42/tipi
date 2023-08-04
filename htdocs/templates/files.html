@@ -54,7 +54,9 @@ function uploadOnClick() {
 
 <p><b>Drive Mapping</b></p>
 
-<div class="drive-assignment">
+<div class="drive-mappings">
+
+<div class="drive-assignment" style="order: 1;">
   <span>DSK1. =</span> 
   {% if config.get("DSK1_DIR") %}
   <form method=post action="/unmapdsk1">
@@ -67,7 +69,7 @@ function uploadOnClick() {
   {% endif %}
 </div>
 
-<div class="drive-assignment">
+<div class="drive-assignment" style="order: 3;">
   <span>DSK2. =</span>
   {% if config.get("DSK2_DIR") %}
   <form method=post action="/unmapdsk2">
@@ -80,7 +82,7 @@ function uploadOnClick() {
   {% endif %}
 </div>
 
-<div class="drive-assignment">
+<div class="drive-assignment" style="order: 5;">
   <span>DSK3. =</span>
   {% if config.get("DSK3_DIR") %}
   <form method=post action="/unmapdsk3">
@@ -93,7 +95,7 @@ function uploadOnClick() {
   {% endif %}
 </div>
 
-<div class="drive-assignment">
+<div class="drive-assignment" style="order: 7;">
   <span>DSK4. =</span>
   {% if config.get("DSK4_DIR") %}
   <form method=post action="/unmapdsk4">
@@ -106,13 +108,80 @@ function uploadOnClick() {
   {% endif %}
 </div>
 
+<div class="drive-assignment" style="order: 9;">
+  <span>DSK5. =</span>
+  {% if config.get("DSK5_DIR") %}
+  <form method=post action="/unmapdsk5">
+      <input type=hidden name="path" value="{{ display_path }}" />
+      <a href="{{ config.get("DSK5_URL") }}">{{ config.get("DSK5_DIR") }}</a>
+      <button type="submit" title="Remove Mapping" class="tool_button">
+	  <img src="/images/delete.webp" height="10px"/>
+      </button> 
+  </form>
+  {% endif %}
+</div>
+
+<div class="drive-assignment" style="order: 2;">
+  <span>DSK6. =</span>
+  {% if config.get("DSK6_DIR") %}
+  <form method=post action="/unmapdsk6">
+      <input type=hidden name="path" value="{{ display_path }}" />
+      <a href="{{ config.get("DSK6_URL") }}">{{ config.get("DSK6_DIR") }}</a>
+      <button type="submit" title="Remove Mapping" class="tool_button">
+	  <img src="/images/delete.webp" height="10px"/>
+      </button> 
+  </form>
+  {% endif %}
+</div>
+
+<div class="drive-assignment" style="order: 4;">
+  <span>DSK7. =</span>
+  {% if config.get("DSK7_DIR") %}
+  <form method=post action="/unmapdsk7">
+      <input type=hidden name="path" value="{{ display_path }}" />
+      <a href="{{ config.get("DSK7_URL") }}">{{ config.get("DSK7_DIR") }}</a>
+      <button type="submit" title="Remove Mapping" class="tool_button">
+	  <img src="/images/delete.webp" height="10px"/>
+      </button> 
+  </form>
+  {% endif %}
+</div>
+
+<div class="drive-assignment" style="order: 6;">
+  <span>DSK8. =</span>
+  {% if config.get("DSK8_DIR") %}
+  <form method=post action="/unmapdsk8">
+      <input type=hidden name="path" value="{{ display_path }}" />
+      <a href="{{ config.get("DSK8_URL") }}">{{ config.get("DSK8_DIR") }}</a>
+      <button type="submit" title="Remove Mapping" class="tool_button">
+	  <img src="/images/delete.webp" height="10px"/>
+      </button> 
+  </form>
+  {% endif %}
+</div>
+
+<div class="drive-assignment" style="order: 8;">
+  <span>DSK9. =</span>
+  {% if config.get("DSK9_DIR") %}
+  <form method=post action="/unmapdsk9">
+      <input type=hidden name="path" value="{{ display_path }}" />
+      <a href="{{ config.get("DSK9_URL") }}">{{ config.get("DSK9_DIR") }}</a>
+      <button type="submit" title="Remove Mapping" class="tool_button">
+	  <img src="/images/delete.webp" height="10px"/>
+      </button> 
+  </form>
+  {% endif %}
+</div>
+
+</div>
+
 <div class="drive-assignment">
-  <span>CS1 =</span>
+  <span>CS1 File =</span>
   {% if config.get("CS1_FILE") %}
   <form method=post action="/unmapcs1">
       <input type=hidden name="path" value="{{ display_path }}" />
       <a href="{{ config.get("CS1_URL") }}">{{ config.get("CS1_FILE") }}</a>
-      <button type="submit" title="Remove Mapping" class="tool_button">
+      <button type="submit" title="Remove File Mapping" class="tool_button">
 	  <img src="/images/delete.webp" height="10px"/>
       </button> 
   </form>
@@ -120,7 +189,7 @@ function uploadOnClick() {
   <form method=post action="/mapcs1">
       <input type=hidden name="path" value="{{ display_path }}" />
       <input type="text" id="cs1_input" name="cs1_input" value="{{ config.get('CS1_FILE') }}" />
-      <button type="submit" title="Save CS1 Mapping">Save</button> 
+      <button type="submit" title="Save CS1 File Mapping">Save</button> 
   </form>
   {% endif %}
 </div>
@@ -190,7 +259,12 @@ function uploadOnClick() {
       <option value="mapdsk2">Map to DSK2</option>
       <option value="mapdsk3">Map to DSK3</option>
       <option value="mapdsk4">Map to DSK4</option>
-      <option value="mapcs1">Map to CS1</option>
+      <option value="mapdsk5">Map to DSK5</option>
+      <option value="mapdsk6">Map to DSK6</option>
+      <option value="mapdsk7">Map to DSK7</option>
+      <option value="mapdsk8">Map to DSK8</option>
+      <option value="mapdsk9">Map to DSK9</option>
+      <option value="mapcs1">Map File to CS1</option>
     </select>
     <input type="submit" value="Submit"/>
 

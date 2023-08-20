@@ -50,9 +50,9 @@ with open(tipi_reset + 'active_low', 'w') as f_active_low:
 try: 
   with open(tipi_reset + 'edge', 'w') as f_edge:
     f_edge.write('falling')
-    use_interrupt_polling()
+  use_interrupt_polling()
 except:
-    print("WARN: could not set trigger on falling edge")
-    use_hot_polling()
+  print("WARN: could not set trigger on falling edge")
+  use_hot_polling()
 
 

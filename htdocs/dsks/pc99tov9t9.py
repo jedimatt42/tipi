@@ -128,20 +128,20 @@ def dump_mfm_18_sectors(filepath, outfile):
 def is_mfm_16_track_dump(filepath):
     with open(filepath, "rb") as fh:
         data = bytearray(fh.read())
-        if int(data[50]) == 0xA1 and int(data[53]) == 0xFE:
+        if int(data[62]) == 0xA1 and int(data[65]) == 0xFE:
             return True
     return False
 
 
 def mfm_16_sectors(trackdata):
-    data = trackdata[40:-712]
-    return list(divide_chunks(data, 340))
+    data = trackdata[50:-206]
+    return list(divide_chunks(data, 368))
 
 
 def dump_mfm_16_sectors(filepath, outfile):
     with open(filepath, "rb") as fh:
         data = bytearray(fh.read())
-        tracks = list(divide_chunks(data, 6872))
+        tracks = list(divide_chunks(data, 6144))
         maxhead = 0
         maxtrack = 0
         maxsector = 0
@@ -149,9 +149,9 @@ def dump_mfm_16_sectors(filepath, outfile):
         for track in tracks:
             sectors = mfm_16_sectors(track)
             for sector in sectors:
-                maxtrack = max(maxtrack, sector[14])
-                maxhead = max(maxhead, sector[15])
-                maxsector = max(maxsector, sector[16])
+                maxtrack = max(maxtrack, sector[16])
+                maxhead = max(maxhead, sector[17])
+                maxsector = max(maxsector, sector[18])
 
         totaltracks = maxtrack + 1
 
@@ -159,10 +159,10 @@ def dump_mfm_16_sectors(filepath, outfile):
         for track in tracks:
             sectors = mfm_16_sectors(track)
             for sector in sectors:
-                track = sector[14]
-                head = sector[15]
-                sectorno = sector[16]
-                sdata = sector[58 : 58 + 256]
+                track = sector[16]
+                head = sector[17]
+                sectorno = sector[18]
+                sdata = sector[60 : 60 + 256]
                 put_mfm_16_sector(sectordump, sdata, track, head, sectorno, totaltracks)
     with open(outfile, "wb") as fh:
         fh.write(sectordump)

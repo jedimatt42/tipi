@@ -76,7 +76,7 @@ def extractDisk(diskfile):
     try:
         parentname = os.path.dirname(diskfile)
         sectorfile = diskfile
-        if pc99tov9t9.dumpSectors(diskfile, TMPFILE):
+        if pc99tov9t9.dump_sectors(diskfile, TMPFILE):
             sectorfile = TMPFILE
 
         dirname = os.path.dirname(diskfile)

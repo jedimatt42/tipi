@@ -11,7 +11,7 @@
 #define GPLWS ((unsigned int*)0x83E0)
 #define DSRTS ((unsigned char*)0x401A)
 
-#define TIPICFG_VER "12"
+#define TIPICFG_VER "13"
 #define PI_CONFIG "PI.CONFIG"
 #define PI_STATUS "PI.STATUS"
 #define PI_UPGRADE "PI.UPGRADE"
@@ -34,9 +34,11 @@ void reload();
 
 void processStatusLine(char* cbuf);
 void loadPiStatus();
+void showStatusValues();
 
 void processConfigLine(char* cbuf);
 void loadPiConfig();
+void showConfigValues();
 
 void savePiConfig();
 
@@ -62,6 +64,11 @@ char dsk1_dir[79];
 char dsk2_dir[79];
 char dsk3_dir[79];
 char dsk4_dir[79];
+char dsk5_dir[79];
+char dsk6_dir[79];
+char dsk7_dir[79];
+char dsk8_dir[79];
+char dsk9_dir[79];
 char wifi_ssid[79];
 char wifi_psk[79];
 char uri1[79];
@@ -72,6 +79,13 @@ char automap[79];
 int wifi_dirty;
 int disks_dirty;
 int has_upgrade;
+
+int page;
+
+#define PAGE_DRIVES 0
+#define PAGE_WIFI 1
+#define PAGE_URIS 2
+#define PAGE_END 2
 
 #define CRU_ENABLE(c) __asm__("mov %0,r12\n\tsbo 0" : : "r"(c) : "r12")
 
@@ -148,6 +162,11 @@ void initGlobals() {
   strcpy(dsk2_dir,"");
   strcpy(dsk3_dir,"");
   strcpy(dsk4_dir,"");
+  strcpy(dsk5_dir,"");
+  strcpy(dsk6_dir,"");
+  strcpy(dsk7_dir,"");
+  strcpy(dsk8_dir,"");
+  strcpy(dsk9_dir,"");
   strcpy(wifi_ssid,"");
   strcpy(wifi_psk,"");
   strcpy(uri1,"");
@@ -156,6 +175,7 @@ void initGlobals() {
   strcpy(automap,"");
   crubase = 0;
 
+  page = 0;
   wifi_dirty = 0;
   disks_dirty = 0;
   has_upgrade = 0;
@@ -187,38 +207,70 @@ void layoutScreen() {
   gotoxy(0,5);
   chline(40);
 
-  gotoxy(0,6);
-  cputs("Drive Mappings");
-  gotoxy(24,6);
-  cputs("A) AUTO=");
-  gotoxy(2,7);
-  cputs("C) CS1 =");
-  gotoxy(2,8);
-  cputs("1) DSK1=");
-  gotoxy(2,9);
-  cputs("2) DSK2=");
-  gotoxy(2,10);
-  cputs("3) DSK3=");
-  gotoxy(2,11);
-  cputs("4) DSK4=");
-  gotoxy(2,12);
-  cputs("J) URI1=");
-  gotoxy(2,13);
-  cputs("K) URI2=");
-  gotoxy(2,14);
-  cputs("L) URI3=");
+  if (page == PAGE_DRIVES) {
+    // Cassette and DSK mapping items
+    gotoxy(0,6);
+    cputs("Drive Mappings");
+    gotoxy(24,6);
+    cputs("A) AUTO=");
+    gotoxy(2,7);
+    cputs("C) CS1 =");
+    gotoxy(2,8);
+    cputs("1) DSK1=");
+    gotoxy(2,9);
+    cputs("2) DSK2=");
+    gotoxy(2,10);
+    cputs("3) DSK3=");
+    gotoxy(2,11);
+    cputs("4) DSK4=");
+    gotoxy(2,12);
+    cputs("5) DSK5=");
+    gotoxy(2,13);
+    cputs("6) DSK6=");
+    gotoxy(2,14);
+    cputs("7) DSK7=");
+    gotoxy(2,15);
+    cputs("8) DSK8=");
+    gotoxy(2,16);
+    cputs("9) DSK9=");
+    // next label
+    gotoxy(9,18);
+    cputs("WiFi config");
+  } else if (page == PAGE_URIS) {
+    // Long URL mapping prefix items
+    gotoxy(0,6);
+    cputs("URI Prefix Mappings");
+    gotoxy(2,7);
+    cputs("J) URI1=");
+    gotoxy(2,9);
+    cputs("K) URI2=");
+    gotoxy(2,11);
+    cputs("L) URI3=");
+    // next label
+    gotoxy(9,18);
+    cputs("DSK and CS1 mapping");
+  } else if (page == PAGE_WIFI) {
+    // Wifi configuration items
+    gotoxy(0,6);
+    cputs("WiFi Settings");
+    gotoxy(2,7);
+    cputs("S) SSID=");
+    gotoxy(2,8);
+    cputs("P)  PSK=");
+    // next label
+    gotoxy(9,18);
+    cputs("URI mapping");
+  }
 
-  gotoxy(0,15);
-  chline(40);
-  gotoxy(0,16);
-  cputs("WiFi Settings");
-  gotoxy(2,17);
-  cputs("S) SSID=");
+  // Next page prompt
   gotoxy(2,18);
-  cputs("P)  PSK=");
+  cputs("SPACE)");
+
+  // Transient status line
   gotoxy(0,19);
   chline(40);
 
+  // Action menu for Quit, Halt, Write, etc
   gotoxy(0,21);
   chline(40);
   showQMenu();
@@ -240,69 +292,110 @@ void main()
     while(!kbhit()) {}
 
     key = cgetc();
+
+    if (page == PAGE_DRIVES) {
+      // drive mappings
+      switch(key) {
+        case 'A':
+        case 'a':
+          disks_dirty = 1;
+          toggleAutomap();
+          showValue(32,6,automap);
+          break;
+        case 'C':
+        case 'c':
+          disks_dirty = 1;
+          getstr(10,7,cs1_file);
+          showValue(10,7,cs1_file);
+          break;
+        case '1':
+          disks_dirty = 1;
+          getstr(10,8,dsk1_dir);
+          showValue(10,8,dsk1_dir);
+          break;
+        case '2':
+          disks_dirty = 1;
+          getstr(10,9,dsk2_dir);
+          showValue(10,9,dsk2_dir);
+          break;
+        case '3':
+          disks_dirty = 1;
+          getstr(10,10,dsk3_dir);
+          showValue(10,10,dsk3_dir);
+          break;
+        case '4':
+          disks_dirty = 1;
+          getstr(10,11,dsk4_dir);
+          showValue(10,11,dsk4_dir);
+          break;
+        case '5':
+          disks_dirty = 1;
+          getstr(10,12,dsk5_dir);
+          showValue(10,12,dsk5_dir);
+          break;
+        case '6':
+          disks_dirty = 1;
+          getstr(10,13,dsk6_dir);
+          showValue(10,13,dsk6_dir);
+          break;
+        case '7':
+          disks_dirty = 1;
+          getstr(10,14,dsk7_dir);
+          showValue(10,14,dsk7_dir);
+          break;
+        case '8':
+          disks_dirty = 1;
+          getstr(10,15,dsk8_dir);
+          showValue(10,15,dsk8_dir);
+          break;
+        case '9':
+          disks_dirty = 1;
+          getstr(10,16,dsk9_dir);
+          showValue(10,16,dsk9_dir);
+          break;
+      }
+    } else if (page == PAGE_URIS) {
+      // uri mappings
+      switch(key) {
+        case 'J':
+        case 'j':
+          disks_dirty = 1;
+          getstr(10,7,uri1);
+          showValue(10,7,uri1);
+          break;
+        case 'K':
+        case 'k':
+          disks_dirty = 1;
+          getstr(10,9,uri2);
+          showValue(10,9,uri2);
+          break;
+        case 'L':
+        case 'l':
+          disks_dirty = 1;
+          getstr(10,11,uri3);
+          showValue(10,11,uri3);
+          break;
+      }
+    } else if (page == PAGE_WIFI) {
+      // wifi settings
+      switch(key) {
+        case 'S':
+        case 's':
+          wifi_dirty = 1;
+          getstr(10,7,wifi_ssid);
+          showValue(10,7,wifi_ssid);
+          break;
+        case 'P':
+        case 'p':
+          wifi_dirty = 1;
+          getstr(10,8,wifi_psk);
+          showValue(10,8,"************");
+          break;
+      }
+    }
+
+    // available on all screens
     switch(key) {
-      case 'A':
-      case 'a':
-        disks_dirty = 1;
-        toggleAutomap();
-        showValue(32,6,automap);
-        break;
-      case 'C':
-      case 'c':
-        disks_dirty = 1;
-        getstr(10,7,cs1_file);
-        showValue(10,7,cs1_file);
-        break;
-      case '1':
-        disks_dirty = 1;
-        getstr(10,8,dsk1_dir);
-        showValue(10,8,dsk1_dir);
-        break;
-      case '2':
-        disks_dirty = 1;
-        getstr(10,9,dsk2_dir);
-        showValue(10,9,dsk2_dir);
-        break;
-      case '3':
-        disks_dirty = 1;
-        getstr(10,10,dsk3_dir);
-        showValue(10,10,dsk3_dir);
-        break;
-      case '4':
-        disks_dirty = 1;
-        getstr(10,11,dsk4_dir);
-        showValue(10,11,dsk4_dir);
-        break;
-      case 'J':
-      case 'j':
-        disks_dirty = 1;
-        getstr(10,12,uri1);
-        showValue(10,12,uri1);
-        break;
-      case 'K':
-      case 'k':
-        disks_dirty = 1;
-        getstr(10,13,uri2);
-        showValue(10,13,uri2);
-        break;
-      case 'L':
-      case 'l':
-        disks_dirty = 1;
-        getstr(10,14,uri3);
-        showValue(10,14,uri3);
-        break;
-      case 'S':
-      case 's':
-        wifi_dirty = 1;
-        getstr(10,17,wifi_ssid);
-        showValue(10,17,wifi_ssid);
-        break;
-      case 'P':
-      case 'p':
-        wifi_dirty = 1;
-        getstr(10,18,wifi_psk);
-        showValue(10,18,"************");
-        break;
       case 'R':
       case 'r':
         reload();
@@ -330,6 +423,13 @@ void main()
       case 'B':
       case 'b':
         reboot();
+        break;
+      case ' ':
+        page = page + 1;
+        if (page > PAGE_END) { page = 0; }
+        layoutScreen();
+        showConfigValues();
+        showStatusValues();
         break;
     }
 
@@ -398,6 +498,20 @@ int upgradeAvailable(char* latest, char* current) {
   return 0;
 }
 
+void showStatusValues() {
+  showValue(25, 0, version);
+  showValue(25, 1, ipaddress);
+  if (upgradeAvailable(latest, version)) {
+    gotoxy(0, 4);
+    cputs("U) upgrade to ");
+    cputs(latest);
+    has_upgrade = 1;
+  } else {
+    cclearxy(0,4,40);
+    has_upgrade = 0;
+  }
+}
+
 void loadPiStatus() {
   struct PAB pab;
 
@@ -422,17 +536,7 @@ void loadPiStatus() {
   }
   ferr = dsr_close(&pab);
 
-  showValue(25, 0, version);
-  showValue(25, 1, ipaddress);
-  if (upgradeAvailable(latest, version)) {
-    gotoxy(0, 4);
-    cputs("U) upgrade to ");
-    cputs(latest);
-    has_upgrade = 1;
-  } else {
-    cclearxy(0,4,40);
-    has_upgrade = 0;
-  }
+  showStatusValues();
 
   if (ferr) {
     cprintf("Close ERROR: %x", ferr);
@@ -455,6 +559,29 @@ void processStatusLine(char* cbuf) {
     strcpy(ipaddress, val);
   } else if (0 == strcmp(cbuf, "LATEST")) {
     strcpy(latest, val);
+  }
+}
+
+void showConfigValues() {
+  if (page == PAGE_DRIVES) {
+    showValue(32,6, automap);
+    showValue(10, 7, cs1_file);
+    showValue(10, 8, dsk1_dir);
+    showValue(10, 9, dsk2_dir);
+    showValue(10, 10, dsk3_dir);
+    showValue(10, 11, dsk4_dir);
+    showValue(10, 12, dsk5_dir);
+    showValue(10, 13, dsk6_dir);
+    showValue(10, 14, dsk7_dir);
+    showValue(10, 15, dsk8_dir);
+    showValue(10, 16, dsk9_dir);
+  } else if (page == PAGE_URIS) {
+    showValue(10, 7, uri1);
+    showValue(10, 9, uri2);
+    showValue(10, 11, uri3);
+  } else if (page == PAGE_WIFI) {
+    showValue(10, 7, wifi_ssid);
+    showValue(10, 8, "************");
   }
 }
 
@@ -481,17 +608,7 @@ void loadPiConfig() {
     }
   }
 
-  showValue(10, 7, cs1_file);
-  showValue(10, 8, dsk1_dir);
-  showValue(10, 9, dsk2_dir);
-  showValue(10, 10, dsk3_dir);
-  showValue(10, 11, dsk4_dir);
-  showValue(10, 12, uri1);
-  showValue(10, 13, uri2);
-  showValue(10, 14, uri3);
-  showValue(10, 17, wifi_ssid);
-  showValue(10, 18, "************");
-  showValue(32,6, automap);
+  showConfigValues();
 
   ferr = dsr_close(&pab);
   if (ferr) {
@@ -525,6 +642,16 @@ void processConfigLine(char* cbuf) {
     strcpy(dsk3_dir, val);
   } else if (0 == strcmp(cbuf, "DSK4_DIR")) {
     strcpy(dsk4_dir, val);
+  } else if (0 == strcmp(cbuf, "DSK5_DIR")) {
+    strcpy(dsk5_dir, val);
+  } else if (0 == strcmp(cbuf, "DSK6_DIR")) {
+    strcpy(dsk6_dir, val);
+  } else if (0 == strcmp(cbuf, "DSK7_DIR")) {
+    strcpy(dsk7_dir, val);
+  } else if (0 == strcmp(cbuf, "DSK8_DIR")) {
+    strcpy(dsk8_dir, val);
+  } else if (0 == strcmp(cbuf, "DSK9_DIR")) {
+    strcpy(dsk9_dir, val);
   } else if (0 == strcmp(cbuf, "CS1_FILE")) {
     strcpy(cs1_file, val);
   } else if (0 == strcmp(cbuf, "URI1")) {
@@ -653,6 +780,11 @@ void savePiConfig() {
     writeConfigItem(&pab, "DSK2_DIR", dsk2_dir);
     writeConfigItem(&pab, "DSK3_DIR", dsk3_dir);
     writeConfigItem(&pab, "DSK4_DIR", dsk4_dir);
+    writeConfigItem(&pab, "DSK5_DIR", dsk5_dir);
+    writeConfigItem(&pab, "DSK6_DIR", dsk6_dir);
+    writeConfigItem(&pab, "DSK7_DIR", dsk7_dir);
+    writeConfigItem(&pab, "DSK8_DIR", dsk8_dir);
+    writeConfigItem(&pab, "DSK9_DIR", dsk9_dir);
     writeConfigItem(&pab, "URI1", uri1);
     writeConfigItem(&pab, "URI2", uri2);
     writeConfigItem(&pab, "URI3", uri3);

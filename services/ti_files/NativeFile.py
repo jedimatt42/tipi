@@ -165,6 +165,9 @@ class NativeFile(object):
         self.currentRecord += 1
         return record
 
+    def scratchRecord(self, idx):
+        del(self.records[idx])
+
     def getRecord(self, idx):
         if idx >= len(self.records):
             return None

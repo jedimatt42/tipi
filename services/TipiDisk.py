@@ -421,7 +421,38 @@ class TipiDisk(object):
     def handleScratch(self, pab, devname):
         logger.info("Opcode 8 Scratch - %s", devname)
         logPab(pab)
-        self.sendErrorCode(EDVNAME)
+        unix_name = tinames.devnameToLocal(devname)
+        recNum = recordNumber(pab)
+
+        if unix_name is None:
+            logger.info("Passing to other controllers")
+            self.sendErrorCode(EDVNAME)
+            return
+
+        if unix_name not in self.openFiles:
+            # pass to a different device.
+            self.sendErrorCode(EDVNAME)
+            return
+
+        try:
+            open_file = self.openFiles[unix_name]
+            if open_file == None:
+                self.sendErrorCode(EFILERR)
+                return
+
+            open_file.scratchRecord(recNum)
+            # write eager
+            if tipi_config.get("EAGER_WRITE") == "on":
+                open_file.eager_write(unix_name)
+            self.sendSuccess()
+
+            return
+
+        except Exception:
+            traceback.print_exc()
+            self.sendErrorCode(EFILERR)
+
+        self.sendErrorCode(EDEVERR)
 
     def handleStatus(self, pab, devname):
         logger.info("Opcode 9 Status - %s", devname)

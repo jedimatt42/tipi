@@ -138,6 +138,14 @@ class FixedRecordFile(object):
         self.currentRecord += 1
         return record
 
+    def scratchRecord(self, idx):
+        self.dirty = True
+        if self.filetype == RELATIVE:
+            self.currentRecord = idx
+        logger.info("scratching currentRecord: %d", self.currentRecord)
+        # record = self.getRecord(self.currentRecord)
+        del(self.records[idx])
+
     def getRecord(self, idx):
         if idx >= len(self.records):
             return None

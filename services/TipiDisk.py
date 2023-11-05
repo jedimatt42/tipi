@@ -447,12 +447,10 @@ class TipiDisk(object):
             self.sendSuccess()
 
             return
-
         except Exception:
             traceback.print_exc()
             self.sendErrorCode(EFILERR)
 
-        self.sendErrorCode(EDEVERR)
 
     def handleStatus(self, pab, devname):
         logger.info("Opcode 9 Status - %s", devname)

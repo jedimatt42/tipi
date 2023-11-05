@@ -148,6 +148,9 @@ class JsonFile(object):
         self.currentRecord += 1
         return record
 
+    def scratchRecord(self, idx):
+        raise Exception("not supported")
+
     def getRecord(self, idx):
         if idx >= len(self.records):
             return None

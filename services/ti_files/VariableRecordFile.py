@@ -131,6 +131,10 @@ class VariableRecordFile(object):
         self.currentRecord += 1
         return record
 
+    def scratchRecord(self, idx):
+        logger.warn("scratch record not supported on sequential file access")
+        raise Exception("not supported")
+
     def getRecord(self, idx):
         if idx >= len(self.records):
             return None

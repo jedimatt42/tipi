@@ -148,6 +148,7 @@ class NativeFile(object):
             self.currentRecord = recordNumber(pab)
         else:
             self.currentRecord = 0
+            logger.info("restore currentRecord = 0")
 
     def writeRecord(self, rdata, pab):
         self.dirty = True

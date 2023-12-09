@@ -4,6 +4,7 @@ import logging
 import time
 import os
 import errno
+import traceback
 
 from ti_files.ProgramImageFile import ProgramImageFile
 from ti_files.FixedRecordFile import FixedRecordFile
@@ -60,6 +61,7 @@ class TipiDisk(object):
 
     def sendErrorCode(self, code):
         logger.exception("responding with error: " + str(code))
+        # traceback.print_stack()
         self.sendSingleByte(code)
 
     def sendSuccess(self):
@@ -170,7 +172,7 @@ class TipiDisk(object):
             return False
 
     def handleClose(self, pab, devname):
-        logger.debug("Opcode 1 Close - %s", devname)
+        logger.info("Opcode 1 Close - %s", devname)
         logPab(pab)
         unix_name = tinames.devnameToLocal(devname)
 
@@ -194,7 +196,7 @@ class TipiDisk(object):
             pass
 
     def handleRead(self, pab, devname):
-        logger.debug("Opcode 2 Read - %s", devname)
+        logger.info("Opcode 2 Read - %s", devname)
         logPab(pab)
         unix_name = tinames.devnameToLocal(devname)
         recNum = recordNumber(pab)
@@ -384,6 +386,7 @@ class TipiDisk(object):
                 prog_file.save(unix_name)
 
                 self.sendSuccess()
+                logger.info("SAVE success")
             except Exception as e:
                 logger.exception("failed to save PROGRAM")
                 self.sendErrorCode(EDEVERR)

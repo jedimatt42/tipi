@@ -41,6 +41,7 @@ CONFIG_DEFAULTS = {
     "EAGER_WRITE": "off",
     "HOST_EOL": "CRLF",
     "NATIVE_TEXT_DIRS": "",
+    "CUSTOM_BINS": "0",
 }
 
 

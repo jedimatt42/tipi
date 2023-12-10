@@ -43,5 +43,7 @@ fi
 # disable power management for the wifi
 iwconfig wlan0 power off
 
-cp -R -a /home/tipi/tipi/setup/bin/* /home/tipi/tipi_disk/
-
+grep "CUSTOM_BINS=1" /home/tipi/tipi.config >/dev/null
+if [ $? = 1 ]; then
+  cp -R -a /home/tipi/tipi/setup/bin/* /home/tipi/tipi_disk/
+fi

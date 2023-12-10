@@ -1,4 +1,5 @@
 .idea
+compile_commands.json
 *.o
 *.i
 *.s

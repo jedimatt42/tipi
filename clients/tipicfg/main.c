@@ -1,4 +1,3 @@
-
 #include <files.h>
 
 #include <string.h>
@@ -276,7 +275,7 @@ void layoutScreen() {
   showQMenu();
 }
 
-void main()
+int main()
 {
   initGlobals();
   setupScreen();
@@ -442,6 +441,7 @@ void main()
   gotoxy(0,4);
   cputs("quiting...");
   __asm__("clr r0\n\tblwp *r0");
+  return 0;
 }
 
 void tipi_lib_init()

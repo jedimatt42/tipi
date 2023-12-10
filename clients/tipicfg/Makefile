@@ -2,7 +2,7 @@ GAS=tms9900-as
 LD=tms9900-ld
 CC=tms9900-gcc
 EA5SPLIT=ea5split
-LIBTI99?=/home/matthew/dev/ti99/libti99
+LIBTI99?=/home/matthew/dev/github/tursilion/libti99
 
 ELF2EA5=elf2ea5
 
@@ -41,5 +41,5 @@ $(FNAME).elf: $(OBJECT_LIST)
 	$(GAS) $< -o $@
 
 %.o: %.c
-	$(CC) -c $< -std=c99 -Os --save-temp -I$(LIBTI99) -I/home/matthew/dev/gcc-9900/lib/gcc/tms9900/4.4.0/include -o $@
+	$(CC) -c $< -std=c99 -Os --save-temps -I$(LIBTI99) -I/home/matthew/dev/gcc-9900/lib/gcc/tms9900/4.4.0/include -o $@
 

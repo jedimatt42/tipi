@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -o errexit
+
 function build() {
   cd /home/tipi
   if [ -d PrinterToPDF ];

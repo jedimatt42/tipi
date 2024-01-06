@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -o errexit
+
 if [ -d ENV ]; then
   rm -r ENV
 fi

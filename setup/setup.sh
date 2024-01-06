@@ -1,5 +1,11 @@
 #!/bin/bash
 
+set -o errexit
+
+echo "Installing PI.PIO support..."
+cd /home/tipi/tipi/setup/
+sudo ./printing_setup.sh
+
 echo "Installing systemd services..."
 
 cd /home/tipi/tipi/setup/

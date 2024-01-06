@@ -3,8 +3,18 @@
 TIPI=/home/tipi/tipi
 cd $TIPI || exit 1
 
+set -o errexit
+
+. /etc/os-release
+if [ ${VERSION_CODENAME:-} = "bullseye" ]; then
+  OSPKGS=python-dev
+fi
+if [ ${VERSION_CODENAME:-} = "bookworm" ]; then
+  OSPKGS=python-dev-is-python3
+fi
+
 sudo apt-get -y install \
- python-dev \
+ $OSPKGS \
  python3-dev \
  python3-pip \
  libcurl4-openssl-dev \
@@ -13,9 +23,10 @@ sudo apt-get -y install \
  sqlite3 \
  libsqlite3-dev \
  php \
- virtualenv
+ virtualenv \
+ telnetd
 
-sudo apt-get -y install usbmount
+# sudo apt-get -y install usbmount
 
 if [ ! -e /home/tipi/tipi_disk ]; then
   mkdir /home/tipi/tipi_disk

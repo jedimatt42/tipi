@@ -1,12 +1,18 @@
 #!/bin/bash
 
+set -o errexit
+
 function deps() {
   apt update
-  apt-get install -y imagemagick
-  apt-get install -y libpng12-dev
-  apt-get install -y libhpdf-2.3.0
-  apt-get install -y libhpdf-dev
-  apt-get install -y libsdl-dev
+  apt-get install -y imagemagick libhpdf-dev libhpdf-2.3.0
+
+  . /etc/os-release
+  if [ "${VERSION_CODENAME:-}" = "bullseye" ]; then
+    apt-get install -y libsdl-dev libpng12-dev
+  fi
+  if [ "${VERSION_CODENAME:-}" = "bookworm" ]; then
+    apt-get install -y libpng-dev libsdl1.2-compat-dev
+  fi
 }
 
 function share() {

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -o errexit
+
 fversion=${1:-0}
 fmajor=`echo $fversion | cut -f1 -d.`
 fminor=`echo $fversion | cut -f2 -d.`
@@ -20,7 +22,7 @@ case $fversion in
   TIPI_BASE_CONFIG=true
   TIPI_RESTART_SERVICES=true
   TIPI_UPDATE_DEPS=true
-  TIPI_UPDATE_USBMOUNT=true
+  # TIPI_UPDATE_USBMOUNT=true
   ;;
 *)
   TIPI_RESTART_SERVICES=true

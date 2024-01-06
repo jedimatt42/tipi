@@ -10,7 +10,7 @@ Go to the [Wiki](https://github.com/jedimatt42/tipi/wiki) for end user installat
 
 # Only follow these instructions if you are setting up an SD Card from scratch.
 
-Assumes base image is Raspbian Lite (bullseye)
+Assumes base image is Raspbian Lite (bullseye or bookworm)
 
 ## Pre-boot setup
 
@@ -119,10 +119,6 @@ NOTE: On Le Potato some parts of post-upgrade do not work. Completely...
 * change the hostname (raspi-config)
 * install samba share for /home/tipi/tipi_disk
 * add telnetd for localhost access
-
-```
-sudo apt install telnetd
-```
 
    edit /etc/hosts.allow: 
 

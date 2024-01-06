@@ -27,6 +27,12 @@ if [ -z ${TIPI_SIG_DELAY:-} ]; then
     # signalling delay for PI 3+
     export TIPI_SIG_DELAY=100
   fi
+
+  cat /proc/device-tree/model | grep "Pi 5 Model B" >/dev/null 2>&1
+  if [ $? = 0 ]; then
+    # signalling delay for PI 5
+    export TIPI_SIG_DELAY=120
+  fi
 fi
 
 # touch /home/tipi/.emulation to enable websocket server

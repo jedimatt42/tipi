@@ -1,0 +1,23 @@
+MEMORY
+{
+  lower_exp  (wx) : ORIGIN = 0x2000, LENGTH = 0x2000 /* 8k        */
+  upper_exp  (wx) : ORIGIN = 0xA000, LENGTH = 0x6000 /* upper ram */
+  scratchpad (wx) : ORIGIN = 0x8320, LENGTH = 0x00e0 /* 32b is for workspace */
+}
+
+
+SECTIONS
+{
+  /* .text_low : {crt0.o(.text)} >lower_exp */
+  .text : {*(.text)} >upper_exp
+  
+  .ctors ALIGN(2) : { __CTOR_START = .; *(.ctors);}
+  __CTOR_END = .;
+
+  __VAL_START = .;
+  .data : { __DATA_START = .; *(.data);}
+  __DATA_END = .;
+
+  .bss  ALIGN(2) : { __BSS_START = .; *(.bss);}
+  __BSS_END = .;
+}  

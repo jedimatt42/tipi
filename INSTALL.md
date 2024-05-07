@@ -16,6 +16,8 @@ Assumes base image is Raspbian Lite (bullseye or bookworm)
 
 Before booting the Raspbian SD image, create a createuser.txt, enable ssh, enable wifi by
 following the instructions from [raspberrypi.com](https://raspberrypi.com/documentation/computers/configuration.html#setting-up-a-headless-raspberry-pi)
+The user you create should be named: tipi
+The tipi user password should be: tipi
 
 Use raspi-config to install locales and set default, en_US_utf8.
 Note: installing all locales takes forever, and slows future updates.
@@ -68,12 +70,6 @@ sudo apt install git
 
 Setup the services, by becoming the 'tipi' user, cloning the git repository 
 within the 'tipi' user home directory, and running the setup.sh script.
-
-The `tipi` user should be the only user you know how to login as. Be the `tipi` user
-
-```
-sudo su tipi
-```
 
 While executing the following, when prompted for a 'sudo' password, it 
 is for the 'tipi' user.

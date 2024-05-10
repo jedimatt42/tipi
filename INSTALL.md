@@ -10,7 +10,7 @@ Go to the [Wiki](https://github.com/jedimatt42/tipi/wiki) for end user installat
 
 # Only follow these instructions if you are setting up an SD Card from scratch.
 
-Assumes base image is Raspbian Lite (bullseye or bookworm)
+Assumes base image is Raspbian Lite (bookworm)
 
 ## Pre-boot setup
 

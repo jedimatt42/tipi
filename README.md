@@ -18,7 +18,8 @@ Branches:
 
 ```
   main - current development for latest Raspberry PI OS
-  bullseye_release - beta status 
+  bookworm_release - Current release branch based on Raspberry PI OS 12 - bookworm
+  bullseye_release - (legacy) end of life, as new bookworm_release branch is available
   buster_dev - (legacy) for patching upstream of buster_release
   buster_release - (legacy) for Raspberry PI 2W - 4B+ or Qemu use.
 ```
@@ -33,11 +34,11 @@ The hardware design files and TI-99 DSR ROM code are in the [hardware](hardware)
 
 The remaining software contained in this repository are licensed under the terms of [GPLv3](https://www.gnu.org/licenses/quick-guide-gplv3.en.html)
 
-These files are part of TiPi.
+These files are part of TIPI.
 
-TiPi is free hardware design and software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+TIPI is free hardware design and software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-TiPi is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+TIPI is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with TiPi SD Card Image.  If not, see [GNU Licenses](http://www.gnu.org/licenses/).
+You should have received a copy of the GNU General Public License along with TIPI SD Card Image.  If not, see [GNU Licenses](http://www.gnu.org/licenses/).
 

@@ -42,8 +42,6 @@ Cleanup files under those subdirectories, and mount the tmpfs filesystems.
 ```
 sudo rm -r /tmp/*
 sudo rm -r /var/log/*
-sudo mount /tmp
-sudo mount /var/log
 ```
 
 Reboot

@@ -38,6 +38,7 @@ else
   fi
   chmod a+rw /dev/tipi_control
   chmod a+rw /dev/tipi_data
+  chmod a+rw /dev/tipi_reset
 fi
 
 # disable power management for the wifi

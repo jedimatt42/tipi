@@ -90,7 +90,7 @@ Install the tipi services
 cd /home/tipi
 git clone https://github.com/jedimatt42/tipi.git tipi
 cd /home/tipi/tipi
-git checkout bullseye_release
+git checkout bookworm_release
 git submodule update --init
 ./setup.sh
 ```

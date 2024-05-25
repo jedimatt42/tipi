@@ -108,7 +108,7 @@ class CatalogFile(object):
 
     def createFileCatRecords(self):
         if self.devname == "DSK.":
-            return {}
+            return self.mappedVolumeRecords()
 
         dir_sort = tipi_config.get("DIR_SORT")
         if dir_sort not in ("MIXED", "FIRST", "LAST"):
@@ -255,3 +255,9 @@ class CatalogFile(object):
             for i, l in enumerate(f):
                 pass
         return i + 1
+
+    def mappedVolumeRecords(self):
+        # the picoPeb returns volume names or mountable images
+        # we could report mapped drive volume names
+        return { self.encodeDirRecord("TEST", 6, 2, 0) }
+        

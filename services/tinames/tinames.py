@@ -70,7 +70,7 @@ def __scanForVolume(volume):
 def nativeFlags(devname):
     parts = str(devname).split(".")
     startpart = 1
-    if parts[0] == "DSK":
+    if parts[0] == "DSK" and len(parts) > 2:
         startpart = 2
     if parts[0] == "CS1":
         return ""

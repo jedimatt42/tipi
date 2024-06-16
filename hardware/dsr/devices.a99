@@ -163,9 +163,13 @@ handlers			; 2x opcode + handlers is address to branch to.
 	DATA	retdone		; scratch opcode not implemented.
 	DATA	hstatus
 
+CPUFLAG
+	DATA  >4000
+
 hresponse
 	CLR	R1		; switch on opcode in R1
 	MOVB	@OPCODE(R10),@R1LB(R10)
+	SZCB	@CPUFLAG,@R1LB(R10)		; will need to remove cpu buffer bit if set
 	SLA	R1,1		; multiply by 2
 	AI	R1,handlers	; R1 now has address of handler reference
 	MOV	*R1,R1
@@ -192,8 +196,13 @@ hclose
 hread
 	MOV	@RECNUM(R10),R0
 	MOV	@BUFADR(R10),R1
-	BL	@vrecvmsg	; R0 is now number of bytes read in record
-	SWPB	R0
+	MOV	@OPCODE(R10),R9
+	COC	@CPUFLAG,R9	; If the cpuflag is set, set equal status bit
+	JEQ	!
+	BL	@vrecvmsg	; Read into VDP buffer, R0 has num bytes read
+	JMP !!
+!	BL	@recvmsg	; Read into CPU buffer, R0 has num bytes read
+!	SWPB	R0
 	MOV	@VPAB,R3
 	AI	R3,CHRCNT-OPCODE
 	.setvdpwa R3
@@ -228,9 +237,14 @@ wrrel
 finwrite
 	SWPB	R0
 	MOV	@BUFADR(R10),R1
-	BL	@vsendmsg
-	
-	LI	R0,1		; Set expectation to read 1 byte
+; If @OPCODE(R10) has CPU buffer bit set then use sendmsg instead of vsendmsg
+	MOV	@OPCODE(R10),R9
+	COC @CPUFLAG,R9	; If the cpuflag is set, set equal status bit
+	JEQ	!
+	BL	@vsendmsg	; write record from VDP ram
+	JMP !!
+!	BL	@sendmsg	; write record from CPU ram
+!	LI	R0,1		; Set expectation to read 1 byte
 	MOV	R10,R1		; Set receive address to Workspace
 	AI	R1,R9LB		; add low byte address of R9 to receive address
 	CLR	R9		; clear value in R9 so MSB is 0.
@@ -250,16 +264,25 @@ hrestore
 hload
 	MOV	@RECNUM(R10),R0	; VPD space left is limited
 	MOV	@BUFADR(R10),R1	; Set VDP location to load in to.
-	BL	@vrecvmsg 	; Load image data
-	JMP	retdone
+	MOV	@OPCODE(R10),R9
+	COC	@CPUFLAG,R9	; If the cpuflag is set, set equal status bit
+	JEQ	!
+	BL	@vrecvmsg 	; Load image data into VDP ram
+	JMP	!!
+!	BL	@recvmsg	; Load image data into CPU ram
+!	JMP	retdone
 
 ; Handle response for OPCODE 6 - OPSAVE
 hsave
 	MOV	@RECNUM(R10),R0
 	MOV	@BUFADR(R10),R1
-	BL	@vsendmsg
-
-	LI	R0,1		; Set expectation to read 1 byte
+	MOV	@OPCODE(R10),R9
+	COC	@CPUFLAG,R9	; If the cpuflag is set, set equal status bit
+	JEQ	!
+	BL	@vsendmsg	; save data from VDP ram
+	JMP	!!
+!	BL	@sendmsg	; save data from CPU ram
+!	LI	R0,1		; Set expectation to read 1 byte
 	MOV	R10,R1		; Set receive address to Workspace
 	AI	R1,R9LB		; add low byte address of R9 to receive address
 	CLR	R9		; clear value in R9 so MSB is 0.

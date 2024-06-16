@@ -54,7 +54,7 @@ GPLR0LB EQU >83E1
 GPLR9	EQU	>83F2
 
 cleanunit					; Modifies R9 and R1
-	MOVB	@UNITNO,R9 		; Unit number in high by of R9
+	MOV		@UNITNO,R9 		; Unit number in high byte of R9, bring along low byte as it is usually sent together in a 2 byte message
 	SZC		@BUFFLAG,R9 	; unset the cpuflag if it was set
 	LI		R1,GPLR9		; return address of clean unitno R9 in R1
 	RT

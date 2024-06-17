@@ -277,13 +277,20 @@ setpath				; set current directory for a unit/drive
 	LI	R0,1
 	BL	@cleanunit	; copy unitno and unset cpuflag, return address of R9 in R1
 	BL	@sendmsg	; send unit number
-	MOV	@PATHNAM,R1
+	; PATHNAME points to a BASIC STR ( len + bytes ), which complicates all this.
+	MOV	@PATHNAM,R1	; set R1 to len byte address of BASIC STR
+	CLR	R0		; zero out R0 before copying len byte into it
+	MOV	@UNITNO,R9
+	COC	@BUFFLAG,R9	; set equal bit if cpuflag requested
+	JEQ	!
 	.setvdpra R1
-	CLR	R0
-	MOVB	@VDPRD,R0
-	SWPB	R0		; get length of string
-	MOV	@PATHNAM,R1
-	INC	R1
+	MOVB	@VDPRD,R0	; get length of string from VDP basic string
+	JMP	!!		; now skip to adjustments of R0 and R1 and sending the message
+!	MOVB	*R1,R0		; copy length byte into R0
+
+	; Now finish sending the message
+!	SWPB	R0		; put length byte in LSB
+	INC	R1		; start sending from the characters, not the length byte
 	BL	@cvsend		; send path string
 	JMP	getl2resp
 

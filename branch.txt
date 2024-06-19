@@ -1,1 +1,1 @@
-branch=bookworm_release
+branch=main

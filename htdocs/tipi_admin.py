@@ -3,6 +3,7 @@
 # Corey J. Anderson ElectricLab.com 2017
 # et al.
 import io
+import subprocess
 
 
 def version():
@@ -21,9 +22,8 @@ def logdata():
         return {"logdata": f.read()}
 
 
-def daemonlogdata():
-    with io.open("/var/log/daemon.log", mode="r", encoding="utf-8") as f:
-        return {"logdata": f.read()}
+def oslogdata():
+    return {"logdata": subprocess.run(['journalctl', '--no-page', '-b'], stdout=subprocess.PIPE).stdout.decode('utf-8') }
 
 
 def reboot():

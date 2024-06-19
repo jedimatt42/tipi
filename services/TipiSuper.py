@@ -21,20 +21,21 @@ def configureWifi(wificonfig):
         os.remove(wificonfig)
 
         # adjust settings for network 0
-        with open("/boot/wpa_supplicant.conf", "w") as fh_out:
-            with open(
-                "/home/tipi/tipi/services/templates/wpa_supplicant.conf"
-            ) as fh_in:
-                for line in fh_in:
-                    line = line.replace("${SSID}", ssid)
-                    line = line.replace("${PSK}", psk)
-                    fh_out.write(line)
 
-        # reload the new wpa_supplicant.conf
-        callargs = ["/sbin/reboot", "now"]
-        if call(callargs) != 0:
-            raise Exception("failed to reload configuration")
-
+        callargs = ["/usr/bin/raspi-config", "nonint", "do_wifi_ssid_passphrase", ssid, psk, "1"]
+        print(f"Using raspi-config to connect to WiFi ssid ${ssid}")
+        rescode = 1
+        tries = 5
+        while rescode != 0:
+            rescode = call(callargs)
+            if rescode != 0:
+                print("failed to set WiFi config vi raspi-config, retrying...")
+                tries = tries - 1
+                if tries == 0:
+                    raise Exception("failed to set WiFi config vi raspi-config")
+            else:
+                rescode = 0
+                print("set WiFi config successfully")
     except Exception as e:
         print(e)
 

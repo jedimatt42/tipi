@@ -112,7 +112,7 @@ class TipiConfig(object):
         key = key.strip()
         newvalue = value.strip()
         oldvalue = self.records.get(key, "")
-        if oldvalue != newvalue:
+        if oldvalue != newvalue or key in ("WIFI_SSID", "WIFI_PSK"):
             newvalue = self.__sanitizeValue(key, newvalue)
             self.records[key] = newvalue
             self.sorted_keys = list(self.records.keys())

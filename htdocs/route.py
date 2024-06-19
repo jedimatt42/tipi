@@ -352,10 +352,10 @@ def logs():
     return render_template("log.html", **logdata)
 
 
-@app.route("/daemonlogs", methods=["GET"])
-def daemonlogs():
-    logdata = tipi_admin.daemonlogdata()
-    return render_template("daemonlog.html", **logdata)
+@app.route("/oslogs", methods=["GET"])
+def oslogs():
+    logdata = tipi_admin.oslogdata()
+    return render_template("oslog.html", **logdata)
 
 
 @app.route("/rebootnow", methods=["GET"])

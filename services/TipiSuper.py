@@ -23,9 +23,19 @@ def configureWifi(wificonfig):
         # adjust settings for network 0
 
         callargs = ["/usr/bin/raspi-config", "nonint", "do_wifi_ssid_passphrase", ssid, psk, "1"]
-        if call(callargs) != 0:
-            raise Exception("failed to set Wifi config vi raspi-config")
-
+        print(f"Using raspi-config to connect to WiFi ssid ${ssid}")
+        rescode = 1
+        tries = 5
+        while rescode != 0:
+            rescode = call(callargs)
+            if rescode != 0:
+                print("failed to set WiFi config vi raspi-config, retrying...")
+                tries = tries - 1
+                if tries == 0:
+                    raise Exception("failed to set WiFi config vi raspi-config")
+            else:
+                rescode = 0
+                print("set WiFi config successfully")
     except Exception as e:
         print(e)
 

@@ -10,7 +10,7 @@
 #define GPLWS ((unsigned int*)0x83E0)
 #define DSRTS ((unsigned char*)0x401A)
 
-#define TIPICFG_VER "13"
+#define TIPICFG_VER "14"
 #define PI_CONFIG "PI.CONFIG"
 #define PI_STATUS "PI.STATUS"
 #define PI_UPGRADE "PI.UPGRADE"
@@ -50,6 +50,7 @@ void spinnerPoll(const char* msg);
 void statusMessage(const char* msg);
 void getTIPIPcbDetails();
 void getstr(int x, int y, char *var);
+void getstr_w_spaces(int x, int y, char* var);
 
 const char spinner[4] = { '-', 92, '|', '/' };
 
@@ -381,13 +382,13 @@ int main()
         case 'S':
         case 's':
           wifi_dirty = 1;
-          getstr(10,7,wifi_ssid);
+          getstr_w_spaces(10,7,wifi_ssid);
           showValue(10,7,wifi_ssid);
           break;
         case 'P':
         case 'p':
           wifi_dirty = 1;
-          getstr(10,8,wifi_psk);
+          getstr_w_spaces(10,8,wifi_psk);
           showValue(10,8,"************");
           break;
       }
@@ -669,7 +670,17 @@ void processConfigLine(char* cbuf) {
   }
 }
 
+void getstr_term(int x, int y, char* var, char term);
+
 void getstr(int x, int y, char* var) {
+  getstr_term(x, y, var, 32);
+}
+
+void getstr_w_spaces(int x, int y, char* var) {
+  getstr_term(x, y, var, 0);
+}
+
+void getstr_term(int x, int y, char* var, char term) {
   // need to add maxlen... so we know how big var is.
   gotoxy(x,y);
   cclear(40-x);
@@ -734,11 +745,13 @@ void getstr(int x, int y, char* var) {
         }
     }
   }
-  int i=0;
-  while(var[i] != 32) {
-    i++;
+  if (term != 0) {
+    int i=0;
+    while(var[i] != term) {
+      i++;
+    }
+    var[i] = 0;
   }
-  var[i] = 0;
 }
 
 void writeConfigItem(struct PAB* pab, const char* key, const char* value) {

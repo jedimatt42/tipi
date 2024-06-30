@@ -7,3 +7,4 @@ work
 ENV
 __pycache__
 .tipi_settings
+.cache

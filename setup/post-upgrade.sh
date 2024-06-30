@@ -33,6 +33,10 @@ if [ -e /tmp/test_update ]; then
   TIPI_UPDATE_LIBTIPI=true
 fi
 
+if [ $fmajor -le 4 ] && [ $fminor -le 1 ]; then
+  TIPI_UPDATE_TELNETD=true
+fi
+
 if [ $fmajor -le 3 ] && [ $fminor -le 4 ]; then
   TIPI_UPDATE_DEPS=true
 fi
@@ -103,6 +107,11 @@ fi
 
 if [ ! -z ${TIPI_UPDATE_USBMOUNT:-} ]; then
   /home/tipi/tipi/setup/enable_usb_mount.sh
+fi
+
+if [ ! -z ${TIPI_UPDATE_TELNETD:-} ]; then
+  apt-get remove --purge -y inetutils-telnetd inetutils-inetd inetutils-syslogd tcpd update-inetd
+  apt-get install -y telnetd-ssl
 fi
 
 #### Restart all TIPI services

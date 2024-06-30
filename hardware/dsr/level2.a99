@@ -46,7 +46,7 @@ WFILNAM		EQU	>834E		; (vdp addr) note, filenames are 10 characters... space padd
 SECTBUF		EQU	WFILNAM		; when performing sector contains VDP addr for 256 byte buffer
 PATHNAM 	EQU	WFILNAM		; (vdp addr) path name for set path operation.
 L2STAT		EQU	>8350
-WOLDNAM	EQU	L2STAT	; (vdp addr) if two names are used, this is the original
+WOLDNAM		EQU	L2STAT		; (vdp addr) if two names are used, this is the original
 SECTORN 	EQU	L2STAT		; sector to read
 
 ; Convenience
@@ -110,14 +110,14 @@ sectcont
 sectread
 	LI	R0,256		; this is actually ignored. set maximum bytes to read
 	MOV	@SECTBUF,R1
-	BL	@cvrecv	; read single sector into cpu or vdp buffer
+	BL	@cvrecv		; read single sector into cpu or vdp buffer
 	CLR	@L2STAT		; set no error
 	B	@l2derr		; return as handled
 
 sectwri
-	LI	R0,256		; this is actually ignored. set maximum bytes to read
+	LI	R0,256		; set byte count to write
 	MOV	@SECTBUF,R1
-	BL	@cvsend	; write single sector from vdp or cpu buffer to TIPI
+	BL	@cvsend		; write single sector from vdp or cpu buffer to TIPI
 	CLR	@L2STAT		; set no error
 	B	@l2derr
 

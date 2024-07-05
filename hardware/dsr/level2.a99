@@ -49,14 +49,11 @@ L2STAT		EQU	>8350
 WOLDNAM		EQU	L2STAT		; (vdp addr) if two names are used, this is the original
 SECTORN 	EQU	L2STAT		; sector to read
 
-; Convenience
-GPLR0LB EQU >83E1
-GPLR9	EQU	>83F2
-
-cleanunit					; Modifies R9 and R1
-	MOV		@UNITNO,R9 		; Unit number in high byte of R9, bring along low byte as it is usually sent together in a 2 byte message
-	SZC		@BUFFLAG,R9 	; unset the cpuflag if it was set
-	LI		R1,GPLR9		; return address of clean unitno R9 in R1
+cleanunit			; Modifies R9 and R1
+	MOV	@UNITNO,R9 	; Unit number in high byte of R9, bring along low byte as it is usually sent together in a 2 byte message
+	SZC	@BUFFLAG,R9 	; unset the cpuflag if it was set
+	STWP	R1		; return address of clean unitno R9 in R1, first get WP into R1
+	AI	R1,18		;   then adjust to address of R9
 	RT
 
 ; Expects R0 to be bytes to send, R1 address of bytes to send (either VDP or CPU).
@@ -355,7 +352,8 @@ getl2resp
 	MOVB	@L2STAT,@L2STAT
 	JEQ	retl2sk		; PI didn't handled request
 	CLR	R0
-	MOVB	@L2STAT,@GPLR0LB
+	MOVB	@L2STAT,R0
+	SWPB	R0
 	CI	R0,SUCCESS
 	JEQ	l2suc
 	SRC	R0,3

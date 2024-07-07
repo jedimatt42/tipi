@@ -32,26 +32,47 @@ RDIR_MSG
 
 	EVEN
 
-; Error codes must go in >8350
-L2STAT	EQU	>8350
+BUFFLAG ; THIS LABEL NEEDS TO BE DIFFERENT TOO
+	DATA	>8000		; The high bit of a unit number in >834C indicates use of CPU buffers (instead of VDP)
 
-; Parameters
-BUFCNT	EQU	>834C
+; Common parameter and status addresses
+SECREAD 	EQU	>834A		; after reading a sector, the sector number ends up here
+UNITNO		EQU	>834C
+BUFCNT		EQU	UNITNO
+READWRI		EQU	>834D		; sector operation mode, if 0 write, else read
+PROTVAL		EQU	READWRI
+BLOCKCNT 	EQU	READWRI		; number of blocks to read/write
+WFILNAM		EQU	>834E		; (vdp addr) note, filenames are 10 characters... space padded in this context.
+SECTBUF		EQU	WFILNAM		; when performing sector contains VDP addr for 256 byte buffer
+PATHNAM 	EQU	WFILNAM		; (vdp addr) path name for set path operation.
+L2STAT		EQU	>8350
+WOLDNAM		EQU	L2STAT		; (vdp addr) if two names are used, this is the original
+SECTORN 	EQU	L2STAT		; sector to read
 
-; Common addresses
-UNITNO	EQU	>834C
-PROTVAL	EQU	>834D
-BLOCKCNT EQU	PROTVAL		; number of blocks to read/write
-WFILNAM	EQU	>834E		; (vdp addr) note, filenames are 10 characters... space padded in this context.
-WOLDNAM	EQU	>8350		; (vdp addr) if two names are used, this is the original
-PATHNAM EQU	WFILNAM		; (vdp addr) path name for set path operation.
-SECREAD EQU	>834A		; after reading a sector, the sector number ends up here
-SECTORN EQU	>8350		; sector to read
-READWRI	EQU	>834D		; sector operation mode, if 0 write, else read
-SECTBUF	EQU	>834E		; when performing sector contains VDP addr for 256 byte buffer
+cleanunit			; Modifies R9 and R1
+	MOV	@UNITNO,R9 	; Unit number in high byte of R9, bring along low byte as it is usually sent together in a 2 byte message
+	SZC	@BUFFLAG,R9 	; unset the cpuflag if it was set
+	STWP	R1		; return address of clean unitno R9 in R1, first get WP into R1
+	AI	R1,18		;   then adjust to address of R9
+	RT
 
-; Convenience
-GPLR0LB EQU >83E1
+; Expects R0 to be bytes to send, R1 address of bytes to send (either VDP or CPU).
+; examines UNITNO for set cpuflag, and chooses vsendmsg or sendmsg
+cvsend
+	MOV	@UNITNO,R9
+	COC	@BUFFLAG,R9	; set equal bit if cpuflag requested
+	JEQ	!
+	B	@vsendmsg	; send from vdp buffer
+!	B	@sendmsg	; send from cpu buffer
+
+; Expects R0 to be bytes to send, R1 address of bytes to send (either VDP or CPU).
+; examines UNITNO for set CPUFLAG, and chooses vsendmsg or sendmsg
+cvrecv
+	MOV	@UNITNO,R9
+	COC	@BUFFLAG,R9	; set equal bit if cpuflag requested
+	JEQ	!
+	B	@vrecvmsg	; read from vdp buffer
+!	B	@recvmsg	; read from cpu buffer
 
 sector				; Read a sector from a synthesized disk, error on write
 	LIMI	0
@@ -60,7 +81,7 @@ sector				; Read a sector from a synthesized disk, error on write
 	LI	R1,SECT_MSG
 	BL	@sendmsg	; send sector request type
 	LI	R0,2
-	LI	R1,UNITNO
+	BL	@cleanunit	; copy unitno to R9, and unset cpuflag, return address of R9 in R1
 	BL	@sendmsg	; send unit number and read/write flag
 	LI	R0,2
 	LI	R1,SECTORN
@@ -86,14 +107,14 @@ sectcont
 sectread
 	LI	R0,256		; this is actually ignored. set maximum bytes to read
 	MOV	@SECTBUF,R1
-	BL	@vrecvmsg	; read single sector into vdp buffer
+	BL	@cvrecv		; read single sector into cpu or vdp buffer
 	CLR	@L2STAT		; set no error
 	B	@l2derr		; return as handled
 
 sectwri
-	LI	R0,256		; this is actually ignored. set maximum bytes to read
+	LI	R0,256		; set byte count to write
 	MOV	@SECTBUF,R1
-	BL	@vsendmsg	; write single sector from vdp buffer to TIPI
+	BL	@cvsend		; write single sector from vdp or cpu buffer to TIPI
 	CLR	@L2STAT		; set no error
 	B	@l2derr
 
@@ -104,11 +125,11 @@ protect				; Set or unset protect bit on a file
 	LI	R1,PROT_MSG
 	BL	@sendmsg	; send protect file request type
 	LI	R0,2
-	LI	R1,UNITNO
+	BL	@cleanunit	; copy unitno to R9, and unset cpuflag, return address of R9 in R1
 	BL	@sendmsg	; send unit number and protect value
 	LI	R0,10
 	MOV	@WFILNAM,R1
-	BL	@vsendmsg	; send filename to modify
+	BL	@cvsend	; send filename to modify
 	B	@getl2resp
 
 frename				; rename a file on a device in the current path
@@ -118,14 +139,14 @@ frename				; rename a file on a device in the current path
 	LI	R1,FREN_MSG
 	BL	@sendmsg	; send rename request header
 	LI	R0,1
-	LI	R1,UNITNO
+	BL	@cleanunit	; copy unitno to R9, and unset cpuflag, return address of R9 in R1
 	BL	@sendmsg	; send unit number
 	LI	R0,10
 	MOV	@WFILNAM,R1
-	BL	@vsendmsg	; send new filename
+	BL	@cvsend		; send new filename
 	LI	R0,10
 	MOV	@WOLDNAM,R1
-	BL	@vsendmsg	; send old filename
+	BL	@cvsend		; send old filename
 	B	@getl2resp
 
 directinp			; read file bytes
@@ -135,11 +156,11 @@ directinp			; read file bytes
 	LI	R1,DINP_MSG
 	BL	@sendmsg	; send direct input header
 	LI	R0,2
-	LI	R1,UNITNO
+	BL	@cleanunit	; copy unitno & number of blocks word to R9, and unset cpuflag, return address of R9 in R1
 	BL	@sendmsg	; send unit number and number of blocks to read
 	LI	R0,10
 	MOV	@WFILNAM,R1
-	BL	@vsendmsg	; send name of file to read
+	BL	@cvsend		; send name of file to read
 	CLR	R8
 	MOVB	@L2STAT,R8
 	SWPB	R8
@@ -178,7 +199,7 @@ disuc
 
 	LI	R0,256		; this is actually ignored. set maximum bytes to read
 	MOV	*R8,R1
-	BL	@vrecvmsg	; read blocks into vdp buffer
+	BL	@cvrecv	; read blocks into buffer
 	JMP	l2derr		; return as handled
 
 directout			; write file bytes
@@ -188,11 +209,11 @@ directout			; write file bytes
 	LI	R1,DOUT_MSG
 	BL	@sendmsg	; send direct output header
 	LI	R0,2
-	LI	R1,UNITNO
+	BL	@cleanunit	; copy unitno & number of blocks word to R9, and unset cpuflag, return address of R9 in R1
 	BL	@sendmsg	; send unit number and number of blocks to write
 	LI	R0,10
 	MOV	@WFILNAM,R1
-	BL	@vsendmsg	; send name of file to write
+	BL	@cvsend		; send name of file to write
 	CLR	R8
 	MOVB	@L2STAT,R8
 	SWPB	R8
@@ -219,7 +240,7 @@ dosuc
 	MOVB	@BLOCKCNT,R0	; block count * 256 ( by being in the MSB )
 	JEQ	l2done		; skip sending blocks if block count was 0
 	MOV	*R8,R1
-	BL	@vsendmsg	; send the data blocks
+	BL	@cvsend		; send the data blocks
 
 	LI	R0,1
 	LI	R1,L2STAT
@@ -251,16 +272,23 @@ setpath				; set current directory for a unit/drive
 	LI	R1,PATH_MSG
 	BL	@sendmsg	; send set path request header
 	LI	R0,1
-	LI	R1,UNITNO
+	BL	@cleanunit	; copy unitno and unset cpuflag, return address of R9 in R1
 	BL	@sendmsg	; send unit number
-	MOV	@PATHNAM,R1
+	; PATHNAME points to a BASIC STR ( len + bytes ), which complicates all this.
+	MOV	@PATHNAM,R1	; set R1 to len byte address of BASIC STR
+	CLR	R0		; zero out R0 before copying len byte into it
+	MOV	@UNITNO,R9
+	COC	@BUFFLAG,R9	; set equal bit if cpuflag requested
+	JEQ	!
 	.setvdpra R1
-	CLR	R0
-	MOVB	@VDPRD,R0
-	SWPB	R0		; get length of string
-	MOV	@PATHNAM,R1
-	INC	R1
-	BL	@vsendmsg	; send path string
+	MOVB	@VDPRD,R0	; get length of string from VDP basic string
+	JMP	!!		; now skip to adjustments of R0 and R1 and sending the message
+!	MOVB	*R1,R0		; copy length byte into R0
+
+	; Now finish sending the message
+!	SWPB	R0		; put length byte in LSB
+	INC	R1		; start sending from the characters, not the length byte
+	BL	@cvsend		; send path string
 	JMP	getl2resp
 
 createdir			; create a subdirectory
@@ -270,11 +298,11 @@ createdir			; create a subdirectory
 	LI	R1,CDIR_MSG
 	BL	@sendmsg	; send set path request header
 	LI	R0,1
-	LI	R1,UNITNO
+	BL	@cleanunit	; copy unitno and unset cpuflag, return address of R9 in R1
 	BL	@sendmsg	; send unit number
 	LI	R0,10
 	MOV	@WFILNAM,R1
-	BL	@vsendmsg	; send new directory name
+	BL	@cvsend		; send new directory name
 	JMP	getl2resp
 
 deldir				; delete a directory
@@ -284,11 +312,11 @@ deldir				; delete a directory
 	LI	R1,DDIR_MSG
 	BL	@sendmsg	; send set path request header
 	LI	R0,1
-	LI	R1,UNITNO
+	BL	@cleanunit	; copy unitno and unset cpuflag, return address of R9 in R1
 	BL	@sendmsg	; send unit number
 	LI	R0,10
 	MOV	@WFILNAM,R1
-	BL	@vsendmsg	; send new directory name
+	BL	@cvsend		; send directory name to delete
 	JMP	getl2resp
 
 drename				; directory rename
@@ -298,14 +326,14 @@ drename				; directory rename
 	LI	R1,RDIR_MSG
 	BL	@sendmsg	; send rename request header
 	LI	R0,1
-	LI	R1,UNITNO
+	BL	@cleanunit	; copy unitno and unset cpuflag, return address of R9 in R1
 	BL	@sendmsg	; send unit number
 	LI	R0,10
 	MOV	@WFILNAM,R1
-	BL	@vsendmsg	; send new name
+	BL	@cvsend		; send new name
 	LI	R0,10
 	MOV	@WOLDNAM,R1
-	BL	@vsendmsg	; send old name
+	BL	@cvsend		; send old name
 	JMP	getl2resp
 
 retl2err
@@ -324,7 +352,8 @@ getl2resp
 	MOVB	@L2STAT,@L2STAT
 	JEQ	retl2sk		; PI didn't handled request
 	CLR	R0
-	MOVB	@L2STAT,@GPLR0LB
+	MOVB	@L2STAT,R0
+	SWPB	R0
 	CI	R0,SUCCESS
 	JEQ	l2suc
 	SRC	R0,3

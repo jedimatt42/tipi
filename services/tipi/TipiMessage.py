@@ -22,12 +22,13 @@ class TipiMessage(object):
             message = self.ports.readMsg()
         except:
             raise BackOffException('safepoint')
-        elapsed = time.time() - startTime
-        logger.debug(
-            "received msg len %d, rate %d bytes/sec",
-            len(message),
-            len(message) / elapsed,
-        )
+        if logger.isEnabledFor(logging.DEBUG):
+            elapsed = time.time() - startTime
+            logger.debug(
+                "received msg len %d, rate %d bytes/sec",
+                len(message),
+                len(message) / elapsed,
+            )
         return message
 
     #
@@ -39,10 +40,11 @@ class TipiMessage(object):
             self.ports.sendMsg(bytes)
         except:
             raise BackOffException('safepoint')
-        elapsed = time.time() - startTime
-        logger.debug(
-            "sent msg len %d, rate %d bytes/sec", len(bytes), len(bytes) / elapsed
-        )
+        if logger.isEnabledFor(logging.DEBUG):
+            elapsed = time.time() - startTime
+            logger.debug(
+                "sent msg len %d, rate %d bytes/sec", len(bytes), len(bytes) / elapsed
+            )
 
     #
     # Trigger sending mouse event

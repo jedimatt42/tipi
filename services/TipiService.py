@@ -63,7 +63,9 @@ try:
         try:
             service_loop()
         except SoftResetException as reset:
-            logger.info("soft reset received");
+            logger.info("soft reset received")
+            tipiDisk.soft_reset()
+            levelTwo.soft_reset()
 
 except Exception as e:
     logger.error("Unhandled exception in main", exc_info=True)

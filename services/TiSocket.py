@@ -49,6 +49,12 @@ class TiSocket(object):
             0x07: self.handleAccept,
         }
 
+    def soft_reset(self):
+        for handleId, existing in self.handles.items():
+            self.close_socket(handleId, existing)
+        for serverId, existing in self.bindings.items():
+            self.close_binding(serverId, existing)
+
     def handle(self, bytes):
         self.tipi_io.send(self.processRequest(bytes))
         return True
@@ -100,11 +106,14 @@ class TiSocket(object):
     def handleClose(self, bytes):
         handleId = bytes[1]
         existing = self.handles.get(handleId, None)
+        self.close_socket(handleId, existing)
+        return GOOD
+
+    def close_socket(self, handleId, existing):
         if existing is not None:
             del self.handles[handleId]
             self.safeClose(existing)
             logger.info("closed socket: %d", handleId)
-        return GOOD
 
     # bytes: 0x22, handleId, write-cmd, <bytes to write>
     def handleWrite(self, bytes):
@@ -182,10 +191,13 @@ class TiSocket(object):
         serverId = bytes[1]
         if serverId in self.bindings.keys():
             existing = self.bindings.get(serverId, None)
-            del self.bindings[serverId]
-            self.safeClose(existing)
-            logger.info("unbound socket: %d", serverId)
+            self.close_binding(serverId, existing)
         return GOOD
+    
+    def close_binding(self, serverId, existing):
+        del self.bindings[serverId]
+        self.safeClose(existing)
+        logger.info("unbound socket: %d", serverId)
 
     def handleAccept(self, bytes):
         logger.info("handleAccept")

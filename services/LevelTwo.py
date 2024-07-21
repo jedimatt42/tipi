@@ -26,7 +26,12 @@ class LevelTwo(object):
           1: "",
           2: "",
           3: "",
-          4: ""
+          4: "",
+          5: "",
+          6: "",
+          7: "",
+          8: "",
+          9: ""
         }
         self.handlers = {
           0x10: self.handleSector,
@@ -38,6 +43,20 @@ class LevelTwo(object):
           0x18: self.handleCreateDir,
           0x19: self.handleDeleteDir,
           0x1A: self.handleDirRename
+        }
+
+    def soft_reset(self):
+        self.unitpath = {
+          0: "",
+          1: "",
+          2: "",
+          3: "",
+          4: "",
+          5: "",
+          6: "",
+          7: "",
+          8: "",
+          9: ""
         }
 
     def handle(self, msg):

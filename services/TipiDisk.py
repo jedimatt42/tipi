@@ -33,6 +33,9 @@ class TipiDisk(object):
         self.tipi_io = tipi_io
         self.openFiles = {}
 
+    def soft_reset(self):
+        self.openFiles = {}
+
     #
     # Entry point to process all disk pab requests.
     def handle(self, pab, filename):

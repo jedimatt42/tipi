@@ -41,6 +41,11 @@
   "RESET" will exit the server and restart (when the TI emulation is RESET)
   "MOUSE buttons dx dy" will accumulate mouse motion and relay when requested
 
+  If TIPI_SOFTRESET is set in the environment, then when "RESET" is 
+  received, the websocket will stay open, a tipi.TipiMessage.SoftResetException
+  will be raised. The existing websocket will stay open, but TipiService will
+  clean up other state, such as open TiFiles, and TIPI level sockets.
+
   OBSOLETE:
   "SYNC" at the start of each message (when TC=0xf1 and RC=0xf1)
 
@@ -476,6 +481,8 @@ static int websocket_serve(void)
 {
 	static int srv_fd = -1, srv6_fd = -1; // server sockets
 
+	const char* softreset_enabled = getenv("TIPI_SOFTRESET");
+
 	if (srv_fd == -1) {
 		srv_fd = server_create(AF_INET);
 		if (srv_fd == -1)
@@ -514,12 +521,6 @@ static int websocket_serve(void)
 			if (strcmp(str, "RESET") == 0) {
 				log_printf("RESET received\n");
 				goto shutdown;
-			} else if (strcmp(str, "SOFTRESET") == 0) {
-				log_printf("SOFTRESET received\n");
-				// throw an exception that TipiService can catch, this will turn into a
-				// tipi.TipiMessage.SoftResetException
-				raiseSoftResetException();
-				return -2;
 			} else if (strcmp(str, "SYNC") == 0) {
 				log_printf("SYNC received\n");
 				sync_mode = GOT_SYNC;
@@ -719,6 +720,14 @@ upgrade_websocket:
 	return 0;
 
 shutdown:
+    if (softreset_enabled) {
+		log_printf("performing SOFTRESET\n");
+		// throw an exception that TipiService can catch, this will turn into a
+		// tipi.TipiMessage.SoftResetException
+		raiseSoftResetException();
+		return -2;
+	}
+	// Otherwise, close the websocket and quit the process
 	if (srv_fd != -1) {
 		close(srv_fd);
 		srv_fd = -1;

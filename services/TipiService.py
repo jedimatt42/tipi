@@ -7,6 +7,7 @@ import errno
 import yaml
 from tipi.TipiMessage import TipiMessage
 from tipi.TipiMessage import BackOffException
+from tipi.TipiMessage import SoftResetException
 from SpecialFiles import SpecialFiles
 from Pab import *
 from RawExtensions import RawExtensions
@@ -58,6 +59,18 @@ try:
     levelTwo = LevelTwo(tipi_io)
     tipiDisk = TipiDisk(tipi_io)
 
+    while True:
+        try:
+            service_loop()
+        except SoftResetException as reset:
+            logger.info("soft reset received");
+
+except Exception as e:
+    logger.error("Unhandled exception in main", exc_info=True)
+
+
+
+def service_loop():
     logger.info("TIPI Ready")
     while True:
         logger.debug("waiting for request...")
@@ -94,5 +107,3 @@ try:
         tipiDisk.handle(pab, filename)
 
         logger.info("Request completed.")
-except Exception as e:
-    logger.error("Unhandled exception in main", exc_info=True)

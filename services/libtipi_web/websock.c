@@ -122,6 +122,9 @@ static void log_printf(const char *fmt, ...)
 
 #endif
 
+// defined in tipiports.c - I'm just to lazy to create a .h for 1 thing.
+PyObject* raiseSoftResetException();
+
 static int scan_filter(const struct dirent *d)
 {
 	static char subdir[PATH_MAX] = "";
@@ -511,6 +514,12 @@ static int websocket_serve(void)
 			if (strcmp(str, "RESET") == 0) {
 				log_printf("RESET received\n");
 				goto shutdown;
+			} else if (strcmp(str, "SOFTRESET") == 0) {
+				log_printf("SOFTRESET received\n");
+				// throw an exception that TipiService can catch, this will turn into a
+				// tipi.TipiMessage.SoftResetException
+				raiseSoftResetException();
+				return -2;
 			} else if (strcmp(str, "SYNC") == 0) {
 				log_printf("SYNC received\n");
 				sync_mode = GOT_SYNC;
@@ -741,7 +750,9 @@ PyObject* websocket_sendMsg(unsigned char *data, int len)
 {
   log_printf("sendMsg len=%d sync=%s\n", len, sync_str());
   while (sync_mode == NEEDS_SYNC)
-    websocket_serve();
+    if (-2 == websocket_serve()) {
+	  return NULL;
+	}
   if (sync_mode == GOT_SYNC)
     sync_mode = NEEDS_SYNC;
   websocket_write(client_fd, OPCODE_BINARY, 0/*mask*/, data, len);
@@ -753,9 +764,13 @@ PyObject* websocket_readMsg(void)
 {
   //log_printf("readMsg sync=%s\n", sync_str());
   while (sync_mode == NEEDS_SYNC)
-    websocket_serve();
+    if (-2 == websocket_serve()) {
+	  return NULL;
+	}
   while (!readMsg)
-    websocket_serve();
+    if (-2 == websocket_serve()) {
+	  return NULL;
+	}
   if (sync_mode == GOT_SYNC)
     sync_mode = NEEDS_SYNC;
   log_printf("readMsg len=%d\n", readLen);

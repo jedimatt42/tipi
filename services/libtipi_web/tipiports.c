@@ -122,8 +122,33 @@ static struct PyModuleDef TipiModule = {
   TipiMethods
 };
 
+static PyObject *SoftResetException = NULL;
+
+PyObject* raiseSoftResetException() {
+  if (SoftResetException == NULL) {
+    PyErr_SetString(PyExc_RuntimeError, "SoftResetException not initialized");
+    return NULL;
+  }
+  PyErr_SetString(SoftResetException, "SOFTRESET");
+  return NULL;
+}
+
 PyMODINIT_FUNC
 PyInit_tipiports_websocket(void)
 {
-  return PyModule_Create(&TipiModule);
+  PyObject *m;
+
+  m = PyModule_Create(&TipiModule);
+  if (m == NULL) {
+    return NULL;
+  }
+
+  // Create a custom SoftResetException instance
+  SoftResetException = PyErr_NewException("tipi.TipiMessage.SoftResetException", NULL, NULL);
+  Py_XINCREF(SoftResetException);
+  if (PyModule_AddObject(m, "SoftResetException", SoftResetException) < 0) {
+      Py_XDECREF(SoftResetException);
+      Py_XDECREF(m);
+      return NULL;
+  }
 }

@@ -6,6 +6,8 @@ from .TipiPorts import TipiPorts
 class BackOffException(Exception):
     pass
 
+class SoftResetException(Exception):
+    pass
 
 logger = logging.getLogger(__name__)
 

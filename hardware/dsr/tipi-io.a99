@@ -103,7 +103,7 @@ vsdone
 ; Register usage:
 ;   R0 - Set to number of bytes loaded into buffer upon completion
 ;   R1 - cpu address of buffer
-;   Destroys R0 - R8
+;   Destroys R0 - R4
 recvmsg
 	.reset			; conduct the handshake operation
 	LI	R2,TSRB		; set read mode

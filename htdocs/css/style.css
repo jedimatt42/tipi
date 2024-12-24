@@ -357,3 +357,7 @@ a {
 input[type=text] {
     margin-left: 8px;
 }
+
+input[type=password] {
+    margin-left: 8px;
+}

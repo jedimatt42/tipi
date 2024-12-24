@@ -1,0 +1,57 @@
+
+{% extends "page_template.html"%}
+{% block content %}
+
+<style>
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em; /* Adds half a line width of space between elements */
+  }
+  form div {
+    display: flex;
+    align-items: center; /* Vertically align labels and inputs */
+  }
+  form label {
+    width: 150px; /* Fixed width for labels */
+    text-align: left; /* Left-align labels */
+    margin-right: 1em; /* Adds space between the label and input */
+  }
+  form input {
+    flex: 1; /* Input fills remaining horizontal space */
+    font-family: inherit; /* Consistent font styling */
+    font-size: inherit;
+    box-sizing: border-box; /* Includes padding and border in the width */
+    padding: 0.5em;
+    width: 300px; /* Ensure input fills the parent flex container */
+  }
+</style>
+
+<div class="panel panel-default">
+
+<div class="backup_container">
+
+<h2>Edit PI.CONFIG</h2>
+
+<form method="post" action="/piconfig-update">
+  {% for key, value in data %}
+    <div class="form-row">
+      <label for="{{ key }}">{{ key }}</label>
+      <input
+        type="{% if key.endswith('_PSK') %}password{% else %}text{% endif %}"
+        id="{{ key }}"
+        name="{{ key }}"
+        value="{{ value }}">
+    </div>
+  {% endfor %}
+  <div style="margin-top: 8px;">
+    <button type="submit">Save</button>
+  </div>
+</form>
+
+</div>
+</div>
+
+{% endblock %}
+
+

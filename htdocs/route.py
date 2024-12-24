@@ -15,6 +15,7 @@ import tipi_emulation
 import tipi_files
 import tipi_uploads
 import tipi_map
+import pi_config
 import os
 from flask_socketio import SocketIO
 
@@ -431,7 +432,20 @@ def emulation_update():
     emulation_state['nfs'] = request.form.get("nfs") == "nfs"
     tipi_emulation.update(emulation_state)
     return redirect("/emulation")
-    
+
+
+@app.route("/piconfig", methods=["GET"])
+def piconfig():
+    data = pi_config.data()
+    return render_template("pi_config.html", **data)
+
+
+@app.route("/piconfig-update", methods=["POST"])
+def piconfig_update():
+    updated_config = request.form.to_dict()
+    pi_config.update(updated_config)
+    return piconfig()
+
 
 @app.route("/search", methods=["GET"])
 def searchQuery():

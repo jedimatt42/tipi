@@ -97,6 +97,12 @@ def mappedUrl(tipath):
     return "/files/" + tipath.replace('.', '/')
 
 
+def freespace(full_path):
+    statvfs = os.statvfs(full_path)
+    freeraw = statvfs.f_bavail * statvfs.f_frsize
+    return f"{freeraw / (1024 ** 3):.2f} GB"
+
+
 def catalog(path):
     logger.debug("generating catalog for: %s", path)
     tipi_subdirs = []
@@ -157,6 +163,7 @@ def catalog(path):
     return {
         "tipi_dir_listing": tipi_dir_listing,
         "total_files": len(tipi_files),
+        "free_space": freespace(full_path),
         "display_path": "/" + path,
         "tipi_path": makeBreadcrumbs(tipi_path),
         "rp": "/files/" + path,

@@ -31,6 +31,19 @@
     padding: 0.5em;
     width: 500px; /* Ensure input fills the parent flex container */
   }
+  .invalid {
+    border: 1px solid red;
+  }
+  .invalid-input {
+    display: none;
+    color: red;
+    max-width: 500px;
+    word-wrap: break-word;
+    margin-left: 8px;
+  }
+  .invalid-input.visible {
+    display: inline;
+  }
   .description {
     font-style: italic;
     color: #555;
@@ -56,22 +69,130 @@ For additional documentation and usage of the tipi configuration items listed be
     <div class="form-row">
       <label for="{{ key }}">{{ key }}</label>
       <div class="input-container">
-        <input
+        <input class="input"
           type="{% if key.endswith('_PSK') %}password{% else %}text{% endif %}"
           id="{{ key }}"
           name="{{ key }}"
           value="{{ value }}" />
+        <span class="invalid-input"> Invalid input: {{ errors[key] }} </span>
         <span class="description"> {{ descriptions[key] }} </span>
       </div>
     </div>
   {% endfor %}
   <div style="margin-top: 8px;">
-    <button type="submit">Save</button>
+    <button id="saveButton" type="submit" disabled>Save</button>
   </div>
 </form>
 
 </div>
 </div>
+
+<script>
+
+function isValidTimeZone(tz) {
+  try {
+    Intl.DateTimeFormat(undefined, { timeZone: tz.trim() });
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function isValidURI(input) {
+  const value = input.toLowerCase();
+  return value.startsWith("http://") || value.startsWith("https://");
+}
+
+function validateInput(input) {
+  const span = input.nextElementSibling;
+  let isValid = true;
+
+  // check the id and apply the correct rules for each
+  if (input.id === "AUTO") {
+    isValid = ["on", "off"].includes(input.value);
+  } else if (input.id === "CS1_FILE") {
+    isValid = input.value.trim() === "" || !input.value.includes(" ");
+  } else if (input.id === "CUSTOM_BINS") {
+    isValid = ["0", "1"].includes(input.value);
+  } else if (input.id === "DIR_SORT") {
+    isValid = ["FIRST", "MIXED", "LAST"].includes(input.value);
+  } else if (input.id === "DSK1_DIR") {
+    isValid = input.value.trim() === "" || !input.value.includes(" ");
+  } else if (input.id === "DSK2_DIR") {
+    isValid = input.value.trim() === "" || !input.value.includes(" ");
+  } else if (input.id === "DSK3_DIR") {
+    isValid = input.value.trim() === "" || !input.value.includes(" ");
+  } else if (input.id === "DSK4_DIR") {
+    isValid = input.value.trim() === "" || !input.value.includes(" ");
+  } else if (input.id === "DSK5_DIR") {
+    isValid = input.value.trim() === "" || !input.value.includes(" ");
+  } else if (input.id === "DSK6_DIR") {
+    isValid = input.value.trim() === "" || !input.value.includes(" ");
+  } else if (input.id === "DSK7_DIR") {
+    isValid = input.value.trim() === "" || !input.value.includes(" ");
+  } else if (input.id === "DSK8_DIR") {
+    isValid = input.value.trim() === "" || !input.value.includes(" ");
+  } else if (input.id === "DSK9_DIR") {
+    isValid = input.value.trim() === "" || !input.value.includes(" ");
+  } else if (input.id === "EAGER_WRITE") {
+    isValid = ["on", "off"].includes(input.value);
+  } else if (input.id === "HOST_EOL") {
+    isValid = ["LF", "CRLF"].includes(input.value);
+  } else if (input.id === "LVL3_NOT_FOUND") {
+    isValid = ["ERROR", "PASS"].includes(input.value);
+  } else if (input.id === "MOUSE_SCALE") {
+    const value = Number(input.value);
+    isValid = !isNaN(value) && value >= 1 && value <= 100;
+  } else if (input.id === "NATIVE_TEXT_DIRS") {
+    isValid = input.value.trim() === "" || !input.value.includes(" ");
+  } else if (input.id === "SECTOR_COUNT") {
+    const value = Number(input.value);
+    isValid = !isNaN(value) && value >= 2 && value <= 65536;
+  } else if (input.id === "TZ") {
+    isValid = isValidTimeZone(input.value);
+  } else if (input.id === "URI1") {
+    isValid = input.value.trim() === "" || isValidURI(input.value);
+  } else if (input.id === "URI2") {
+    isValid = input.value.trim() === "" || isValidURI(input.value);
+  } else if (input.id === "URI3") {
+    isValid = input.value.trim() === "" || isValidURI(input.value);
+  } 
+
+
+  if (!isValid) {
+    span.classList.add("visible");
+    input.classList.add("invalid");
+  } else {
+    span.classList.remove("visible");
+    input.classList.remove("invalid");
+  }
+
+  return isValid;
+}
+
+function checkFormValidity() {
+  const inputs = document.querySelectorAll('.input');
+  const saveButton = document.getElementById('saveButton');
+
+  const allValid = Array.from(inputs).every(input => validateInput(input));
+
+  saveButton.disabled = !allValid;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const inputs = document.querySelectorAll('.input');
+
+  inputs.forEach(input => {
+    input.addEventListener("input", () => {
+      validateInput(input);
+      checkFormValidity();
+    });
+  });
+
+  checkFormValidity();
+});
+
+</script>
 
 {% endblock %}
 

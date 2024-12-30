@@ -42,6 +42,7 @@ CONFIG_DEFAULTS = {
     "HOST_EOL": "CRLF",
     "NATIVE_TEXT_DIRS": "",
     "CUSTOM_BINS": "0",
+    "LVL3_NOT_FOUND": "PASS",
 }
 
 

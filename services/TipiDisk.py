@@ -73,10 +73,20 @@ class TipiDisk(object):
         msg[0] = byte
         self.tipi_io.send(msg)
 
+    def lvl3_not_found(self):
+        if tipi_config.get('LVL3_NOT_FOUND') == 'PASS':
+            logger.info("(2) Passing to other controllers")
+            self.sendErrorCode(EDVNAME)
+        else:
+            logger.info("(2) File Not Found")
+            self.sendErrorCode(EFILERR)
+        return
+
     def handleOpen(self, pab, devname):
         logger.info("Opcode 0 Open - %s", devname)
         logPab(pab)
         unix_name = tinames.devnameToLocal(devname)
+
         if unix_name is None:
             logger.info("(1) Passing to other controllers")
             self.sendErrorCode(EDVNAME)
@@ -84,8 +94,7 @@ class TipiDisk(object):
 
         logger.debug("  local file: " + unix_name)
         if mode(pab) == INPUT and not os.path.exists(unix_name):
-            logger.info("(2) Passing to other controllers")
-            self.sendErrorCode(EDVNAME)
+            self.lvl3_not_found()
             return
 
         if os.path.isdir(unix_name):
@@ -305,8 +314,7 @@ class TipiDisk(object):
         unix_name = tinames.devnameToLocal(devname, prog=True)
 
         if unix_name is None or not os.path.exists(unix_name):
-            logger.info("Passing to other controllers")
-            self.sendErrorCode(EDVNAME)
+            self.lvl3_not_found()
             return
         try:
             if (not ti_files.isTiFile(unix_name)) and unix_name.lower().endswith(

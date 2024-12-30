@@ -14,4 +14,5 @@ def data():
 def update(updated_config):
     for key, value in updated_config.items():
         tipi_config.set(key, value)
+    tipi_config.save()
 

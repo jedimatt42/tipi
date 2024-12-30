@@ -444,7 +444,7 @@ def piconfig():
 def piconfig_update():
     updated_config = request.form.to_dict()
     pi_config.update(updated_config)
-    return piconfig()
+    return render_template("pi_config_saved.html")
 
 
 @app.route("/search", methods=["GET"])

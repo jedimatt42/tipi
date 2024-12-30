@@ -8,14 +8,20 @@
     flex-direction: column;
     gap: 0.5em; /* Adds half a line width of space between elements */
   }
-  form div {
+  .form-row {
     display: flex;
-    align-items: center; /* Vertically align labels and inputs */
+    align-items: flex-start;
+    gap: 1em;
   }
   form label {
     width: 150px; /* Fixed width for labels */
     text-align: left; /* Left-align labels */
     margin-right: 1em; /* Adds space between the label and input */
+  }
+  .input-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3em;
   }
   form input {
     flex: 1; /* Input fills remaining horizontal space */
@@ -23,8 +29,16 @@
     font-size: inherit;
     box-sizing: border-box; /* Includes padding and border in the width */
     padding: 0.5em;
-    width: 300px; /* Ensure input fills the parent flex container */
+    width: 500px; /* Ensure input fills the parent flex container */
   }
+  .description {
+    font-style: italic;
+    color: #555;
+    max-width: 500px;
+    word-wrap: break-word;
+    margin-left: 8px;
+  }
+
 </style>
 
 <div class="panel panel-default">
@@ -33,15 +47,22 @@
 
 <h2>Edit PI.CONFIG</h2>
 
+<p>
+For additional documentation and usage of the tipi configuration items listed below, see the Wiki: <a href="https://github.com/jedimatt42/tipi/wiki/PI.CONFIG">github.com/jedimatt42/tipi/wiki</a>.
+</p>
+
 <form method="post" action="/piconfig-update">
   {% for key, value in data %}
     <div class="form-row">
       <label for="{{ key }}">{{ key }}</label>
-      <input
-        type="{% if key.endswith('_PSK') %}password{% else %}text{% endif %}"
-        id="{{ key }}"
-        name="{{ key }}"
-        value="{{ value }}">
+      <div class="input-container">
+        <input
+          type="{% if key.endswith('_PSK') %}password{% else %}text{% endif %}"
+          id="{{ key }}"
+          name="{{ key }}"
+          value="{{ value }}" />
+        <span class="description"> {{ descriptions[key] }} </span>
+      </div>
     </div>
   {% endfor %}
   <div style="margin-top: 8px;">

@@ -302,6 +302,19 @@ def mapcs1():
     return redirect(rp)
 
 
+@app.route("/update-filename", methods=["POST"])
+def updateFilename():
+    path = request.form.get("path")
+    originalFilename = request.form.get("originalFilename")
+    newFilename = request.form.get("newFilename")
+    error = tipi_files.rename(path, originalFilename, newFilename)
+    if error:
+        return render_template("error.html", error=error)
+    else:
+        rp = createFileUrl(path)
+        return redirect(rp)
+
+
 #
 # Text editor
 #

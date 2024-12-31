@@ -500,6 +500,7 @@ document.addEventListener("DOMContentLoaded", function () {
       <input type="text" name="newFilename" id="newFilename"/>
     </label>
     <input type="hidden" name="originalFilename" id="originalFilename"/>
+    <input type=hidden name="path" value="{{ display_path }}" />
     <div id="rename-help">TI file names may not have a space in them or the device/directory separator '.'</div>
     <button type="submit" id="renameButton">Rename</button>
     <button type="button" onclick="hideEditForm()">Cancel</button>

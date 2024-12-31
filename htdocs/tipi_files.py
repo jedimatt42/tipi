@@ -93,6 +93,14 @@ def convert(path, files):
             logger.warn("Failed to convert: %s/%s", base_path, f, exc_info=1)
 
 
+def rename(path, originalFilename, newFilename):
+    base_path = os.path.abspath(tipi_disk_base + "/" + path)
+    try:
+        os.rename(f"{base_path}/{originalFilename}", f"{base_path}/{newFilename}")
+    except Exception as e:
+        return f"failed to rename '{originalFilename}' to '{newFilename}': {e}"
+
+
 def mappedUrl(tipath):
     return "/files/" + tipath.replace('.', '/')
 

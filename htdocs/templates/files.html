@@ -2,6 +2,66 @@
 {% extends "page_template.html"%}
 {% block content %}
 
+<style>
+.modal-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+.edit-form {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 300px;
+  display: none;
+}
+.edit-form button {
+  margin-top: 10px;
+}
+.edit-form label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.rename-button {
+  background: none;
+  border: none;
+  filter: grayscale(100%);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  display: inline;
+}
+.rename-button:hover {
+  filter: grayscale(100%);
+}
+.rename-button:focus {
+  outline: none;
+}
+input[type="text"] {
+  border-width: 2px;
+  border-style: solid;
+  border-radius: 3px;
+  border-color: black;
+  outline: none;
+}
+input[type="text"].invalid-input,
+input[type="text"].invalid-input:focus {
+  border-color: red;
+}
+.invalid-help {
+  color: red;
+}
+</style>
+
 <script>
 function checkFields(f) {
     if (f.upload_file.value == '') {
@@ -43,6 +103,44 @@ function uploadOnClick() {
   document.getElementById('selectfiles').focus();
 }
 
+function validateNewFilename(input) {
+  const renameHelp = document.getElementById('rename-help');
+  const newFilename = document.getElementById('newFilename');
+  const originalFilename = document.getElementById('originalFilename');
+  const renameButton = document.getElementById('renameButton');
+
+  let isValid = true;
+
+  if (input.value.trim() === "" || input.value.includes(" ") || input.value.includes(".")) {
+    // set help text to red
+    renameHelp.classList.add('invalid-help');
+    // set input box to red
+    newFilename.classList.add('invalid-input');
+    // disable the button
+    isValid = false;
+  } else {
+    // set help text to black
+    renameHelp.classList.remove('invalid-help');
+    // set input box to black
+    newFilename.classList.remove('invalid-input');
+  }
+
+  if (!isValid || originalFilename.value === newFilename.value) {
+    // disable Rename button
+    renameButton.disabled = true;
+  } else {
+    // enable Rename button
+    renameButton.disabled = false;
+  }
+}
+
+function addRenameListeners() {
+  const newFilename = document.getElementById('newFilename');
+  newFilename.addEventListener('input', () => {
+    validateNewFilename(newFilename);
+  });
+}
+  
 document.addEventListener("DOMContentLoaded", function () {
   const selectElement = document.getElementById("select-op");
   const opSubmit = document.getElementById("op-submit");
@@ -123,7 +221,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     toggleSubmitButton();
   }
-  
 
   toggleSubmitButton();
   updateSelectOptions();
@@ -132,6 +229,8 @@ document.addEventListener("DOMContentLoaded", function () {
   checkboxes.forEach(checkbox =>
     checkbox.addEventListener("change", updateSelectOptions)
   );
+
+  addRenameListeners();
 });
 
 </script>
@@ -364,6 +463,7 @@ document.addEventListener("DOMContentLoaded", function () {
       <div class="files-select"><!-- checkbox --></div>
       <div class="files-icon"><!-- icon --></div>
       <div class="files-filename">filename</div>
+      <div class="files-icon"></div>
       <div class="files-type">type</div>
       <div class="files-size">size</div>
       <div class="files-timestamp">datestamp</div>
@@ -372,27 +472,62 @@ document.addEventListener("DOMContentLoaded", function () {
       <div class="files-nativename">native name</div>
     </div>
 
-{% for tipi_file in tipi_dir_listing %}
-  <div class="filelistrow">
-    <div class="files-select"> <input type="checkbox" name="selected" value="{{ tipi_file.name }}" data-ftype="{{ tipi_file.type }}"/> </div>
-    <div class="files-icon"> {{ tipi_file.icon|safe }} </div>
-    <div class="files-filename"> {{ tipi_file.name|safe }} </div>
-    <div class="files-type"> {{ tipi_file.type }} </div>
-    {% if tipi_file.type == "DIR" and tipi_file.mapname in mapped.keys() %}
-    <div class="mapname"> {{ mapped.get(tipi_file.mapname) }} </div>
-    {% else %}
-    <div class="files-size"> {{ tipi_file.size }} </div>
-    {% endif %}
-    <div class="files-timestamp"> {{ tipi_file.date }} </div>
-    <div class="files-icon"> {{ tipi_file.edit_link|safe }} </div>
-    <div class="files-icon"> {{ tipi_file.dl_link|safe }} </div>
-    <div class="files-nativename"> {%- if tipi_file.longname -%} {{ tipi_file.longname|safe }} {% endif %} </div>
-  </div>
-{% endfor %}
-
+  {% for tipi_file in tipi_dir_listing %}
+    <div class="filelistrow">
+      <div class="files-select"> <input type="checkbox" name="selected" value="{{ tipi_file.name }}" data-ftype="{{ tipi_file.type }}"/> </div>
+      <div class="files-icon"> {{ tipi_file.icon|safe }} </div>
+      <div class="files-filename"> {{ tipi_file.name|safe }} </div>
+      <div class="files-icon"><button type="button" class="rename-button" onclick="showEditForm(this, '{{ tipi_file.name|safe }}' )">✏️</button> </div>
+      <div class="files-type"> {{ tipi_file.type }} </div>
+      {% if tipi_file.type == "DIR" and tipi_file.mapname in mapped.keys() %}
+      <div class="mapname"> {{ mapped.get(tipi_file.mapname) }} </div>
+      {% else %}
+      <div class="files-size"> {{ tipi_file.size }} </div>
+      {% endif %}
+      <div class="files-timestamp"> {{ tipi_file.date }} </div>
+      <div class="files-icon"> {{ tipi_file.edit_link|safe }} </div>
+      <div class="files-icon"> {{ tipi_file.dl_link|safe }} </div>
+      <div class="files-nativename"> {%- if tipi_file.longname -%} {{ tipi_file.longname|safe }} {% endif %} </div>
+    </div>
+  {% endfor %}
 </form>
+
+<div id="modalBackground" class="modal-background">
+  <form id="editFilenameForm" class="edit-form" method="POST" action="/update-filename">
+    <div id="originalFilenameText"></div>
+    <label>
+      New Filename:
+      <input type="text" name="newFilename" id="newFilename"/>
+    </label>
+    <input type="hidden" name="originalFilename" id="originalFilename"/>
+    <div id="rename-help">TI file names may not have a space in them or the device/directory separator '.'</div>
+    <button type="submit" id="renameButton">Rename</button>
+    <button type="button" onclick="hideEditForm()">Cancel</button>
+  </form>
 </div>
 
+</div>
+
+<script>
+  function showEditForm(button, originalFilename) {
+    const modalBackground = document.getElementById('modalBackground');
+    const editForm = document.getElementById('editFilenameForm');
+    const originalFilenameText = document.getElementById('originalFilenameText');
+    originalFilenameText.textContent = "Renaming: " + originalFilename;
+    document.getElementById('originalFilename').value = originalFilename;
+    document.getElementById('newFilename').value = originalFilename;
+    modalBackground.style.display = 'flex';
+    editForm.style.display = 'block';
+    editForm.querySelector('#newFilename').focus();
+  }
+
+  function hideEditForm() {
+    const modalBackground = document.getElementById('modalBackground');
+    const editForm = document.getElementById('editFilenameForm');
+    modalBackground.style.display = 'none';
+    editForm.style.display= 'none';
+  }
+</script>
 
 <BR><BR>  
 

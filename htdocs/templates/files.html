@@ -1,68 +1,18 @@
-
 {% extends "page_template.html"%}
 {% block content %}
 
-<style>
-.modal-background {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-.edit-form {
-  background-color: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 300px;
-  display: none;
-}
-.edit-form button {
-  margin-top: 10px;
-}
-.edit-form label {
-  display: block;
-  margin-bottom: 10px;
-}
-
-.rename-button {
-  background: none;
-  border: none;
-  filter: grayscale(100%);
-  font-size: 20px;
-  cursor: pointer;
-  padding: 0;
-  display: inline;
-}
-.rename-button:hover {
-  filter: grayscale(100%);
-}
-.rename-button:focus {
-  outline: none;
-}
-input[type="text"] {
-  border-width: 2px;
-  border-style: solid;
-  border-radius: 3px;
-  border-color: black;
-  outline: none;
-}
-input[type="text"].invalid-input,
-input[type="text"].invalid-input:focus {
-  border-color: red;
-}
-.invalid-help {
-  color: red;
-}
-</style>
-
 <script>
+
+function showRenameForm(button, originalFilename) {
+  const originalFilenameText = document.getElementById('originalFilenameText');
+  originalFilenameText.textContent = "Renaming: " + originalFilename;
+  document.getElementById('originalFilename').value = originalFilename;
+  document.getElementById('newFilename').value = originalFilename;
+
+  const modal = new bootstrap.Modal(document.getElementById('renameModal'));
+  modal.show();
+}
+
 function checkFields(f) {
     if (f.upload_file.value == '') {
        alert("Please select a file from your computer to upload to TIPI");
@@ -77,30 +27,6 @@ function checkFields(f) {
 
 function getSelectAction(form) {
   form.action = "/" + document.getElementById("select-op").value;
-}
-
-function newDirOnClick() {
-  document.getElementById('newBasicFileForm').style.display='none';
-  document.getElementById('uploadForm').style.display='none';
-
-  document.getElementById('newDirForm').style.display='block';
-  document.getElementById('newDir').focus();
-}
-
-function newFileOnClick() {
-  document.getElementById('newDirForm').style.display='none';
-  document.getElementById('uploadForm').style.display='none';
-
-  document.getElementById('newBasicFileForm').style.display='block';
-  document.getElementById('file').focus();
-}
-
-function uploadOnClick() {
-  document.getElementById('newDirForm').style.display='none';
-  document.getElementById('newBasicFileForm').style.display='none';
-
-  document.getElementById('uploadForm').style.display='block';
-  document.getElementById('selectfiles').focus();
 }
 
 function validateNewFilename(input) {
@@ -233,216 +159,113 @@ document.addEventListener("DOMContentLoaded", function () {
   addRenameListeners();
 });
 
+document.addEventListener('DOMContentLoaded', function() {
+  const collapseMappings = document.getElementById('collapseMappings');
+  const collapseMappingsButton = document.querySelector('[data-bs-target="#collapseMappings"]');
+
+  // Restore collapse state from localStorage
+  const collapseState = localStorage.getItem('collapseMappingsState');
+  if (collapseState === 'show') {
+    // Temporarily remove the 'collapse' class to disable animation
+    collapseMappings.classList.remove('collapse');
+    collapseMappings.classList.add('show'); // Show the element without animation
+    collapseMappings.offsetHeight; // Force reflow
+    collapseMappings.classList.add('collapse'); // Re-add the 'collapse' class
+  }
+
+  // Save collapse state to localStorage
+  collapseMappings.addEventListener('shown.bs.collapse', function () {
+    localStorage.setItem('collapseMappingsState', 'show');
+  });
+
+  collapseMappings.addEventListener('hidden.bs.collapse', function () {
+    localStorage.setItem('collapseMappingsState', 'hide');
+  });
+});
 </script>
 
-<div class="files_container">
-<div class="alert alert-info" role="alert">
-    
-</div>
+<button class="btn btn-primary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMappings" aria-expanded="false" aria-controls="collapseMappings">
+  <i class="bi bi-arrows-expand"></i>Device Mapping
+</button>
 
-
-
-<p><b>Drive Mapping</b></p>
-
-<div class="drive-mappings">
-
-<div class="drive-assignment" style="order: 1;">
-  <span>DSK1. =</span> 
-  {% if config.get("DSK1_DIR") %}
-  <form method=post action="/unmapdsk1">
-      <input type=hidden name="path" value="{{ display_path }}" />
-      <a href="{{ config.get("DSK1_URL") }}">{{ config.get("DSK1_DIR") }}</a>
-      <button type="submit" title="Remove Mapping" class="tool_button">
-	  <img src="/images/delete.webp" height="10px"/>
-      </button> 
-  </form>
-  {% endif %}
-</div>
-
-<div class="drive-assignment" style="order: 3;">
-  <span>DSK2. =</span>
-  {% if config.get("DSK2_DIR") %}
-  <form method=post action="/unmapdsk2">
-      <input type=hidden name="path" value="{{ display_path }}" />
-      <a href="{{ config.get("DSK2_URL") }}">{{ config.get("DSK2_DIR") }}</a>
-      <button type="submit" title="Remove Mapping" class="tool_button">
-	  <img src="/images/delete.webp" height="10px"/>
-      </button> 
-  </form>
-  {% endif %}
-</div>
-
-<div class="drive-assignment" style="order: 5;">
-  <span>DSK3. =</span>
-  {% if config.get("DSK3_DIR") %}
-  <form method=post action="/unmapdsk3">
-      <input type=hidden name="path" value="{{ display_path }}" />
-      <a href="{{ config.get("DSK3_URL") }}">{{ config.get("DSK3_DIR") }}</a>
-      <button type="submit" title="Remove Mapping" class="tool_button">
-	  <img src="/images/delete.webp" height="10px"/>
-      </button> 
-  </form>
-  {% endif %}
-</div>
-
-<div class="drive-assignment" style="order: 7;">
-  <span>DSK4. =</span>
-  {% if config.get("DSK4_DIR") %}
-  <form method=post action="/unmapdsk4">
-      <input type=hidden name="path" value="{{ display_path }}" />
-      <a href="{{ config.get("DSK4_URL") }}">{{ config.get("DSK4_DIR") }}</a>
-      <button type="submit" title="Remove Mapping" class="tool_button">
-	  <img src="/images/delete.webp" height="10px"/>
-      </button> 
-  </form>
-  {% endif %}
-</div>
-
-<div class="drive-assignment" style="order: 9;">
-  <span>DSK5. =</span>
-  {% if config.get("DSK5_DIR") %}
-  <form method=post action="/unmapdsk5">
-      <input type=hidden name="path" value="{{ display_path }}" />
-      <a href="{{ config.get("DSK5_URL") }}">{{ config.get("DSK5_DIR") }}</a>
-      <button type="submit" title="Remove Mapping" class="tool_button">
-	  <img src="/images/delete.webp" height="10px"/>
-      </button> 
-  </form>
-  {% endif %}
-</div>
-
-<div class="drive-assignment" style="order: 2;">
-  <span>DSK6. =</span>
-  {% if config.get("DSK6_DIR") %}
-  <form method=post action="/unmapdsk6">
-      <input type=hidden name="path" value="{{ display_path }}" />
-      <a href="{{ config.get("DSK6_URL") }}">{{ config.get("DSK6_DIR") }}</a>
-      <button type="submit" title="Remove Mapping" class="tool_button">
-	  <img src="/images/delete.webp" height="10px"/>
-      </button> 
-  </form>
-  {% endif %}
-</div>
-
-<div class="drive-assignment" style="order: 4;">
-  <span>DSK7. =</span>
-  {% if config.get("DSK7_DIR") %}
-  <form method=post action="/unmapdsk7">
-      <input type=hidden name="path" value="{{ display_path }}" />
-      <a href="{{ config.get("DSK7_URL") }}">{{ config.get("DSK7_DIR") }}</a>
-      <button type="submit" title="Remove Mapping" class="tool_button">
-	  <img src="/images/delete.webp" height="10px"/>
-      </button> 
-  </form>
-  {% endif %}
-</div>
-
-<div class="drive-assignment" style="order: 6;">
-  <span>DSK8. =</span>
-  {% if config.get("DSK8_DIR") %}
-  <form method=post action="/unmapdsk8">
-      <input type=hidden name="path" value="{{ display_path }}" />
-      <a href="{{ config.get("DSK8_URL") }}">{{ config.get("DSK8_DIR") }}</a>
-      <button type="submit" title="Remove Mapping" class="tool_button">
-	  <img src="/images/delete.webp" height="10px"/>
-      </button> 
-  </form>
-  {% endif %}
-</div>
-
-<div class="drive-assignment" style="order: 8;">
-  <span>DSK9. =</span>
-  {% if config.get("DSK9_DIR") %}
-  <form method=post action="/unmapdsk9">
-      <input type=hidden name="path" value="{{ display_path }}" />
-      <a href="{{ config.get("DSK9_URL") }}">{{ config.get("DSK9_DIR") }}</a>
-      <button type="submit" title="Remove Mapping" class="tool_button">
-	  <img src="/images/delete.webp" height="10px"/>
-      </button> 
-  </form>
-  {% endif %}
-</div>
-
-</div>
-
-<div class="drive-assignment">
-  <span>CS1 File =</span>
-  {% if config.get("CS1_FILE") %}
-  <form method=post action="/unmapcs1">
-      <input type=hidden name="path" value="{{ display_path }}" />
-      <a href="{{ config.get("CS1_URL") }}">{{ config.get("CS1_FILE") }}</a>
-      <button type="submit" title="Remove File Mapping" class="tool_button">
-	  <img src="/images/delete.webp" height="10px"/>
-      </button> 
-  </form>
-  {% else %}
-  <form method=post action="/mapcs1">
-      <input type=hidden name="path" value="{{ display_path }}" />
-      <input type="text" id="cs1_input" name="cs1_input" value="{{ config.get('CS1_FILE') }}" />
-      <button type="submit" title="Save CS1 File Mapping">Save</button> 
-  </form>
-  {% endif %}
-</div>
-
-<div class="file-summary">
-  <div>Displaying contents of &nbsp;
-  {% for item in tipi_path %}
-    <a href="{{ item.get("link") }}">{{ item.get("label") }}</a>.
-  {% endfor %}   
+<div class="collapse" id="collapseMappings">
+  <div class="container">
+    <div class="row row-cols-1 row-cols-sm-3 g-1">
+      {% for i in range(1, 10) %}
+      <div class="col">
+        <div class="card h-100 border-0">
+          <div class="card-body d-flex align-items-center" style="padding: 0;">
+            <span class="fw-bold mb-1 me-2">DSK{{ i }}. =</span>
+            {% if config.get("DSK" + i|string + "_DIR") %}
+            <form method="post" action="/unmapdsk{{ i }}" class="d-inline">
+              <input type="hidden" name="path" value="{{ display_path }}" />
+              <div class="d-flex justify-content-between align-items-center">
+                <a href="{{ config.get('DSK' + i|string + '_URL') }}" class="me-2 mb-1">{{ config.get("DSK" + i|string + "_DIR") }}</a>
+                <button type="submit" title="Remove Mapping" class="btn p-0 text-danger mb-1">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
   </div>
+
+  <div class="container">
+    <div class="row row-cols-1 row-cols-sm-3 g-1">
+      <div class="card h-100 border-0">
+        <div class="card-body d-flex align-items-center">
+          <span class="fw-bold me-2">CS1 File =</span>
+          {% if config.get("CS1_FILE") %}
+          <form method="post" action="/unmapcs1" class="d-inline">
+            <input type="hidden" name="path" value="{{ display_path }}" />
+            <a href="{{ config.get('CS1_URL') }}" class="me-2 mb-1">{{ config.get("CS1_FILE") }}</a>
+            <button type="submit" title="Remove File Mapping" class="btn p-0 text-danger">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </form>
+          {% else %}
+          <form method="post" action="/mapcs1" class="d-inline">
+            <input type="hidden" name="path" value="{{ display_path }}" />
+            <input type="text" id="cs1_input" name="cs1_input" value="{{ config.get('CS1_FILE') }}" class="form-control d-inline-block w-auto" />
+            <button type="submit" title="Save CS1 File Mapping" class="btn p-0 text-primary">
+              <i class="bi bi-floppy"></i>
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="custom-breadcrumb">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      {% for item in tipi_path %}
+      <li class="breadcrumb-item {% if loop.last %}active{% endif %} {% if not loop.last %}breadcrumb-button{% endif %}">
+        {% if loop.last %}
+        {{ item.get("label") }}
+        {% else %}
+        <a href='{{ item.get("link") }}'>{{ item.get("label") }}</a>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ol>
+  </nav>
   <div>Total files: {{ total_files }} </div>
   <div>Free Space: {{ free_space }} </div>
 </div>
 
-<table cellspacing=4 cellpadding=0 border=0 width="80%">
-    <tr>
-        <td colspan=9 align="right">
-            <div id="newDirForm" style="display:none">
-                <form method=post action="/newdir">
-                    <input type=hidden name="path" value="{{ display_path }}">
-                    <input type="text" id="newDir" size=32 name="newdir" placeholder="New Dir">
-                    <input type=submit value="Create Dir">
-                </form>
-            </div>
-            <div id="newBasicFileForm" style="display:none">
-                <form method=post action="/new_basic_file">
-                    <input type=hidden name="path" value="{{ display_path }}">
-                    <input type="text" id="file" size=32 name="file" placeholder="New BASIC Filename">
-                    <input type=submit value="Create File">
-                </form>
-            </div>
-            <div id="uploadForm" style="display:none">
-                <form name="f" action="/uploadFile" method=post enctype="multipart/form-data" onSubmit="return checkFields(this);">
-                    <input type=hidden name="path" value="{{ display_path }}">
-                    <input type="file" id="selectfiles" name="upload_file" onClick="f.uploadFileSubmit.value=' Upload ';f.uploadFileSubmit.disabled=false;" multiple=""> 
-                    <input name="uploadFileSubmit" id="uploadFileSubmit" type=submit value="Upload">
-                </form>
-            </div>
-            <button id="newDirButton" title="new directory" 
-                   onClick="newDirOnClick();" class="tool_button">
-                <img src="/images/new_folder_icon.png" height="30px"/>
-            </button> 
-            <button id="newBasicFileButton" title="new BASIC file"
-                   onClick="newFileOnClick();" class="tool_button">
-                <img src="/images/new_file_icon.png" height="30px"/>
-            </button>
-            <button id="uploadFileButton" title="uploads files"
-                   onClick="uploadOnClick();" class="tool_button">
-                <img src="/images/upload_icon.png" height="30px"/>
-            </button>
-            <a href="{{ request.path }}">
-                <button id="refresh" title="refresh" class="tool_button">
-                    <img src="/images/refresh_icon.png" height="30px"/>
-                </button>
-            </a>
-        </td> 
-    </tr>
-</table>
+<form id="select-form" method="post" onsubmit="getSelectAction(this);">
 
-  <form id="select-form" method="post" onsubmit="getSelectAction(this);">
-    <input type=hidden name="path" value="{{ display_path }}">
+  <input type=hidden name="path" value="{{ display_path }}">
 
-    <select id="select-op" name="operation">
+  <div class="input-group">
+    <select id="select-op" name="operation" class="form-select" aria-label="Select Operation">
       <option value="">Select Action</option>
       <option value="delete">Delete</option>
       <option value="tifiles">Convert v9t9 to TIFILES</option>
@@ -457,82 +280,169 @@ document.addEventListener("DOMContentLoaded", function () {
       <option value="mapdsk9">Map to DSK9</option>
       <option value="mapcs1">Map File to CS1</option>
     </select>
-    <input id="op-submit" type="submit" value="Submit" disabled="true"/>
+    <div class="input-group-append">
+      <input id="op-submit" type="submit" value="Submit" class="btn btn-primary me-2" disabled="true"/>
+    </div>
+  
+    <div class="input-group-append tool-group">
+      <button id="newDirButton" type="button" 
+        class="btn btn-link me-2"
+        data-bs-toggle="modal" data-bs-target="#newDirModal">
+        <i class="bi bi-folder-plus" title="New Directory"></i>
+      </button>
+      <button id="newBasicFileButton" type="button"
+        class="btn btn-link me-2"
+        data-bs-toggle="modal"
+        data-bs-target="#newFileModal">
+        <i class="bi bi-file-earmark-code" title="New BASIC File"></i>
+      </button>
+      <button id="uploadFileButton" type="button"
+        class="btn btn-link me-2"
+        data-bs-toggle="modal"
+        data-bs-target="#uploadModal">
+        <i class="bi bi-cloud-upload" title="Upload File"></i>
+      </button>
+      <a href="{{ request.path }}">
+        <button id="refreshButton" type="button" 
+          class="btn btn-link me-2"
+          title="Refresh">
+          <i class="bi bi-arrow-clockwise"></i>
+        </button>
+      </a>
+    </div>
+  </div>
 
-    <div class="filelistheadings">
-      <div class="files-select"><!-- checkbox --></div>
-      <div class="files-icon"><!-- icon --></div>
-      <div class="files-filename">filename</div>
-      <div class="files-icon"></div>
-      <div class="files-type">type</div>
-      <div class="files-size">size</div>
-      <div class="files-timestamp">datestamp</div>
-      <div class="files-icon"></div>
-      <div class="files-icon"></div>
-      <div class="files-nativename">native name</div>
+  <div class="container">
+    <!-- Heading row -->
+    <div class="row fw-bold border-bottom py-2">
+      <div class="col-fixed-small"><!-- checkbox --></div>
+      <div class="col-fixed-small"><!-- icon --></div>
+      <div class="col-3">Filename</div>
+      <div class="col-fixed-small"><!-- icon --></div>
+      <div class="col-2">Type</div>
+      <div class="col-1">Size</div>
+      <div class="col-2">Timestamp</div>
+      <div class="col-fixed-small"><!-- icon --></div>
+      <div class="col-fixed-small"><!-- icon --></div>
+      <div class="col-1">Native Name</div>
     </div>
 
-  {% for tipi_file in tipi_dir_listing %}
-    <div class="filelistrow">
-      <div class="files-select"> <input type="checkbox" name="selected" value="{{ tipi_file.name }}" data-ftype="{{ tipi_file.type }}"/> </div>
-      <div class="files-icon"> {{ tipi_file.icon|safe }} </div>
-      <div class="files-filename"> {{ tipi_file.name|safe }} </div>
-      <div class="files-icon"><button type="button" class="rename-button" onclick="showEditForm(this, '{{ tipi_file.name|safe }}' )">✏️</button> </div>
-      <div class="files-type"> {{ tipi_file.type }} </div>
+    <!-- Data rows -->
+    {% for tipi_file in tipi_dir_listing %}
+    <div class="row py-2">
+      <div class="col-fixed-small"><input type="checkbox" name="selected" value="{{ tipi_file.name }}" data-ftype="{{ tipi_file.type }}"/></div>
+      <div class="col-fixed-small">{{ tipi_file.icon|safe }}</div>
+      <div class="col-3">{{ tipi_file.name }}</div>
+      <div class="col-fixed-small">
+        <button type="button" class="btn btn-link p-0" 
+                data-bs-target="#renameModal" data-bs-toggle="modal"
+                onclick="showRenameForm(this, '{{ tipi_file.name }}' )">
+          <i class="bi bi-pencil" title="Rename File"></i>
+        </button>
+      </div>
+      <div class="col-2">{{ tipi_file.type }}</div>
       {% if tipi_file.type == "DIR" and tipi_file.mapname in mapped.keys() %}
-      <div class="mapname"> {{ mapped.get(tipi_file.mapname) }} </div>
+      <div class="col-1">{{ mapped.get(tipi_file.mapname) }}</div>
       {% else %}
-      <div class="files-size"> {{ tipi_file.size }} </div>
+      <div class="col-1">{{ tipi_file.size }}</div>
       {% endif %}
-      <div class="files-timestamp"> {{ tipi_file.date }} </div>
-      <div class="files-icon"> {{ tipi_file.edit_link|safe }} </div>
-      <div class="files-icon"> {{ tipi_file.dl_link|safe }} </div>
-      <div class="files-nativename"> {%- if tipi_file.longname -%} {{ tipi_file.longname|safe }} {% endif %} </div>
+      <div class="col-2">{{ tipi_file.date }}</div>
+      <div class="col-fixed-small">{{ tipi_file.edit_link|safe }}</div>
+      <div class="col-fixed-small">{{ tipi_file.dl_link|safe }}</div>
+      <div class="col-1">{{ tipi_file.longname or '' }}</div>
     </div>
-  {% endfor %}
+    {% endfor %}
+  </div>
 </form>
 
-<div id="modalBackground" class="modal-background">
-  <form id="editFilenameForm" class="edit-form" method="POST" action="/update-filename">
-    <div id="originalFilenameText"></div>
-    <label>
-      New Filename:
-      <input type="text" name="newFilename" id="newFilename"/>
-    </label>
-    <input type="hidden" name="originalFilename" id="originalFilename"/>
-    <input type=hidden name="path" value="{{ display_path }}" />
-    <div id="rename-help">TI file names may not have a space in them or the device/directory separator '.'</div>
-    <button type="submit" id="renameButton">Rename</button>
-    <button type="button" onclick="hideEditForm()">Cancel</button>
-  </form>
-</div>
+<form id="renameForm" method=post action="/update-filename">
+  <div class="modal fade" id="renameModal" tabindex="-1" aria-labelledby="renameModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="renameModalLabel">Rename File: <span id="originalFilenameText"></span></h5>
+        </div>
+        <div class="modal-body">
+          <label>
+            New Filename:
+            <input type="text" name="newFilename" id="newFilename"/>
+          </label>
+          <input type="hidden" name="originalFilename" id="originalFilename"/>
+          <input type=hidden name="path" value="{{ display_path }}" />
+          <div id="rename-help">TI file names may not have a space in them or the device/directory separator '.'</div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" id="renameButton" class="btn btn-primary">Rename</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
 
-</div>
+<form id="newDirForm" method=post action="/newdir">
+  <div class="modal fade" id="newDirModal" tabindex="-1" aria-labelledby="newDirModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="newDirModalLabel">Create New Directory</h5>
+        </div>
+        <div class="modal-body">
+          <label>
+            New Directory Name:
+            <input type="text" name="newdir" id="newdir"/>
+          </label>
+          <input type=hidden name="path" value="{{ display_path }}" />
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Create Dir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
 
-<script>
-  function showEditForm(button, originalFilename) {
-    const modalBackground = document.getElementById('modalBackground');
-    const editForm = document.getElementById('editFilenameForm');
-    const originalFilenameText = document.getElementById('originalFilenameText');
-    originalFilenameText.textContent = "Renaming: " + originalFilename;
-    document.getElementById('originalFilename').value = originalFilename;
-    document.getElementById('newFilename').value = originalFilename;
-    modalBackground.style.display = 'flex';
-    editForm.style.display = 'block';
-    editForm.querySelector('#newFilename').focus();
-  }
+<form id="newFileForm" method=post action="/new_basic_file">
+  <div class="modal fade" id="newFileModal" tabindex="-1" aria-labelledby="newFileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="newFileModalLabel">Create New BASIC File</h5>
+        </div>
+        <div class="modal-body">
+          <label>
+            New BASIC Filename:
+            <input type="text" name="file" id="file" placeholder="New BASIC Filename"/>
+          </label>
+          <input type=hidden name="path" value="{{ display_path }}" />
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Create File</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
 
-  function hideEditForm() {
-    const modalBackground = document.getElementById('modalBackground');
-    const editForm = document.getElementById('editFilenameForm');
-    modalBackground.style.display = 'none';
-    editForm.style.display= 'none';
-  }
-</script>
-
-<BR><BR>  
+<form id="uploadForm" method=post action="/uploadFile" enctype="multipart/form-data" onSubmit="return checkFields(this);">
+  <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="uploadModalLabel">Upload File</h5>
+        </div>
+        <div class="modal-body">
+          <label>
+            Select File:
+            <input type="file" name="upload_file" id="selectfiles" onClick="f.uploadFileSubmit.value=' Upload ';f.uploadFileSubmit.disabled=false;" multiple=""/>
+          </label>
+          <input type=hidden name="path" value="{{ display_path }}" />
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Upload</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
 
 {% endblock %}
-
-
-

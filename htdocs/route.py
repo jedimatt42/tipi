@@ -68,6 +68,16 @@ def send_mdb5(path):
     return send_from_directory("mdb5s", path)
 
 
+@app.route("/bootstrap/<path:path>")
+def send_bootstrap(path):
+    return send_from_directory("bootstrap", path)
+
+
+@app.route("/bootstrap-icons/<path:path>")
+def send_bootstrap_icons(path):
+    return send_from_directory("bootstrap-icons", path)
+
+
 #
 # File management
 #
@@ -363,25 +373,39 @@ def about():
 @app.route("/logs", methods=["GET"])
 def logs():
     logdata = tipi_admin.logdata()
+    logdata['title'] = 'TIPI Service Log'
+    logdata['hint'] = '/var/log/tipi/tipi.log'
     return render_template("log.html", **logdata)
 
 
 @app.route("/oslogs", methods=["GET"])
 def oslogs():
     logdata = tipi_admin.oslogdata()
-    return render_template("oslog.html", **logdata)
+    logdata['title'] = 'Linux OS Log'
+    logdata['hint'] = 'journalctl --no-pager -b'
+    return render_template("log.html", **logdata)
 
 
 @app.route("/rebootnow", methods=["GET"])
-def rebootnow():
-    tipi_admin.reboot()
+def showRebootPage():
     return render_template("reboot.html")
 
 
+@app.route("/rebootnow", methods=["POST"])
+def rebootnow():
+    tipi_admin.reboot()
+    return '', 200
+
+
 @app.route("/shutdownnow", methods=["GET"])
+def showShutdownPage():
+    return render_template("shutdown.html")
+
+
+@app.route("/shutdownnow", methods=["POST"])
 def shutdownnow():
     tipi_admin.shutdown()
-    return render_template("shutdown.html")
+    return '', 200
 
 
 # Tipi Backup

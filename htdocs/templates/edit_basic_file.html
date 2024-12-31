@@ -1,109 +1,115 @@
 {% extends "page_template.html"%}
 {% block content %}
 
-{{ something|safe }}
+<link rel="stylesheet" href="/css/TI99Basic.ttf">
 
-<!DOCTYPE html>
-<html lang="en">
+<style>
+  .ti99 {
+    font-family: 'TI99Basic', Verdana, Tahoma;
+    font-size: 32px;
+  }
 
-<head>
-<!--    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
--->    
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    
-    
-    <title>TIPI - Edit BASIC File</title>
-
-    <link rel="stylesheet" href="/css/style.css"></link>
-
+  .ti_textarea,
+  .ti_textarea:focus {
+    font-family: 'TI99Basic', Times, serif;
+    font-size: 40px;
+    background-color: #5CCADC;
+    min-width: calc(80vw - 100px);
+    height: calc(80vh - 100px);
+    line-height: normal;
+  }
+</style>
 
 <script>
-
-    function dumbenMe(e) {
-//        alert(e.keyCode);
-        
-        if (e.keyCode != 38 && e.keyCode != 40 && e.keyCode != 37 && e.keyCode != 39) {
-//            changeFlag++;
-            document.BASIC.changeFlag.value++;
-        }
-        
-        var position = document.BASIC.file_contents.selectionStart;  // Store cursor position within textfield
-        var n = document.BASIC.file_contents.value;
-
-        n = n.replace(/\u2018|\u2019/g, "'");  // Single and Double "smart" quotes, and apostrophes
-        n = n.replace(/\u201c|\u201d/g, '"');  // Opening and Closing double "smart" quotes
-        
-        if (n.indexOf("\u2014") > -1) {        // Emdashes. Have to increase cursor position. Ugh.
-            n = n.replace(/\u2014/g, '--');
-            position += 1;
-        }
-    
-        document.BASIC.file_contents.value = n;
-
-        document.BASIC.file_contents.selectionEnd = position;  // Restore cursor position since the regex resets cursor to end of contents
-
-        return false;
+  function dumbenMe(e) {
+    if (![37, 38, 39, 40].includes(e.keyCode)) {
+      document.BASIC.changeFlag.value++;
     }
-    
-    function checkChangeFlag() {
-//        alert("dude");
-        if ( document.BASIC.changeFlag.value >0 ) {
-            alert("You Have Unsaved Changes");
-            return false;
-        }
 
-        return true;
+    let position = document.BASIC.file_contents.selectionStart;
+    let content = document.BASIC.file_contents.value;
+
+    content = content.replace(/\u2018|\u2019/g, "'")
+                     .replace(/\u201c|\u201d/g, '"');
+
+    if (content.includes("\u2014")) {
+      content = content.replace(/\u2014/g, '--');
+      position += 1;
     }
-    
-    
-    function goBack() {
-        if (checkChangeFlag()) {
-            window.location.assign("{{ rp }}");
-        }
 
-    
+    document.BASIC.file_contents.value = content;
+    document.BASIC.file_contents.selectionEnd = position;
+    return false;
+  }
+
+  function checkChangeFlag() {
+    if (document.BASIC.changeFlag.value > 0) {
+      alert("You Have Unsaved Changes");
+      return false;
     }
-    
+    return true;
+  }
 
+  function goBack() {
+    if (checkChangeFlag()) {
+      window.location.assign("{{ rp }}");
+    }
+  }
 </script>
 
-</head>
+<div class="container py-4">
+  <form method="post" name="BASIC" action="/save_basic_file">
+    <input type="hidden" name="file_name" value="{{ file_name }}">
+    <input type="hidden" name="changeFlag" value="0">
+    <input type="hidden" name="rp" value="{{ rp }}">
 
-<body>
+    <div class="text-center mb-4">
+      <h1 class="ti99">Editing: {{ file_name }}</h1>
+    </div>
 
-<div class="container">
+    <div class="mb-3">
+      <textarea
+        name="file_contents"
+        class="form-control ti_textarea"
+        spellcheck="false"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        onKeyUp="dumbenMe(event)"
+      >{{ file_contents }}</textarea>
+    </div>
 
+    <div class="text-center">
+      <button
+        type="button"
+        class="btn btn-secondary me-3"
+        onclick="goBack();"
+      >
+        &lt; &lt; Back
+      </button>
+      <button
+        type="submit"
+        name="save"
+        class="btn btn-primary me-3"
+      >
+        Save
+      </button>
+      <button
+        type="submit"
+        name="saveAndExit"
+        class="btn btn-success"
+      >
+        Save and Exit
+      </button>
+    </div>
 
-<!-- <form method=post name="BASIC" onSubmit="return checkChangeFlag();">-->
-<form method=post name="BASIC" action="/save_basic_file">
-
-<input type=hidden name=file_name value="{{ file_name }}">
-<input type=hidden name="changeFlag" value="0">
-<input type=hidden name="rp" value="{{ rp }}">
-
-<table align=center>
-<tr><td> <div class="ti99">Editing: {{ file_name }}</div> </td></tr>
-
-<tr>
-<td>
-<textarea name="file_contents" rows=20 cols=34 class="ti_textarea" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" onKeyUp="dumbenMe(event)">
-{{ file_contents }}
-</textarea>
-
-</td></tr>
-<tr><td align=center> <input type=button value=" < <  Back " onClick="goBack();"> &nbsp; &nbsp; &nbsp; <input type=submit name="save" value=" Save "> &nbsp; &nbsp; &nbsp; <input type=submit name="saveAndExit" value=" Save and Exit "> </td></tr>
-<tr><td> {{ status_message }} </td></tr>
-</table>
-</form>
-
+    {% if status_message %}
+      <div class="text-center mt-3">
+        <span class="text-success">{{ status_message }}</span>
+      </div>
+    {% endif %}
+  </form>
 </div>
-</div>
 
-
-
-</body>
-
-</html>
 {% endblock %}
+

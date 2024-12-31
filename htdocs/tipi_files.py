@@ -21,15 +21,16 @@ logger = logging.getLogger(__name__)
 tipi_disk_base = "/home/tipi/tipi_disk"
 
 icons = {
-    "basic": '<img src="/images/basic_icon.png" width=22 title="BASIC PROGRAM">',
-    "tifile": '<img src="/images/ti_logo_icon.jpg" width=22 title="TIFILES">',
-    "native": '<img src="/images/native_icon.png" width=22 title="OS Native File">',
-    "floppy": '<img src="/images/floppy.png" width=22 title="Sector Dump">',
+    "basic": '<i class="bi bi-file-earmark-code" title="Basic Program"></i>',
+    "tifile": '',
+    "native": '<i class="bi bi-exclamation-triangle" title="Native OS file"></i>',
+    "floppy": '<i class="bi bi-floppy" title="Sector Dump"></i>',
+    "directory": '<i class="bi bi-folder" title="Directory"></i>',
 }
 
-download_template = '<a href="%s"><img src="/images/download_icon.png" width=32 title="Download File"/></a>'
+download_template = '<a href="%s"><i class="bi bi-download" title="Download File"></i></a>'
 
-editlink_template = '<a href="/edit_basic_file?file_name=%s&path=%s"><img src="/images/edit_icon.png" width=22 title="Edit File"/></a>'
+editlink_template = '<a href="/edit_basic_file?file_name=%s&path=%s"><i class="bi bi-pencil-square" title="Edit BASIC"></i></a>'
 
 dirlink_template = '<a href="/files%s">TIPI.%s</a>'
 
@@ -153,8 +154,8 @@ def catalog(path):
                 {
                     "name": item_display_path,
                     "type": "DIR",
-                    "icon": '<a href="/files%s"><img src="/images/folder_icon.png" width=22 border=0></a>'
-                    % item,
+                    "icon": '<a href="/files%s">%s</a>'
+                    % (item, icons["directory"]),
                     "longname": None,
                     "mapname": mapping_path,
                 }

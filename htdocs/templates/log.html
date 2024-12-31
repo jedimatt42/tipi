@@ -1,27 +1,45 @@
-
-{% extends "page_template.html"%}
+{% extends "page_template.html" %}
 {% block content %}
 
 <script>
 function gotoBottom() {
-  var objDiv = document.getElementById("log");
-  objDiv.scrollTop = objDiv.scrollHeight;
+    var objDiv = document.getElementById("log");
+    objDiv.scrollTop = objDiv.scrollHeight;
 }
+
+function gotoTop() {
+    var objDiv = document.getElementById("log");
+    objDiv.scrollTop = 0;
+}
+
+// Automatically scroll to the bottom on page load
+window.onload = function() {
+    gotoBottom();
+};
 </script>
 
+<div class="container-fluid">
+    <!-- Title, Hint, and Button Section -->
+    <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+            <h2 class="m-0">{{ title }}</h2>
+            {% if hint %}
+            <p class="text-muted mt-1">{{ hint }}</p>
+            {% endif %}
+        </div>
+        <button class="btn btn-primary align-self-start" onclick="gotoBottom()">Go to Bottom</button>
+    </div>
 
-<div class="panel panel-default">
+    <!-- Log container -->
+    <div id="log" class="border rounded p-3 overflow-auto mx-auto" 
+         style="height: calc(100vh - 350px); width: calc(90vw - 100px);">
+        <pre class="mb-0">{{ logdata }}</pre>
+    </div>
 
-<div style="display: inline-block">
-<h2 style="display: inline-block; margin-left: 20px">/var/log/tipi/tipi.log</h2>
-<br/>
-<button style="display: inline-block; margin-left: 20px" onclick="gotoBottom()">goto bottom</button>
-</div>
-
-<div id="log" class="log_container">
-<pre>{{ logdata }}</pre>
-
-</div>
+    <!-- Go to Top button -->
+    <div class="d-flex justify-content-end mt-3">
+        <button class="btn btn-secondary" onclick="gotoTop()">Go to Top</button>
+    </div>
 </div>
 
 {% endblock %}

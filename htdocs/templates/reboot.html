@@ -1,62 +1,92 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "page_template.html" %}
+{% block content %}
 
-<head>
-    <meta http-equiv="refresh" content="46;url=/">
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+<script>
+function startTimer(duration, display) {
+    let timer = duration, minutes, seconds;
+    const intervalId = setInterval(function () {
+        minutes = parseInt(timer / 60, 10);
+        seconds = parseInt(timer % 60, 10);
 
-    <title>TIPI</title>
+        minutes = minutes < 10 ? "0" + minutes : minutes;
+        seconds = seconds < 10 ? "0" + seconds : seconds;
 
+        display.textContent = minutes + ":" + seconds;
 
-    <link rel="stylesheet" href="/css/style.css"></link>
-
-    <script>
-        function startTimer(duration, display) {
-            var timer = duration, minutes, seconds;
-            setInterval(function () {
-                minutes = parseInt(timer / 60, 10)
-                seconds = parseInt(timer % 60, 10);
-        
-                minutes = minutes < 10 ? "0" + minutes : minutes;
-                seconds = seconds < 10 ? "0" + seconds : seconds;
-        
-                display.textContent = minutes + ":" + seconds;
-        
-                if (--timer < 0) {
-                    timer = duration;
-                }
-            }, 1000);
+        if (--timer < 0) {
+            clearInterval(intervalId);
+            showRebootComplete();
         }
+    }, 1000);
+}
+
+function postRebootnow() {
+    fetch('/rebootnow', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ reboot: true })
+    })
+    .then(response => {
+        if (response.ok) {
+            displayCountdown();
+        } else {
+            alert('Failed to request reboot');
+        }
+    })
+    .catch(error => {
+        alert('Error during reboot request');
+    });
+}
+
+function displayCountdown() {
+    // Show the modal
+    const rebootModal = new bootstrap.Modal(document.getElementById('rebootModal'));
+    rebootModal.show();
+
+    // Start the timer when the modal is shown
+    rebootModal._element.addEventListener('shown.bs.modal', function () {
+        const display = document.querySelector('#time');
+        startTimer(45, display);
+    }, { once: true }); // Ensure this event listener is only triggered once
+}
+
+function showRebootComplete() {
+    // Change the modal content to indicate reboot is complete
+    const modalBody = document.querySelector('.modal-body');
+    modalBody.innerHTML = '<p>Reboot complete</p>';
     
-        window.onload = function () {
-            display = document.querySelector('#time');
-            startTimer(45, display);
-        };
-    </script>
+    // Optionally, disable the "Close" button or update the modal for post-reboot behavior
+    const closeButton = document.querySelector('.modal-footer button');
+    closeButton.innerHTML = 'OK';  // Change the button text to "OK"
+    closeButton.onclick = function() {
+        window.location.reload();  // Optional: reload the page after reboot completion
+    };
+}
+</script>
 
-</head>
-
-<body>
-
-<div class="container">
-
-    <div class="panel panel-default">
-    
-    <h1>&nbsp; Rebooting Raspberry PI now...</h1>
-    
-    <div>&nbsp; &nbsp; &nbsp; Ready in <span id="time">00:45</span> seconds</div>
-    
-    </div>
-
+<div class="container text-center mt-5">
+    <button class="btn btn-danger btn-lg" onclick="postRebootnow()">Reboot Now</button>
 </div>
 
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="rebootModal" tabindex="-1" aria-labelledby="rebootModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rebootModalLabel">Reboot in Progress</h5>
+            </div>
+            <div class="modal-body text-center">
+                <p>Rebooting Raspberry PI now...</p>
+                <p>Ready in <span id="time">00:45</span> seconds</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-
-
-</body>
-
-</html>
+{% endblock %}
 

@@ -1,94 +1,32 @@
-
-{% extends "page_template.html"%}
+{% extends "page_template.html" %}
 {% block content %}
 
-<style>
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5em; /* Adds half a line width of space between elements */
-  }
-  .form-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 1em;
-  }
-  form label {
-    width: 150px; /* Fixed width for labels */
-    text-align: left; /* Left-align labels */
-    margin-right: 1em; /* Adds space between the label and input */
-  }
-  .input-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3em;
-  }
-  form input {
-    flex: 1; /* Input fills remaining horizontal space */
-    font-family: inherit; /* Consistent font styling */
-    font-size: inherit;
-    box-sizing: border-box; /* Includes padding and border in the width */
-    padding: 0.5em;
-    width: 500px; /* Ensure input fills the parent flex container */
-  }
-  .invalid {
-    border: 1px solid red;
-  }
-  .invalid-input {
-    display: none;
-    color: red;
-    max-width: 500px;
-    word-wrap: break-word;
-    margin-left: 8px;
-  }
-  .invalid-input.visible {
-    display: inline;
-  }
-  .description {
-    font-style: italic;
-    color: #555;
-    max-width: 500px;
-    word-wrap: break-word;
-    margin-left: 8px;
-  }
+<div class="container mt-4">
+    <h2>Edit PI.CONFIG</h2>
+    <p>For additional documentation and usage of the tipi configuration items listed below, see the Wiki: <a href="https://github.com/jedimatt42/tipi/wiki/PI.CONFIG" target="_blank">github.com/jedimatt42/tipi/wiki</a>.</p>
 
-</style>
-
-<div class="panel panel-default">
-
-<div class="backup_container">
-
-<h2>Edit PI.CONFIG</h2>
-
-<p>
-For additional documentation and usage of the tipi configuration items listed below, see the Wiki: <a href="https://github.com/jedimatt42/tipi/wiki/PI.CONFIG">github.com/jedimatt42/tipi/wiki</a>.
-</p>
-
-<form method="post" action="/piconfig-update">
-  {% for key, value in data %}
-    <div class="form-row">
-      <label for="{{ key }}">{{ key }}</label>
-      <div class="input-container">
-        <input class="input"
-          type="{% if key.endswith('_PSK') %}password{% else %}text{% endif %}"
-          id="{{ key }}"
-          name="{{ key }}"
-          value="{{ value }}" />
-        <span class="invalid-input"> Invalid input: {{ errors[key] }} </span>
-        <span class="description"> {{ descriptions[key] }} </span>
-      </div>
-    </div>
-  {% endfor %}
-  <div style="margin-top: 8px;">
-    <button id="saveButton" type="submit" disabled>Save</button>
-  </div>
-</form>
-
-</div>
+    <form method="post" action="/piconfig-update">
+        {% for key, value in data %}
+        <div class="mb-3 row">
+            <label for="{{ key }}" class="col-sm-3 col-form-label">{{ key }}</label>
+            <div class="col-sm-9">
+                <input class="form-control" type="{% if key.endswith('_PSK') %}password{% else %}text{% endif %}" 
+                    id="{{ key }}" name="{{ key }}" value="{{ value }}" oninput="validateInput(this)" />
+                <div class="invalid-feedback">
+                    Invalid input: {{ errors[key] }}
+                </div>
+                <small class="form-text text-muted">{{ descriptions[key] }}</small>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <div class="mt-3">
+            <button id="saveButton" type="submit" class="btn btn-primary" disabled>Save</button>
+        </div>
+    </form>
 </div>
 
 <script>
-
 function isValidTimeZone(tz) {
   try {
     Intl.DateTimeFormat(undefined, { timeZone: tz.trim() });
@@ -107,80 +45,83 @@ function validateInput(input) {
   const span = input.nextElementSibling;
   let isValid = true;
 
-  // check the id and apply the correct rules for each
-  if (input.id === "AUTO") {
-    isValid = ["on", "off"].includes(input.value);
-  } else if (input.id === "CS1_FILE") {
-    isValid = input.value.trim() === "" || !input.value.includes(" ");
-  } else if (input.id === "CUSTOM_BINS") {
-    isValid = ["0", "1"].includes(input.value);
-  } else if (input.id === "DIR_SORT") {
-    isValid = ["FIRST", "MIXED", "LAST"].includes(input.value);
-  } else if (input.id === "DSK1_DIR") {
-    isValid = input.value.trim() === "" || !input.value.includes(" ");
-  } else if (input.id === "DSK2_DIR") {
-    isValid = input.value.trim() === "" || !input.value.includes(" ");
-  } else if (input.id === "DSK3_DIR") {
-    isValid = input.value.trim() === "" || !input.value.includes(" ");
-  } else if (input.id === "DSK4_DIR") {
-    isValid = input.value.trim() === "" || !input.value.includes(" ");
-  } else if (input.id === "DSK5_DIR") {
-    isValid = input.value.trim() === "" || !input.value.includes(" ");
-  } else if (input.id === "DSK6_DIR") {
-    isValid = input.value.trim() === "" || !input.value.includes(" ");
-  } else if (input.id === "DSK7_DIR") {
-    isValid = input.value.trim() === "" || !input.value.includes(" ");
-  } else if (input.id === "DSK8_DIR") {
-    isValid = input.value.trim() === "" || !input.value.includes(" ");
-  } else if (input.id === "DSK9_DIR") {
-    isValid = input.value.trim() === "" || !input.value.includes(" ");
-  } else if (input.id === "EAGER_WRITE") {
-    isValid = ["on", "off"].includes(input.value);
-  } else if (input.id === "HOST_EOL") {
-    isValid = ["LF", "CRLF"].includes(input.value);
-  } else if (input.id === "LVL3_NOT_FOUND") {
-    isValid = ["ERROR", "PASS"].includes(input.value);
-  } else if (input.id === "MOUSE_SCALE") {
-    const value = Number(input.value);
-    isValid = !isNaN(value) && value >= 1 && value <= 100;
-  } else if (input.id === "NATIVE_TEXT_DIRS") {
-    isValid = input.value.trim() === "" || !input.value.includes(" ");
-  } else if (input.id === "SECTOR_COUNT") {
-    const value = Number(input.value);
-    isValid = !isNaN(value) && value >= 2 && value <= 65536;
-  } else if (input.id === "TZ") {
-    isValid = isValidTimeZone(input.value);
-  } else if (input.id === "URI1") {
-    isValid = input.value.trim() === "" || isValidURI(input.value);
-  } else if (input.id === "URI2") {
-    isValid = input.value.trim() === "" || isValidURI(input.value);
-  } else if (input.id === "URI3") {
-    isValid = input.value.trim() === "" || isValidURI(input.value);
-  } 
-
+  // Check the id and apply the correct rules for each input
+  switch(input.id) {
+    case "AUTO":
+      isValid = ["on", "off"].includes(input.value);
+      break;
+    case "CS1_FILE":
+      isValid = input.value.trim() === "" || !input.value.includes(" ");
+      break;
+    case "CUSTOM_BINS":
+      isValid = ["0", "1"].includes(input.value);
+      break;
+    case "DIR_SORT":
+      isValid = ["FIRST", "MIXED", "LAST"].includes(input.value);
+      break;
+    case "DSK1_DIR":
+    case "DSK2_DIR":
+    case "DSK3_DIR":
+    case "DSK4_DIR":
+    case "DSK5_DIR":
+    case "DSK6_DIR":
+    case "DSK7_DIR":
+    case "DSK8_DIR":
+    case "DSK9_DIR":
+      isValid = input.value.trim() === "" || !input.value.includes(" ");
+      break;
+    case "EAGER_WRITE":
+      isValid = ["on", "off"].includes(input.value);
+      break;
+    case "HOST_EOL":
+      isValid = ["LF", "CRLF"].includes(input.value);
+      break;
+    case "LVL3_NOT_FOUND":
+      isValid = ["ERROR", "PASS"].includes(input.value);
+      break;
+    case "MOUSE_SCALE":
+      const value = Number(input.value);
+      isValid = !isNaN(value) && value >= 1 && value <= 100;
+      break;
+    case "NATIVE_TEXT_DIRS":
+      isValid = input.value.trim() === "" || !input.value.includes(" ");
+      break;
+    case "SECTOR_COUNT":
+      const value2 = Number(input.value);
+      isValid = !isNaN(value2) && value2 >= 2 && value2 <= 65536;
+      break;
+    case "TZ":
+      isValid = isValidTimeZone(input.value);
+      break;
+    case "URI1":
+    case "URI2":
+    case "URI3":
+      isValid = input.value.trim() === "" || isValidURI(input.value);
+      break;
+    default:
+      isValid = true;
+  }
 
   if (!isValid) {
-    span.classList.add("visible");
-    input.classList.add("invalid");
+    input.classList.add("is-invalid");
   } else {
-    span.classList.remove("visible");
-    input.classList.remove("invalid");
+    input.classList.remove("is-invalid");
   }
 
   return isValid;
 }
 
 function checkFormValidity() {
-  const inputs = document.querySelectorAll('.input');
+  const inputs = document.querySelectorAll('.form-control');
   const saveButton = document.getElementById('saveButton');
 
-  const allValid = Array.from(inputs).every(input => validateInput(input));
+  const allValid = Array.from(inputs).every(input => !input.classList.contains('is-invalid'));
 
   saveButton.disabled = !allValid;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const inputs = document.querySelectorAll('.input');
+  const inputs = document.querySelectorAll('.form-control');
 
   inputs.forEach(input => {
     input.addEventListener("input", () => {
@@ -191,9 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   checkFormValidity();
 });
-
 </script>
 
 {% endblock %}
-
 

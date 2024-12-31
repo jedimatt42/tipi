@@ -1,39 +1,30 @@
-
-{% extends "page_template.html"%}
+{% extends "page_template.html" %}
 {% block content %}
 
 <style>
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5em; /* Adds half a line width of space between elements */
-  }
-  form div {
-    display: flex;
-    align-items: center; /* Vertically align labels and inputs */
-  }
-  form label {
-    width: 150px; /* Fixed width for labels */
-    text-align: left; /* Left-align labels */
-    margin-right: 1em; /* Adds space between the label and input */
-  }
-  form input {
-    flex: 1; /* Input fills remaining horizontal space */
-    font-family: inherit; /* Consistent font styling */
-    font-size: inherit;
-    box-sizing: border-box; /* Includes padding and border in the width */
-    padding: 0.5em;
-    width: 300px; /* Ensure input fills the parent flex container */
-  }
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5); /* Adjust transparency */
+  z-index: 1040; /* Ensure it appears below the modal (z-index of modal is 1050 by default) */
+}
 </style>
 
-<div class="panel panel-default">
+<div class="modal-backdrop show"></div>
 
-<div class="backup_container">
+<div class="modal modal-fade d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-success">Edit PI.CONFIG</h5>
+      </div>
+      <div class="modal-body">
+        <p>PI.CONFIG Saved</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="window.history.back();">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-<h2>Edit PI.CONFIG</h2>
-
-<p>Saved! <a href="/piconfig">Return to Edit Page</a></p>
 {% endblock %}
-
 

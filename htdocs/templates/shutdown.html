@@ -1,64 +1,92 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "page_template.html" %}
+{% block content %}
 
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+<script>
+function startTimer(duration, display) {
+    let timer = duration, minutes, seconds;
+    const intervalId = setInterval(function () {
+        minutes = parseInt(timer / 60, 10);
+        seconds = parseInt(timer % 60, 10);
 
-    <title>TIPI</title>
+        minutes = minutes < 10 ? "0" + minutes : minutes;
+        seconds = seconds < 10 ? "0" + seconds : seconds;
 
+        display.textContent = minutes + ":" + seconds;
 
-    <link rel="stylesheet" href="/css/style.css"></link>
-
-    <script>
-        function startTimer(duration, display) {
-            var timer = duration, minutes, seconds;
-            setInterval(function () {
-                minutes = parseInt(timer / 60, 10)
-                seconds = parseInt(timer % 60, 10);
-        
-                minutes = minutes < 10 ? "0" + minutes : minutes;
-                seconds = seconds < 10 ? "0" + seconds : seconds;
-        
-                display.textContent = minutes + ":" + seconds;
-        
-                if (--timer < 0) {
-                    document.getElementById("wait").style.display = "none"
-                    document.getElementById("unplug").style.display = "block"
-                }
-            }, 1000);
+        if (--timer < 0) {
+            clearInterval(intervalId);
+            showShutdownComplete();
         }
+    }, 1000);
+}
+
+function postShutdownnow() {
+    fetch('/shutdownnow', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ shutdown: true })
+    })
+    .then(response => {
+        if (response.ok) {
+            displayCountdown();
+        } else {
+            alert('Failed to request shutdown');
+        }
+    })
+    .catch(error => {
+        alert('Error during shutdown request');
+    });
+}
+
+function displayCountdown() {
+    // Show the modal
+    const shutdownModal = new bootstrap.Modal(document.getElementById('shutdownModal'));
+    shutdownModal.show();
+
+    // Start the timer when the modal is shown
+    shutdownModal._element.addEventListener('shown.bs.modal', function () {
+        const display = document.querySelector('#time');
+        startTimer(15, display);
+    }, { once: true }); // Ensure this event listener is only triggered once
+}
+
+function showShutdownComplete() {
+    // Change the modal content to indicate shutdown is complete
+    const modalBody = document.querySelector('.modal-body');
+    modalBody.innerHTML = '<p>Shutdown complete</p>';
     
-        window.onload = function () {
-	    document.getElementById("unplug").style.display = "none"
-            display = document.querySelector('#time');
-            startTimer(15, display);
-        };
-    </script>
+    // Optionally, disable the "Close" button or update the modal for post-shutdown behavior
+    const closeButton = document.querySelector('.modal-footer button');
+    closeButton.innerHTML = 'OK';  // Change the button text to "OK"
+    closeButton.onclick = function() {
+        window.location.reload();  // Optional: reload the page after shutdown completion
+    };
+}
+</script>
 
-</head>
-
-<body>
-
-<div class="container">
-
-    <div class="panel panel-default">
-    
-    <h1>&nbsp; Halting Raspberry PI...</h1>
-    
-    <div id="wait">&nbsp; &nbsp; &nbsp; You may power it off in <span id="time">00:15</span> seconds</div>
-    <div id="unplug">&nbsp; &nbsp; &nbsp; You may power it off now</div>
-    
-    </div>
-
+<div class="container text-center mt-5">
+    <button class="btn btn-danger btn-lg" onclick="postShutdownnow()">Shutdown Now</button>
 </div>
 
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="shutdownModal" tabindex="-1" aria-labelledby="shutdownModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="shutdownModalLabel">Shutdown in Progress</h5>
+            </div>
+            <div class="modal-body text-center">
+                <p>Shutting down Raspberry PI now...</p>
+                <p>Ready in <span id="time">00:15</span> seconds</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-
-
-</body>
-
-</html>
+{% endblock %}
 

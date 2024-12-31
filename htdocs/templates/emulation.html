@@ -1,81 +1,64 @@
-
-{% extends "page_template.html"%}
+{% extends "page_template.html" %}
 {% block content %}
 
 <script>
 function onRadioChange(radio) {
   if (radio.id === "enabled_off") {
-    document.getElementById("nfs").disabled="disabled"
-    document.getElementById("pdf").disabled="disabled"
+    document.getElementById("nfs").disabled = "disabled";
+    document.getElementById("pdf").disabled = "disabled";
   }
   if (radio.id === "enabled_on") {
-    document.getElementById("nfs").disabled=false
-    document.getElementById("pdf").disabled=false
+    document.getElementById("nfs").disabled = false;
+    document.getElementById("pdf").disabled = false;
   }
 
   return false;
 }
 </script>
 
-<div class="panel panel-default">
+<div class="container mt-4">
+    <h2>Emulation Mode</h2>
+    <p>Configuration to enable TIPI websocket for use with TI-99/4A emulation.</p>
 
-<div class="backup_container">
+    <form name="update_emulation" action="/emulation-update" method="post">
+        <div class="mb-3 form-check">
+            <input id="enabled_off" type="radio" name="enabled" value="false" class="form-check-input" 
+                {% if enabled == False %} checked="checked" {% endif %}
+                onchange="onRadioChange(this);">
+            <label for="enabled_off" class="form-check-label">TIPI GPIO Mode</label>
+        </div>
 
-<h2>Emulation Mode</h2>
+        <div class="mb-3 form-check">
+            <input id="enabled_on" type="radio" name="enabled" value="true" class="form-check-input" 
+                {% if enabled == True %} checked="checked" {% endif %}
+                onchange="onRadioChange(this);">
+            <label for="enabled_on" class="form-check-label">Emulator Websocket Mode</label>
+        </div>
 
-<p>Configuration to enable TIPI websocket for use with TI-99/4A emulation.</p>
+        <div class="mb-3 form-check ms-3">
+            <input id="nfs" type="checkbox" name="nfs" value="nfs" class="form-check-input"
+                {% if nfs == True %} checked="checked" {% endif %}
+                {% if enabled == False %} disabled {% endif %}>
+            <label for="nfs" class="form-check-label">Mount Qemu NFS at tipi_disk</label>
+        </div>
 
-<form name="update_emulation" action="/emulation-update" method="post">
-  <div class="form-row">
-    <input id="enabled_off" type="radio" name="enabled" value="false" 
-      {% if enabled == False %}
-        checked="checked"
-      {% endif %}
-      onchange="onRadioChange(this);"
-    />
-    <label for="enabled_off">TIPI GPIO Mode</label>
-  </div>
-  <div class="form-row">
-    <input id="enabled_on" type="radio" name="enabled" value="true" 
-      {% if enabled == True %}
-        checked="checked"
-      {% endif %}
-      onchange="onRadioChange(this);"
-    />
-    <label for="enabled_on">Emulator Websocket Mode</label>
-  </div>
-  <div class="form-row" style="margin-left: 30px;">
-    <input id="nfs" type="checkbox" name="nfs" value="nfs"
-      {% if nfs == True %}
-        checked="checked" 
-      {% endif %}
-      {% if enabled == False %}
-        disabled 
-      {% endif %}
-    />
-    <label for="nfs">Mount Qemu NFS at tipi_disk</label>
-  </div>
-  <div class="form-row" style="margin-left: 30px;">
-    <input id="pdf" type="checkbox" name="pdf" value="pdf" 
-      {% if pdf == True %}
-        checked="checked" 
-      {% endif %}
-      {% if enabled == False %}
-        disabled 
-      {% endif %}
-    />
-    <label for="pdf">Enable PDF support</label>
-  </div>
-  <div style="margin-top: 8px;">
-    <input type="submit" name="Submit" />
-  </div>
-</form>
+        <div class="mb-3 form-check ms-3">
+            <input id="pdf" type="checkbox" name="pdf" value="pdf" class="form-check-input"
+                {% if pdf == True %} checked="checked" {% endif %}
+                {% if enabled == False %} disabled {% endif %}>
+            <label for="pdf" class="form-check-label">Enable PDF support</label>
+        </div>
 
-<p>When using js99er, you must <b>not</b> use TLS. Use the following open <b>http:</b> link instead.</p>
-<a href="http://js99er.net">http://js99er.net</a>
+        <div class="mt-3">
+            <button type="submit" name="Submit" class="btn btn-primary">Submit</button>
+        </div>
+    </form>
 
-<p>Note, many browsers automatically promote <b>http:</b> links to <b>https:</b> and this does not work
-with the TIPI websocket implementation at this time.</p>
+    <p class="mt-4">When using js99er, you must <b>not</b> use TLS. Use the following open <b>http:</b> link instead.</p>
+    <a href="http://js99er.net" class="btn btn-link">http://js99er.net</a>
+
+    <p class="mt-2">Note, many browsers automatically promote <b>http:</b> links to <b>https:</b> and this does not work with the TIPI websocket implementation at this time.</p>
+</div>
 
 {% endblock %}
 

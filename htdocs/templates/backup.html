@@ -90,10 +90,12 @@ function deleteBackup(backup) {
                             <td>
                                 {% if backup_status != "inprogress" %}
                                     <a href="{{ backup_file.dl_link }}" title="Download">
-                                        <i class="bi bi-download" style="font-size: 1.5rem;"></i>
+                                        <button type="button" class=""btn text-danger p-0" title="Download">
+                                            <i class="bi bi-download"></i>
+                                        </button>"
                                     </a>
                                     <button type="button" class="btn text-danger p-0" title="Delete Backup" onclick="deleteBackup('{{ backup_file.name }}'); return false;">
-                                        <i class="bi bi-trash" style="font-size: 1.5rem;"></i>
+                                        <i class="bi bi-trash"></i>
                                     </button>
                                 {% endif %}
                             </td>

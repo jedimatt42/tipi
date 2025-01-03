@@ -30,7 +30,7 @@ icons = {
 
 download_template = '<a href="%s"><i class="bi bi-download" title="Download File"></i></a>'
 
-editlink_template = '<a href="/edit_basic_file?file_name=%s&path=%s"><i class="bi bi-pencil-square title="Edit File"></i></a>'
+editlink_template = '<a href="/edit_basic_file?file_name=%s&path=%s"><i class="bi bi-pencil-square" title="Edit BASIC"></i></a>'
 
 dirlink_template = '<a href="/files%s">TIPI.%s</a>'
 

@@ -190,14 +190,14 @@ document.addEventListener("DOMContentLoaded", function () {
     {% for i in range(1, 10) %}
     <div class="col">
       <div class="card h-100 border-0">
-        <div class="card-body d-flex justify-content-between align-items-center">
-          <span class="fw-bold">DSK{{ i }}. =</span>
+        <div class="card-body d-flex align-items-center">
+          <span class="fw-bold mb-1 me-2">DSK{{ i }}. =</span>
           {% if config.get("DSK" + i|string + "_DIR") %}
           <form method="post" action="/unmapdsk{{ i }}" class="d-inline">
             <input type="hidden" name="path" value="{{ display_path }}" />
             <div class="d-flex justify-content-between align-items-center">
-              <a href="{{ config.get('DSK' + i|string + '_URL') }}" class="me-2">{{ config.get("DSK" + i|string + "_DIR") }}</a>
-              <button type="submit" title="Remove Mapping" class="btn p-0 text-danger">
+              <a href="{{ config.get('DSK' + i|string + '_URL') }}" class="me-2 mb-1">{{ config.get("DSK" + i|string + "_DIR") }}</a>
+              <button type="submit" title="Remove Mapping" class="btn p-0 text-danger mb-1">
                 <i class="bi bi-trash"></i>
               </button>
             </div>

@@ -31,12 +31,6 @@ function checkFields(f) {
     f.uploadFileSubmit.disabled = true;
 }
 
-// function uploadOnClick() {
-//     // Open the upload modal
-//     const uploadModal = new bootstrap.Modal(document.getElementById('uploadModal'));
-//     uploadModal.show();
-// }
-
 function deleteBackup(backup) {
   const form = document.createElement('form');
   form.method = 'post';
@@ -83,7 +77,6 @@ function deleteBackup(backup) {
                         <th>Filename</th>
                         <th>Date</th>
                         <th>Size</th>
-                        <th>Download</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -99,11 +92,7 @@ function deleteBackup(backup) {
                                     <a href="{{ backup_file.dl_link }}" title="Download">
                                         <i class="bi bi-download" style="font-size: 1.5rem;"></i>
                                     </a>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if backup_status != "inprogress" %}
-                                    <button class="btn btn-danger btn-sm" title="Delete Backup" onclick="deleteBackup('{{ backup_file.name }}'); return false;">
+                                    <button type="button" class="btn text-danger p-0" title="Delete Backup" onclick="deleteBackup('{{ backup_file.name }}'); return false;">
                                         <i class="bi bi-trash" style="font-size: 1.5rem;"></i>
                                     </button>
                                 {% endif %}

@@ -182,11 +182,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </script>
 
+<button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMappings" aria-expanded="false" aria-controls="collapseMappings">
+  Drive Mapping
+</button>
 
-<p><b>Drive Mapping</b></p>
-
-<div class="container">
-  <div class="row row-cols-1 row-cols-md-3 g-4">
+<div class="collapse" id="collapseMappings">
+  <div class="row row-cols-1 row-cols-md-3 g-2">
     {% for i in range(1, 10) %}
     <div class="col">
       <div class="card h-100 border-0">

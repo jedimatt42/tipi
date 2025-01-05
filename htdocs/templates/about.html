@@ -1,31 +1,37 @@
-
-{% extends "page_template.html"%}
+{% extends "page_template.html" %}
 {% block content %}
 
+<div class="container mt-4">
+    <h2 class="mb-4">About TIPI</h2>
 
+    <p class="lead">TIPI software version info:</p>
+    <ul class="list-group mb-4">
+        <li class="list-group-item">
+            <strong>Version:</strong> {{ version }}
+        </li>
+        <li class="list-group-item">
+            <strong>Release Date:</strong> {{ reldate }}
+        </li>
+        <li class="list-group-item">
+            <strong>Source Branch:</strong> {{ branch }}
+        </li>
+    </ul>
 
-<div class="panel panel-default">
+    <p>
+        Detailed information is available on 
+        <a href="https://github.com/jedimatt42/tipi" target="_blank" class="text-decoration-none">GitHub</a>.
+    </p>
 
-<div class="about_container">
+    <p>
+        See the TIPI Wiki for detailed usage documentation: 
+        <a href="https://github.com/jedimatt42/tipi/wiki" target="_blank" class="text-decoration-none">GitHub Wiki</a>.
+    </p>
 
-<h2>About TIPI</h2>
-
-<p>TIPI software version info:</p>
-<ul>
-  <li>Version: {{ version }} </li>
-  <li>Release Date: {{ reldate }} </li>
-  <li>Source Branch: {{ branch }} </li>
-</ul>
-
-<p> Detailed information is available on <a href="https://github.com/jedimatt42/tipi">github</a> </p>
-
-<p> For licensing information see: <a href="https://github.com/jedimatt42/tipi/blob/master/LICENSE.md">LICENSE.md</a>
-
+    <p>
+        For licensing information, see: 
+        <a href="https://github.com/jedimatt42/tipi/blob/master/LICENSE.md" target="_blank" class="text-decoration-none">LICENSE.md</a>.
+    </p>
 </div>
-</div>
-
-
-
 
 {% endblock %}
 

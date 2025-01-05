@@ -1,5 +1,4 @@
-
-{% extends "page_template.html"%}
+{% extends "page_template.html" %}
 {% block content %}
 
 <script>
@@ -16,7 +15,7 @@ function startTimer(duration) {
     }, 1000);
   }
 }
-    
+
 window.onload = function () {
     startTimer(5);
 };
@@ -25,18 +24,11 @@ function checkFields(f) {
     if (f.upload_file.value == '') {
        alert("Please select a file from your computer to upload to TIPI");
        f.upload_file.focus();
-       
        return false;
     }
 
     f.uploadFileSubmit.value = ' Uploading, Please Wait ... ';
     f.uploadFileSubmit.disabled = true;
-}
-
-function uploadOnClick() {
-  document.getElementById('uploadFileButton').style.display='none';
-  document.getElementById('uploadForm').style.display='block';
-  document.getElementById('selectfiles').focus();
 }
 
 function deleteBackup(backup) {
@@ -47,102 +39,110 @@ function deleteBackup(backup) {
   hiddenField.type = 'hidden';
   hiddenField.name = 'backup_file';
   hiddenField.value = backup;
-  form.appendChild(hiddenField);;
+  form.appendChild(hiddenField);
   document.body.appendChild(form);
   form.submit();
 }
 </script>
 
+<div class="container">
 
-<div class="panel panel-default">
+    <h2>Backup &amp; Restore</h2>
+    <p>Create an archive of TIPI-specific data and configuration.</p>
 
-<div class="backup_container">
+    <div id="backupForm" class="mb-3">
+        <form name="backup" action="/backupnow" method="post">
+            <button type="submit" class="btn btn-primary" {{ "disabled" if backup_status == "inprogress" }}>
+                Backup Now
+            </button>
+            <!-- Upload Button next to Backup Now -->
+            <button type="button" class="btn btn-info ms-2" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                <i class="bi bi-upload"></i> Upload
+            </button>
+        </form>
+    </div>
 
-<h2>Backup &amp; Restore</h2>
+    {% if backup_status == "inprogress" %}
+        <div class="alert alert-info">
+            Creating archive...
+        </div>
+    {% endif %}
 
-<p>Create an archive of tipi specific data and configuration.</p>
+    <form name="restore" action="/restorenow" method="post">
+        {% if backups %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Filename</th>
+                        <th>Date</th>
+                        <th>Size</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for backup_file in backups %}
+                        <tr>
+                            <td><input type="radio" name="backup_file" value="{{ backup_file.name }}" /></td>
+                            <td>{{ backup_file.name }}</td>
+                            <td>{{ backup_file.date|safe }}</td>
+                            <td>{{ backup_file.size|safe }}</td>
+                            <td>
+                                {% if backup_status != "inprogress" %}
+                                    <a href="{{ backup_file.dl_link }}" title="Download" style="text-decoration: none;">
+                                        <button type="button" class="btn text-primary p-0" title="Download">
+                                            <i class="bi bi-download"></i>
+                                        </button>
+                                    </a>
+                                    <button type="button" class="btn text-danger p-0" title="Delete Backup" onclick="deleteBackup('{{ backup_file.name }}'); return false;">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        <button type="submit" class="btn btn-success" {{ "disabled" if restore_status == "inprogress" }}>
+            Restore Backup
+        </button>
+    </form>
 
-<div id="backupForm">
-  <form name="backup" action="/backupnow" method="post">
-	  <input type=submit name="backupnow" value="Backup Now" {{ "disabled" if backup_status == "inprogress" }} />
-  </form>
+    {% if restore_status == "inprogress" %}
+        <div class="alert alert-info">
+            Restoring archive...
+        </div>
+    {% elif restore_status != "none" %}
+        <div class="alert alert-warning">
+            Restoring archive... {{ restore_status }}
+        </div>
+    {% endif %}
 </div>
 
-{% if backup_status == "inprogress" %}
-<blockquote>Creating archive...</blockquote>
-{% endif %}
-
-<form name="restore" action="/restorenow" method="post">
-<table cellspacing=4 cellpadding=0 border=0>
-{% if backups %}
-  <tr>
-    <th valign=center align=left></th>
-    <th valign=center align=left>Filename</th>
-    <th valign=center align=left>Date</th>
-    <th valign=center align=left>Size</th>
-    <th valign=center align=left>Download</th>
-  </tr>
-{% for backup_file in backups %}
-  <tr>
-    <td valign=center align=left><input type="radio" name="backup_file" value="{{ backup_file.name }}" /></td>
-    <td valign=center align=left> {{ backup_file.name }} &nbsp; &nbsp; </td>
-    <td valign=center> {{ backup_file.date|safe }} &nbsp; &nbsp; </td>
-    <td valign=center> {{ backup_file.size|safe }} &nbsp; </td>
-    <td valign=center>
-      {% if backup_status != "inprogress" %}
-      <a href="{{ backup_file.dl_link }}"><img src="/images/download_icon.png" width=32 title="Download File" />
-      {% endif %}
-      </a>
-    </td>
-    <td valign=center>
-      {% if backup_status != "inprogress" %}
-      <button title="Delete Backup" class="tool_button" onclick="deleteBackup( '{{ backup_file.name }}' ); return false;">
-	  <img src="/images/delete.webp" height="10px"/>
-      </button> 
-      {% endif %}
-    </td>
-  </tr>
-{% endfor %}
-{% endif %}
-</table>
-
-<input type=submit name="restore" value="Restore Backup" {{ "disabled" if restore_status == "inprogress" }} />
-</form>
-
-{% if restore_status == "inprogress" %}
-<blockquote>Restoring archive...</blockquote>
-{% elif restore_status != "none" %}
-<blockquote>Restoring archive... {{ restore_status }} </blockquote>
-{% endif %}
-</div>
-
-<div class="restore_container">
-
-<h2>Upload Backup File</h2>
-
-<table cellspacing=4 cellpadding=0 border=0>
-  <tr>
-    <td valign=center align=left>
-      <span id="uploadButtonLabel"><b>Upload Backup File</b></span>
-      <div id="uploadForm" style="display:none">
-	  <form name="f" action="/backupul" method="post" enctype="multipart/form-data" onSubmit="return checkFields(this);">
-	      <input type=hidden name="path" value="{{ display_path }}">
-	      <input type="file" id="selectfiles" name="upload_file" onClick="f.uploadFileSubmit.value=' Upload ';f.uploadFileSubmit.disabled=false;" multiple=""> 
-	      <input name="uploadFileSubmit" id="uploadFileSubmit" type=submit value=" Upload ">
-	  </form>
+<!-- Modal for File Upload -->
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="uploadModalLabel">Upload Backup File</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <button id="uploadFileButton" title="uploads files"
-	     onClick="uploadOnClick();" class="tool_button">
-	  <img src="/images/upload_icon.png" height="30px"/>
-      </button>
-    </td>
-  </tr>
-</table>
-
+      <div class="modal-body">
+        <form name="f" action="/backupul" method="post" enctype="multipart/form-data" onSubmit="return checkFields(this);">
+          <input type="hidden" name="path" value="{{ display_path }}">
+          <div class="mb-3">
+            <label for="selectfiles" class="form-label">Select File to Upload</label>
+            <input type="file" class="form-control" id="selectfiles" name="upload_file" multiple="">
+          </div>
+          <div class="mb-3">
+            <button type="submit" class="btn btn-primary" id="uploadFileSubmit">Upload</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
-
-
-
 
 {% endblock %}
 

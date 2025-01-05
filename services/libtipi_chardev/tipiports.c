@@ -134,7 +134,7 @@ static int resetProtocol(void)
     backoff--;
     if (backoff < 1) {
       backoff = 1;
-      usleep(10000/*us*/); // 10ms
+      usleep(30000/*us*/); // 30ms
       bail++;
       if (bail > 50) {
         log_printf("RESET bail\n");

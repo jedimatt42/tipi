@@ -1,54 +1,97 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="google" content="notranslate">
-    <meta http-equiv="Content-Language" content="en">
+    <meta charset="utf-8" />
+    <meta name="google" content="notranslate" />
+    <meta http-equiv="Content-Language" content="en" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>TIPI</title>
-    <link rel="icon" type="image/png" href="/images/favicon.png">
-
-    <link rel="stylesheet" href="/css/style.css"></link>
+    <link rel="icon" type="image/png" href="/images/favicon.png" />
+    <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/bootstrap-icons/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="/css/style.css" />
 </head>
 
 <body>
 
-<div class="container">
+<noscript>
+    <b>Javascript must be enabled</b>
+</noscript>
 
-<div class="nav_bar">
-    <div class="nav_dropdown"><a class="files" href="/">My TIPI</a>
-        <div class="nav_dropdown_menu">
-                <a id="about" href="/about">About</a>
-                <a id="tipi.log" href="/logs">View tipi.log</a>
-                <a id="os.log" href="/oslogs">View OS logs</a>
-                <a id="reboot" href="/rebootnow">Reboot RPi</a>
-                <a id="shutdown" href="/shutdownnow">Shutdown RPi</a>
-        </div>     
-    </div>
-     
-    <div class="nav_dropdown"><a id="files" href="/files">Files</a></div>
-    <div class="nav_dropdown"><a id="search" href="/search?globpat=">Search</a></div>
-
-    <div class="nav_dropdown">
-        <a id="files">Tools</a>
-        <div class="nav_dropdown_menu">
-            <a id="backup" href="/backup">Backup &amp; Restore</a>
-            <a id="emulation" href="/emulation">Emulation Mode</a>
+<!-- Full-width Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">TIPI</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/files">Files</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/search?globpat=">Search</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="toolsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Tools
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="toolsDropdown">
+                        <li><a class="dropdown-item" href="/backup">Backup &amp; Restore</a></li>
+                        <li><a class="dropdown-item" href="/emulation">Emulation Mode</a></li>
+                        <li><a class="dropdown-item" href="/piconfig">Edit PI.CONFIG</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="myTipiDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Admin
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="myTipiDropdown">
+                        <li><a class="dropdown-item" href="/about">About</a></li>
+                        <li><a class="dropdown-item" href="/logs">View tipi.log</a></li>
+                        <li><a class="dropdown-item" href="/oslogs">View OS logs</a></li>
+                        <li><a class="dropdown-item" href="/rebootnow">Reboot RPi</a></li>
+                        <li><a class="dropdown-item" href="/shutdownnow">Shutdown RPi</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <button id="themeToggleButton" class="btn btn-outline-secondary" type="button">Toggle Dark Theme</button>
         </div>
     </div>
-    
-    </div>
+</nav>
 
+<div class="container mt-4">
     {% block content %}
     {% endblock %}
 </div>
 
-</div>
+<footer class="footer bg-light text-center text-lg-start">
+  <div class="text-center p-3" style="margin-top: 20px;">
+    <a class="text-dark" href="https://jedimatt42.com/">jedimatt42.com</a>
+  </div>
+</footer>
 
+<!-- Include Bootstrap JavaScript at the end of the body -->
+<script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Check for saved theme preference in localStorage
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        document.documentElement.setAttribute('data-bs-theme', savedTheme);
+    }
 
-
-
+    // Toggle theme and save preference to localStorage
+    document.getElementById('themeToggleButton').addEventListener('click', function() {
+        const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-bs-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+    });
+});
+</script>
 </body>
 
 </html>
-

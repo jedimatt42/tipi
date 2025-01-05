@@ -15,6 +15,7 @@ import tipi_emulation
 import tipi_files
 import tipi_uploads
 import tipi_map
+import pi_config
 import os
 from flask_socketio import SocketIO
 
@@ -65,6 +66,16 @@ def send_css(path):
 @app.route("/mdb/<path:path>")
 def send_mdb5(path):
     return send_from_directory("mdb5s", path)
+
+
+@app.route("/bootstrap/<path:path>")
+def send_bootstrap(path):
+    return send_from_directory("bootstrap", path)
+
+
+@app.route("/bootstrap-icons/<path:path>")
+def send_bootstrap_icons(path):
+    return send_from_directory("bootstrap-icons", path)
 
 
 #
@@ -301,6 +312,19 @@ def mapcs1():
     return redirect(rp)
 
 
+@app.route("/update-filename", methods=["POST"])
+def updateFilename():
+    path = request.form.get("path")
+    originalFilename = request.form.get("originalFilename")
+    newFilename = request.form.get("newFilename")
+    error = tipi_files.rename(path, originalFilename, newFilename)
+    if error:
+        return render_template("error.html", error=error)
+    else:
+        rp = createFileUrl(path)
+        return redirect(rp)
+
+
 #
 # Text editor
 #
@@ -349,25 +373,39 @@ def about():
 @app.route("/logs", methods=["GET"])
 def logs():
     logdata = tipi_admin.logdata()
+    logdata['title'] = 'TIPI Service Log'
+    logdata['hint'] = '/var/log/tipi/tipi.log'
     return render_template("log.html", **logdata)
 
 
 @app.route("/oslogs", methods=["GET"])
 def oslogs():
     logdata = tipi_admin.oslogdata()
-    return render_template("oslog.html", **logdata)
+    logdata['title'] = 'Linux OS Log'
+    logdata['hint'] = 'journalctl --no-pager -b'
+    return render_template("log.html", **logdata)
 
 
 @app.route("/rebootnow", methods=["GET"])
-def rebootnow():
-    tipi_admin.reboot()
+def showRebootPage():
     return render_template("reboot.html")
 
 
+@app.route("/rebootnow", methods=["POST"])
+def rebootnow():
+    tipi_admin.reboot()
+    return '', 200
+
+
 @app.route("/shutdownnow", methods=["GET"])
+def showShutdownPage():
+    return render_template("shutdown.html")
+
+
+@app.route("/shutdownnow", methods=["POST"])
 def shutdownnow():
     tipi_admin.shutdown()
-    return render_template("shutdown.html")
+    return '', 200
 
 
 # Tipi Backup
@@ -431,7 +469,20 @@ def emulation_update():
     emulation_state['nfs'] = request.form.get("nfs") == "nfs"
     tipi_emulation.update(emulation_state)
     return redirect("/emulation")
-    
+
+
+@app.route("/piconfig", methods=["GET"])
+def piconfig():
+    data = pi_config.data()
+    return render_template("pi_config.html", **data)
+
+
+@app.route("/piconfig-update", methods=["POST"])
+def piconfig_update():
+    updated_config = request.form.to_dict()
+    pi_config.update(updated_config)
+    return render_template("pi_config_saved.html")
+
 
 @app.route("/search", methods=["GET"])
 def searchQuery():

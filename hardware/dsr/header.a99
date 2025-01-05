@@ -1,10 +1,10 @@
 ; DSR ROM header
 	AORG >4000
 
-	BYTE	>AA		; Standard Header
-        BYTE	>01		; version
-        DATA	>0000		; # of application programs / reserved
-        DATA	pwrlnk		; power up list
+	BYTE	>AA			; Standard Header
+	BYTE	>03			; version
+	DATA	>0000		; # of application programs / reserved
+	DATA	pwrlnk		; power up list
 	DATA	>0000		; user-program list (grom only)
 	DATA	tipilnk		; DSR list
 	DATA	basiclnk	; LVL2 DSRLNK & BASIC CALL subroutine list
@@ -14,7 +14,7 @@
 ; TIPI routine list - well known addresses for some custom exposure
 	DATA	recvmsg		; MOV @>4010,R0   BL *R0   to invoke recvmsg.
 	DATA	sendmsg		; MOV @>4012,R0   BL *R0   to invoke sendmsg. 
-	DATA	vrecvmsg	; MOV @>4014,R0   BL *R0   to invoke recvmsg.
-	DATA	vsendmsg	; MOV @>4016,R0   BL *R0   to invoke sendmsg. 
+	DATA	vrecvmsg	; MOV @>4014,R0   BL *R0   to invoke vrecvmsg.
+	DATA	vsendmsg	; MOV @>4016,R0   BL *R0   to invoke vsendmsg. 
 	DATA	>0000
 

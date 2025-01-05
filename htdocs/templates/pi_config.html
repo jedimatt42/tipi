@@ -1,0 +1,138 @@
+{% extends "page_template.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <h2>Edit PI.CONFIG</h2>
+    <p>For additional documentation and usage of the tipi configuration items listed below, see the Wiki: <a href="https://github.com/jedimatt42/tipi/wiki/PI.CONFIG" target="_blank">github.com/jedimatt42/tipi/wiki</a>.</p>
+
+    <form method="post" action="/piconfig-update">
+        {% for key, value in data %}
+        <div class="mb-3 row">
+            <label for="{{ key }}" class="col-sm-3 col-form-label">{{ key }}</label>
+            <div class="col-sm-9">
+                <input class="form-control" type="{% if key.endswith('_PSK') %}password{% else %}text{% endif %}" 
+                    id="{{ key }}" name="{{ key }}" value="{{ value }}" oninput="validateInput(this)" />
+                <div class="invalid-feedback">
+                    Invalid input: {{ errors[key] }}
+                </div>
+                <small class="form-text text-muted">{{ descriptions[key] }}</small>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <div class="mt-3">
+            <button id="saveButton" type="submit" class="btn btn-primary" disabled>Save</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function isValidTimeZone(tz) {
+  try {
+    Intl.DateTimeFormat(undefined, { timeZone: tz.trim() });
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function isValidURI(input) {
+  const value = input.toLowerCase();
+  return value.startsWith("http://") || value.startsWith("https://");
+}
+
+function validateInput(input) {
+  const span = input.nextElementSibling;
+  let isValid = true;
+
+  // Check the id and apply the correct rules for each input
+  switch(input.id) {
+    case "AUTO":
+      isValid = ["on", "off"].includes(input.value);
+      break;
+    case "CS1_FILE":
+      isValid = input.value.trim() === "" || !input.value.includes(" ");
+      break;
+    case "CUSTOM_BINS":
+      isValid = ["0", "1"].includes(input.value);
+      break;
+    case "DIR_SORT":
+      isValid = ["FIRST", "MIXED", "LAST"].includes(input.value);
+      break;
+    case "DSK1_DIR":
+    case "DSK2_DIR":
+    case "DSK3_DIR":
+    case "DSK4_DIR":
+    case "DSK5_DIR":
+    case "DSK6_DIR":
+    case "DSK7_DIR":
+    case "DSK8_DIR":
+    case "DSK9_DIR":
+      isValid = input.value.trim() === "" || !input.value.includes(" ");
+      break;
+    case "EAGER_WRITE":
+      isValid = ["on", "off"].includes(input.value);
+      break;
+    case "HOST_EOL":
+      isValid = ["LF", "CRLF"].includes(input.value);
+      break;
+    case "LVL3_NOT_FOUND":
+      isValid = ["ERROR", "PASS"].includes(input.value);
+      break;
+    case "MOUSE_SCALE":
+      const value = Number(input.value);
+      isValid = !isNaN(value) && value >= 1 && value <= 100;
+      break;
+    case "NATIVE_TEXT_DIRS":
+      isValid = input.value.trim() === "" || !input.value.includes(" ");
+      break;
+    case "SECTOR_COUNT":
+      const value2 = Number(input.value);
+      isValid = !isNaN(value2) && value2 >= 2 && value2 <= 65536;
+      break;
+    case "TZ":
+      isValid = isValidTimeZone(input.value);
+      break;
+    case "URI1":
+    case "URI2":
+    case "URI3":
+      isValid = input.value.trim() === "" || isValidURI(input.value);
+      break;
+    default:
+      isValid = true;
+  }
+
+  if (!isValid) {
+    input.classList.add("is-invalid");
+  } else {
+    input.classList.remove("is-invalid");
+  }
+
+  return isValid;
+}
+
+function checkFormValidity() {
+  const inputs = document.querySelectorAll('.form-control');
+  const saveButton = document.getElementById('saveButton');
+
+  const allValid = Array.from(inputs).every(input => !input.classList.contains('is-invalid'));
+
+  saveButton.disabled = !allValid;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const inputs = document.querySelectorAll('.form-control');
+
+  inputs.forEach(input => {
+    input.addEventListener("input", () => {
+      validateInput(input);
+      checkFormValidity();
+    });
+  });
+
+  checkFormValidity();
+});
+</script>
+
+{% endblock %}
+

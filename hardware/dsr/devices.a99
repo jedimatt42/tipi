@@ -73,6 +73,22 @@ cleanup
 	MOVB	R0,@TCOUT
 	RT
 
+; uses R9
+dcvsend				; examine opcode for cpuflag, and delegate to vdp or cpu send function
+	MOV	@OPCODE(R10),R9
+	COC @CPUFLAG,R9	; If the cpuflag is set, set equal status bit
+	JEQ	!
+	B	@vsendmsg	; write data from VDP ram
+!	B	@sendmsg	; write data from CPU ram
+
+; uses R9
+dcvrecv				; examine opcode for cpuflag, and delegate to vdp or cpu recv function
+	MOV	@OPCODE(R10),R9
+	COC @CPUFLAG,R9	; If the cpuflag is set, set equal status bit
+	JEQ	!
+	B	@vrecvmsg	; read data from VDP ram
+!	B	@recvmsg	; read data from CPU ram
+
 ; Handle requests to TIPI device
 tipidsr
 	LIMI	0		; I/O plays with VDP registers and relies on them
@@ -101,7 +117,10 @@ tipidsr
 	LI	R0,>0A		; PAB is 10 bytes
 	MOV	R10,R1
 	AI	R1,OPCODE
+	SZCB	@CPUFLAG,@OPCODE(R10)	; clear cpuflag before sending pab to TIPI
 	BL	@sendmsg	; send the 10 byte PAB from scratchpad
+	.setvdpra 	R9
+	MOVB	@VDPRD,@OPCODE(R10)		; restore original opcode from VDP
 
 	MOV	@PABNAM,R1	; Begin computing beginning of PAB device name
 	S	@PABNLE,R1	;   rewind to beginning of device name (might need to only consume the LSB of PABNLE
@@ -163,9 +182,13 @@ handlers			; 2x opcode + handlers is address to branch to.
 	DATA	retdone		; scratch opcode not implemented.
 	DATA	hstatus
 
+CPUFLAG
+	DATA  >4000
+
 hresponse
 	CLR	R1		; switch on opcode in R1
 	MOVB	@OPCODE(R10),@R1LB(R10)
+	SZCB	@CPUFLAG,@R1LB(R10)		; will need to remove cpu buffer bit if set
 	SLA	R1,1		; multiply by 2
 	AI	R1,handlers	; R1 now has address of handler reference
 	MOV	*R1,R1
@@ -192,7 +215,7 @@ hclose
 hread
 	MOV	@RECNUM(R10),R0
 	MOV	@BUFADR(R10),R1
-	BL	@vrecvmsg	; R0 is now number of bytes read in record
+	BL	@dcvrecv	; Read into buffer, R0 has num bytes read
 	SWPB	R0
 	MOV	@VPAB,R3
 	AI	R3,CHRCNT-OPCODE
@@ -228,8 +251,7 @@ wrrel
 finwrite
 	SWPB	R0
 	MOV	@BUFADR(R10),R1
-	BL	@vsendmsg
-	
+	BL	@dcvsend	; write record from buffer
 	LI	R0,1		; Set expectation to read 1 byte
 	MOV	R10,R1		; Set receive address to Workspace
 	AI	R1,R9LB		; add low byte address of R9 to receive address
@@ -250,15 +272,14 @@ hrestore
 hload
 	MOV	@RECNUM(R10),R0	; VPD space left is limited
 	MOV	@BUFADR(R10),R1	; Set VDP location to load in to.
-	BL	@vrecvmsg 	; Load image data
+	BL	@dcvrecv	; Load image data into cpu or vdp ram
 	JMP	retdone
 
 ; Handle response for OPCODE 6 - OPSAVE
 hsave
 	MOV	@RECNUM(R10),R0
 	MOV	@BUFADR(R10),R1
-	BL	@vsendmsg
-
+	BL	@dcvsend	; save data from CPU ram
 	LI	R0,1		; Set expectation to read 1 byte
 	MOV	R10,R1		; Set receive address to Workspace
 	AI	R1,R9LB		; add low byte address of R9 to receive address

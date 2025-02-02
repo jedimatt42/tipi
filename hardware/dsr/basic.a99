@@ -3,6 +3,7 @@ GPLWS	EQU	>83E0
 
 TIPICFG	BYTE	12
 	TEXT	"TIPI.TIPICFG"
+	EVEN
 
 btipicfg			; implementation of CALL TIPI
 	LIMI	0

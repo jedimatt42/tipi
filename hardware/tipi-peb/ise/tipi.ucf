@@ -13,12 +13,13 @@ NET "dsr_b1" LOC = P30;
 NET "dsr_en" LOC = P61;
 
 NET "r_clk" LOC = P22; NET "r_clk" BUFG = CLK; // GCK1
-NET "r_cd" LOC = P02;
-NET "r_dout" LOC = P07;
-NET "r_le" LOC = P06;
-NET "r_rt" LOC = P08;
-NET "r_din" LOC = P04;
-NET "r_reset" LOC = P03;
+NET "r_nibrst" LOC = P02; // Used to be r_cd
+NET "r_reset" LOC = P03; 
+NET "r_nib<0>" LOC = P04; // Used to be r_din
+NET "r_nib<1>" LOC = P06; // Used to be r_le
+NET "r_nib<2>" LOC = P07; // Used to be r_dout
+NET "r_nib<3>" LOC = P08; // Used to be r_rt
+
 
 NET "ti_cruclk" LOC = P23; NET "ti_cruclk" BUFG = CLK; // GCK2
 NET "ti_cruin" LOC = P01;

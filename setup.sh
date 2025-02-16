@@ -13,6 +13,8 @@ if [ ${VERSION_CODENAME:-} = "bookworm" ]; then
   OSPKGS=python-dev-is-python3
 fi
 
+sudo apt-get remove --purge -y inetutils-telnetd inetutils-inetd inetutils-syslogd tcpd update-inetd
+
 sudo apt-get -y install \
  $OSPKGS \
  python3-dev \
@@ -24,7 +26,7 @@ sudo apt-get -y install \
  libsqlite3-dev \
  php \
  virtualenv \
- telnetd
+ telnetd-ssl
 
 # sudo apt-get -y install usbmount
 

@@ -33,7 +33,7 @@ if [ -e /tmp/test_update ]; then
   TIPI_UPDATE_LIBTIPI=true
 fi
 
-if [ $fmajor -le 4 ] && [ $fminor -le 1 ]; then
+if [ $fmajor -le 4 ] && [ $fminor -le 5 ]; then
   TIPI_UPDATE_TELNETD=true
 fi
 

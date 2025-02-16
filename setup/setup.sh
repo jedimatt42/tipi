@@ -6,6 +6,12 @@ echo "Installing PI.PIO support..."
 cd /home/tipi/tipi/setup/
 sudo ./printing_setup.sh
 
+echo "Configuring OS services..."
+cd /home/tipi/tipi/setup/etc
+sudo cp ./hosts.allow /etc/hosts.allow
+sudo cp ./hosts.deny /etc/hosts.deny
+sudo cp ./samba/smb.conf /etc/samba/smb.conf
+
 echo "Installing systemd services..."
 
 cd /home/tipi/tipi/setup/

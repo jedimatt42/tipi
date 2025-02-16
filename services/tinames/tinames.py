@@ -95,6 +95,10 @@ def nativeTextDir(target_path):
     return ""
 
 
+def isDriveMapped(devname):
+    return devnameToLocal(devname) is not None
+
+
 def devnameToLocal(devname, prog=False):
     parts = str(devname).split(".")
     path = None

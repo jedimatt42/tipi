@@ -73,8 +73,10 @@ class TipiDisk(object):
         msg[0] = byte
         self.tipi_io.send(msg)
 
-    def lvl3_not_found(self):
-        if tipi_config.get('LVL3_NOT_FOUND') == 'PASS':
+    def lvl3_not_found(self, devname):
+        # if drive not mapped, then always pass
+        # or if drive mapped, and error mode is PASS, then try other controllers
+        if (not tinames.isDriveMapped(devname)) or (tipi_config.get('LVL3_NOT_FOUND') == 'PASS'):
             logger.info("(2) Passing to other controllers")
             self.sendErrorCode(EDVNAME)
         else:
@@ -94,7 +96,7 @@ class TipiDisk(object):
 
         logger.debug("  local file: " + unix_name)
         if mode(pab) == INPUT and not os.path.exists(unix_name):
-            self.lvl3_not_found()
+            self.lvl3_not_found(devname)
             return
 
         if os.path.isdir(unix_name):
@@ -314,7 +316,7 @@ class TipiDisk(object):
         unix_name = tinames.devnameToLocal(devname, prog=True)
 
         if unix_name is None or not os.path.exists(unix_name):
-            self.lvl3_not_found()
+            self.lvl3_not_found(devname)
             return
         try:
             if (not ti_files.isTiFile(unix_name)) and unix_name.lower().endswith(

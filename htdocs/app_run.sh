@@ -9,4 +9,7 @@ export FLASK_APP=route.py
 
 export FLASK_DEBUG=1
 
+export TMPDIR=/home/tipi/web-tmp
+mkdir -p $TMPDIR
+
 python3 ./route.py

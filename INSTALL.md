@@ -106,41 +106,16 @@ NOTE: On Le Potato some parts of post-upgrade do not work. Completely...
 
 ## Other items to setup
 
-* (for distributing an image, I don't do this) change the password for user pi
+* add tipi account to samba, and set password to 'tipi'
+
+```
+sudo smbpasswd -a tipi
+```
+
 * change the hostname (raspi-config)
-* install samba share for /home/tipi/tipi_disk
-* add telnetd for localhost access
-
-   edit /etc/hosts.allow: 
-
-```
-in.telnetd: localhost
-```
-
-   edit /etc/hosts.deny: 
-
-```
-in.telnetd: ALL
-```
-
 
 Use raspi-config to set hostname to: `tipi`
 
-Recommended Samba configuration for /etc/samba/smb.conf:
-
-```
-[TIPI]
-comment=TI-99/4A Files
-path=/home/tipi/tipi_disk
-public=no
-browseable=Yes
-writeable=Yes
-only guest=no
-guest ok=Yes
-create mask=0644
-directory mask=0755
-force user=tipi
-```
 
 ## Test WIFI Connectivity
 

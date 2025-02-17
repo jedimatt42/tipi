@@ -24,6 +24,7 @@
 `include "shift_sin_pout.v"
 `include "tristate_8bit.v"
 `include "mux2_8bit.v"
+`include "tipi_4bit_pi_bus.v"
 module tipi_top(
 		output led0,
 		
@@ -73,18 +74,6 @@ assign dsr_b1 = cru_state[3];
 
 // Latches && Shift Registers for TI to RPi communication - TC & TD
 
-// Register selection:
-// r_rt and r_dc combine to select the rd rc td and tc registers. 
-// we will assert that r_rt == 0 is RPi output register
-//                     r_rt == 1 is TI output register
-//                     r_dc == 0 is data register
-//                     r_dc == 1 is control register
-// The following aliases should help.
-wire tipi_rc = ~r_rt && ~r_cd;
-wire tipi_rd = ~r_rt && r_cd;
-wire tipi_tc = r_rt && ~r_cd;
-wire tipi_td = r_rt && r_cd; 
-
 // address comparisons
 wire rc_addr = ti_a == 16'h5ff9;
 wire rd_addr = ti_a == 16'h5ffb;
@@ -101,26 +90,19 @@ wire tipi_tc_le = (cru_dev_en && ~ti_we && ~ti_memen && tc_addr);
 wire [0:7]rpi_tc;
 latch_8bit tc(tipi_tc_le, tp_d, rpi_tc);
 
-// TD Shift output
-wire td_out;
-shift_pload_sout shift_td(r_clk, tipi_td, r_le, rpi_td, td_out);
-
-// TC Shift output
-wire tc_out;
-shift_pload_sout shift_tc(r_clk, tipi_tc, r_le, rpi_tc, tc_out);
-
-
 // Data from the RPi, to be read by the TI.
 
 // RD
 wire [0:7]tipi_db_rd;
-wire rd_parity;
-shift_sin_pout shift_rd(r_clk, tipi_rd, r_le, r_dout, tipi_db_rd, rd_parity);
+// TODO: need to have the parallel-out part of the shift register 
 
 // RC
 wire [0:7]tipi_db_rc;
-wire rc_parity;
-shift_sin_pout shift_rc(r_clk, tipi_rc, r_le, r_dout, tipi_db_rc, rc_parity);
+// TODO: need to have the parallel-out part of the shift register 
+
+
+// 4bit bus interface to PI
+tipi_4bit_pi_bus pi_bus(r_clk, r_nibrst, r_nib, rpi_td, rpi_tc, tipi_db_rd, tipi_db_rc);
 
 // Select if output is from the data or control register
 reg r_din_mux;

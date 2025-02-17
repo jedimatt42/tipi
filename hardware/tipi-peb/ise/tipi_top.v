@@ -35,14 +35,10 @@ module tipi_top(
 		output dsr_b1,
 		output dsr_en,
 		
+		// Physical interface to the Raspberry PI
 		input r_clk,
-		// 0 = Data or 1 = Control byte selection
-		input r_cd,
-		input r_dout,
-		input r_le,
-		// R|T 0 = RPi or 1 = TI originating data 
-		input r_rt,
-		output r_din,
+		input r_nibrst,
+		inout[0:3] r_nib,
 		output r_reset,
 
 		input ti_cruclk,

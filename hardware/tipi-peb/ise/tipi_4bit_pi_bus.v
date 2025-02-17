@@ -36,12 +36,11 @@ module tipi_4bit_pi_bus (
 
     wire is_output = (rw == 1'b1); // Only output data if in read mode
 
-    assign data = (is_output) ? shift_reg[7:4] : 4'bz; // Drive bus when reading
+    // Output correct 4-bit chunk based on bit_count
+    assign data = (is_output) ? (bit_count[0] ? shift_reg[3:0] : shift_reg[7:4]) : 4'bz;
 
     always @(posedge clk or posedge reset) begin
         if (reset) begin
-            TD <= 8'h00;
-            TC <= 8'h00;
             shift_reg <= 8'h00;
             bit_count <= 2'b00;
             sel <= 2'b00;   // Clear selection register
@@ -55,8 +54,8 @@ module tipi_4bit_pi_bus (
                 case (data[1:0])
                     2'b00: begin shift_reg <= TD; rw <= 1'b1; end // TD → Read
                     2'b01: begin shift_reg <= TC; rw <= 1'b1; end // TC → Read
-                    2'b10: begin shift_reg <= RD; rw <= 1'b0; end // RD → Write
-                    2'b11: begin shift_reg <= RC; rw <= 1'b0; end // RC → Write
+                    2'b10: begin rw <= 1'b0; end // RD → Write
+                    2'b11: begin rw <= 1'b0; end // RC → Write
                 endcase
             end else begin
                 if (rw) begin
@@ -65,11 +64,11 @@ module tipi_4bit_pi_bus (
                 end else begin
                     // Write operation: shift in new 4 bits
                     shift_reg <= {shift_reg[3:0], data};
-                    if (bit_count == 2'b10) begin
-                        // After 2nd 4-bit write, store data into correct register
+                    if (bit_count == 2'b01) begin
+                        // After receiving full 8 bits, store data into correct register
                         case (sel)
-                            2'b10: RD <= shift_reg;
-                            2'b11: RC <= shift_reg;
+                            2'b10: RD <= {shift_reg[3:0], data};
+                            2'b11: RC <= {shift_reg[3:0], data};
                         endcase
                     end
                 end

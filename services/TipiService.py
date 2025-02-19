@@ -9,6 +9,7 @@ from tipi.TipiMessage import TipiMessage
 from tipi.TipiMessage import BackOffException
 from SpecialFiles import SpecialFiles
 from Pab import *
+from CustomExtensions import CustomExtensions
 from RawExtensions import RawExtensions
 from LevelTwo import LevelTwo
 from TipiDisk import TipiDisk
@@ -54,6 +55,7 @@ else:
 try:
     tipi_io = TipiMessage()
     specialFiles = SpecialFiles(tipi_io)
+    customExtensions = CustomExtensions(tipi_io)
     rawExtensions = RawExtensions(tipi_io)
     levelTwo = LevelTwo(tipi_io)
     tipiDisk = TipiDisk(tipi_io)
@@ -77,6 +79,9 @@ try:
             continue
 
         if rawExtensions.handle(msg):
+            continue
+
+        if customExtensions.handle(msg):
             continue
 
         # if not already handled, assume this is a PAB

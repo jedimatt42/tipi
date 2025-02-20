@@ -7,16 +7,20 @@ class CustomExtensions(object):
     def __init__(self, tipi_io):
         # Extend this list to register new special request handlers
         #
-        self.__reg = self.load_plugins(tipi_io)
+        self.__reg = self.load_plugins()
+        self.tipi_io = tipi_io
 
     def handle(self, bytes):
         if not bytes[0] in self.__reg:
             return False
-        handler = self.__reg[bytes[0]]
+        self.tipi_io.send(self.processRequest(bytes))
+        return True
 
-        return handler.handle(bytes)
+    def processRequest(self, bytes):
+        plugin = self.__reg[bytes[0]]
+        return plugin.handle(bytes)
 
-    def load_plugins(self, tipi_io):
+    def load_plugins(self):
         plugins = {}
 
         for filename in os.listdir(PLUGIN_DIR):
@@ -47,7 +51,7 @@ class CustomExtensions(object):
                         break
 
                 if plugin_class:
-                    plugins[key] = plugin_class(tipi_io)
+                    plugins[key] = plugin_class()
 
         return plugins
 

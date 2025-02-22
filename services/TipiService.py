@@ -10,6 +10,8 @@ from tipi.TipiMessage import BackOffException
 from SpecialFiles import SpecialFiles
 from Pab import *
 from CustomExtensions import CustomExtensions
+from CustomExtensions import load_plugins
+from CustomExtensions import start_watcher
 from RawExtensions import RawExtensions
 from LevelTwo import LevelTwo
 from TipiDisk import TipiDisk
@@ -48,6 +50,10 @@ if os.environ.get('TIPI_WEBSOCK'):
     logger.info("websocket mode enabled")
 else:
     logger.info("physical mode enabled")
+
+# initial load of plugins and start monitoring them for change
+load_plugins()
+observer = start_watcher()
 
 ##
 # MAIN

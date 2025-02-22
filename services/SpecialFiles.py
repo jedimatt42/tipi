@@ -15,6 +15,7 @@ from UpgradeFile import UpgradeFile
 from VariablesFile import VariablesFile
 from PioFile import PioFile
 from LogFile import LogFile
+from MsgFile import MsgFile
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +39,7 @@ class SpecialFiles(object):
             UdpFile.filename(): UdpFile(self.tipi_io),
             UpgradeFile.filename(): UpgradeFile(self.tipi_io),
             VariablesFile.filename(): VariablesFile(self.tipi_io),
+            MsgFile.filename(): MsgFile(self.tipi_io),
         }
 
     def handle(self, pab, devname):

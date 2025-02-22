@@ -50,13 +50,11 @@ class MsgFile(object):
         return
 
     def read(self, pab, devname):
-        logger.info("read devname: %s", devname)
         self.tipi_io.send([SUCCESS])
         self.tipi_io.send(self.last_response)
         return
 
     def write(self, pab, devname):
-        logger.info("write devname: %s", devname)
         self.tipi_io.send([SUCCESS])
         data = self.tipi_io.receive()
         self.last_response = self.custom_extensions.processRequest(data)

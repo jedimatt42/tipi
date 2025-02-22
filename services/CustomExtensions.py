@@ -1,14 +1,13 @@
 import os
 import importlib.util
 import logging
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
+import time
 
 PLUGIN_DIR = "/home/tipi/TIPI_DISK/PLUGINS"
 
-
 plugins = {}  # Stores active plugin instances
 logger = logging.getLogger(__name__)
+last_load_time = 0  # Stores the last load time
 
 class CustomExtensions(object):
     def __init__(self, tipi_io):
@@ -17,6 +16,7 @@ class CustomExtensions(object):
         self.tipi_io = tipi_io
 
     def handle(self, bytes):
+        reload_plugins()  # Reload plugins if modified
         if not bytes[0] in plugins:
             return False
         self.tipi_io.send(self.processRequest(bytes))
@@ -67,56 +67,24 @@ def load_plugin(filename):
 
 def load_plugins():
     """Scans the directory and loads all plugins initially."""
+    global last_load_time
     os.makedirs(PLUGIN_DIR, exist_ok=True)
  
     for filename in os.listdir(PLUGIN_DIR):
         if filename.endswith(".py") and len(filename) == 5:  # Must be 'XX.py'
             load_plugin(filename)
+    
+    last_load_time = time.time()  # Set the last load time
 
-class PluginWatcher(FileSystemEventHandler):
-    """Watches the plugin directory for changes and reloads plugins."""
-
-    def on_modified(self, event):
-        """Handles file modifications (reload plugin)."""
-        if event.is_directory or not event.src_path.endswith(".py"):
-            return
-
-        filename = os.path.basename(event.src_path)
-        logger.info(f"Detected change in {filename}, reloading...")
-        load_plugin(filename)
-
-    def on_created(self, event):
-        """Handles new files (load new plugin)."""
-        if event.is_directory or not event.src_path.endswith(".py"):
-            return
-
-        filename = os.path.basename(event.src_path)
-        logger.info(f"New plugin detected: {filename}, loading...")
-        load_plugin(filename)
-
-    def on_deleted(self, event):
-        """Handles plugin deletions (remove from dictionary)."""
-        if event.is_directory or not event.src_path.endswith(".py"):
-            return
-
-        filename = os.path.basename(event.src_path)
-        hex_part = filename[:2]
-
-        try:
-            key = int(hex_part, 16)
-            if key in plugins:
-                del plugins[key]
-                logger.info(f"Plugin {hex(key).upper()} removed")
-        except ValueError:
-            pass  # Ignore invalid filenames
-
-def start_watcher():
-    """Starts the file watcher."""
-    event_handler = PluginWatcher()
-    observer = Observer()
-    observer.schedule(event_handler, PLUGIN_DIR, recursive=False)
-    observer.start()
-    return observer
-
-
-
+def reload_plugins():
+    """Reloads plugins that have been modified since the last load time."""
+    global last_load_time
+    current_time = time.time()
+    
+    for filename in os.listdir(PLUGIN_DIR):
+        if filename.endswith(".py") and len(filename) == 5:  # Must be 'XX.py'
+            file_path = os.path.join(PLUGIN_DIR, filename)
+            if os.path.getmtime(file_path) > last_load_time:
+                load_plugin(filename)
+    
+    last_load_time = current_time  # Update the last load time

@@ -51,9 +51,8 @@ if os.environ.get('TIPI_WEBSOCK'):
 else:
     logger.info("physical mode enabled")
 
-# initial load of plugins and start monitoring them for change
+# initial load of plugins
 load_plugins()
-observer = start_watcher()
 
 ##
 # MAIN

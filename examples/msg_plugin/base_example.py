@@ -14,10 +14,10 @@ class ExamplePlugin(object):
         logger.info('created plugin instance')
 
     def handle(self, bytes):
-    """
-    'bytes' will be a byte array of the message sent to the plugin
-    'bytes' includes the message type byte at index 0. 
-    """
+        """
+        'bytes' will be a byte array of the message sent to the plugin
+        'bytes' includes the message type byte at index 0. 
+        """
         # process the message and send a message back
         # processing should catch any exceptions and return an error code or empty message back to the 4A
 

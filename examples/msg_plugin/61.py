@@ -48,6 +48,17 @@ KEYCODE_TO_ASCII = {
     evdev.ecodes.KEY_BACKSPACE: ord('\b'),
     evdev.ecodes.KEY_TAB: ord('\t'),
     evdev.ecodes.KEY_ESC: ord('\x1b'),
+    evdev.ecodes.KEY_MINUS: ord('-'),
+    evdev.ecodes.KEY_EQUAL: ord('='),
+    evdev.ecodes.KEY_LEFTBRACE: ord('['),
+    evdev.ecodes.KEY_RIGHTBRACE: ord(']'),
+    evdev.ecodes.KEY_BACKSLASH: ord('\\'),
+    evdev.ecodes.KEY_SEMICOLON: ord(';'),
+    evdev.ecodes.KEY_APOSTROPHE: ord('\''),
+    evdev.ecodes.KEY_GRAVE: ord('`'),
+    evdev.ecodes.KEY_COMMA: ord(','),
+    evdev.ecodes.KEY_DOT: ord('.'),
+    evdev.ecodes.KEY_SLASH: ord('/'),
     # Add more mappings as needed
 }
 
@@ -93,6 +104,32 @@ class KeyboardPlugin(object):
                         elif self.shift_pressed or self.capslock_on:
                             if ord('a') <= ascii_code <= ord('z'):
                                 ascii_code = ascii_code - ord('a') + ord('A')
+                            elif ascii_code in range(ord('1'), ord('9') + 1):
+                                ascii_code = ord('!@#$%^&*()'[ascii_code - ord('1')])
+                            elif ascii_code == ord('0'):
+                                ascii_code = ord(')')
+                            elif ascii_code == ord('-'):
+                                ascii_code = ord('_')
+                            elif ascii_code == ord('='):
+                                ascii_code = ord('+')
+                            elif ascii_code == ord('['):
+                                ascii_code = ord('{')
+                            elif ascii_code == ord(']'):
+                                ascii_code = ord('}')
+                            elif ascii_code == ord('\\'):
+                                ascii_code = ord('|')
+                            elif ascii_code == ord(';'):
+                                ascii_code = ord(':')
+                            elif ascii_code == ord('\''):
+                                ascii_code = ord('"')
+                            elif ascii_code == ord('`'):
+                                ascii_code = ord('~')
+                            elif ascii_code == ord(','):
+                                ascii_code = ord('<')
+                            elif ascii_code == ord('.'):
+                                ascii_code = ord('>')
+                            elif ascii_code == ord('/'):
+                                ascii_code = ord('?')
                         self.queue.put(ascii_code)
                         logger.info(f'key pressed: {evdev.ecodes.KEY[event.code]}, ascii code: {ascii_code}')
                     else:

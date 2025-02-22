@@ -51,6 +51,10 @@ KEYCODE_TO_ASCII = {
     # Add more mappings as needed
 }
 
+SHIFT_KEYCODES = {evdev.ecodes.KEY_LEFTSHIFT, evdev.ecodes.KEY_RIGHTSHIFT}
+CONTROL_KEYCODES = {evdev.ecodes.KEY_LEFTCTRL, evdev.ecodes.KEY_RIGHTCTRL}
+CAPSLOCK_KEYCODE = evdev.ecodes.KEY_CAPSLOCK
+
 class KeyboardPlugin(object):
     def __init__(self):
         logger.info('created plugin instance')
@@ -58,6 +62,9 @@ class KeyboardPlugin(object):
         self.queue = queue.Queue()
         self.thread = None
         self.grabbed = False
+        self.shift_pressed = False
+        self.control_pressed = False
+        self.capslock_on = False
 
     def grab_keyboard(self):
         devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
@@ -71,9 +78,16 @@ class KeyboardPlugin(object):
 
     def read_keyboard(self):
         for event in self.device.read_loop():
-            if event.type == evdev.ecodes.EV_KEY and event.value == 1:  # Key press event
-                self.queue.put(event.code)
-                logger.info(f'key pressed: {evdev.ecodes.KEY[event.code]}')
+            if event.type == evdev.ecodes.EV_KEY:
+                if event.code in SHIFT_KEYCODES:
+                    self.shift_pressed = event.value == 1
+                elif event.code in CONTROL_KEYCODES:
+                    self.control_pressed = event.value == 1
+                elif event.code == CAPSLOCK_KEYCODE and event.value == 1:
+                    self.capslock_on = not self.capslock_on
+                elif event.value == 1:  # Key press event
+                    self.queue.put(event.code)
+                    logger.info(f'key pressed: {evdev.ecodes.KEY[event.code]}')
 
     def handle(self, bytes):
         try:
@@ -86,7 +100,13 @@ class KeyboardPlugin(object):
             if not self.queue.empty():
                 key_code = self.queue.get()
                 ascii_code = KEYCODE_TO_ASCII.get(key_code, None)
+
                 if ascii_code is not None:
+                    if self.control_pressed:
+                        ascii_code = ascii_code & 0x1F  # Control character
+                    elif self.shift_pressed or self.capslock_on:
+                        if ord('a') <= ascii_code <= ord('z'):
+                            ascii_code = ascii_code - ord('a') + ord('A')
                     logger.info(f'handled plugin message, key code: {key_code}, ascii code: {ascii_code}')
                     return [ascii_code]
                 else:

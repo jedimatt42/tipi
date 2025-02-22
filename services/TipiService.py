@@ -11,7 +11,6 @@ from SpecialFiles import SpecialFiles
 from Pab import *
 from CustomExtensions import CustomExtensions
 from CustomExtensions import load_plugins
-from CustomExtensions import start_watcher
 from RawExtensions import RawExtensions
 from LevelTwo import LevelTwo
 from TipiDisk import TipiDisk

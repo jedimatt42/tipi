@@ -3,7 +3,7 @@ import importlib.util
 import logging
 import time
 
-PLUGIN_DIR = "/home/tipi/TIPI_DISK/PLUGINS"
+PLUGIN_DIR = "/home/tipi/tipi_disk/PLUGINS"
 
 plugins = {}  # Stores active plugin instances
 logger = logging.getLogger(__name__)

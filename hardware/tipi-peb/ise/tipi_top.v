@@ -20,8 +20,6 @@
 //////////////////////////////////////////////////////////////////////////////////
 `include "crubits.v"
 `include "latch_8bit.v"
-`include "shift_pload_sout.v"
-`include "shift_sin_pout.v"
 `include "tristate_8bit.v"
 `include "mux2_8bit.v"
 `include "tipi_4bit_pi_bus.v"
@@ -92,27 +90,15 @@ latch_8bit tc(tipi_tc_le, tp_d, rpi_tc);
 
 // Data from the RPi, to be read by the TI.
 
-// RD
+// RD - register defined inside pi_bus
 wire [0:7]tipi_db_rd;
-// TODO: need to have the parallel-out part of the shift register 
 
-// RC
+// RC - register defined inside pi_bus
 wire [0:7]tipi_db_rc;
-// TODO: need to have the parallel-out part of the shift register 
 
 
 // 4bit bus interface to PI
 tipi_4bit_pi_bus pi_bus(r_clk, r_nibrst, r_nib, rpi_td, rpi_tc, tipi_db_rd, tipi_db_rc);
-
-// Select if output is from the data or control register
-reg r_din_mux;
-always @(posedge r_clk) begin
-  if (r_rt & r_cd) r_din_mux <= td_out;
-  else if (r_rt & ~r_cd) r_din_mux <= tc_out;
-  else if (~r_rt & r_cd) r_din_mux <= rd_parity;
-  else r_din_mux <= rc_parity;
-end
-assign r_din = r_din_mux;
 
 
 //-- Databus control

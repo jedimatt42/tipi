@@ -13,7 +13,7 @@ input [7:0]d;
 output [7:0]o;
 reg [7:0]tmp;
 
-always @(a_addr, b_addr, c_addr, d_addr) begin
+always @(a_addr, b_addr, c_addr, d_addr, a, b, c, d) begin
   if (a_addr) tmp <= a;
   else if (b_addr) tmp <= b;
   else if (c_addr) tmp <= c;

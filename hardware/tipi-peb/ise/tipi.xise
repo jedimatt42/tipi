@@ -237,8 +237,6 @@
     <!-- include files.                                                       -->
     <file xil_pn:name="crubits.v" xil_pn:type="FILE_VERILOG"/>
     <file xil_pn:name="latch_8bit.v" xil_pn:type="FILE_VERILOG"/>
-    <file xil_pn:name="shift_pload_sout.v" xil_pn:type="FILE_VERILOG"/>
-    <file xil_pn:name="shift_sin_pout.v" xil_pn:type="FILE_VERILOG"/>
     <file xil_pn:name="tristate_8bit.v" xil_pn:type="FILE_VERILOG"/>
     <file xil_pn:name="mux2_8bit.v" xil_pn:type="FILE_VERILOG"/>
     <file xil_pn:name="tipi_4bit_pi_bus.v" xil_pn:type="FILE_VERILOG"/>

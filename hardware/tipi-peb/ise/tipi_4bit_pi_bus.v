@@ -32,19 +32,17 @@ module tipi_4bit_pi_bus (
     reg [7:0] shift_reg;       // Temporary shift register for transfers
     reg [1:0] bit_count;       // Tracks the number of 4-bit transfers
     reg [1:0] sel;             // Internalized register selection
-    reg rw;                    // Internalized read/write control
-
-    wire is_output = (rw == 1'b1); // Only output data if in read mode
+    reg busdir;                // Internalized read/write control 0 input, 1 output
 
     // Output correct 4-bit chunk based on bit_count
-    assign data = (is_output) ? (bit_count[0] ? shift_reg[3:0] : shift_reg[7:4]) : 4'bz;
+    assign data = (busdir == 1'b1) ? shift_reg[7:4] : 4'bz;
 
     always @(posedge clk or posedge reset) begin
         if (reset) begin
             shift_reg <= 8'h00;
             bit_count <= 2'b00;
             sel <= 2'b00;   // Clear selection register
-            rw <= 1'b1;     // Default to read mode
+            busdir <= 1'b0;     // Default to input on bus
         end else begin
             if (bit_count == 2'b00) begin
                 // First clock: Capture 'sel' from lower 2 bits of the data bus
@@ -52,13 +50,13 @@ module tipi_4bit_pi_bus (
 
                 // Determine read or write mode based on the selected register
                 case (data[1:0])
-                    2'b00: begin shift_reg <= TD; rw <= 1'b1; end // TD → Read
-                    2'b01: begin shift_reg <= TC; rw <= 1'b1; end // TC → Read
-                    2'b10: begin rw <= 1'b0; end // RD → Write
-                    2'b11: begin rw <= 1'b0; end // RC → Write
+                    2'b00: begin shift_reg <= TD; busdir <= 1'b1; end // TD → output
+                    2'b01: begin shift_reg <= TC; busdir <= 1'b1; end // TC → output
+                    2'b10: begin busdir <= 1'b0; end // RD → input
+                    2'b11: begin busdir <= 1'b0; end // RC → input
                 endcase
             end else begin
-                if (rw) begin
+                if (busdir) begin
                     // Read operation: shift out next 4 bits
                     shift_reg <= {shift_reg[3:0], 4'b0000};
                 end else begin

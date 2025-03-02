@@ -87,16 +87,10 @@ module test_tipi_4bit_pi_bus;
 		// - clock in the register select for TD
 		force data = 4'b0000;
 		#10;
-		clk = 1;
-		#10;
-		clk = 0;
-		#10;
+		send_clk();
       release data;
 
-      // - clock out the high nibble
-		clk = 1;
-		#10;
-		clk = 0;
+      // - the high nibble should be available
 		#10;
 
 		// - verify the high nibble
@@ -107,10 +101,7 @@ module test_tipi_4bit_pi_bus;
 		end
 
 		// clock out the low nibble
-		clk = 1;
-		#10;
-		clk = 0;
-		#10;
+		send_clk();
 
 		// - verify the low nibble
 		if (data !== TD[3:0]) begin
@@ -143,16 +134,10 @@ module test_tipi_4bit_pi_bus;
 		// - clock in the register select for TC
 		force data = 4'b0001;
 		#10;
-		clk = 1;
-		#10;
-		clk = 0;
-		#10;
+		send_clk();
       release data;
 
-        // - clock out the high nibble
-		clk = 1;
-		#10;
-		clk = 0;
+        // - the high nibble should be available
 		#10;
 
 		// - verify the high nibble
@@ -163,10 +148,7 @@ module test_tipi_4bit_pi_bus;
 		end
 
 		// clock out the low nibble
-		clk = 1;
-		#10;
-		clk = 0;
-		#10;
+		send_clk();
 
 		// - verify the low nibble
 		if (data !== TC[3:0]) begin
@@ -195,28 +177,19 @@ module test_tipi_4bit_pi_bus;
 	   // - clock in the register select for RD
 		force data = 4'b0010;
 		#10;
-		clk = 1;
-		#10;
-		clk = 0;
-		#10;
+		send_clk();
       release data;
 		
 		// - clock in the high nibble for RD
 		force data = 4'b1010;
 		#10;
-		clk = 1;
-		#10;
-		clk = 0;
-		#10;
+		send_clk();
 		release data;
 		
 		// - clock in the low nibble for RD
 		force data = 4'b0101;
 		#10;
-		clk = 1;
-		#10;
-		clk = 0;
-		#10;
+		send_clk();
 		release data;
 		
 		// Verify RD value
@@ -246,36 +219,52 @@ module test_tipi_4bit_pi_bus;
 	   // - clock in the register select for RC
 		force data = 4'b0011;
 		#10;
-		clk = 1;
-		#10;
-		clk = 0;
-		#10;
+		send_clk();
       release data;
 		
 		// - clock in the high nibble for RC
 		force data = 4'b0101;
 		#10;
-		clk = 1;
-		#10;
-		clk = 0;
-		#10;
+		send_clk();
 		release data;
 		
 		// - clock in the low nibble for RC
 		force data = 4'b1010;
 		#10;
-		clk = 1;
-		#10;
-		clk = 0;
-		#10;
+		send_clk();
 		release data;
 		
-		// Verify RD value
-		if (RD !== 8'b01011010) begin
+		// Verify RC value
+		if (RC !== 8'b01011010) begin
 			$display("Error: RC register not set correctly");
 		end else begin
 			$display("Success: RC register set");
 		end	
+	end
+	endtask
+	
+	task send_clk;
+	begin
+	   clk = 1;
+		#10;
+		clk = 0;
+		#10;
+	end
+	endtask
+	
+	task send_reset;
+	begin
+	   reset = 1;
+		#10; // Wait for 10 ns
+      reset = 0;
+		#10; // Wait for 10 ns
+
+		// Verify state
+		if (data !== 4'bz) begin
+			$display("Error: data is not in input mode after reset");
+		end else begin
+			$display("Success: data is in input mode after reset");
+		end
 	end
 	endtask
 endmodule

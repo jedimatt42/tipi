@@ -35,3 +35,11 @@ xlnx_auto_0_xdb
 tipi_top_html
 _ngo
 
+*.cmd
+*.wcfg
+*.xmsgs
+*.exe
+*.wdb
+*.ini
+isim
+

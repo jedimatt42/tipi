@@ -61,6 +61,8 @@ module test_tipi_4bit_pi_bus;
 		// run test tasks
 		test_read_TD();
 		test_read_TC();
+		test_write_RD();
+		test_write_RC();
 	end
 
 	// Task for testing reading TD
@@ -82,7 +84,7 @@ module test_tipi_4bit_pi_bus;
 		// Test Reading TD
 		TD = 8'hA5;
 
-		// - clock in the register select for RD
+		// - clock in the register select for TD
 		force data = 4'b0000;
 		#10;
 		clk = 1;
@@ -173,6 +175,108 @@ module test_tipi_4bit_pi_bus;
 			$display("Success: Low nibble of TC is visible on data");
 		end
 	end
-	endtask  
+	endtask
+	
+	// Test write of RD
+	task test_write_RD;
+	begin
+		// Test reset
+		reset = 1;
+		#10; // Wait for 10 ns
+      reset = 0;
+		#10; // Wait for 10 ns
+
+		// Verify state
+		if (data !== 4'bz) begin
+			$display("Error: data is not in input mode after reset");
+		end else begin
+			$display("Success: data is in input mode after reset");
+		end
+	   // - clock in the register select for RD
+		force data = 4'b0010;
+		#10;
+		clk = 1;
+		#10;
+		clk = 0;
+		#10;
+      release data;
+		
+		// - clock in the high nibble for RD
+		force data = 4'b1010;
+		#10;
+		clk = 1;
+		#10;
+		clk = 0;
+		#10;
+		release data;
+		
+		// - clock in the low nibble for RD
+		force data = 4'b0101;
+		#10;
+		clk = 1;
+		#10;
+		clk = 0;
+		#10;
+		release data;
+		
+		// Verify RD value
+		if (RD !== 8'b10100101) begin
+			$display("Error: RD register not set correctly");
+		end else begin
+			$display("Success: RD register set");
+		end
+	end
+	endtask
+	
+	// Test write of RC
+	task test_write_RC;
+	begin
+		// Test reset
+		reset = 1;
+		#10; // Wait for 10 ns
+      reset = 0;
+		#10; // Wait for 10 ns
+
+		// Verify state
+		if (data !== 4'bz) begin
+			$display("Error: data is not in input mode after reset");
+		end else begin
+			$display("Success: data is in input mode after reset");
+		end
+	   // - clock in the register select for RC
+		force data = 4'b0011;
+		#10;
+		clk = 1;
+		#10;
+		clk = 0;
+		#10;
+      release data;
+		
+		// - clock in the high nibble for RC
+		force data = 4'b0101;
+		#10;
+		clk = 1;
+		#10;
+		clk = 0;
+		#10;
+		release data;
+		
+		// - clock in the low nibble for RC
+		force data = 4'b1010;
+		#10;
+		clk = 1;
+		#10;
+		clk = 0;
+		#10;
+		release data;
+		
+		// Verify RD value
+		if (RD !== 8'b01011010) begin
+			$display("Error: RC register not set correctly");
+		end else begin
+			$display("Success: RC register set");
+		end	
+	end
+	endtask
 endmodule
 

@@ -23,7 +23,7 @@
       <association xil_pn:name="Implementation" xil_pn:seqID="0"/>
     </file>
     <file xil_pn:name="test_tipi_4bit_pi_bus.v" xil_pn:type="FILE_VERILOG">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="2"/>
+      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="1"/>
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="46"/>
     </file>
   </files>
@@ -240,11 +240,11 @@
     <!-- Do not hand-edit this section, as it will be overwritten when the    -->
     <!-- project is analyzed based on files automatically identified as       -->
     <!-- include files.                                                       -->
+    <file xil_pn:name="tipi_4bit_pi_bus.v" xil_pn:type="FILE_VERILOG"/>
     <file xil_pn:name="crubits.v" xil_pn:type="FILE_VERILOG"/>
     <file xil_pn:name="latch_8bit.v" xil_pn:type="FILE_VERILOG"/>
     <file xil_pn:name="tristate_8bit.v" xil_pn:type="FILE_VERILOG"/>
     <file xil_pn:name="mux2_8bit.v" xil_pn:type="FILE_VERILOG"/>
-    <file xil_pn:name="tipi_4bit_pi_bus.v" xil_pn:type="FILE_VERILOG"/>
   </autoManagedFiles>
 
 </project>

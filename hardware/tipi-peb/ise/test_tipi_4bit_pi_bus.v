@@ -22,6 +22,7 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////
 
+`include "tipi_4bit_pi_bus.v"
 module test_tipi_4bit_pi_bus;
 
 	// Inputs
@@ -57,15 +58,18 @@ module test_tipi_4bit_pi_bus;
 
 		// Wait 100 ns for global reset to finish
 		#100;
+		// run test tasks
+		test_read_TD();
+		test_read_TC();
 	end
 
-	// Task for testing reading RD
-	task test_read_RD;
+	// Task for testing reading TD
+	task test_read_TD;
 	begin  
 		// Test reset
 		reset = 1;
 		#10; // Wait for 10 ns
-        reset = 0;
+      reset = 0;
 		#10; // Wait for 10 ns
 
 		// Verify state
@@ -75,29 +79,29 @@ module test_tipi_4bit_pi_bus;
 			$display("Success: data is in input mode after reset");
 		end
 
-		// Test Reading RD
-		RD = 8'hA5;
+		// Test Reading TD
+		TD = 8'hA5;
 
 		// - clock in the register select for RD
-		force data = 4'b0010;
+		force data = 4'b0000;
 		#10;
 		clk = 1;
 		#10;
 		clk = 0;
 		#10;
-        release data;
+      release data;
 
-        // - clock out the high nibble
+      // - clock out the high nibble
 		clk = 1;
 		#10;
 		clk = 0;
 		#10;
 
 		// - verify the high nibble
-		if (data !== RD[7:4]) begin
-			$display("Error: High nibble of RD is not visible on data");
+		if (data !== TD[7:4]) begin
+			$display("Error: High nibble of TD is not visible on data");
 		end else begin
-			$display("Success: High nibble of RD is visible on data");
+			$display("Success: High nibble of TD is visible on data");
 		end
 
 		// clock out the low nibble
@@ -107,21 +111,21 @@ module test_tipi_4bit_pi_bus;
 		#10;
 
 		// - verify the low nibble
-		if (data !== RD[3:0]) begin
-			$display("Error: Low nibble of RD is not visible on data");
+		if (data !== TD[3:0]) begin
+			$display("Error: Low nibble of TD is not visible on data");
 		end else begin
-			$display("Success: Low nibble of RD is visible on data");
+			$display("Success: Low nibble of TD is visible on data");
 		end
 	end
 	endtask
       
-	// Task for testing reading RC
-	task test_read_RD;
+	// Task for testing reading TC
+	task test_read_TC;
 	begin  
 		// Test reset
 		reset = 1;
 		#10; // Wait for 10 ns
-        reset = 0;
+      reset = 0;
 		#10; // Wait for 10 ns
 
 		// Verify state
@@ -131,17 +135,17 @@ module test_tipi_4bit_pi_bus;
 			$display("Success: data is in input mode after reset");
 		end
 
-		// Test Reading RC
-		RC = 8'h5A;
+		// Test Reading TC
+		TC = 8'h5A;
 
-		// - clock in the register select for RC
-		force data = 4'b0011;
+		// - clock in the register select for TC
+		force data = 4'b0001;
 		#10;
 		clk = 1;
 		#10;
 		clk = 0;
 		#10;
-        release data;
+      release data;
 
         // - clock out the high nibble
 		clk = 1;
@@ -150,10 +154,10 @@ module test_tipi_4bit_pi_bus;
 		#10;
 
 		// - verify the high nibble
-		if (data !== RC[7:4]) begin
-			$display("Error: High nibble of RD is not visible on data");
+		if (data !== TC[7:4]) begin
+			$display("Error: High nibble of TC is not visible on data");
 		end else begin
-			$display("Success: High nibble of RD is visible on data");
+			$display("Success: High nibble of TC is visible on data");
 		end
 
 		// clock out the low nibble
@@ -163,10 +167,10 @@ module test_tipi_4bit_pi_bus;
 		#10;
 
 		// - verify the low nibble
-		if (data !== RC[3:0]) begin
-			$display("Error: Low nibble of RD is not visible on data");
+		if (data !== TC[3:0]) begin
+			$display("Error: Low nibble of TC is not visible on data");
 		end else begin
-			$display("Success: Low nibble of RD is visible on data");
+			$display("Success: Low nibble of TC is visible on data");
 		end
 	end
 	endtask  

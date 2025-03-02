@@ -57,10 +57,118 @@ module test_tipi_4bit_pi_bus;
 
 		// Wait 100 ns for global reset to finish
 		#100;
-        
-		// Add stimulus here
-
 	end
+
+	// Task for testing reading RD
+	task test_read_RD;
+	begin  
+		// Test reset
+		reset = 1;
+		#10; // Wait for 10 ns
+        reset = 0;
+		#10; // Wait for 10 ns
+
+		// Verify state
+		if (data !== 4'bz) begin
+			$display("Error: data is not in input mode after reset");
+		end else begin
+			$display("Success: data is in input mode after reset");
+		end
+
+		// Test Reading RD
+		RD = 8'hA5;
+
+		// - clock in the register select for RD
+		force data = 4'b0010;
+		#10;
+		clk = 1;
+		#10;
+		clk = 0;
+		#10;
+        release data;
+
+        // - clock out the high nibble
+		clk = 1;
+		#10;
+		clk = 0;
+		#10;
+
+		// - verify the high nibble
+		if (data !== RD[7:4]) begin
+			$display("Error: High nibble of RD is not visible on data");
+		end else begin
+			$display("Success: High nibble of RD is visible on data");
+		end
+
+		// clock out the low nibble
+		clk = 1;
+		#10;
+		clk = 0;
+		#10;
+
+		// - verify the low nibble
+		if (data !== RD[3:0]) begin
+			$display("Error: Low nibble of RD is not visible on data");
+		end else begin
+			$display("Success: Low nibble of RD is visible on data");
+		end
+	end
+	endtask
       
+	// Task for testing reading RC
+	task test_read_RD;
+	begin  
+		// Test reset
+		reset = 1;
+		#10; // Wait for 10 ns
+        reset = 0;
+		#10; // Wait for 10 ns
+
+		// Verify state
+		if (data !== 4'bz) begin
+			$display("Error: data is not in input mode after reset");
+		end else begin
+			$display("Success: data is in input mode after reset");
+		end
+
+		// Test Reading RC
+		RC = 8'h5A;
+
+		// - clock in the register select for RC
+		force data = 4'b0011;
+		#10;
+		clk = 1;
+		#10;
+		clk = 0;
+		#10;
+        release data;
+
+        // - clock out the high nibble
+		clk = 1;
+		#10;
+		clk = 0;
+		#10;
+
+		// - verify the high nibble
+		if (data !== RC[7:4]) begin
+			$display("Error: High nibble of RD is not visible on data");
+		end else begin
+			$display("Success: High nibble of RD is visible on data");
+		end
+
+		// clock out the low nibble
+		clk = 1;
+		#10;
+		clk = 0;
+		#10;
+
+		// - verify the low nibble
+		if (data !== RC[3:0]) begin
+			$display("Error: Low nibble of RD is not visible on data");
+		end else begin
+			$display("Success: Low nibble of RD is visible on data");
+		end
+	end
+	endtask  
 endmodule
 

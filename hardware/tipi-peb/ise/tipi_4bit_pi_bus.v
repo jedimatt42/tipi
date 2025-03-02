@@ -47,28 +47,35 @@ module tipi_4bit_pi_bus (
             if (bit_count == 2'b00) begin
                 // First clock: Capture 'sel' from lower 2 bits of the data bus
                 sel <= data[1:0];
-
-                // Determine read or write mode based on the selected register
-                case (data[1:0])
+                busdir <= 1'b0; // Default to input on bus
+            end else if (bit_count == 2'b01) begin
+                // Second clock: Load shift_reg with the selected register's value
+                case (sel)
                     2'b00: begin shift_reg <= TD; busdir <= 1'b1; end // TD → output
                     2'b01: begin shift_reg <= TC; busdir <= 1'b1; end // TC → output
                     2'b10: begin busdir <= 1'b0; end // RD → input
                     2'b11: begin busdir <= 1'b0; end // RC → input
                 endcase
-            end else begin
+            end else if (bit_count == 2'b10) begin
                 if (busdir) begin
-                    // Read operation: shift out next 4 bits
+                    // Read operation: shift out high nibble
                     shift_reg <= {shift_reg[3:0], 4'b0000};
                 end else begin
-                    // Write operation: shift in new 4 bits
+                    // Write operation: shift in high nibble
                     shift_reg <= {shift_reg[3:0], data};
-                    if (bit_count == 2'b01) begin
-                        // After receiving full 8 bits, store data into correct register
-                        case (sel)
-                            2'b10: RD <= {shift_reg[3:0], data};
-                            2'b11: RC <= {shift_reg[3:0], data};
-                        endcase
-                    end
+                end
+            end else if (bit_count == 2'b11) begin
+                if (busdir) begin
+                    // Read operation: shift out low nibble
+                    shift_reg <= {shift_reg[3:0], 4'b0000};
+                end else begin
+                    // Write operation: shift in low nibble
+                    shift_reg <= {shift_reg[3:0], data};
+                    // After receiving full 8 bits, store data into correct register
+                    case (sel)
+                        2'b10: RD <= {shift_reg[3:0], data};
+                        2'b11: RC <= {shift_reg[3:0], data};
+                    endcase
                 end
             end
             bit_count <= bit_count + 1;

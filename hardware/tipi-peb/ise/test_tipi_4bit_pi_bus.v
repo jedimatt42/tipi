@@ -64,7 +64,7 @@ module test_tipi_4bit_pi_bus;
 		test_write_RD();
 		test_write_RC();
 		$display("Success");
-		$finish();
+		$finish;
 	end
 
 	// Task for testing reading TD
@@ -80,7 +80,7 @@ module test_tipi_4bit_pi_bus;
 		// Verify state
 		if (data !== 4'bz) begin
 			$display("Error: data is not in input mode after reset");
-			$finish();
+			$finish;
 		end
 
 		// Test Reading TD
@@ -98,7 +98,7 @@ module test_tipi_4bit_pi_bus;
 		// - verify the high nibble
 		if (data !== TD[7:4]) begin
 			$display("Error: High nibble of TD is not visible on data, %h", data);
-			$finish();
+			$finish;
 		end
 
 		// clock out the low nibble
@@ -107,7 +107,7 @@ module test_tipi_4bit_pi_bus;
 		// - verify the low nibble
 		if (data !== TD[3:0]) begin
 			$display("Error: Low nibble of TD is not visible on data, %h", data);
-			$finish();
+			$finish;
 		end
 	end
 	endtask
@@ -125,7 +125,7 @@ module test_tipi_4bit_pi_bus;
 		// Verify state
 		if (data !== 4'bz) begin
 			$display("Error: data is not in input mode after reset");
-			$finish();
+			$finish;
 		end
 
 		// Test Reading TC
@@ -143,7 +143,7 @@ module test_tipi_4bit_pi_bus;
 		// - verify the high nibble
 		if (data !== TC[7:4]) begin
 			$display("Error: High nibble of TC is not visible on data");
-			$finish();
+			$finish;
 		end
 
 		// clock out the low nibble
@@ -152,7 +152,7 @@ module test_tipi_4bit_pi_bus;
 		// - verify the low nibble
 		if (data !== TC[3:0]) begin
 			$display("Error: Low nibble of TC is not visible on data");
-			$finish();
+			$finish;
 		end
 	end
 	endtask
@@ -170,7 +170,7 @@ module test_tipi_4bit_pi_bus;
 		// Verify state
 		if (data !== 4'bz) begin
 			$display("Error: data is not in input mode after reset");
-			$finish();
+			$finish;
 		end
 	   // - clock in the register select for RD
 		force data = 4'b0010;
@@ -193,7 +193,7 @@ module test_tipi_4bit_pi_bus;
 		// Verify RD value
 		if (RD !== 8'b10100101) begin
 			$display("Error: RD register not set correctly");
-         $finish();
+         $finish;
 		end
 	end
 	endtask

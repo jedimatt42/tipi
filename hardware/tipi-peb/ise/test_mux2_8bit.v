@@ -62,46 +62,54 @@ module test_mux2_8bit;
 		d_addr = 0;
 		d = 8'hdd;
 
-		// Wait 100 ns for global reset to finish
-		#10;
-		// Add stimulus here
+		// Wait for global reset to finish
+		#1;
+		
+		$display("Test: no selection");
 		#1 if (o != 0) begin
-		   $display("Errro, expected o == 0");
+		   $display("Errro, expected o == 0, was %h", o);
 			$finish;
 		end
 		
+		$display("Test: select a");
 		#1 a_addr = 1;
 		#1 if (o != 8'haa) begin
-		   $display("Error, expected o == 8'haa");
+		   $display("Error, expected o == 8'haa, was %h", o);
 			$finish;
 		end
 		
+		$display("Test: select b");
 		#1 a_addr = 0;
 		#1 b_addr = 1;
 		#1 if (o != 8'hbb) begin
-		   $display("Error, expected o == 8'hbb");
+		   $display("Error, expected o == 8'hbb, was %h", o);
 			$finish;
 		end
 		
+		$display("Test: select c");
 		#1 b_addr = 0;
 		#1 c_addr = 1;
 		#1 if (o != 8'hcc) begin
-		   $display("Error, expected o == 8'hcc");
+		   $display("Error, expected o == 8'hcc, was %h", o);
 			$finish;
 		end
 		
+		$display("Test: select d");
 		#1 c_addr = 0;
 		#1 d_addr = 1;
 		#1 if (o != 8'hdd) begin
-		   $display("Error, expected o == 8'hdd");
+		   $display("Error, expected o == 8'hdd, was %h", o);
 			$finish;
 		end
 		
+		$display("Test: no selection");
 		#1 d_addr = 0;
 		#1 if (o != 8'h00) begin
-		   $display("Error, expected o == 8'h00");
+		   $display("Error, expected o == 8'h00, was %h", o);
 			$finish;
-		end		
+		end
+		
+      $display("Success");		
       $finish;
 	end
       

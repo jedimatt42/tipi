@@ -27,7 +27,7 @@ module test_tipi_top;
 	// Inputs
 	reg [0:3] crub;
 	reg r_clk;
-	reg r_le;
+	reg r_nibrst;
 	reg ti_cruclk;
 	reg ti_dbin;
 	reg ti_memen;
@@ -67,8 +67,8 @@ module test_tipi_top;
 		.dsr_b0(dsr_b0), 
 		.dsr_b1(dsr_b1), 
 		.dsr_en(dsr_en), 
-		.r_clk(r_clk), 
-		.r_le(r_le), 
+		.r_clk(r_clk),
+		.r_nibrst(r_nibrst),
 		.r_nib(r_nib), 
 		.r_reset(r_reset), 
 		.ti_cruclk(ti_cruclk), 
@@ -86,7 +86,7 @@ module test_tipi_top;
 		// Initialize Inputs
 	    crub = 4'hf;
 	    r_clk = 0;
-	    r_le = 0;
+	    r_nibrst = 0;
 	    ti_cruclk = 1;
 	    ti_dbin = 1;
 	    ti_memen = 1;
@@ -94,52 +94,55 @@ module test_tipi_top;
 	    ti_ph3 = 1;
 	    ti_a = 16'h0000;
 
-		// Wait 10 ns for global reset to finish
-		#10;
+		// Wait for global reset to finish
+		#1;
+		
+		$display("Test: initial reset output");
 		#1 if (r_reset != 1) begin
-		    $display("Error, r_reset output should be high");
+		    $display("Error, r_reset output should be high, was %b", r_reset);
 		    $finish;
 		end
 		
-		// TEST enable crubit 0;
+		$display("Test: enable crubit 0");
 		#1 ti_a = 16'h1001;
 		#1 ti_cruclk = 0;
 		#1 ti_cruclk = 1;
 		#1 if (uut.cru_state[0] != 1) begin
-		    $display("Error, crubit 0 should be set");
+		    $display("Error, crubit 0 should be set, was %b", uut.cru_state);
 			$finish;
 		end
 		
-		// TEST set cru reset bit
-	   #1 ti_a = 16'h1003;
+		$display("Test: set cru reset bit");
+	   #1 ti_a = 16'h1003; // lsb (cru_out) is 1
 		#1 ti_cruclk = 0;
 		#1 ti_cruclk = 1;
 		#1 if (uut.cru_state[1] != 1) begin
-		    $display("Error, crubit 1 (reset) should be set");
+		    $display("Error, crubit 1 (reset) should be set, was %b", uut.cru_state);
 			$finish;
 		end
 		#1 if (r_reset != 0) begin
-		    $display("Error, r_reset output should be low");
+		    $display("Error, r_reset output should be low, was %b", uut.cru_state);
 			$finish;
 		end
 		
-		// TEST clear cru reset bit
-		#1 ti_a = 16'h1002;
+		$display("Test: clear cru reset bit");
+		#1 ti_a = 16'h1002; // lsb (cru_out) is 0
 		#1 ti_cruclk = 0;
 		#1 ti_cruclk = 1;
 		#1 if (r_reset != 1) begin
-		    $display("Error, r_reset output should be high");
+		    $display("Error, r_reset output should be high, was %b", r_reset);
 		    $finish;
 		end
 		
-		// Read TD
+		$display("Test: read TD");
 		#1 ti_a = 16'h5fff;
 		#1 ti_memen = 0;
 		#1 if (tp_d != 8'h00) begin
 		    $display("Error, 5fff should be 0");
 			$finish;
 		end
-		// Write TD
+		
+		$display("Test: write TD");
 		#1 dbus_in = 8'hff;
 		#1 dbusio_control = 1;
 		#1 ti_memen = 0;
@@ -148,23 +151,24 @@ module test_tipi_top;
 		#1 ti_memen = 1;
 		#1 dbusio_control = 0;
 		#1 ti_a = 16'h0000;
-		// Re-Read TD
+		// TODO: assert that uut.TD? is hff
 		
+		$display("Test: re-read TD");
 		#1 dbus_in = 8'h00;
 		#1 ti_a = 16'h5fff;
 		#1 ti_memen = 0;
 		#1 if (db_dir != 1) begin
-		    $display("Error, db_dir should be 1");
+		    $display("Error, db_dir should be 1, was %b", db_dir);
 			$finish;
 		end
 		#1 if (tp_d != 8'hff) begin
-		    $display("Error, 5fff should be ff");
+		    $display("Error, 5fff should be ff, was %h", tp_d);
 			$finish;
 		end
 		#1 ti_memen = 1;
 		
-	    #10;
-        $finish;
+	   $display("Success");
+      $finish;
 	end
       
 endmodule

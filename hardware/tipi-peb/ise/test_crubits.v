@@ -4,9 +4,9 @@
 // Company: 
 // Engineer:
 //
-// Create Date:   17:50:51 03/08/2025
+// Create Date:   04:20:51 04/03/2022
 // Design Name:   crubits
-// Module Name:   /home/ise/dev/gitlab/jedimatt42/tipi/hardware/tipi-peb/ise/test_crubits.v
+// Module Name:   /home/ise/ise_projects/tipi/hardware/tipi-peb/ise/test_crubits.v
 // Project Name:  tipi
 // Target Device:  
 // Tool versions:  
@@ -22,6 +22,7 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////
 `include "crubits.v"
+
 module test_crubits;
 
 	// Inputs
@@ -51,42 +52,52 @@ module test_crubits;
 	initial begin
 		// Initialize Inputs
 		cru_base = 4'b0000;
-		ti_cru_clk = 0;
-		ti_memen = 0;
+		ti_cru_clk = 1;
+		ti_memen = 1;
 		ti_ph3 = 0;
-		addr = 0;
 		ti_cru_out = 0;
 
-		// Wait 100 ns for global reset to finish
-		#100;
-
-		// Verify initial state of bits
-		if (bits !== 4'b0000) begin
-			$display("Error: expected all cru bits unset");
-		end else begin
-			$display("Success: all cru bits are unset");
-		end
-
+		// Wait 10 ns for global reset to finish
+		#10;
+        
 		// Add stimulus here
-
-        // When addr is 0x1000, and cru_base is 0x0, then verify we read cru bit 0 as unset.
-		addr = 15'h1000;
-		ti_cru_out = 1;
-		#10
-		ti_cru_clk = 1;
-		#10
-		ti_cru_clk = 0;
-		#10
-		
-		// Verify state of bits
-		if (bits !== 4'b1000) begin
-			$display("Error: expected all cru bits unset");
-		end else begin
-			$display("Success: all cru bits are unset");
+		addr = 15'b000100000000000;
+      #1 ti_cru_out = 1;
+		#1 ti_cru_clk = 0;
+		#1 ti_cru_clk = 1;
+		#1 if (bits != 4'b1000) begin
+		   $display("Error, cru bit 0 not set");
+			$finish;
 		end
 
+		addr = 15'b000100000000001;
+      #1 ti_cru_out = 1;
+		#1 ti_cru_clk = 0;
+		#1 ti_cru_clk = 1;
+		#1 if (bits != 4'b1100) begin
+		   $display("Error, cru bit 1 not set");
+			$finish;
+		end
 
+		addr = 15'b000100000000010;
+      #1 ti_cru_out = 1;
+		#1 ti_cru_clk = 0;
+		#1 ti_cru_clk = 1;
+		#1 if (bits != 4'b1110) begin
+		   $display("Error, cru bit 2 not set");
+			$finish;
+		end
+
+		addr = 15'b000100000000011;
+      #1 ti_cru_out = 1;
+		#1 ti_cru_clk = 0;
+		#1 ti_cru_clk = 1;
+		#1 if (bits != 4'b1111) begin
+		   $display("Error, cru bit 3 not set");
+			$finish;
+		end
+		
+		$finish;
 	end
       
 endmodule
-

@@ -12,7 +12,6 @@ _xmsgs
 *.cmd_log
 *.log
 *.gyd
-*.jed
 *.lso
 *.mfd
 *.nga

@@ -60,7 +60,7 @@ module test_crubits;
 		// Wait 10 ns for global reset to finish
 		#10;
         
-		// Add stimulus here
+		$display("Test: set crubit 0");
 		addr = 15'b000100000000000;
       #1 ti_cru_out = 1;
 		#1 ti_cru_clk = 0;
@@ -70,6 +70,7 @@ module test_crubits;
 			$finish;
 		end
 
+      $display("Test: set crubit 1");
 		addr = 15'b000100000000001;
       #1 ti_cru_out = 1;
 		#1 ti_cru_clk = 0;
@@ -79,6 +80,7 @@ module test_crubits;
 			$finish;
 		end
 
+      $display("Test: set crubit 2");
 		addr = 15'b000100000000010;
       #1 ti_cru_out = 1;
 		#1 ti_cru_clk = 0;
@@ -88,6 +90,7 @@ module test_crubits;
 			$finish;
 		end
 
+      $display("Test: set crubit 3");
 		addr = 15'b000100000000011;
       #1 ti_cru_out = 1;
 		#1 ti_cru_clk = 0;
@@ -97,6 +100,7 @@ module test_crubits;
 			$finish;
 		end
 		
+		$display("Success");
 		$finish;
 	end
       

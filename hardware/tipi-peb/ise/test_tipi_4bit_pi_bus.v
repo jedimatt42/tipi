@@ -63,11 +63,14 @@ module test_tipi_4bit_pi_bus;
 		test_read_TC();
 		test_write_RD();
 		test_write_RC();
+		$display("Success");
+		$finish();
 	end
 
 	// Task for testing reading TD
 	task test_read_TD;
 	begin  
+	   $display("Test: reading TD");
 		// Test reset
 		reset = 1;
 		#10; // Wait for 10 ns
@@ -77,8 +80,7 @@ module test_tipi_4bit_pi_bus;
 		// Verify state
 		if (data !== 4'bz) begin
 			$display("Error: data is not in input mode after reset");
-		end else begin
-			$display("Success: data is in input mode after reset");
+			$finish();
 		end
 
 		// Test Reading TD
@@ -95,9 +97,8 @@ module test_tipi_4bit_pi_bus;
 
 		// - verify the high nibble
 		if (data !== TD[7:4]) begin
-			$display("Error: High nibble of TD is not visible on data");
-		end else begin
-			$display("Success: High nibble of TD is visible on data");
+			$display("Error: High nibble of TD is not visible on data, %h", data);
+			$finish();
 		end
 
 		// clock out the low nibble
@@ -105,9 +106,8 @@ module test_tipi_4bit_pi_bus;
 
 		// - verify the low nibble
 		if (data !== TD[3:0]) begin
-			$display("Error: Low nibble of TD is not visible on data");
-		end else begin
-			$display("Success: Low nibble of TD is visible on data");
+			$display("Error: Low nibble of TD is not visible on data, %h", data);
+			$finish();
 		end
 	end
 	endtask
@@ -115,6 +115,7 @@ module test_tipi_4bit_pi_bus;
 	// Task for testing reading TC
 	task test_read_TC;
 	begin  
+	   $display("Test: reading TC");
 		// Test reset
 		reset = 1;
 		#10; // Wait for 10 ns
@@ -124,8 +125,7 @@ module test_tipi_4bit_pi_bus;
 		// Verify state
 		if (data !== 4'bz) begin
 			$display("Error: data is not in input mode after reset");
-		end else begin
-			$display("Success: data is in input mode after reset");
+			$finish();
 		end
 
 		// Test Reading TC
@@ -143,8 +143,7 @@ module test_tipi_4bit_pi_bus;
 		// - verify the high nibble
 		if (data !== TC[7:4]) begin
 			$display("Error: High nibble of TC is not visible on data");
-		end else begin
-			$display("Success: High nibble of TC is visible on data");
+			$finish();
 		end
 
 		// clock out the low nibble
@@ -153,8 +152,7 @@ module test_tipi_4bit_pi_bus;
 		// - verify the low nibble
 		if (data !== TC[3:0]) begin
 			$display("Error: Low nibble of TC is not visible on data");
-		end else begin
-			$display("Success: Low nibble of TC is visible on data");
+			$finish();
 		end
 	end
 	endtask
@@ -162,6 +160,7 @@ module test_tipi_4bit_pi_bus;
 	// Test write of RD
 	task test_write_RD;
 	begin
+	   $display("Test: write RD");
 		// Test reset
 		reset = 1;
 		#10; // Wait for 10 ns
@@ -171,8 +170,7 @@ module test_tipi_4bit_pi_bus;
 		// Verify state
 		if (data !== 4'bz) begin
 			$display("Error: data is not in input mode after reset");
-		end else begin
-			$display("Success: data is in input mode after reset");
+			$finish();
 		end
 	   // - clock in the register select for RD
 		force data = 4'b0010;
@@ -195,8 +193,7 @@ module test_tipi_4bit_pi_bus;
 		// Verify RD value
 		if (RD !== 8'b10100101) begin
 			$display("Error: RD register not set correctly");
-		end else begin
-			$display("Success: RD register set");
+         $finish();
 		end
 	end
 	endtask
@@ -204,6 +201,7 @@ module test_tipi_4bit_pi_bus;
 	// Test write of RC
 	task test_write_RC;
 	begin
+	   $display("Test: write RC");
 		// Test reset
 		reset = 1;
 		#10; // Wait for 10 ns
@@ -213,8 +211,7 @@ module test_tipi_4bit_pi_bus;
 		// Verify state
 		if (data !== 4'bz) begin
 			$display("Error: data is not in input mode after reset");
-		end else begin
-			$display("Success: data is in input mode after reset");
+         $finish();
 		end
 	   // - clock in the register select for RC
 		force data = 4'b0011;
@@ -237,8 +234,7 @@ module test_tipi_4bit_pi_bus;
 		// Verify RC value
 		if (RC !== 8'b01011010) begin
 			$display("Error: RC register not set correctly");
-		end else begin
-			$display("Success: RC register set");
+			$finish();
 		end	
 	end
 	endtask
@@ -262,8 +258,7 @@ module test_tipi_4bit_pi_bus;
 		// Verify state
 		if (data !== 4'bz) begin
 			$display("Error: data is not in input mode after reset");
-		end else begin
-			$display("Success: data is in input mode after reset");
+         $finish();
 		end
 	end
 	endtask

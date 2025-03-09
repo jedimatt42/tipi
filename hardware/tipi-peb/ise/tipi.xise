@@ -16,7 +16,7 @@
 
   <files>
     <file xil_pn:name="tipi_top.v" xil_pn:type="FILE_VERILOG">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="6"/>
+      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="1"/>
       <association xil_pn:name="Implementation" xil_pn:seqID="1"/>
     </file>
     <file xil_pn:name="tipi.ucf" xil_pn:type="FILE_UCF">
@@ -43,7 +43,7 @@
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="66"/>
     </file>
     <file xil_pn:name="test_tipi_top.v" xil_pn:type="FILE_VERILOG">
-      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="7"/>
+      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID="2"/>
       <association xil_pn:name="PostRouteSimulation" xil_pn:seqID="70"/>
     </file>
   </files>
@@ -261,10 +261,10 @@
     <!-- project is analyzed based on files automatically identified as       -->
     <!-- include files.                                                       -->
     <file xil_pn:name="crubits.v" xil_pn:type="FILE_VERILOG"/>
-    <file xil_pn:name="tipi_4bit_pi_bus.v" xil_pn:type="FILE_VERILOG"/>
     <file xil_pn:name="latch_8bit.v" xil_pn:type="FILE_VERILOG"/>
-    <file xil_pn:name="tristate_8bit.v" xil_pn:type="FILE_VERILOG"/>
     <file xil_pn:name="mux2_8bit.v" xil_pn:type="FILE_VERILOG"/>
+    <file xil_pn:name="tipi_4bit_pi_bus.v" xil_pn:type="FILE_VERILOG"/>
+    <file xil_pn:name="tristate_8bit.v" xil_pn:type="FILE_VERILOG"/>
   </autoManagedFiles>
 
 </project>

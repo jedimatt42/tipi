@@ -82,12 +82,12 @@ module test_tipi_top;
 		.tp_d(tp_d)
 	);
 		
-	initial begin
-		// Initialize Inputs
-	    crub = 4'hf;
-	    r_clk = 0;
-	    r_nibrst = 0;
-	    ti_cruclk = 1;
+    initial begin
+        // Initialize Inputs
+        crub = 4'hf;
+        r_clk = 0;
+		  r_nibrst = 0;
+		  ti_cruclk = 1;
 	    ti_dbin = 1;
 	    ti_memen = 1;
 	    ti_we = 1;
@@ -97,8 +97,18 @@ module test_tipi_top;
 		// Wait for global reset to finish
 		#1;
 		
-		$display("Test: initial reset output");
-		#1 if (r_reset != 1) begin
+      test_cru_reset_bit();
+		test_access_TD();
+		test_access_TC();
+		
+	   $display("Success");
+      $finish;
+	 end
+	
+	 task test_cru_reset_bit;
+	 begin
+	    $display("Test: initial reset output");
+	    #1 if (r_reset != 1) begin
 		    $display("Error, r_reset output should be high, was %b", r_reset);
 		    $finish;
 		end
@@ -109,7 +119,7 @@ module test_tipi_top;
 		#1 ti_cruclk = 1;
 		#1 if (uut.cru_state[0] != 1) begin
 		    $display("Error, crubit 0 should be set, was %b", uut.cru_state);
-			$finish;
+			 $finish;
 		end
 		
 		$display("Test: set cru reset bit");
@@ -118,11 +128,11 @@ module test_tipi_top;
 		#1 ti_cruclk = 1;
 		#1 if (uut.cru_state[1] != 1) begin
 		    $display("Error, crubit 1 (reset) should be set, was %b", uut.cru_state);
-			$finish;
+			 $finish;
 		end
 		#1 if (r_reset != 0) begin
 		    $display("Error, r_reset output should be low, was %b", uut.cru_state);
-			$finish;
+			 $finish;
 		end
 		
 		$display("Test: clear cru reset bit");
@@ -133,13 +143,17 @@ module test_tipi_top;
 		    $display("Error, r_reset output should be high, was %b", r_reset);
 		    $finish;
 		end
-		
+	end
+	endtask
+	
+	task test_access_TD;
+	begin
 		$display("Test: read TD");
 		#1 ti_a = 16'h5fff;
 		#1 ti_memen = 0;
 		#1 if (tp_d != 8'h00) begin
 		    $display("Error, 5fff should be 0");
-			$finish;
+			 $finish;
 		end
 		
 		$display("Test: write TD");
@@ -159,6 +173,43 @@ module test_tipi_top;
 		#1 ti_memen = 0;
 		#1 if (db_dir != 1) begin
 		    $display("Error, db_dir should be 1, was %b", db_dir);
+			 $finish;
+		end
+		#1 if (tp_d != 8'hff) begin
+		    $display("Error, 5fff should be ff, was %h", tp_d);
+			 $finish;
+		end
+		#1 ti_memen = 1;
+	end
+	endtask
+
+	task test_access_TC;
+	begin
+		$display("Test: read TC");
+		#1 ti_a = 16'h5ffd;
+		#1 ti_memen = 0;
+		#1 if (tp_d != 8'h00) begin
+		   $display("Error, 5fff should be 0, was %h", tp_d);
+			$finish;
+		end
+		
+		$display("Test: write TC");
+		#1 dbus_in = 8'hff;
+		#1 dbusio_control = 1;
+		#1 ti_memen = 0;
+		#1 ti_we = 0;
+		#1 ti_we = 1;
+		#1 ti_memen = 1;
+		#1 dbusio_control = 0;
+		#1 ti_a = 16'h0000;
+		// TODO: assert that uut.TD? is hff
+		
+		$display("Test: re-read TC");
+		#1 dbus_in = 8'h00;
+		#1 ti_a = 16'h5ffd;
+		#1 ti_memen = 0;
+		#1 if (db_dir != 1) begin
+		    $display("Error, db_dir should be 1, was %b", db_dir);
 			$finish;
 		end
 		#1 if (tp_d != 8'hff) begin
@@ -166,9 +217,7 @@ module test_tipi_top;
 			$finish;
 		end
 		#1 ti_memen = 1;
-		
-	   $display("Success");
-      $finish;
 	end
+	endtask
       
 endmodule

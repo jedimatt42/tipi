@@ -50,11 +50,11 @@ module test_tipi_top;
     .r_nib(r_nib), 
     .r_reset(r_reset), 
     .ti_cruclk(ti_cruclk), 
+    .ti_cruin(ti_cruin), 
     .ti_dbin(ti_dbin), 
     .ti_memen(ti_memen), 
     .ti_we(ti_we), 
     .ti_ph3(ti_ph3), 
-    .ti_cruin(ti_cruin), 
     .ti_extint(ti_extint), 
     .ti_a(ti_a), 
     .tp_d(tp_d)

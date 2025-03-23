@@ -94,18 +94,15 @@ module tipi_top #(
   // drive the dsr eprom oe and cs lines.
   assign dsr_en = ~(tipi_dsr_en);
   // drive the 74hct245 oe and dir lines.
-  assign db_en = ~(cru_dev_en && ti_a >= LOW_ROM_ADDR && ti_a <= HIGH_MEM_ADDR);
+  assign db_en = ~(cru_dev_en && ~ti_memen && ti_a >= LOW_ROM_ADDR && ti_a <= HIGH_MEM_ADDR);
   assign db_dir = tipi_read;
 
   // register to databus output selection
   wire [0:7] rreg_mux_out; 
   mux2_8bit rreg_mux(rc_addr, rd_addr, tc_addr, td_addr, tipi_db_rc, tipi_db_rd, rpi_tc, rpi_td, rreg_mux_out);
 
-  wire [0:7] tp_d_buf; // expose value for tristate databus to CPU
   wire dbus_ts_en = cru_state[0] && ~ti_memen && ti_dbin && (ti_a >= RC_ADDR && ti_a <= TD_ADDR);  // Enable signal if CPU is accessing any of the memory mapped IO registers
-  tristate_8bit dbus_ts(dbus_ts_en, rreg_mux_out, tp_d_buf); // Set the CPLD databus to high impedance unless we are accessing one of the registers
-
-  assign tp_d = tp_d_buf; // connect the tristate bus to the CPLD pins
+  tristate_8bit dbus_ts(dbus_ts_en, rreg_mux_out, tp_d); // Set the CPLD databus to high impedance unless we are accessing one of the registers
 
   assign led0 = cru_state[0] && db_en; // enable the LED if the board is enabled and a databus access is occuring.
 

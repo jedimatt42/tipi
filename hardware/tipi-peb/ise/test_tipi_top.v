@@ -75,28 +75,94 @@ module test_tipi_top;
     // Wait for global reset to finish
     #1;
     
+    // simulate an initial clock cycle
+    #1 ti_ph3 = 0;
+    #1 ti_ph3 = 1;
+    
+    test_cru_enable_bit();
     test_cru_reset_bit();
     test_access_TD();
     test_access_TC();
     
-    $display("Success");
+    $display("Success: All tests passed");
     $finish;
   end
+  
+  task enable_cru_bit_1;
+  begin
+    #1 ti_a = 16'h1001;
+    #1 ti_cruclk = 0;
+    #1 ti_cruclk = 1;
+  end
+  endtask
+  
+  task test_cru_enable_bit;
+  begin
+    $display("Test: initial cru enable state");
+    #1 if (uut.cru_state != 4'h0) begin
+      $display("Error, cru bits should be all 0, was %b", uut.cru_state);
+      $finish;
+    end
+    
+    $display("Test: initial bus state while enable bit unset");
+    #1 if (tp_d != 8'hz) begin
+      $display("Error, expected bus tp_d to be 8'hz, was %b", tp_d);
+      $finish;
+    end
+      
+    $display("Test: can read TC while enabled");
+    #1 uut.tc.latch_q = 8'h00;
+    #1 ti_a = 16'h5ffd;
+    #1 ti_memen = 0;
+    #1 if (tp_d != 8'hz) begin
+      $display("Error, 5ffd should be 8'hz, was %h", tp_d);
+      $finish;
+    end
+    #1 ti_memen = 1;
+        
+    $display("Test: set crubit 0");
+    #1 ti_a = 16'h1001;
+    #1 ti_cruclk = 0;
+    #1 ti_cruclk = 1;
+    #1 if (uut.cru_state[0] != 1) begin
+      $display("Error, crubit 0 should be set, was %b", uut.cru_state);
+      $finish;
+    end
+    
+    $display("Test: can read TC while enabled");
+    #1 uut.tc.latch_q = 8'h55;
+    #1 ti_a = 16'h5ffd;
+    #1 ti_memen = 0;
+    #1 if (tp_d != 8'h55) begin
+      $display("Error, 5ffd should be 55, was %h", tp_d);
+      $finish;
+    end
+    #1 ti_memen = 1;
+    
+    $display("Test: can read cru enabled bit");
+    #1 ti_ph3 = 0;
+    #1 ti_ph3 = 1;
+    #1 if (ti_cruin != 1'bz) begin
+      $display("Error, expected ti_cruin to be z, was %b", ti_cruin);
+      $finish;
+    end
+    #1 ti_a = 16'h1000;
+    #1 ti_ph3 = 0;
+    #1 ti_ph3 = 1;
+    #1 if (ti_cruin != 1'b1) begin
+      $display("Error, expected ti_cruin to be 1, was %b", ti_cruin);
+      $finish;
+    end
+    
+    #1 ti_a = 16'h0000;
+  end
+  endtask
   
   task test_cru_reset_bit;
   begin
     $display("Test: initial reset output");
     #1 if (r_reset != 1) begin
       $display("Error, r_reset output should be high, was %b", r_reset);
-      $finish;
-    end
-    
-    $display("Test: enable crubit 0");
-    #1 ti_a = 16'h1001;
-    #1 ti_cruclk = 0;
-    #1 ti_cruclk = 1;
-    #1 if (uut.cru_state[0] != 1) begin
-      $display("Error, crubit 0 should be set, was %b", uut.cru_state);
       $finish;
     end
     
@@ -127,6 +193,8 @@ module test_tipi_top;
   task test_access_TD;
   begin
     $display("Test: read TD");
+    enable_cru_bit_1();
+    
     #1 uut.td.latch_q = 8'haa;
     #1 ti_a = 16'h5fff;
     #1 ti_memen = 0;
@@ -134,6 +202,7 @@ module test_tipi_top;
       $display("Error, 5fff should be aa, was %h", tp_d);
       $finish;
     end
+    #1 ti_memen = 1;
     
     $display("Test: write TD");
     #1 if (uut.td.latch_q != 8'haa) begin
@@ -171,6 +240,8 @@ module test_tipi_top;
   task test_access_TC;
   begin
     $display("Test: read TC");
+    enable_cru_bit_1();
+    
     #1 uut.tc.latch_q = 8'h55;
     #1 ti_a = 16'h5ffd;
     #1 ti_memen = 0;
@@ -178,6 +249,7 @@ module test_tipi_top;
       $display("Error, 5ffd should be 55, was %h", tp_d);
       $finish;
     end
+    #1 ti_memen = 1;
     
     $display("Test: write TC");
     #1 if (uut.tc.latch_q != 8'h55) begin
@@ -211,5 +283,5 @@ module test_tipi_top;
     #1 ti_memen = 1;
   end
   endtask
-      
+        
 endmodule

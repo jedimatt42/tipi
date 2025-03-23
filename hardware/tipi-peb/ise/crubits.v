@@ -21,6 +21,7 @@ module crubits(
   output [0:3] bits
 );
 
+  // Latch data into correct bit when cru clk is active low
   reg [0:3] bits_q = 4'h0;
 
   always @(negedge ti_cru_clk) begin
@@ -32,10 +33,14 @@ module crubits(
     end
   end
 
+  // expose the register 
   assign bits = bits_q;
 
+  // Reading cru oddly, doesn't use the cru clock.. but when the address
+  // bus matches a cru address, 
+  // and we are not in a memory operation
+  // on phase 3 of the CPU clock, present the cru bit value
   reg dataout;
-
   always @(negedge ti_ph3) begin
     if (ti_memen && (addr[0:3] == 4'b0001) && (addr[4:7] == cru_base)) begin
       if (addr[8:14] == 7'h00) dataout <= bits_q[0];

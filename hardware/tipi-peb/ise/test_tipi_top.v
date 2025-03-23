@@ -127,14 +127,19 @@ module test_tipi_top;
   task test_access_TD;
   begin
     $display("Test: read TD");
+    #1 uut.td.latch_q = 8'haa;
     #1 ti_a = 16'h5fff;
     #1 ti_memen = 0;
-    #1 if (tp_d != 8'h00) begin
-      $display("Error, 5fff should be 0");
+    #1 if (tp_d != 8'haa) begin
+      $display("Error, 5fff should be aa, was %h", tp_d);
       $finish;
     end
     
     $display("Test: write TD");
+    #1 if (uut.td.latch_q != 8'haa) begin
+      $display("Error, TD latch register should be aa, was %h", uut.td.latch_q);
+      $finish;
+    end
     #1 dbus_in = 8'hff;
     #1 dbusio_control = 1;
     #1 ti_memen = 0;
@@ -143,10 +148,12 @@ module test_tipi_top;
     #1 ti_memen = 1;
     #1 dbusio_control = 0;
     #1 ti_a = 16'h0000;
-    // TODO: assert that uut.TD? is hff
+    #1 if (uut.td.latch_q != 8'hff) begin
+      $display("Error, TD latch register should be ff, was %h", uut.td.latch_q);
+      $finish;
+    end
     
     $display("Test: re-read TD");
-    #1 dbus_in = 8'h00;
     #1 ti_a = 16'h5fff;
     #1 ti_memen = 0;
     #1 if (db_dir != 1) begin
@@ -164,14 +171,19 @@ module test_tipi_top;
   task test_access_TC;
   begin
     $display("Test: read TC");
+    #1 uut.tc.latch_q = 8'h55;
     #1 ti_a = 16'h5ffd;
     #1 ti_memen = 0;
-    #1 if (tp_d != 8'h00) begin
-      $display("Error, 5fff should be 0, was %h", tp_d);
+    #1 if (tp_d != 8'h55) begin
+      $display("Error, 5ffd should be 55, was %h", tp_d);
       $finish;
     end
     
     $display("Test: write TC");
+    #1 if (uut.tc.latch_q != 8'h55) begin
+      $display("Error, TC latch register should be 55, was %h", uut.tc.latch_q);
+      $finish;
+    end
     #1 dbus_in = 8'hff;
     #1 dbusio_control = 1;
     #1 ti_memen = 0;
@@ -180,10 +192,12 @@ module test_tipi_top;
     #1 ti_memen = 1;
     #1 dbusio_control = 0;
     #1 ti_a = 16'h0000;
-    // TODO: assert that uut.TD? is hff
+    #1 if (uut.tc.latch_q != 8'hff) begin
+      $display("Error, TC latch register should be ff, was %h", uut.tc.latch_q);
+      $finish;
+    end
     
     $display("Test: re-read TC");
-    #1 dbus_in = 8'h00;
     #1 ti_a = 16'h5ffd;
     #1 ti_memen = 0;
     #1 if (db_dir != 1) begin
@@ -191,7 +205,7 @@ module test_tipi_top;
       $finish;
     end
     #1 if (tp_d != 8'hff) begin
-      $display("Error, 5fff should be ff, was %h", tp_d);
+      $display("Error, 5ffd should be ff, was %h", tp_d);
       $finish;
     end
     #1 ti_memen = 1;

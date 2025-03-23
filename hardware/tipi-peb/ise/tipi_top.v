@@ -99,7 +99,7 @@ module tipi_top #(
 
   // register to databus output selection
   wire [0:7] rreg_mux_out; 
-  mux2_8bit rreg_mux(rc_addr, tipi_db_rc, rd_addr, tipi_db_rd, tc_addr, rpi_tc, td_addr, rpi_td, rreg_mux_out);
+  mux2_8bit rreg_mux(rc_addr, rd_addr, tc_addr, td_addr, tipi_db_rc, tipi_db_rd, rpi_tc, rpi_td, rreg_mux_out);
 
   wire [0:7] tp_d_buf; // expose value for tristate databus to CPU
   wire dbus_ts_en = cru_state[0] && ~ti_memen && ti_dbin && (ti_a >= RC_ADDR && ti_a <= TD_ADDR);  // Enable signal if CPU is accessing any of the memory mapped IO registers

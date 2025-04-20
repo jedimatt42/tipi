@@ -81,6 +81,7 @@ module test_tipi_top;
     
     test_cru_enable_bit();
     test_cru_reset_bit();
+    test_cru_paging();
     test_access_TD();
     test_access_TC();
     
@@ -155,6 +156,39 @@ module test_tipi_top;
     end
     
     #1 ti_a = 16'h0000;
+  end
+  endtask
+  
+  task test_cru_paging;
+  begin
+    $display("Test: cru paging crubit 2");
+    #1 if (dsr_b0 != 0 || dsr_b1 != 0) begin
+      $display("Error, expected dsr_b0 and dsr_b1 to be 0, was %b, %b", dsr_b0, dsr_b1);
+      $finish;
+    end
+    
+    #1 ti_a = 16'h1005;
+    #1 ti_cruclk = 0;
+    #1 ti_cruclk = 1;
+    #1 if (dsr_b0 != 1) begin
+      $display("Error, dsr_b0 should be high, was %b", dsr_b0);
+      $finish;
+    end
+    #1 ti_a = 16'h1004;
+    #1 ti_cruclk = 0;
+    #1 ti_cruclk = 1;
+    
+    $display("Test: cru paging crubit 3");
+    #1 ti_a = 16'h1007;
+    #1 ti_cruclk = 0;
+    #1 ti_cruclk = 1;
+    #1 if (dsr_b1 != 1) begin
+      $display("Error, dsr_b1 should be high, was %b", dsr_b1);
+      $finish;
+    end
+    #1 ti_a = 16'h1006;
+    #1 ti_cruclk = 0;
+    #1 ti_cruclk = 1;
   end
   endtask
   

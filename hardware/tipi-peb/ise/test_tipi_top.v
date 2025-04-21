@@ -129,6 +129,11 @@ module test_tipi_top;
       $display("Error, crubit 0 should be set, was %b", uut.cru_state);
       $finish;
     end
+    $display("Test: led activated");
+    #1 if (led0 != 1) begin
+      $display("Error, led0 should be set, was %b", led0);
+      $finish;      
+    end
     
     $display("Test: can read TC while enabled");
     #1 uut.tc.latch_q = 8'h55;

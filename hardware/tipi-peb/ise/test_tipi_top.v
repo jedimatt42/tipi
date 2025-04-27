@@ -84,6 +84,10 @@ module test_tipi_top;
     test_cru_paging();
     test_access_TD();
     test_access_TC();
+    test_rpi_to_RD();
+    test_rpi_to_RC();
+    test_rpi_read_TC();
+    test_rpi_read_TD();
     
     $display("Success: All tests passed");
     $finish;
@@ -320,6 +324,94 @@ module test_tipi_top;
       $finish;
     end
     #1 ti_memen = 1;
+  end
+  endtask
+  
+  task test_rpi_to_RD;
+  begin
+    $display("Test: rpi to RD");
+    #1 inout_control = 0;
+    #1 if (uut.pi_bus.RD != 8'h00) begin
+      $display("Error, initial state of RD should be 0, was %h", uut.pi_bus.RD);
+      $finish;
+    end
+    
+    #1 r_clk = 0;
+    #1 r_nibrst = 1;
+    #1 r_nibrst = 0;
+    #1 r_nib_in = 4'h2;
+    #1 r_clk = 1;
+    #1 r_clk = 0;
+    #1 r_nib_in = 4'ha;
+    #1 r_clk = 1;
+    #1 r_clk = 0;
+    #1 r_nib_in = 4'h5;
+    #1 r_clk = 1;
+    #1 r_clk = 0;
+    #1 if (uut.pi_bus.RD != 8'ha5) begin
+      $display("Error, RD expected to be a5, was %h", uut.pi_bus.RD);
+      $finish;
+    end
+  end
+  endtask
+  
+  task test_rpi_to_RC;
+  begin
+    $display("Test: rpi to RC");
+    #1 inout_control = 0;
+    #1 if (uut.pi_bus.RC != 8'h00) begin
+      $display("Error, initial state of RD should be 0, was %h", uut.pi_bus.RC);
+      $finish;
+    end
+    
+    #1 r_clk = 0;
+    #1 r_nibrst = 1;
+    #1 r_nibrst = 0;
+    #1 r_nib_in = 4'h3;
+    #1 r_clk = 1;
+    #1 r_clk = 0;
+    #1 r_nib_in = 4'h6;
+    #1 r_clk = 1;
+    #1 r_clk = 0;
+    #1 r_nib_in = 4'hb;
+    #1 r_clk = 1;
+    #1 r_clk = 0;
+    #1 if (uut.pi_bus.RC != 8'h6b) begin
+      $display("Error, RC expected to be 6b, was %h", uut.pi_bus.RC);
+      $finish;
+    end
+  end
+  endtask  
+
+  task test_rpi_read_TC;
+  begin
+    $display("Test: RPI read TC");
+    #1 uut.td.latch_q = 8'ha5;
+    #1 inout_control = 0;
+    #1 r_clk = 0;
+    #1 r_nibrst = 1;
+    #1 r_nibrst = 0;
+    #1 r_nib_in = 4'h1;
+    #1 r_clk = 1;
+    #1 r_clk = 0;
+    #1 inout_control = 1;
+    #1 r_clk = 1;
+    #1 r_clk = 0;
+    #1 if (r_nib != 4'ha) begin
+      $display("Error, TC first nibble out should be 4'ha, was %h", r_nib_in);
+      $finish;
+    end
+    #1 r_clk = 1;
+    #1 r_clk = 0;
+    #1 if (r_nib != 4'h5) begin
+      $display("Error, TC second nibble out should be 4'h5, was %h", r_nib_in);
+      $finish;
+    end
+  end
+  endtask
+  
+  task test_rpi_read_TD;
+  begin
   end
   endtask
         

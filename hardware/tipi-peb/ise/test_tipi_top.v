@@ -248,13 +248,14 @@ module test_tipi_top;
       $display("Error, TD latch register should be aa, was %h", uut.td.latch_q);
       $finish;
     end
-    #1 dbus_in = 8'hff;
+    #1 force tp_d = 8'hff;
     #1 dbusio_control = 1;
     #1 ti_memen = 0;
     #1 ti_we = 0;
     #1 ti_we = 1;
     #1 ti_memen = 1;
     #1 dbusio_control = 0;
+    #1 release tp_d;
     #1 ti_a = 16'h0000;
     #1 if (uut.td.latch_q != 8'hff) begin
       $display("Error, TD latch register should be ff, was %h", uut.td.latch_q);
@@ -295,12 +296,13 @@ module test_tipi_top;
       $display("Error, TC latch register should be 55, was %h", uut.tc.latch_q);
       $finish;
     end
-    #1 dbus_in = 8'hff;
+    #1 force tp_d = 8'hff;
     #1 dbusio_control = 1;
     #1 ti_memen = 0;
     #1 ti_we = 0;
     #1 ti_we = 1;
     #1 ti_memen = 1;
+    #1 release tp_d;
     #1 dbusio_control = 0;
     #1 ti_a = 16'h0000;
     #1 if (uut.tc.latch_q != 8'hff) begin
@@ -380,19 +382,37 @@ module test_tipi_top;
   task test_rpi_read_TC;
   begin
     $display("Test: RPI read TC");
+    // ensure TC has a value we are looking for.
+    #1 force tp_d = 8'ha5;
+    #1 dbusio_control = 1;
+    #1 ti_a = 16'h5ffd;
+    #1 ti_memen = 0;
+    #1 ti_we = 0;
+    #1 ti_we = 1;
+    #1 ti_memen = 1;
+    #1 release tp_d;
+    #1 dbusio_control = 0;
+    #1 ti_a = 16'h0000;
+    #1 if (uut.tc.latch_q != 8'ha5) begin
+      $display("Error, TC latch register should be a5, was %h", uut.tc.latch_q);
+      $finish;
+    end
+    
+    // now read TC like the RPI will
     #1 r_clk = 0;
     #1 r_nibrst = 1;
     #1 r_nibrst = 0;
+    // Select the register
     #1 force r_nib = 4'h1;
     #1 r_clk = 1;
     #1 r_clk = 0;
     #1 release r_nib;
-    #1 r_clk = 1;
-    #1 r_clk = 0;
+    // High nibble should now be presented
     #1 if (r_nib != 4'ha) begin
       $display("Error, TC first nibble out should be 4'ha, was %h", r_nib);
       $finish;
     end
+    // Clk once to get to the low nibble
     #1 r_clk = 1;
     #1 r_clk = 0;
     #1 if (r_nib != 4'h5) begin
@@ -404,6 +424,44 @@ module test_tipi_top;
   
   task test_rpi_read_TD;
   begin
+    $display("Test: RPI read TD");
+    // ensure TD has a value we are looking for.
+    #1 force tp_d = 8'h5a;
+    #1 dbusio_control = 1;
+    #1 ti_a = 16'h5fff;
+    #1 ti_memen = 0;
+    #1 ti_we = 0;
+    #1 ti_we = 1;
+    #1 ti_memen = 1;
+    #1 release tp_d;
+    #1 dbusio_control = 0;
+    #1 ti_a = 16'h0000;
+    #1 if (uut.td.latch_q != 8'h5a) begin
+      $display("Error, TD latch register should be 5a, was %h", uut.tc.latch_q);
+      $finish;
+    end
+    
+    // now read TD like the RPI will
+    #1 r_clk = 0;
+    #1 r_nibrst = 1;
+    #1 r_nibrst = 0;
+    // Select the register
+    #1 force r_nib = 4'h2;
+    #1 r_clk = 1;
+    #1 r_clk = 0;
+    #1 release r_nib;
+    // High nibble should now be presented
+    #1 if (r_nib != 4'h5) begin
+      $display("Error, TD first nibble out should be 4'h5, was %h", r_nib);
+      $finish;
+    end
+    // Clk once to get to the low nibble
+    #1 r_clk = 1;
+    #1 r_clk = 0;
+    #1 if (r_nib != 4'ha) begin
+      $display("Error, TD second nibble out should be 4'ha, was %h", r_nib);
+      $finish;
+    end
   end
   endtask
         

@@ -11,7 +11,7 @@ module tipi_4bit_pi_bus (
 );
 
   reg [7:0] shift_reg;       // Temporary shift register for transfers
-  reg [1:0] bit_count;       // Tracks the number of 4-bit transfers
+  reg [1:0] bit_count;       // Tracks the clk cycles since reset
   reg [1:0] sel;             // Internalized register selection
   reg busdir;                // Internalized read/write control 0 input, 1 output
 
@@ -48,8 +48,6 @@ module tipi_4bit_pi_bus (
           // Read operation: shift out low nibble
           shift_reg <= {shift_reg[3:0], 4'b0000};
         end else begin
-          // Write operation: shift in low nibble
-          shift_reg <= {shift_reg[3:0], data};
           // After receiving full 8 bits, store data into correct register
           case (sel)
             2'b10: RD <= {shift_reg[3:0], data};

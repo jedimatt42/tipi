@@ -27,11 +27,7 @@ module test_tipi_top;
   // Bidirs
   wire [0:3] r_nib;
   wire [0:7] tp_d;
-  
-  reg inout_control = 1;
-  reg [3:0] r_nib_in = 0;
-  assign r_nib = inout_control ? r_nib_in : 4'bz;
-  
+ 
   reg dbusio_control = 1;
   reg [7:0] dbus_in = 0;
   assign tp_d = dbusio_control ? dbus_in : 8'bz;
@@ -330,7 +326,6 @@ module test_tipi_top;
   task test_rpi_to_RD;
   begin
     $display("Test: rpi to RD");
-    #1 inout_control = 0;
     #1 if (uut.pi_bus.RD != 8'h00) begin
       $display("Error, initial state of RD should be 0, was %h", uut.pi_bus.RD);
       $finish;
@@ -339,13 +334,13 @@ module test_tipi_top;
     #1 r_clk = 0;
     #1 r_nibrst = 1;
     #1 r_nibrst = 0;
-    #1 r_nib_in = 4'h2;
+    #1 force r_nib = 4'h2;
     #1 r_clk = 1;
     #1 r_clk = 0;
-    #1 r_nib_in = 4'ha;
+    #1 force r_nib = 4'ha;
     #1 r_clk = 1;
     #1 r_clk = 0;
-    #1 r_nib_in = 4'h5;
+    #1 force r_nib = 4'h5;
     #1 r_clk = 1;
     #1 r_clk = 0;
     #1 if (uut.pi_bus.RD != 8'ha5) begin
@@ -358,7 +353,6 @@ module test_tipi_top;
   task test_rpi_to_RC;
   begin
     $display("Test: rpi to RC");
-    #1 inout_control = 0;
     #1 if (uut.pi_bus.RC != 8'h00) begin
       $display("Error, initial state of RD should be 0, was %h", uut.pi_bus.RC);
       $finish;
@@ -367,13 +361,13 @@ module test_tipi_top;
     #1 r_clk = 0;
     #1 r_nibrst = 1;
     #1 r_nibrst = 0;
-    #1 r_nib_in = 4'h3;
+    #1 force r_nib = 4'h3;
     #1 r_clk = 1;
     #1 r_clk = 0;
-    #1 r_nib_in = 4'h6;
+    #1 force r_nib = 4'h6;
     #1 r_clk = 1;
     #1 r_clk = 0;
-    #1 r_nib_in = 4'hb;
+    #1 force r_nib = 4'hb;
     #1 r_clk = 1;
     #1 r_clk = 0;
     #1 if (uut.pi_bus.RC != 8'h6b) begin
@@ -386,25 +380,23 @@ module test_tipi_top;
   task test_rpi_read_TC;
   begin
     $display("Test: RPI read TC");
-    #1 uut.td.latch_q = 8'ha5;
-    #1 inout_control = 0;
     #1 r_clk = 0;
     #1 r_nibrst = 1;
     #1 r_nibrst = 0;
-    #1 r_nib_in = 4'h1;
+    #1 force r_nib = 4'h1;
     #1 r_clk = 1;
     #1 r_clk = 0;
-    #1 inout_control = 1;
+    #1 release r_nib;
     #1 r_clk = 1;
     #1 r_clk = 0;
     #1 if (r_nib != 4'ha) begin
-      $display("Error, TC first nibble out should be 4'ha, was %h", r_nib_in);
+      $display("Error, TC first nibble out should be 4'ha, was %h", r_nib);
       $finish;
     end
     #1 r_clk = 1;
     #1 r_clk = 0;
     #1 if (r_nib != 4'h5) begin
-      $display("Error, TC second nibble out should be 4'h5, was %h", r_nib_in);
+      $display("Error, TC second nibble out should be 4'h5, was %h", r_nib);
       $finish;
     end
   end

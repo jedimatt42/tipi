@@ -343,7 +343,7 @@ def save_basic_file():
         request.form.get("file_name"), request.form.get("file_contents")
     )
     rp = request.form.get("rp")
-    if request.form.get("saveAndExit"):
+    if "saveAndExit" in request.form:
         return redirect(rp)
     else:
         file_data["rp"] = rp

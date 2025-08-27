@@ -1,2 +1,2 @@
-version=4.6
-reldate=2025-02-22
+version=4.7
+reldate=2025-08-27

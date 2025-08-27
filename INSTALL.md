@@ -133,11 +133,8 @@ sudo systemctl disable apache2.service
 ### Set the system to grow on boot
 
 -- To be nice, set the image to resize on next boot 
-```
-sudo raspi-config nonint do_expand_rootfs
-```
 
-or edit the init in boot
+edit the cmdline.txt in boot. Place the following at the end:
 ```
 init=/usr/lib/raspi-config/init_resize.sh
 ```
@@ -171,6 +168,7 @@ sudo sync
 sudo rm zeroes
 cd
 umount /media/`whoami`/rootfs
+sudo kpartx -d sdimage.img
 ```
 
 Now zip it up!

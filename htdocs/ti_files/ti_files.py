@@ -6,7 +6,7 @@ import math
 import logging
 import uuid
 import re
-from subprocess import call
+from subprocess import call, DEVNULL
 
 logger = logging.getLogger(__name__)
 
@@ -237,7 +237,8 @@ def isTiBasicPrg(filename):     # Returns true if file is a PRG file and is dete
                 else:
                     return False
 
-        call(['/home/tipi/xdt99/xbas99.py', '-d', prg_tmp_file, '-o', bas_tmp_file])         
+        call(['/home/tipi/xdt99/xbas99.py', '-d', prg_tmp_file, '-o', bas_tmp_file],
+                stdout=DEVNULL, stderr=DEVNULL)         
 
         return isTiBasicAscii(bas_tmp_file)
 

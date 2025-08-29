@@ -34,6 +34,7 @@ def main():
     ConfigLogging.configure_logging()
     tipi_cache.setupSchema()
     tipi_cache.deleteMissing()
+    tipi_cache.addAll()
 
     i = inotify.adapters.InotifyTree(tipi_disk)
 

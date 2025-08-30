@@ -71,6 +71,28 @@ def addAll():
             name = os.path.join(root, filename)
             updateFileInfo(name)
 
+def addAbsent():
+    allFiles = []
+    logger.debug("finding all files")
+    for root, subdirs, files in os.walk(tipi_disk):
+        for filename in files:
+            name = os.path.join(root, filename)
+            allFiles.append(name)
+
+    cachedFiles = []
+    logger.debug("finding all cached files")
+    sql = get_conn().cursor()
+    for row in sql.execute('SELECT name FROM fileheader'):
+        cachedFiles.append(row[0])
+    
+    get_conn().commit()
+    sql.close()
+
+    for name in allFiles:
+        if name not in cachedFiles:
+            logger.info("adding missing cache for %s", name)
+            updateFileInfo(name)
+
 def deleteMissing():
     cachedFiles = []
     logger.debug("finding all cached files")

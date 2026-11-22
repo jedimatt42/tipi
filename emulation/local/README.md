@@ -74,8 +74,12 @@ The first run copies TIPICFG and the other programs from `setup/bin` into
 
 These need the PI's operating system and are ignored, with a message from
 `run.sh`: WiFi and timezone settings, upgrade, reboot and shutdown, and backup
-and restore. PDF printing and tidbit (BASIC listing renumbering in the web UI)
-aren't set up.
+and restore. The web UI's OS log page needs the systemd journal, so it shows
+the TIPI service's log (`$TIPI_HOME/log/tipi.log`) instead. PDF printing and
+tidbit (BASIC listing renumbering in the web UI) aren't set up.
+
+`PI.HTTP` downloads with `/usr/bin/wget` where it exists, as on the PI, and
+otherwise with `/usr/bin/curl`, which macOS includes.
 
 ## How it works
 

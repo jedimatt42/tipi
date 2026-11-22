@@ -382,8 +382,8 @@ def logs():
 @app.route("/oslogs", methods=["GET"])
 def oslogs():
     logdata = tipi_admin.oslogdata()
-    logdata['title'] = 'Linux OS Log'
-    logdata['hint'] = 'journalctl --no-pager -b'
+    logdata.setdefault('title', 'Linux OS Log')
+    logdata.setdefault('hint', 'journalctl --no-pager -b')
     return render_template("log.html", **logdata)
 
 

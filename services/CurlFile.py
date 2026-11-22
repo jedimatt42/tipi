@@ -222,7 +222,11 @@ class CurlFile(object):
 
         tmpname = '/tmp/CF'
     
-        cmd = "/usr/bin/wget --user-agent={} -O {} '{}'".format(agent, tmpname, url)
+        if os.path.exists("/usr/bin/wget"):
+            cmd = "/usr/bin/wget --user-agent={} -O {} '{}'".format(agent, tmpname, url)
+        else:
+            # No wget (macOS): curl, following redirects and failing on HTTP errors as wget does
+            cmd = "/usr/bin/curl -sSfL -A {} -o {} '{}'".format(agent, tmpname, url)
         logger.info("cmd: %s", cmd)
         code = os.system(cmd)
         if code != 0:

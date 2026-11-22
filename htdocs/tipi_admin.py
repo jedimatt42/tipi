@@ -25,7 +25,14 @@ def logdata():
 
 
 def oslogdata():
-    return {"logdata": subprocess.run(['journalctl', '--no-page', '-b'], stdout=subprocess.PIPE).stdout.decode('utf-8') }
+    try:
+        return {"logdata": subprocess.run(['journalctl', '--no-page', '-b'], stdout=subprocess.PIPE).stdout.decode('utf-8') }
+    except FileNotFoundError:
+        # No systemd journal, as when running locally on a Mac: show the TIPI service's log
+        data = logdata()
+        data["title"] = "TIPI Service Log"
+        data["hint"] = "journalctl isn't available on this system, so this is " + os.path.join(TIPI_LOG, "tipi.log")
+        return data
 
 
 def reboot():

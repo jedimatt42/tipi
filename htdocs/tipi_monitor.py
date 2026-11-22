@@ -1,6 +1,11 @@
 import os
 import logging
-import inotify.adapters
+try:
+    import inotify.adapters
+except ImportError:
+    # inotify is Linux only; elsewhere (macOS) use watchfiles
+    inotify = None
+    from watchfiles import watch, Change
 import sqlite3
 import ConfigLogging
 import tipi_cache
@@ -31,11 +36,41 @@ def releaseLock():
         os.remove(tipimon_lock)
 
 
+def fileWritten(name):
+    if name.lower().endswith((".dsk", ".tidisk")):
+        logger.info("extracting: " + name)
+        extractDisk(name)
+    else:
+        tipi_cache.updateFileInfo(name)
+
+
+def watchfilesMonitor():
+    # watchfiles reports resolved paths (on macOS /tmp is /private/tmp)
+    real_disk = os.path.realpath(tipi_disk)
+
+    logger.info("File change monitor ready (watchfiles)")
+
+    for changes in watch(real_disk):
+        createLock()
+        for (change, path) in sorted(changes, key=lambda c: c[1]):
+            name = tipi_disk + path[len(real_disk):]
+            if change == Change.deleted:
+                tipi_cache.deleteFileInfo(name)
+            elif os.path.isfile(name):
+                # watchfiles debounces, so the write has finished
+                fileWritten(name)
+        releaseLock()
+
+
 def main():
     ConfigLogging.configure_logging()
     tipi_cache.setupSchema()
     tipi_cache.deleteMissing()
     tipi_cache.addAbsent()
+
+    if inotify is None:
+        watchfilesMonitor()
+        return
 
     i = inotify.adapters.InotifyTree(tipi_disk)
 
@@ -54,11 +89,7 @@ def main():
                 name = os.path.join(
                     watch_path, filename
                 )
-                if name.lower().endswith((".dsk", ".tidisk")):
-                    logger.info("extracting: " + name)
-                    extractDisk(name)
-                else:
-                    tipi_cache.updateFileInfo(name)
+                fileWritten(name)
             releaseLock()
 
 

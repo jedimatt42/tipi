@@ -78,7 +78,9 @@ RCIN	EQU	>5FF9		; PI Control Signal (input)
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <limits.h>
+#ifdef __linux__
 #include <sys/sendfile.h>
+#endif
 #include <stdarg.h>
 
 #include "sha1/sha1.h"
@@ -430,8 +432,13 @@ static int server_create(int domain /* AF_INET or AF_INET6 */)
 		goto err;
 	}
 
-	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR|SO_REUSEPORT, &opt, sizeof(opt))) {
-		perror("setsockopt SO_REUSEADDR|SO_REUSEPORT");
+	/* socket options are separate calls; they can't be or'd together */
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
+		perror("setsockopt SO_REUSEADDR");
+		//goto err;
+	}
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt))) {
+		perror("setsockopt SO_REUSEPORT");
 		//goto err;
 	}
 	if (domain == AF_INET) {
@@ -616,8 +623,16 @@ static int websocket_serve(void)
 			content_type ? "\r\n" : "");
 		write(fd, resp, hdr_len);
 		while (size > 0) {
+#ifdef __linux__
 			int rc = sendfile(fd, src_fd, NULL, size);
-			if (rc < 0)
+#else
+			/* no Linux sendfile (macOS): copy through a buffer */
+			char buf[8192];
+			int rc = read(src_fd, buf, size < (off_t)sizeof(buf) ? size : (off_t)sizeof(buf));
+			if (rc > 0 && write(fd, buf, rc) != rc)
+				rc = -1;
+#endif
+			if (rc <= 0)
 				break;
 			size -= rc;
 		}
@@ -700,7 +715,7 @@ upgrade_websocket:
 		}
 		client_fd = fd;
 		int one = 1; // Disable Nagle's algorithm for lowest latency
-		setsockopt(client_fd, SOL_TCP, TCP_NODELAY,&one, sizeof(one));
+		setsockopt(client_fd, IPPROTO_TCP, TCP_NODELAY,&one, sizeof(one));
 
 		// use asynchronous mode until told otherwise
 		sync_mode = ASYNC;

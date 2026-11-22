@@ -11,12 +11,13 @@ import uuid
 import tipi_cache
 from ti_files import ti_files
 from subprocess import call
+from tipi_paths import TIPI_DISK, XDT99_DIR
 
 logger = logging.getLogger(__name__)
 
 basicSuffixes = (".b99", ".bas", ".xb", ".tb")
 
-tipi_disk_base = "/home/tipi/tipi_disk"
+tipi_disk_base = TIPI_DISK
 
 
 def load(file_name):
@@ -90,7 +91,7 @@ def basicContents(filename):
                 else:
                     return False
 
-        call(["/home/tipi/xdt99/xbas99.py", "-d", prg_tmp_file, "-o", bas_tmp_file])
+        call([os.path.join(XDT99_DIR, "xbas99.py"), "-d", prg_tmp_file, "-o", bas_tmp_file])
 
         if ti_files.isTiBasicAscii(bas_tmp_file):
             with open(bas_tmp_file, "rb") as content_file:

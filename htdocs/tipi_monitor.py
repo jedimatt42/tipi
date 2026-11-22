@@ -7,6 +7,7 @@ import tipi_cache
 from ti_files import ti_files
 from tinames import tinames
 from dsks.extract_sectordump import extractDisk
+from tipi_paths import TIPI_DISK
 
 #
 # Monitor file changes under tipi_disk, and update meta-data in a database
@@ -14,7 +15,7 @@ from dsks.extract_sectordump import extractDisk
 #
 
 logger = logging.getLogger("tipi_monitor")
-tipi_disk = "/home/tipi/tipi_disk"
+tipi_disk = TIPI_DISK
 
 tipimon_lock = "/tmp/tipimon.lock"
 

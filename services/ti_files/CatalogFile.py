@@ -11,6 +11,7 @@ from tinames import NativeFlags
 from tifloat import tifloat
 from Pab import *
 from TipiConfig import TipiConfig
+from tipi_paths import TIPI_DISK
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +92,7 @@ class CatalogFile(object):
         if self.devname == "DSK.":
             return self.encodeVolRecord("", 0, sector_count, sector_count - 2)
 
-        if self.localpath == "/home/tipi/tipi_disk":
+        if self.localpath == TIPI_DISK:
             volumeName = "TIPI"
         elif self.devname.startswith(("DSK.")):
             volumeName = self.devname.split(".")[1]

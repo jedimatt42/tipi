@@ -5,12 +5,14 @@
 ## Run with --upgrade to upgrade to latest
 ##
 
-if [ -f /home/tipi/tipi/branch.txt ]; then
-  branch=`cat /home/tipi/tipi/branch.txt | sed -n 's/^branch=\(.*\)$/\1/p'`
+TIPI_REPO=${TIPI_REPO:-${TIPI_HOME:-/home/tipi}/tipi}
+
+if [ -f $TIPI_REPO/branch.txt ]; then
+  branch=`cat $TIPI_REPO/branch.txt | sed -n 's/^branch=\(.*\)$/\1/p'`
 else
-  branch=`cat /home/tipi/tipi/version.txt | sed -n 's/^branch=\(.*\)$/\1/p'`
+  branch=`cat $TIPI_REPO/version.txt | sed -n 's/^branch=\(.*\)$/\1/p'`
 fi
-version=`cat /home/tipi/tipi/version.txt | sed -n 's/^version=\(.*\)$/\1/p'`
+version=`cat $TIPI_REPO/version.txt | sed -n 's/^version=\(.*\)$/\1/p'`
 
 ## I want deprecate the 'unstable' branch
 if [ "$branch" = "unstable" ]; then

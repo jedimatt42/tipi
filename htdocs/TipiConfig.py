@@ -13,6 +13,7 @@ import time
 import re
 from ti_files import ti_files
 from tinames import tinames
+from tipi_paths import TIPI_CONFIG, TIPI_DISK
 
 LOGGER = logging.getLogger(__name__)
 
@@ -50,7 +51,7 @@ class TipiConfig(object):
     """ Encapsulation of tipi.config file, and in memory config values """
 
     def __init__(self):
-        self.tipi_config = "/home/tipi/tipi.config"
+        self.tipi_config = TIPI_CONFIG
         self.records = dict(CONFIG_DEFAULTS)
         self.sorted_keys = []
         self.mtime = 0
@@ -159,7 +160,7 @@ class TipiConfig(object):
         for dir in items:
             # if the user includes the TIPI. device prefix, remove it for them.
             # unless they actually have a TIPI. directory
-            if dir.startswith("TIPI.") and not os.path.isdir("/home/tipi/tipi_disk/TIPI"):
+            if dir.startswith("TIPI.") and not os.path.isdir(os.path.join(TIPI_DISK, "TIPI")):
                 dir = dir[5:]
             # if the user does not include the trailing directory separator, add it for them.
             if dir and not dir.endswith("."):

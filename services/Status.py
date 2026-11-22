@@ -2,6 +2,8 @@ import netifaces
 import logging
 
 from subprocess import check_output
+import os
+from tipi_paths import TIPI_REPO, TIPI_UUID
 
 logger = logging.getLogger(__name__)
 
@@ -28,19 +30,19 @@ class Status(object):
         except:
             self.__records.append("ERROR=netifaces")
 
-        with open("/home/tipi/tipi/version.txt", "r") as fh_in:
+        with open(os.path.join(TIPI_REPO, "version.txt"), "r") as fh_in:
             for line in fh_in.readlines():
                 parts = line.split("=")
                 self.__records.append(
                     "{}={}".format(str(parts[0]).strip().upper(), str(parts[1]).strip())
                 )
 
-        with open("/home/tipi/tipi.uuid", "r") as fh_in:
+        with open(TIPI_UUID, "r") as fh_in:
             self.__records.append("UUID={}".format(fh_in.readline().strip()))
 
         # This needs to work even if there is no network.. thus a catch all.
         try:
-            upgradeCheck = str(check_output(["/home/tipi/tipi/setup/upgrade.sh"]), 'ascii')
+            upgradeCheck = str(check_output([os.path.join(TIPI_REPO, "setup", "upgrade.sh")]), 'ascii')
             latest = upgradeCheck.split("\n")[1]
             if latest.startswith("Latest Version: "):
                 gitver=latest.split(":")[1].strip()

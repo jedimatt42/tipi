@@ -21,6 +21,7 @@ from flask_socketio import SocketIO
 
 from flask import *
 import logging
+from tipi_paths import TIPI_HOME
 
 configure_logging()
 
@@ -433,7 +434,7 @@ def backup_now():
 @app.route("/backupdl/<path:path>", methods=["GET"])
 def backupdl(path):
     resp = make_response(
-        send_from_directory("/home/tipi", os.path.basename(path))
+        send_from_directory(TIPI_HOME, os.path.basename(path))
     )
     resp.cache_control.no_store = True
     resp.cache_control.public = False

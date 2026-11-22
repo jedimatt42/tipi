@@ -1,7 +1,8 @@
 import os
 import time
+from tipi_paths import EMULATION_CONFIG
 
-emulation_config = "/home/tipi/.emulation"
+emulation_config = EMULATION_CONFIG
 
 
 def status():

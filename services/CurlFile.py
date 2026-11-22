@@ -11,6 +11,7 @@ from ti_files.BasicFile import BasicFile, basicSuffixes
 from ti_files.ProgramImageFile import ProgramImageFile
 from ti_files.FixedRecordFile import FixedRecordFile
 from ti_files.VariableRecordFile import VariableRecordFile
+from tipi_paths import TIPI_REPO
 
 logger = logging.getLogger(__name__)
 
@@ -208,7 +209,7 @@ class CurlFile(object):
 
     def agent_str(self):
         version = "unknown"
-        with open("/home/tipi/tipi/version.txt", "r") as v_in:
+        with open(os.path.join(TIPI_REPO, "version.txt"), "r") as v_in:
             for line in v_in.readlines():
                 parts = line.split("=")
                 if str(parts[0]).strip().upper() == "VERSION":

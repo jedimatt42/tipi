@@ -13,12 +13,13 @@ import time
 import errno
 import logging
 import tipi_cache
+from tipi_paths import TIPI_DISK
 
 tipi_config = TipiConfig.instance()
 
 logger = logging.getLogger(__name__)
 
-tipi_disk_base = "/home/tipi/tipi_disk"
+tipi_disk_base = TIPI_DISK
 
 icons = {
     "basic": '<i class="bi bi-file-earmark-code" title="Basic Program"></i>',

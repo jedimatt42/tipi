@@ -4,6 +4,7 @@ import re
 import time
 
 from datetime import datetime
+from tipi_paths import TIPI_HOME
 
 def get_archive_timestamp(filename):
     try:
@@ -28,7 +29,7 @@ def restore_status():
 
 
 def status():
-    filelist = glob.glob("/home/tipi/*.tar.gz")
+    filelist = glob.glob(os.path.join(TIPI_HOME, "*.tar.gz"))
     filelist.sort()
 
     backups = [ {
@@ -56,19 +57,19 @@ def backup_now():
 def restore_now(backup_file):
     if backup_file is not None:
         with open("/tmp/tipi_restore", "w") as f:
-            f.write(f"/home/tipi/{backup_file}")
+            f.write(os.path.join(TIPI_HOME, backup_file))
         time.sleep(1)
 
 
 def upload(fileset):
     for filedata in fileset:
-        localfilename = os.path.join("/home/tipi", filedata.filename)
+        localfilename = os.path.join(TIPI_HOME, filedata.filename)
         filedata.save(localfilename)
 
 
 def delete(backup_file):
     if backup_file is not None:
-        fullpath = f"/home/tipi/{backup_file}"
+        fullpath = os.path.join(TIPI_HOME, backup_file)
         if os.path.exists(fullpath):
             os.remove(fullpath)
 

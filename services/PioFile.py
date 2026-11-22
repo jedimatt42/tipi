@@ -3,6 +3,7 @@ import os
 from Pab import *
 from datetime import datetime
 from subprocess import call
+from tipi_paths import TIPI_REPO
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +129,7 @@ class PioFile(object):
             logger.info("skipping PDF conversion")
             return
         logger.info("converting {} to PDF".format(prn_name))
-        callargs = ["/home/tipi/tipi/services/epson.sh", prn_name]
+        callargs = [os.path.join(TIPI_REPO, "services", "epson.sh"), prn_name]
         if call(callargs) != 0:
             logger.error("failed to convert to pdf: {}".format(prn_name))
         else:

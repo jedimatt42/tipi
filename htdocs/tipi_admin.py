@@ -4,13 +4,15 @@
 # et al.
 import io
 import subprocess
+import os
+from tipi_paths import TIPI_REPO, TIPI_LOG
 
 
 def version():
     version = {}
     datafiles = [ "version.txt", "branch.txt" ]
     for f in datafiles:
-        with open(f"/home/tipi/tipi/{f}") as vt:
+        with open(os.path.join(TIPI_REPO, f)) as vt:
             for line in vt.readlines():
                 parts = line.split("=")
                 version[str(parts[0].strip().lower())] = str(parts[1].strip())
@@ -18,7 +20,7 @@ def version():
 
 
 def logdata():
-    with io.open("/var/log/tipi/tipi.log", mode="r", encoding="utf-8") as f:
+    with io.open(os.path.join(TIPI_LOG, "tipi.log"), mode="r", encoding="utf-8") as f:
         return {"logdata": f.read()}
 
 

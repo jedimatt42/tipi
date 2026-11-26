@@ -495,7 +495,11 @@ static int websocket_serve(void)
 	};
 
 	int ms = 100; // milliseconds
-	int rc = poll(pfd, ARRAY_SIZE(pfd), ms);
+	int rc;
+	// let other Python threads run while waiting
+	Py_BEGIN_ALLOW_THREADS
+	rc = poll(pfd, ARRAY_SIZE(pfd), ms);
+	Py_END_ALLOW_THREADS
 	if (rc <= 0)
 		return -1; // timeout or socket error
 

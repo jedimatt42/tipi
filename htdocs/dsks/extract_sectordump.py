@@ -6,7 +6,7 @@ import string
 from dsks import pc99tov9t9
 import logging
 import shutil
-from tipi_paths import XDT99_DIR
+from tipi_paths import XDT99_DIR, TIPI_TMP
 
 
 logger = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ def extractFile(diskfile, fname, diskname):
     subprocess.call(["python3", os.path.join(XDT99_DIR, "xdm99.py"), diskfile, "-t", "-e", fname, "-o", newname])
 
 
-TMPFILE = "/tmp/sdump.dsk"
+TMPFILE = os.path.join(TIPI_TMP, "sdump.dsk")
 
 
 def extractDisk(diskfile):

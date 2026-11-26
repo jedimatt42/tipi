@@ -4,6 +4,7 @@ from subprocess import call
 from . import VariableRecordFile 
 import os
 from tipi_paths import XDT99_DIR, TIDBIT_DIR
+from tipi_paths import TIPI_TMP
 
 logger = logging.getLogger(__name__)
 
@@ -21,14 +22,14 @@ class BasicFile(object):
         if source_file_name.lower().endswith(".tb"):
             logger.info("converting with tidbit: %s", source_file_name)
             try:
-                tmpfp = "/tmp/tidbit_tmp"
+                tmpfp = os.path.join(TIPI_TMP, "tidbit_tmp")
                 BasicFile.tidbit(source_file_name, tmpfp)
                 source_file_name = tmpfp
             except Exception as e:
                 logger.error("Error reading file %s", unix_file_name)
                 raise
         try:
-            tmpfp = "/tmp/xbas_tmp"
+            tmpfp = os.path.join(TIPI_TMP, "xbas_tmp")
             BasicFile.toBasic(source_file_name, tmpfp)
             fh = open(tmpfp, "rb")
             bytes = bytearray(fh.read())
@@ -51,7 +52,7 @@ class BasicFile(object):
 
         fh = None
         try:
-            tmpfp = "/tmp/xbas_tmp"
+            tmpfp = os.path.join(TIPI_TMP, "xbas_tmp")
             fh = open(tmpfp, "wb")
             fh.write(self.body)
             fh.close()
@@ -73,7 +74,7 @@ class BasicFile(object):
     @staticmethod
     def toBasic(fp, tmpfp):
         try:
-            dv80fp = "/tmp/dv80_bas_tmp"
+            dv80fp = os.path.join(TIPI_TMP, "dv80_bas_tmp")
             cmdargs = ["python3", os.path.join(XDT99_DIR, "xdm99.py"), "-P", fp, "-o", dv80fp]
             logger.info("issuing command: " + str(cmdargs))
             if call(cmdargs) == 0:
@@ -96,7 +97,7 @@ class BasicFile(object):
     @staticmethod
     def tidbit(fp, tmpfp):
         try:
-            dv80fp = "/tmp/dv80_tid_tmp"
+            dv80fp = os.path.join(TIPI_TMP, "dv80_tid_tmp")
             cmdargs = ["python3", os.path.join(XDT99_DIR, "xdm99.py"), "-P", fp, "-o", dv80fp]
             logger.info("issuing command: " + str(cmdargs))
             if call(cmdargs) == 0:

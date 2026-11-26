@@ -7,7 +7,7 @@ import logging
 import uuid
 import re
 from subprocess import call, DEVNULL
-from tipi_paths import XDT99_DIR
+from tipi_paths import XDT99_DIR, TIPI_TMP
 
 logger = logging.getLogger(__name__)
 
@@ -222,8 +222,8 @@ def isTiBasicPrg(filename):     # Returns true if file is a PRG file and is dete
     logger.debug("testing for is TIFILES BASIC PROGRAM in %s", filename)
     # We are assuming the test for FIAD isTiFile has already passed.
 
-    prg_tmp_file = '/tmp/' + str(uuid.uuid4()) + '.tmp'
-    bas_tmp_file = '/tmp/' + str(uuid.uuid4()) + '.tmp'
+    prg_tmp_file = os.path.join(TIPI_TMP, str(uuid.uuid4()) + '.tmp')
+    bas_tmp_file = os.path.join(TIPI_TMP, str(uuid.uuid4()) + '.tmp')
 
     try:
         # strip the FIAD header off to get the raw file xbas99 needs.

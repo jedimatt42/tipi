@@ -12,6 +12,7 @@ import tipi_cache
 from ti_files import ti_files
 from subprocess import call
 from tipi_paths import TIPI_DISK, XDT99_DIR
+from tipi_paths import TIPI_TMP
 
 logger = logging.getLogger(__name__)
 
@@ -63,8 +64,8 @@ def basicContents(filename):
     logger.debug("fetching BASIC PROGRAM as ascii in %s", filename)
     # We are assuming the test for FIAD isTiFile has already passed.
 
-    prg_tmp_file = "/tmp/" + str(uuid.uuid4()) + ".tmp"
-    bas_tmp_file = "/tmp/" + str(uuid.uuid4()) + ".tmp"
+    prg_tmp_file = os.path.join(TIPI_TMP, str(uuid.uuid4()) + ".tmp")
+    bas_tmp_file = os.path.join(TIPI_TMP, str(uuid.uuid4()) + ".tmp")
 
     try:
         # strip the FIAD header off to get the raw file xbas99 needs.
@@ -107,8 +108,8 @@ def basicContents(filename):
 
 
 def writeBasicContents(edit_file_name, file_contents):
-    bas_tmp_file = "/tmp/" + str(uuid.uuid4()) + ".tmp"
-    prg_tmp_file = "/tmp/" + str(uuid.uuid4()) + ".tmp"
+    bas_tmp_file = os.path.join(TIPI_TMP, str(uuid.uuid4()) + ".tmp")
+    prg_tmp_file = os.path.join(TIPI_TMP, str(uuid.uuid4()) + ".tmp")
 
     encode_cmd = ["xbas99.py", "-c", bas_tmp_file, "-o", prg_tmp_file]
     fiad_cmd = ["xdm99.py", "-T", prg_tmp_file, "-o", edit_file_name]

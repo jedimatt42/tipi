@@ -3,6 +3,8 @@ import logging
 
 from Pab import *
 from tipi.TipiPorts import TipiPorts
+import os
+from tipi_paths import TIPI_TMP
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +36,7 @@ class UpgradeFile(object):
         self.tipi_io.send([SUCCESS])
         # Give the TI a little time to complete the IO request.
         time.sleep(1.000)
-        with open("/tmp/tipiupgrade", "w") as fh_out:
+        with open(os.path.join(TIPI_TMP, "tipiupgrade"), "w") as fh_out:
             fh_out.write("woot")
         # Block forever, until we are killed and restarted.
         # by the TipiSuper service running the upgrade.

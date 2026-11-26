@@ -17,5 +17,7 @@ TIPI_UUID = os.path.join(TIPI_HOME, "tipi.uuid")
 TIPI_LOG = os.path.join(TIPI_HOME, "log")
 TIPI_VARS = os.path.join(TIPI_HOME, ".tipivars")
 EMULATION_CONFIG = os.path.join(TIPI_HOME, ".emulation")
-XDT99_DIR = os.path.join(TIPI_HOME, "xdt99")
+XDT99_DIR = os.environ.get("TIPI_XDT99", os.path.join(TIPI_HOME, "xdt99"))
+# flag files and scratch files; the macOS app sandbox has its own temp folder
+TIPI_TMP = os.environ.get("TIPI_TMP", "/tmp")
 TIDBIT_DIR = os.path.join(TIPI_HOME, "tidbit")

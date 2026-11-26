@@ -6,6 +6,7 @@ import io
 import subprocess
 import os
 from tipi_paths import TIPI_REPO, TIPI_LOG
+from tipi_paths import TIPI_TMP
 
 
 def version():
@@ -36,15 +37,15 @@ def oslogdata():
 
 
 def reboot():
-    with open("/tmp/tipireboot", "w") as trigger:
+    with open(os.path.join(TIPI_TMP, "tipireboot"), "w") as trigger:
         trigger.write("tipi")
 
 
 def shutdown():
-    with open("/tmp/tipihalt", "w") as trigger:
+    with open(os.path.join(TIPI_TMP, "tipihalt"), "w") as trigger:
         trigger.write("tipi")
 
 
 def upgrade():
-    with open("/tmp/tipiupgrade", "w") as trigger:
+    with open(os.path.join(TIPI_TMP, "tipiupgrade"), "w") as trigger:
         trigger.write("tipi")

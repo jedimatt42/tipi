@@ -443,13 +443,13 @@ static int server_create(int domain /* AF_INET or AF_INET6 */)
 	}
 	if (domain == AF_INET) {
 		addr.sin_family = AF_INET;
-		addr.sin_addr.s_addr = INADDR_ANY;
+		addr.sin_addr.s_addr = getenv("TIPI_BIND_LOCAL") ? htonl(INADDR_LOOPBACK) : INADDR_ANY;
 		addr.sin_port = htons(PORT);
 		addrlen = sizeof(addr);
 		paddr = (struct sockaddr*)&addr;
 	} else if (domain == AF_INET6) {
 		addr6.sin6_family = AF_INET6;
-		addr6.sin6_addr = in6addr_any;
+		addr6.sin6_addr = getenv("TIPI_BIND_LOCAL") ? in6addr_loopback : in6addr_any;
 		addr6.sin6_port = htons(PORT);
 		addrlen = sizeof(addr6);
 		paddr = (struct sockaddr*)&addr6;

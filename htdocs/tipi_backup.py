@@ -5,6 +5,7 @@ import time
 
 from datetime import datetime
 from tipi_paths import TIPI_HOME
+from tipi_paths import TIPI_TMP
 
 def get_archive_timestamp(filename):
     try:
@@ -17,12 +18,12 @@ def get_archive_timestamp(filename):
 
 
 def restore_status():
-    if os.path.exists("/tmp/restore_state"):
-        with open("/tmp/restore_state", "r") as f:
+    if os.path.exists(os.path.join(TIPI_TMP, "restore_state")):
+        with open(os.path.join(TIPI_TMP, "restore_state"), "r") as f:
             line = f.readline().strip()
-        os.unlink("/tmp/restore_state")
+        os.unlink(os.path.join(TIPI_TMP, "restore_state"))
         return line
-    elif os.path.exists("/tmp/tipi_restore"):
+    elif os.path.exists(os.path.join(TIPI_TMP, "tipi_restore")):
         return "inprogress" 
     else:
         return "none"
@@ -41,7 +42,7 @@ def status():
 
     status = { 
         "backups": backups,
-        "backup_status": "inprogress" if os.path.exists("/tmp/tipi_backup") else "none",
+        "backup_status": "inprogress" if os.path.exists(os.path.join(TIPI_TMP, "tipi_backup")) else "none",
         "restore_status": restore_status()
     }
 
@@ -49,14 +50,14 @@ def status():
 
 
 def backup_now():
-    with open("/tmp/tipi_backup", "w") as f:
+    with open(os.path.join(TIPI_TMP, "tipi_backup"), "w") as f:
         f.write("now")
     time.sleep(1)
 
 
 def restore_now(backup_file):
     if backup_file is not None:
-        with open("/tmp/tipi_restore", "w") as f:
+        with open(os.path.join(TIPI_TMP, "tipi_restore"), "w") as f:
             f.write(os.path.join(TIPI_HOME, backup_file))
         time.sleep(1)
 

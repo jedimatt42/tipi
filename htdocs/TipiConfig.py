@@ -14,6 +14,7 @@ import re
 from ti_files import ti_files
 from tinames import tinames
 from tipi_paths import TIPI_CONFIG, TIPI_DISK
+from tipi_paths import TIPI_TMP
 
 LOGGER = logging.getLogger(__name__)
 
@@ -132,17 +133,17 @@ class TipiConfig(object):
         return self.records.get(key.strip(), default)
 
     def __triggerWifiConfig(self):
-        with open("/tmp/wificonfig", "w") as out_file:
+        with open(os.path.join(TIPI_TMP, "wificonfig"), "w") as out_file:
             out_file.write(self.records["WIFI_SSID"])
             out_file.write("\n")
             out_file.write(self.records["WIFI_PSK"])
             out_file.write("\n")
 
     def __triggerTimezone(self):
-        with open("/tmp/tz", "w") as out_file:
+        with open(os.path.join(TIPI_TMP, "tz"), "w") as out_file:
             out_file.write(self.records["TZ"])
             out_file.write("\n")
-        while os.path.exists("/tmp/tz"):
+        while os.path.exists(os.path.join(TIPI_TMP, "tz")):
             time.sleep(0.5)
 
     def __sanitizeValue(self, key, newvalue):

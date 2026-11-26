@@ -1,6 +1,7 @@
 import os
 import time
 from tipi_paths import EMULATION_CONFIG
+from tipi_paths import TIPI_TMP
 
 emulation_config = EMULATION_CONFIG
 
@@ -36,8 +37,8 @@ def update(state):
     
 
 def restart():
-    with open("/tmp/tipi_restart", "w") as f:
+    with open(os.path.join(TIPI_TMP, "tipi_restart"), "w") as f:
         f.write("restart services")
-    while os.path.exists("/tmp/tipi_restart"):
+    while os.path.exists(os.path.join(TIPI_TMP, "tipi_restart")):
         time.sleep(3)
 

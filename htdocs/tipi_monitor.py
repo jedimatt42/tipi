@@ -13,6 +13,7 @@ from ti_files import ti_files
 from tinames import tinames
 from dsks.extract_sectordump import extractDisk
 from tipi_paths import TIPI_DISK
+from tipi_paths import TIPI_TMP
 
 #
 # Monitor file changes under tipi_disk, and update meta-data in a database
@@ -22,7 +23,7 @@ from tipi_paths import TIPI_DISK
 logger = logging.getLogger("tipi_monitor")
 tipi_disk = TIPI_DISK
 
-tipimon_lock = "/tmp/tipimon.lock"
+tipimon_lock = os.path.join(TIPI_TMP, "tipimon.lock")
 
 
 def createLock():

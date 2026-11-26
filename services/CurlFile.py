@@ -12,6 +12,7 @@ from ti_files.ProgramImageFile import ProgramImageFile
 from ti_files.FixedRecordFile import FixedRecordFile
 from ti_files.VariableRecordFile import VariableRecordFile
 from tipi_paths import TIPI_REPO
+from tipi_paths import TIPI_TMP
 
 logger = logging.getLogger(__name__)
 
@@ -185,7 +186,7 @@ class CurlFile(object):
         logger.info("save devname - %s", devname)
         try:
             url = self.parseDev(devname)
-            tmpname = '/tmp/CF'
+            tmpname = os.path.join(TIPI_TMP, "CF")
 
             self.tipi_io.send([SUCCESS])
             fdata = self.tipi_io.receive()
@@ -220,7 +221,7 @@ class CurlFile(object):
     def http_get(self, url, pab):
         agent = self.agent_str()
 
-        tmpname = '/tmp/CF'
+        tmpname = os.path.join(TIPI_TMP, "CF")
     
         if os.path.exists("/usr/bin/wget"):
             cmd = "/usr/bin/wget --user-agent={} -O {} '{}'".format(agent, tmpname, url)
@@ -246,7 +247,7 @@ class CurlFile(object):
     def http_post(self, url, pab):
         agent = self.agent_str()
 
-        tmpname = '/tmp/CF'
+        tmpname = os.path.join(TIPI_TMP, "CF")
 
         cmd = "/usr/bin/curl -v -A {} -F 'TIFILES=@{}' {} -o /dev/null".format(agent, tmpname, url)
         logger.info("cmd: %s", cmd)

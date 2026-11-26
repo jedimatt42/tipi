@@ -15,6 +15,7 @@ from RawExtensions import RawExtensions
 from LevelTwo import LevelTwo
 from TipiDisk import TipiDisk
 from tipi_paths import TIPI_LOG, TIPI_REPO
+from tipi_paths import TIPI_TMP
 
 #
 # Setup logging
@@ -74,9 +75,9 @@ try:
             msg = tipi_io.receive()
         except BackOffException:
             time.sleep(0.10)
-            if os.path.exists("/tmp/tipi_safepoint"):
-                logger.info("found /tmp/tipi_safepoint, restarting")
-                os.remove("/tmp/tipi_safepoint")
+            if os.path.exists(os.path.join(TIPI_TMP, "tipi_safepoint")):
+                logger.info("found tipi_safepoint, restarting")
+                os.remove(os.path.join(TIPI_TMP, "tipi_safepoint"))
                 quit()
         if msg is None:
             continue

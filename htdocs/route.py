@@ -511,4 +511,4 @@ def createFileUrl(path):
 ## Launch app
 
 if __name__ == "__main__":
-    socketio.run(app, "0.0.0.0", 9900,  allow_unsafe_werkzeug=True)
+    socketio.run(app, "127.0.0.1" if os.environ.get("TIPI_BIND_LOCAL") else "0.0.0.0", 9900,  allow_unsafe_werkzeug=True)

@@ -28,7 +28,8 @@ configure_logging()
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-app.config["DEBUG"] = True
+# no reloader or debugger inside the macOS app (TIPI_BIND_LOCAL)
+app.config["DEBUG"] = not os.environ.get("TIPI_BIND_LOCAL")
 app.config["TESTING"] = False
 app.config["ENV"] = "development"
 socketio = SocketIO(app)

@@ -21,13 +21,15 @@ from flask_socketio import SocketIO
 
 from flask import *
 import logging
+from tipi_paths import TIPI_HOME
 
 configure_logging()
 
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-app.config["DEBUG"] = True
+# no reloader or debugger inside the macOS app (TIPI_BIND_LOCAL)
+app.config["DEBUG"] = not os.environ.get("TIPI_BIND_LOCAL")
 app.config["TESTING"] = False
 app.config["ENV"] = "development"
 socketio = SocketIO(app)
@@ -381,8 +383,8 @@ def logs():
 @app.route("/oslogs", methods=["GET"])
 def oslogs():
     logdata = tipi_admin.oslogdata()
-    logdata['title'] = 'Linux OS Log'
-    logdata['hint'] = 'journalctl --no-pager -b'
+    logdata.setdefault('title', 'Linux OS Log')
+    logdata.setdefault('hint', 'journalctl --no-pager -b')
     return render_template("log.html", **logdata)
 
 
@@ -433,7 +435,7 @@ def backup_now():
 @app.route("/backupdl/<path:path>", methods=["GET"])
 def backupdl(path):
     resp = make_response(
-        send_from_directory("/home/tipi", os.path.basename(path))
+        send_from_directory(TIPI_HOME, os.path.basename(path))
     )
     resp.cache_control.no_store = True
     resp.cache_control.public = False
@@ -510,4 +512,4 @@ def createFileUrl(path):
 ## Launch app
 
 if __name__ == "__main__":
-    socketio.run(app, "0.0.0.0", 9900,  allow_unsafe_werkzeug=True)
+    socketio.run(app, "127.0.0.1" if os.environ.get("TIPI_BIND_LOCAL") else "0.0.0.0", 9900,  allow_unsafe_werkzeug=True)

@@ -11,6 +11,8 @@ from ti_files.BasicFile import BasicFile, basicSuffixes
 from ti_files.ProgramImageFile import ProgramImageFile
 from ti_files.FixedRecordFile import FixedRecordFile
 from ti_files.VariableRecordFile import VariableRecordFile
+from tipi_paths import TIPI_REPO
+from tipi_paths import TIPI_TMP
 
 logger = logging.getLogger(__name__)
 
@@ -184,7 +186,7 @@ class CurlFile(object):
         logger.info("save devname - %s", devname)
         try:
             url = self.parseDev(devname)
-            tmpname = '/tmp/CF'
+            tmpname = os.path.join(TIPI_TMP, "CF")
 
             self.tipi_io.send([SUCCESS])
             fdata = self.tipi_io.receive()
@@ -208,7 +210,7 @@ class CurlFile(object):
 
     def agent_str(self):
         version = "unknown"
-        with open("/home/tipi/tipi/version.txt", "r") as v_in:
+        with open(os.path.join(TIPI_REPO, "version.txt"), "r") as v_in:
             for line in v_in.readlines():
                 parts = line.split("=")
                 if str(parts[0]).strip().upper() == "VERSION":
@@ -219,9 +221,13 @@ class CurlFile(object):
     def http_get(self, url, pab):
         agent = self.agent_str()
 
-        tmpname = '/tmp/CF'
+        tmpname = os.path.join(TIPI_TMP, "CF")
     
-        cmd = "/usr/bin/wget --user-agent={} -O {} '{}'".format(agent, tmpname, url)
+        if os.path.exists("/usr/bin/wget"):
+            cmd = "/usr/bin/wget --user-agent={} -O {} '{}'".format(agent, tmpname, url)
+        else:
+            # No wget (macOS): curl, following redirects and failing on HTTP errors as wget does
+            cmd = "/usr/bin/curl -sSfL -A {} -o {} '{}'".format(agent, tmpname, url)
         logger.info("cmd: %s", cmd)
         code = os.system(cmd)
         if code != 0:
@@ -241,7 +247,7 @@ class CurlFile(object):
     def http_post(self, url, pab):
         agent = self.agent_str()
 
-        tmpname = '/tmp/CF'
+        tmpname = os.path.join(TIPI_TMP, "CF")
 
         cmd = "/usr/bin/curl -v -A {} -F 'TIFILES=@{}' {} -o /dev/null".format(agent, tmpname, url)
         logger.info("cmd: %s", cmd)

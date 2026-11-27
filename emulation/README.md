@@ -6,6 +6,8 @@ TIPI is not an emulation of TI-99/4A hardware. It is a unique and independent im
 - MAME v0.242 adds TIPI support: [Atariage MAME Release Thread](https://atariage.com/forums/topic/259551-new-mame-release/?do=findComment&comment=5032740)
 - Classic99 implements some TIPI device and message level protocols directly. It is baked in. 
 
+To run the TIPI services directly on a Mac or Linux PC, without a Raspberry PI or QEMU, see [local/README.md](local/README.md).
+
 ## Using QEMU
 
 Run the emulation with the latest TIPI hardware sdimage.

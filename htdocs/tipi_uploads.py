@@ -10,10 +10,12 @@ import time
 import logging
 from ti_files import ti_files
 from ti_files import v9t9_files
+from tipi_paths import TIPI_DISK
+from tipi_paths import TIPI_TMP
 
 logger = logging.getLogger(__name__)
 
-tipi_disk_base = "/home/tipi/tipi_disk"
+tipi_disk_base = TIPI_DISK
 
 
 def waitForMonitor():
@@ -21,7 +23,7 @@ def waitForMonitor():
     checks = 3
     while checks > 0:
         time.sleep(1)
-        if os.path.isfile("/tmp/tipimon.lock"):
+        if os.path.isfile(os.path.join(TIPI_TMP, "tipimon.lock")):
             checks = 3
         else:
             checks -= 1

@@ -3,6 +3,8 @@ import os
 from Pab import *
 from datetime import datetime
 from subprocess import call
+from tipi_paths import TIPI_REPO
+from tipi_paths import TIPI_TMP
 
 logger = logging.getLogger(__name__)
 
@@ -67,9 +69,9 @@ class PioFile(object):
                 self.NU = 1
         if mode(pab) == OUTPUT or mode(pab) == UPDATE:
             if self.data_filename is None:
-                spools = [f for f in os.listdir("/tmp/") if f.startswith("print_")]
+                spools = [f for f in os.listdir(TIPI_TMP) if f.startswith("print_")]
                 if len(spools) == 1:
-                    self.data_filename = "/tmp/" + spools[0]
+                    self.data_filename = TIPI_TMP + "/" + spools[0]
                     logger.info("continuing with spool: {}".format(self.data_filename))
                 else:
                     if "A4" in dev_options:
@@ -77,7 +79,7 @@ class PioFile(object):
                     else:
                         paper = ""
                     self.data_filename = (
-                        "/tmp/print_"
+                        os.path.join(TIPI_TMP, "print_")
                         + datetime.today().strftime("%Y_%m_%d_T%H_%M_%S")
                         + paper
                         + ".prn"
@@ -128,7 +130,7 @@ class PioFile(object):
             logger.info("skipping PDF conversion")
             return
         logger.info("converting {} to PDF".format(prn_name))
-        callargs = ["/home/tipi/tipi/services/epson.sh", prn_name]
+        callargs = [os.path.join(TIPI_REPO, "services", "epson.sh"), prn_name]
         if call(callargs) != 0:
             logger.error("failed to convert to pdf: {}".format(prn_name))
         else:

@@ -14,19 +14,22 @@ from CustomExtensions import load_plugins
 from RawExtensions import RawExtensions
 from LevelTwo import LevelTwo
 from TipiDisk import TipiDisk
+from tipi_paths import TIPI_LOG, TIPI_REPO
+from tipi_paths import TIPI_TMP
 
 #
 # Setup logging
 #
-logpath = "/home/tipi/log"
+logpath = TIPI_LOG
 if not os.path.isdir(logpath):
     os.makedirs(logpath)
 
 LOG_FILENAME = logpath + "/tipi.log"
 logging.getLogger("").setLevel(logging.INFO)
 
-if os.path.exists("/home/tipi/tipi/services/loggers.yml"):
-    with open("/home/tipi/tipi/services/loggers.yml", 'r') as stream:
+loggers_yml = os.path.join(TIPI_REPO, "services", "loggers.yml")
+if os.path.exists(loggers_yml):
+    with open(loggers_yml, 'r') as stream:
         loggers_config = yaml.load(stream, Loader=yaml.FullLoader)
         for key in loggers_config.keys():
             logging.getLogger(key).setLevel(logging._nameToLevel.get(loggers_config.get(key)))
@@ -72,9 +75,9 @@ try:
             msg = tipi_io.receive()
         except BackOffException:
             time.sleep(0.10)
-            if os.path.exists("/tmp/tipi_safepoint"):
-                logger.info("found /tmp/tipi_safepoint, restarting")
-                os.remove("/tmp/tipi_safepoint")
+            if os.path.exists(os.path.join(TIPI_TMP, "tipi_safepoint")):
+                logger.info("found tipi_safepoint, restarting")
+                os.remove(os.path.join(TIPI_TMP, "tipi_safepoint"))
                 quit()
         if msg is None:
             continue

@@ -4,6 +4,8 @@ import time
 import hashlib
 import glob
 from subprocess import call
+from tipi_paths import TIPI_REPO
+from tipi_paths import TIPI_TMP
 
 
 logger = logging.getLogger(__name__)
@@ -32,12 +34,12 @@ class SectorDisk(object):
         # unix filesystem names are utf8
         h.update(bytearray(dir_name, 'utf8'))
         digest = h.hexdigest()
-        return f'/tmp/{digest}.img'
+        return os.path.join(TIPI_TMP, f'{digest}.img')
 
     @staticmethod
     def createImage(dir_name, cache_name):
         try:
-            cmdargs = ["bash", "/home/tipi/tipi/services/create_sectors.sh", cache_name, dir_name]
+            cmdargs = ["bash", os.path.join(TIPI_REPO, "services", "create_sectors.sh"), cache_name, dir_name]
             logger.info("issuing command: " + str(cmdargs))
             if call(cmdargs) == 0:
                 return

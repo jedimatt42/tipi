@@ -2,6 +2,7 @@ import logging
 from ConfigLogging import configure_logging
 from . import ti_files
 from pathlib import Path
+from tipi_paths import TIPI_DISK
 
 """
 Scan the TIPI filesystem for FIADs that have an incorrect EOF_OFFSET header
@@ -32,7 +33,7 @@ def fix_eof(file_path, data):
 
 
 if __name__ == "__main__":
-    for path in Path('/home/tipi/tipi_disk').rglob('*'):
+    for path in Path(TIPI_DISK).rglob('*'):
         if path.is_file():
             posix_path = path.as_posix()
 

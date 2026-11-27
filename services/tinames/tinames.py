@@ -10,6 +10,7 @@ from unidecode import unidecode
 from ti_files import ti_files
 from ti_files.BasicFile import basicSuffixes
 from tinames.NativeFlags import *
+from tipi_paths import TIPI_DISK
 
 # Transform a name supplied by the 4A into our storage path
 
@@ -17,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 tipi_config = TipiConfig.instance()
 
-TIPI_DIR = "/home/tipi/tipi_disk"
+TIPI_DIR = TIPI_DISK
 
 WILDCARD = '#?'
 

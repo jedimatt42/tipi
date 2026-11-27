@@ -5,6 +5,7 @@ import logging
 from crccheck.crc import Crc15
 from TipiConfig import TipiConfig
 from unidecode import unidecode
+from tipi_paths import TIPI_DISK
 
 # Transform a name supplied by the 4A into our storage path
 
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 tipi_config = TipiConfig.instance()
 
-TIPI_DIR = "/home/tipi/tipi_disk"
+TIPI_DIR = TIPI_DISK
 
 
 def __driveMapping(key):

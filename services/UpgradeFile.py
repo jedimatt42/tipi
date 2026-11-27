@@ -3,6 +3,8 @@ import logging
 
 from Pab import *
 from tipi.TipiPorts import TipiPorts
+import os
+from tipi_paths import TIPI_TMP
 
 logger = logging.getLogger(__name__)
 
@@ -32,9 +34,15 @@ class UpgradeFile(object):
     def close(self, pab, devname):
         logger.info("close %s", devname)
         self.tipi_io.send([SUCCESS])
+        if os.environ.get("TIPI_NO_PI"):
+            # No Pi to restart (emulation/local, macOS app). Exit at once, as RESET does,
+            # and the service is restarted; blocking would swallow the TI's next request.
+            logger.info("no Pi, restarting the service for %s", devname)
+            logging.shutdown()
+            os._exit(0)
         # Give the TI a little time to complete the IO request.
         time.sleep(1.000)
-        with open("/tmp/tipiupgrade", "w") as fh_out:
+        with open(os.path.join(TIPI_TMP, "tipiupgrade"), "w") as fh_out:
             fh_out.write("woot")
         # Block forever, until we are killed and restarted.
         # by the TipiSuper service running the upgrade.

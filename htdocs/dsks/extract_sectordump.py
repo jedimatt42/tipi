@@ -6,6 +6,7 @@ import string
 from dsks import pc99tov9t9
 import logging
 import shutil
+from tipi_paths import XDT99_DIR, TIPI_TMP
 
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ def getDiskName(diskfile, parentdir):
     diskname = "unknown"
     listing = (
         subprocess.check_output(
-            ["python3", "/home/tipi/xdt99/xdm99.py", diskfile, "-t", "--ti-names"], stderr=subprocess.STDOUT
+            ["python3", os.path.join(XDT99_DIR, "xdm99.py"), diskfile, "-t", "--ti-names"], stderr=subprocess.STDOUT
         )
         .decode("utf-8")
         .split("\n")
@@ -45,7 +46,7 @@ def getFiles(diskfile):
     files = []
     listing = (
         subprocess.check_output(
-            ["python3", "/home/tipi/xdt99/xdm99.py", diskfile, "-t", "--ti-names"], stderr=subprocess.STDOUT
+            ["python3", os.path.join(XDT99_DIR, "xdm99.py"), diskfile, "-t", "--ti-names"], stderr=subprocess.STDOUT
         )
         .decode("utf-8")
         .split("\n")
@@ -66,10 +67,10 @@ def safename(n):
 
 def extractFile(diskfile, fname, diskname):
     newname = "%s/%s" % (diskname, safename(fname))
-    subprocess.call(["python3", "/home/tipi/xdt99/xdm99.py", diskfile, "-t", "-e", fname, "-o", newname])
+    subprocess.call(["python3", os.path.join(XDT99_DIR, "xdm99.py"), diskfile, "-t", "-e", fname, "-o", newname])
 
 
-TMPFILE = "/tmp/sdump.dsk"
+TMPFILE = os.path.join(TIPI_TMP, "sdump.dsk")
 
 
 def extractDisk(diskfile):

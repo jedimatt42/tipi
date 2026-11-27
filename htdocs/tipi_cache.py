@@ -6,16 +6,17 @@ from flask import g
 from ti_files import ti_files
 from tinames import tinames
 from TipiConfig import TipiConfig
+from tipi_paths import TIPI_DISK, TIPI_HOME
 
 #
 # DOA-ish methods for cache of tipi_disk file meta-data. 
 #
 
 logger = logging.getLogger(__name__)
-tipi_disk = '/home/tipi/tipi_disk'
+tipi_disk = TIPI_DISK
 
 global_conn = None
-db_name = '/home/tipi/.tipiweb.db'
+db_name = os.path.join(TIPI_HOME, '.tipiweb.db')
 
 tipi_config = TipiConfig.instance()
 

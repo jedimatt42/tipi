@@ -2,6 +2,8 @@ import time
 import logging
 
 from Pab import *
+import os
+from tipi_paths import TIPI_TMP
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +33,7 @@ class ShutdownFile(object):
     def close(self, pab, devname):
         logger.info("close %s", devname)
         self.tipi_io.send([SUCCESS])
-        with open("/tmp/tipihalt", "w") as fh_out:
+        with open(os.path.join(TIPI_TMP, "tipihalt"), "w") as fh_out:
             fh_out.write("woot")
 
     def open(self, pab, devname):

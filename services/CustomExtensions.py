@@ -2,8 +2,9 @@ import os
 import importlib.util
 import logging
 import time
+from tipi_paths import TIPI_DISK
 
-PLUGIN_DIR = "/home/tipi/tipi_disk/PLUGINS"
+PLUGIN_DIR = os.path.join(TIPI_DISK, "PLUGINS")
 
 plugins = {}  # Stores active plugin instances
 logger = logging.getLogger(__name__)

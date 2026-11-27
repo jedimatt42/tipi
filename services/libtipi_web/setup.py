@@ -1,4 +1,8 @@
-from distutils.core import setup, Extension
+try:
+    from setuptools import setup, Extension
+except ImportError:
+    # older Pi OS images without setuptools
+    from distutils.core import setup, Extension
 
 moduletipi = Extension(
     'tipiports_websocket',

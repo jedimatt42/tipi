@@ -12,10 +12,11 @@ import re
 import sys
 import socket
 import logging
+from tipi_paths import TIPI_VARS
 
 logger = logging.getLogger(__name__)
 
-runtime_dir = "/home/tipi/.tipivars/"
+runtime_dir = TIPI_VARS + "/"
 
 
 class TipiVariable(object):

@@ -30,6 +30,20 @@ class Status(object):
         except:
             self.__records.append("ERROR=netifaces")
 
+        # TIPICFG shows IP_WLAN0 or IP_ETH0, which only Linux names. Elsewhere (the macOS
+        # emulation) report where the TIPI is reached: loopback when bound there, else the
+        # default route's interface.
+        if not any(r.startswith(("IP_WLAN0=", "IP_ETH0=")) for r in self.__records):
+            try:
+                if os.environ.get("TIPI_BIND_LOCAL"):
+                    addr = "127.0.0.1"
+                else:
+                    iface = netifaces.gateways()["default"][netifaces.AF_INET][1]
+                    addr = netifaces.ifaddresses(iface)[netifaces.AF_INET][0]["addr"]
+                self.__records.insert(0, f"IP_ETH0={addr}")
+            except Exception:
+                pass
+
         with open(os.path.join(TIPI_REPO, "version.txt"), "r") as fh_in:
             for line in fh_in.readlines():
                 parts = line.split("=")

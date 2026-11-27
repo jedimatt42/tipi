@@ -34,6 +34,12 @@ class RebootFile(object):
     def close(self, pab, devname):
         logger.info("close %s", devname)
         self.tipi_io.send([SUCCESS])
+        if os.environ.get("TIPI_NO_PI"):
+            # No Pi to restart (emulation/local, macOS app). Exit at once, as RESET does,
+            # and the service is restarted; blocking would swallow the TI's next request.
+            logger.info("no Pi, restarting the service for %s", devname)
+            logging.shutdown()
+            os._exit(0)
         # Give the TI a little time to complete the IO request.
         time.sleep(1.000)
         with open(os.path.join(TIPI_TMP, "tipireboot"), "w") as fh_out:

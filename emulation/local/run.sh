@@ -18,6 +18,8 @@ export TIPI_REPO=$REPO
 # emulation mode, even if the web UI removes .emulation
 export TIPI_WEBSOCK=$REPO/htdocs
 export TIPI_NO_PDF=true
+# no Pi: PI.REBOOT and PI.UPGRADE restart the service instead
+export TIPI_NO_PI=1
 
 LOG=$TIPI_HOME/log
 

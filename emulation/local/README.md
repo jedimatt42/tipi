@@ -73,8 +73,9 @@ The first run copies TIPICFG and the other programs from `setup/bin` into
 ## Not available locally
 
 These need the PI's operating system and are ignored, with a message from
-`run.sh`: WiFi and timezone settings, upgrade, reboot and shutdown, and backup
-and restore. The web UI's OS log page needs the systemd journal, so it shows
+`run.sh`: WiFi and timezone settings, shutdown, and backup and restore. From the
+TI, `PI.REBOOT` and `PI.UPGRADE` restart the TIPI service; the web UI's reboot
+and upgrade are ignored. The web UI's OS log page needs the systemd journal, so it shows
 the TIPI service's log (`$TIPI_HOME/log/tipi.log`) instead. PDF printing and
 tidbit (BASIC listing renumbering in the web UI) aren't set up.
 
@@ -90,5 +91,6 @@ The services find their files through two environment variables, which
 - `TIPI_REPO`: this checkout, `/home/tipi/tipi` on the PI
 
 `run.sh` also sets `TIPI_WEBSOCK`, which selects the websocket instead of the
-PI's GPIO port, and stands in for `TipiSuper.py` by restarting the TIPI service
+PI's GPIO port, and `TIPI_NO_PI`, which makes `PI.REBOOT` and `PI.UPGRADE`
+restart the TIPI service instead of the PI. It stands in for `TipiSuper.py` by restarting the TIPI service
 when the web UI asks.
